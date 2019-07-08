@@ -1,0 +1,4 @@
+yacc.tab.c
+yacc.tab.h
+lex.yy.c
+a.out

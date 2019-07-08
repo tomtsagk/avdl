@@ -1,0 +1,116 @@
+#include "ast_node.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include "yacc.tab.h"
+#include "symtable.h"
+
+// Create node with given token and value - no children
+struct ast_node *ast_create(enum AST_NODE_TYPE node_type, int value) {
+
+	struct ast_node *new_node = malloc(sizeof(struct ast_node));
+	new_node->node_type = node_type;
+	new_node->value = value;
+	dd_da_init(&new_node->children, sizeof(struct ast_node));
+	return new_node;
+
+}
+
+void ast_child_add(struct ast_node *parent, struct ast_node *child) {
+	dd_da_add(&parent->children, child);
+	free(child);
+}
+
+void ast_child_add_first(struct ast_node *parent, struct ast_node *child) {
+	dd_da_add_first(&parent->children, child);
+	free(child);
+}
+
+void ast_delete_child(struct ast_node *node) {
+
+	// Delete children
+	for (int i = 0; i < node->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&node->children, i);
+		ast_delete_child(child);
+	}
+
+	dd_da_free(&node->children);
+}
+
+void ast_delete(struct ast_node *node) {
+	ast_delete_child(node);
+	free(node);
+}
+
+// Print whole node tree, meant for debugging only
+int tabs = 0;
+void ast_print(struct ast_node *node) {
+
+	// Print tabs (if any)
+	for (int i = 0; i < tabs; i++) {
+		printf("\t");
+	}
+
+	if (tabs == 0) {
+		printf("Abstract Syntax Tree:\n");
+		printf("*** ");
+	}
+	else {
+		printf("* ");
+	}
+
+	// Print actual node
+	char *type;
+	struct entry *e;
+	switch (node->node_type) {
+
+		case AST_GAME: printf("GAME"); break;
+		case AST_NUMBER: printf("NUMBER: %d", node->value); break;
+		case AST_STRING:
+			e = symtable_entryat(node->value);
+			printf("STRING: %s", e->lexptr);
+			break;
+		case AST_GROUP: printf("GROUP"); break;
+		case AST_COMMAND: printf("COMMAND"); break;
+
+		case AST_IDENTIFIER:
+			e = symtable_entryat(node->value);
+			printf("IDENTIFIER: %s", e->lexptr);
+			break;
+
+		default:
+			printf("%d | %d", node->node_type, node->value);
+			break;
+	}
+
+	printf("\n");
+
+	// Print children
+	tabs++;
+	for (int i = 0; i < node->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&node->children, i);
+		ast_print(child);
+	}
+	tabs--;
+}
+
+// AST table
+#define AST_TABLE_MAX 1000
+struct ast_node* ast_table[AST_TABLE_MAX];
+int ast_table_lastentry;
+
+int ast_push(struct ast_node *n) {
+	if (ast_table_lastentry +1 >= AST_TABLE_MAX) {
+		return 0;
+	}
+
+	ast_table_lastentry++;
+	ast_table[ast_table_lastentry] = n;
+}
+
+struct ast_node *ast_pop() {
+	if (ast_table_lastentry < 0) {
+		return 0;
+	}
+	ast_table_lastentry--;
+	return ast_table[ast_table_lastentry+1];
+}
