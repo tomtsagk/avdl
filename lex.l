@@ -19,7 +19,7 @@ number [0-9]+
  /* constants and variables */
 {symbol}	{ yylval = symtable_insert(yytext, DD_ZERO); return DD_CONSTANT_SYMBOL; }
 {number}	{ yylval = atoi(yytext); return DD_CONSTANT_NUMBER; }
-\".*\"		{
+\"[^"]*\"	{
 	/* chop of the quotes from strings
 	 * add it to symbol table
 	 */
