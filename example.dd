@@ -1,4 +1,2 @@
-( var arg another anotherarg 5 )
-( var arg another "string" )
-# test comment
-( var arg another (var heh hah))
+( echo "hello world" 5 "second string" )
+( echo "heya" 1335 )

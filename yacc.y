@@ -6,7 +6,6 @@
 #include "ast_node.h"
 #include "parser.h"
 #include <unistd.h>
-#include "structtable.h"
 #include <stdlib.h>
  
 // line number (got from lex.l)
@@ -27,7 +26,7 @@ void yyerror(const char *str)
 struct ast_node *game_node;
 
 char *keywords[] = {
-	"var",
+	"echo",
 };
 
 // init data, parse, exit
@@ -73,7 +72,7 @@ int main(int argc, char *argv[])
         yyparse();
 
 	// parse resulting ast tree to a file
-	//parse(argv[1], game_node);
+	parse_javascript(argv[1], game_node);
 
 	//struct_print();
 
