@@ -20,7 +20,7 @@ struct command_translation {
 
 static struct command_translation translations[] = {
 	{"echo", "console.log(~n{+});\n"},
-	{"if", "if ~1 ~2"},
+	{"int", "var ~0;\n"},
 };
 
 void print_node(FILE *fd, struct ast_node *n) {
@@ -55,13 +55,11 @@ void print_node(FILE *fd, struct ast_node *n) {
 							// parse argument
 							sub++;
 
-							struct ast_node *group = dd_da_get(&n->children, 0);
-
 							// print everything
 							if (sub[0] == 'n') {
 								sub++;
 								int start = 0;
-								int end = group->children.elements;
+								int end = n->children.elements;
 								if (sscanf(sub, "%d-%d")) {
 									start = atoi(sub);
 									while(sub[0] >= '0' && sub[0] <= '9') sub++;
@@ -79,7 +77,7 @@ void print_node(FILE *fd, struct ast_node *n) {
 									if (i != start) {
 										fprintf(fd, "%c", between);
 									}
-									print_node(fd, dd_da_get(&group->children, i));
+									print_node(fd, dd_da_get(&n->children, i));
 								}
 
 							}
@@ -92,7 +90,7 @@ void print_node(FILE *fd, struct ast_node *n) {
 								while(sub[0] >= '0' && sub[0] <= '9') sub++;
 
 								// call argument, to fill in the blanks
-								print_node(fd, dd_da_get(&group->children, arg));
+								print_node(fd, dd_da_get(&n->children, arg));
 							}
 
 							translation = sub;
@@ -113,16 +111,11 @@ void print_node(FILE *fd, struct ast_node *n) {
 			fprintf(fd, "'%s'", e->lexptr);
 			break;
 		}
-		case AST_IDENTIFIER:
-			fprintf(fd, "x");
+		case AST_IDENTIFIER: {
+			struct entry *e = symtable_entryat(n->value);
+			fprintf(fd, "%s", e->lexptr);
 			break;
-		default:
-			/*
-			for (int i = 0; i < n->children.elements; i++) {
-				print_node(fd, dd_da_get(&n->children, i));
-			}
-			*/
-			break;
+		}
 	}
 }
 

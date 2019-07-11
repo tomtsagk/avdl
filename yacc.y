@@ -27,6 +27,7 @@ struct ast_node *game_node;
 
 char *keywords[] = {
 	"echo",
+	"int",
 };
 
 // init data, parse, exit
@@ -153,12 +154,10 @@ command:
 
 		/* command node
 		 */
-		struct ast_node *n = ast_create(AST_COMMAND, 0);
-
 		struct ast_node *opt_args = ast_pop();
-		ast_child_add(n, opt_args);
-
-		ast_push(n);
+		opt_args->node_type = AST_COMMAND;
+		opt_args->value = $2;
+		ast_push(opt_args);
 	};
 
 /* optional args
