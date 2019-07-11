@@ -1,3 +1,4 @@
 ( echo "hello world" 5 "second string" )
 ( echo "heya" 1335 )
 ( int my_var )
+( = my_var 5 )

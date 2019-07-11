@@ -7,7 +7,7 @@
 #include "parser.h"
 #include <unistd.h>
 #include <stdlib.h>
- 
+
 // line number (got from lex.l)
 extern int linenum;
 
@@ -21,13 +21,14 @@ void yyerror(const char *str)
         fprintf(stderr,"error: line %d: %s\n", linenum, str);
 	_exit(-1);
 }
- 
+
 // game node, parent of all nodes
 struct ast_node *game_node;
 
 char *keywords[] = {
 	"echo",
 	"int",
+	"=",
 };
 
 // init data, parse, exit
@@ -88,7 +89,7 @@ int main(int argc, char *argv[])
 
 	// success!
 	return 0;
-} 
+}
 
 %}
 
@@ -97,7 +98,7 @@ int main(int argc, char *argv[])
 %token DD_KEYWORD
 
 /* constants */
-%token DD_CONSTANT_SYMBOL DD_CONSTANT_STRING DD_CONSTANT_NUMBER
+%token DD_CONSTANT_SYMBOL DD_CONSTANT_STRING DD_CONSTANT_NUMBER DD_CONSTANT_CHARACTER
 
 %%
 
@@ -141,7 +142,7 @@ commands:
  * has a keyword and optional arguments
  */
 command:
-	'(' DD_CONSTANT_SYMBOL optional_args ')' {
+	'(' keyword optional_args ')' {
 		struct entry *e = symtable_entryat($2);
 		if (e->token == DD_KEYWORD) {
     			//printf("keyword symbol: %s\n", e->lexptr);
@@ -196,4 +197,10 @@ arg:
 	}
 	|
 	command
+	;
+
+keyword:
+	DD_CONSTANT_SYMBOL
+	|
+	DD_CONSTANT_CHARACTER
 	;

@@ -30,7 +30,8 @@ number [0-9]+
 }
 
  /* pass-through symbols */
-[-/*=+()\.><]	return yytext[0];
+[-/*=+\.><]	{ yylval = symtable_insert(yytext, yytext[0]); return DD_CONSTANT_CHARACTER; }
+[()]		{ return yytext[0]; }
 
  /* ignore whitespace */
 [ \t]		;
