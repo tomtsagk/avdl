@@ -29,6 +29,10 @@ char *keywords[] = {
 	"echo",
 	"int",
 	"=",
+	"+",
+	"-",
+	"*",
+	"/",
 };
 
 // init data, parse, exit

@@ -22,6 +22,10 @@ static struct command_translation translations[] = {
 	{"echo", "console.log(~n{+});\n"},
 	{"int", "var ~0;\n"},
 	{"=", "~0 = ~1;\n"},
+	{"+", "(~0 + ~1)"},
+	{"-", "(~0 - ~1)"},
+	{"*", "(~0 * ~1)"},
+	{"/", "(~0 / ~1)"},
 };
 
 void print_node(FILE *fd, struct ast_node *n) {
