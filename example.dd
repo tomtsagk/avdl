@@ -1,6 +1,9 @@
-( echo "hello world" 5 "second string" )
-( echo "heya" 1335 )
+( echo "hello world" )
+
 ( int my_var )
 ( = my_var (+ 2 3) )
+
 (int another)
 (= another (* my_var 1))
+
+( echo "val: " my_var )
