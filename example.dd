@@ -7,3 +7,12 @@
 (= another (* my_var 1))
 
 ( echo "val: " my_var )
+
+( class world_main(group) (group
+	(int var1)
+	(function start (group)
+		(group
+			(sprite my_sprite "images/dd_logo.png")
+		)
+	)
+))

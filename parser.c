@@ -26,6 +26,18 @@ static struct command_translation translations[] = {
 	{"-", "(~0 - ~1)"},
 	{"*", "(~0 * ~1)"},
 	{"/", "(~0 / ~1)"},
+	{"group", "~n{ }"},
+	{"class", "var ~0 = function(~1) {\n"
+		"World.call(this);"
+		"this.assets = function() {\n"
+			"return [\"images/dd_logo.png\"];\n"
+		"}\n"
+		"~2"
+	"}\n"},
+	{"function", "this.~0 = function(~1) {\n~2}\n"},
+	{"sprite", "this.~0 = new PIXI.Sprite(PIXI.loader.resources[~1].texture);\n"
+		"app.stage.addChild(this.~0);\n"},
+
 };
 
 void print_node(FILE *fd, struct ast_node *n) {

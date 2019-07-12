@@ -33,6 +33,10 @@ char *keywords[] = {
 	"-",
 	"*",
 	"/",
+	"group",
+	"class",
+	"function",
+	"sprite",
 };
 
 // init data, parse, exit
