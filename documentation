@@ -1,0 +1,19 @@
+commands:
+
+(echo arg0 arg1 .. argN) - prints all arguments to standard output
+(int var opt_init) - initialise variable `var`, optionally initialise it with value `opt_init`
+(= var value) - assign `value` to `var`
+(+ arg0 arg1 .. argN) - add children together
+(- arg0 arg1 .. argN) - substract children together
+(* arg0 arg1 .. argN) - multiply children together
+(/ arg0 arg1 .. argN) - divine children together
+(group arg0 arg1 .. argN) - group commands together, useful to pass multiple commands
+	when another command expects only 1
+
+(function name arguments commands) - declare function `name`, with arguments `arguments` which calls `commands`
+	when executed
+
+(class name arguments components) - declare class `name`, with arguments `arguments`
+	and includes `components` (variables and functions)
+
+(sprite name texture) - create sprite `name` with texture `texture`

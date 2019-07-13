@@ -1,18 +1,18 @@
 ( echo "hello world" )
+( echo 5 2 4 6)
 
-( int my_var )
+( int my_var 2)
 ( = my_var (+ 2 3) )
 
-(int another)
-(= another (* my_var 1))
-
-( echo "val: " my_var )
-
 ( class world_main(group) (group
-	(int var1)
-	(function start (group)
-		(group
-			(sprite my_sprite "images/dd_logo.png")
-		)
-	)
+
+	#World.call(this)
+
+	(function assets(group) (group
+		#return ["images/dd_logo.png"];
+	))
+
+	(function start (group) (group
+		(sprite my_sprite "images/dd_logo.png")
+	))
 ))

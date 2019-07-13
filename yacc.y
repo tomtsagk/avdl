@@ -164,7 +164,7 @@ command:
 		/* command node
 		 */
 		struct ast_node *opt_args = ast_pop();
-		opt_args->node_type = AST_COMMAND;
+		opt_args->node_type = (strcmp(e->lexptr, "group") == 0? AST_GROUP : AST_COMMAND);
 		opt_args->value = $2;
 		ast_push(opt_args);
 	};

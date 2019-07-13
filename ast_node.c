@@ -60,17 +60,16 @@ void ast_print(struct ast_node *node) {
 
 	// Print actual node
 	char *type;
-	struct entry *e;
+	struct entry *e = symtable_entryat(node->value);
 	switch (node->node_type) {
 
 		case AST_GAME: printf("GAME"); break;
 		case AST_NUMBER: printf("NUMBER: %d", node->value); break;
 		case AST_STRING:
-			e = symtable_entryat(node->value);
 			printf("STRING: %s", e->lexptr);
 			break;
 		case AST_GROUP: printf("GROUP"); break;
-		case AST_COMMAND: printf("COMMAND"); break;
+		case AST_COMMAND: printf("COMMAND: %s", e->lexptr); break;
 
 		case AST_IDENTIFIER:
 			e = symtable_entryat(node->value);

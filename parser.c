@@ -18,27 +18,159 @@ struct command_translation {
 	char *translation;
 };
 
+void print_command(FILE *fd, struct ast_node *command);
+void print_echo(FILE *fd, struct ast_node *command);
+void print_definition(FILE *fd, struct ast_node *command);
+void print_operator_binary(FILE *fd, struct ast_node *command);
+void print_number(FILE *fd, struct ast_node *command);
+void print_function(FILE *fd, struct ast_node *command);
+void print_class(FILE *fd, struct ast_node *command);
+void print_sprite(FILE *fd, struct ast_node *command);
+
 static struct command_translation translations[] = {
-	{"echo", "console.log(~n{+});\n"},
-	{"int", "var ~0;\n"},
-	{"=", "~0 = ~1;\n"},
-	{"+", "(~0 + ~1)"},
-	{"-", "(~0 - ~1)"},
-	{"*", "(~0 * ~1)"},
-	{"/", "(~0 / ~1)"},
-	{"group", "~n{ }"},
-	{"class", "var ~0 = function(~1) {\n"
-		"World.call(this);"
-		"this.assets = function() {\n"
-			"return [\"images/dd_logo.png\"];\n"
-		"}\n"
-		"~2"
-	"}\n"},
-	{"function", "this.~0 = function(~1) {\n~2}\n"},
 	{"sprite", "this.~0 = new PIXI.Sprite(PIXI.loader.resources[~1].texture);\n"
 		"app.stage.addChild(this.~0);\n"},
 
 };
+
+void print_sprite(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "this.");
+
+	//name
+	struct ast_node *name = dd_da_get(&command->children, 0);
+	print_node(fd, name);
+
+	fprintf(fd, " = new PIXI.Sprite(PIXI.loader.resources[");
+
+	//texture
+	struct ast_node *tex = dd_da_get(&command->children, 1);
+	print_node(fd, tex);
+
+	fprintf(fd, "].texture);\n");
+	fprintf(fd, "eng.app.stage.addChild(this.");
+	print_node(fd, name);
+	fprintf(fd, ");\n");
+}
+
+void print_number(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "%d", command->value);
+}
+
+void print_operator_binary(FILE *fd, struct ast_node *command) {
+	struct entry *e = symtable_entryat(command->value);
+	struct ast_node *child1 = dd_da_get(&command->children, 0);
+	struct ast_node *child2 = dd_da_get(&command->children, 1);
+
+	print_node(fd, child1);
+	fprintf(fd, " %s ", e->lexptr);
+	print_node(fd, child2);
+}
+
+void print_definition(FILE *fd, struct ast_node *command) {
+	struct ast_node *varname = dd_da_get(&command->children, 0);
+	struct entry *e = symtable_entryat(varname->value);
+	fprintf(fd, "var %s", e->lexptr);
+	if (command->children.elements >= 2) {
+		fprintf(fd, " = ");
+		print_node(fd, dd_da_get(&command->children, 1));
+	}
+	fprintf(fd, ";\n");
+}
+
+/* find out which command it is, and call the right function
+ */
+void print_command(FILE *fd, struct ast_node *command) {
+	struct entry *e = symtable_entryat(command->value);
+	if (strcmp(e->lexptr, "echo") == 0) {
+		print_echo(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "int") == 0) {
+		print_definition(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "=") == 0) {
+		print_operator_binary(fd, command);
+		fprintf(fd, ";\n");
+	}
+	else
+	if (strcmp(e->lexptr, "+") == 0
+	||  strcmp(e->lexptr, "-") == 0
+	||  strcmp(e->lexptr, "*") == 0
+	||  strcmp(e->lexptr, "/") == 0) {
+		print_operator_binary(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "function") == 0) {
+		print_function(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "class") == 0) {
+		print_class(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "sprite") == 0) {
+		print_sprite(fd, command);
+	}
+}
+
+void print_echo(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "console.log(");
+	for (int i = 0; i < command->children.elements; i++) {
+		if (i > 0) {
+			fprintf(fd, " +");
+		}
+		print_node(fd, dd_da_get(&command->children, i));
+	}
+	fprintf(fd, ");\n");
+}
+
+void print_function(FILE *fd, struct ast_node *command) {
+	struct entry *e = symtable_entryat(command->value);
+
+	fprintf(fd, "this.");
+
+	//name
+	struct ast_node *name = dd_da_get(&command->children, 0);
+	print_node(fd, name);
+
+	fprintf(fd, " = function(");
+
+	//arguments
+	struct ast_node *arg = dd_da_get(&command->children, 1);
+	print_node(fd, arg);
+
+	fprintf(fd, ") {\n");
+
+	//commands
+	struct ast_node *cmd = dd_da_get(&command->children, 2);
+	print_node(fd, cmd);
+
+	fprintf(fd, "};\n");
+
+}
+
+void print_class(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "var ");
+
+	//name
+	struct ast_node *name = dd_da_get(&command->children, 0);
+	print_node(fd, name);
+
+	fprintf(fd, " = function(");
+
+	//arguments
+	struct ast_node *arg = dd_da_get(&command->children, 1);
+	print_node(fd, arg);
+
+	fprintf(fd, ") {\n");
+
+	//components
+	struct ast_node *cmn = dd_da_get(&command->children, 2);
+	print_node(fd, cmn);
+
+	fprintf(fd, "}\n");
+}
 
 void print_node(FILE *fd, struct ast_node *n) {
 	switch (n->node_type) {
@@ -50,77 +182,11 @@ void print_node(FILE *fd, struct ast_node *n) {
 			break;
 		case AST_COMMAND: {
 			struct entry *e = symtable_entryat(n->value);
-
-			for (int i = 0; i < sizeof(translations) /sizeof(struct command_translation); i++) {
-
-				if (strcmp(e->lexptr, translations[i].command) == 0) {
-
-					char *translation = translations[i].translation;
-
-					buffer[0] = '\0';
-					char *sub;
-					do {
-						// found argument
-						sub = strchr(translation, '~');
-						if (sub) {
-
-							// add everything so far to the buffer
-							strncat(buffer, translation, sub -translation);
-							fprintf(fd, buffer);
-							buffer[0] = '\0';
-
-							// parse argument
-							sub++;
-
-							// print everything
-							if (sub[0] == 'n') {
-								sub++;
-								int start = 0;
-								int end = n->children.elements;
-								if (sscanf(sub, "%d-%d")) {
-									start = atoi(sub);
-									while(sub[0] >= '0' && sub[0] <= '9') sub++;
-									sub++;
-									end = atoi(sub);
-									while(sub[0] >= '0' && sub[0] <= '9') sub++;
-								}
-
-								char between = ' ';
-								if (sscanf(sub, "{%c}", &between)) {
-									sub = sub +3;
-								}
-
-								for (int i = start; i < end; i++) {
-									if (i != start) {
-										fprintf(fd, "%c", between);
-									}
-									print_node(fd, dd_da_get(&n->children, i));
-								}
-
-							}
-							// single number argument
-							else {
-
-								int arg = atoi(sub);
-
-								// remove argument from string
-								while(sub[0] >= '0' && sub[0] <= '9') sub++;
-
-								// call argument, to fill in the blanks
-								print_node(fd, dd_da_get(&n->children, arg));
-							}
-
-							translation = sub;
-						}
-					} while (sub);
-					fprintf(fd, translation);
-					break;
-				}
-			}
+			print_command(fd, n);
 			break;
 		}
 		case AST_NUMBER: {
-			fprintf(fd, "%d", n->value);
+			print_number(fd, n);
 			break;
 		}
 		case AST_STRING: {
@@ -139,6 +205,8 @@ void print_node(FILE *fd, struct ast_node *n) {
 // responsible for creating a file and translating ast to target language
 void parse_javascript(const char *filename, struct ast_node *n) {
 	fd_global = fopen(filename, "w");
+	fprintf(fd_global, "var eng;\n");
 	print_node(fd_global, n);
+	fprintf(fd_global, "eng = new engine(world_main);\n");
 	fclose(fd_global);
 }
