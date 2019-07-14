@@ -29,15 +29,7 @@ void print_sprite(FILE *fd, struct ast_node *command);
 void print_return(FILE *fd, struct ast_node *command);
 void print_array(FILE *fd, struct ast_node *command);
 
-static struct command_translation translations[] = {
-	{"sprite", "this.~0 = new PIXI.Sprite(PIXI.loader.resources[~1].texture);\n"
-		"app.stage.addChild(this.~0);\n"},
-
-};
-
 void print_sprite(FILE *fd, struct ast_node *command) {
-	fprintf(fd, "this.");
-
 	//name
 	struct ast_node *name = dd_da_get(&command->children, 0);
 	print_node(fd, name);
@@ -49,7 +41,7 @@ void print_sprite(FILE *fd, struct ast_node *command) {
 	print_node(fd, tex);
 
 	fprintf(fd, "].texture);\n");
-	fprintf(fd, "eng.app.stage.addChild(this.");
+	fprintf(fd, "eng.app.stage.addChild(");
 	print_node(fd, name);
 	fprintf(fd, ");\n");
 }
@@ -61,11 +53,14 @@ void print_number(FILE *fd, struct ast_node *command) {
 void print_operator_binary(FILE *fd, struct ast_node *command) {
 	struct entry *e = symtable_entryat(command->value);
 	struct ast_node *child1 = dd_da_get(&command->children, 0);
-	struct ast_node *child2 = dd_da_get(&command->children, 1);
 
 	print_node(fd, child1);
-	fprintf(fd, " %s ", e->lexptr);
-	print_node(fd, child2);
+
+	for (int i = 1; i < command->children.elements; i++) {
+		fprintf(fd, " %s ", e->lexptr);
+		struct ast_node *child2 = dd_da_get(&command->children, i);
+		print_node(fd, child2);
+	}
 }
 
 void print_definition(FILE *fd, struct ast_node *command) {
