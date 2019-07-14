@@ -26,6 +26,8 @@ void print_number(FILE *fd, struct ast_node *command);
 void print_function(FILE *fd, struct ast_node *command);
 void print_class(FILE *fd, struct ast_node *command);
 void print_sprite(FILE *fd, struct ast_node *command);
+void print_return(FILE *fd, struct ast_node *command);
+void print_array(FILE *fd, struct ast_node *command);
 
 static struct command_translation translations[] = {
 	{"sprite", "this.~0 = new PIXI.Sprite(PIXI.loader.resources[~1].texture);\n"
@@ -112,6 +114,14 @@ void print_command(FILE *fd, struct ast_node *command) {
 	if (strcmp(e->lexptr, "sprite") == 0) {
 		print_sprite(fd, command);
 	}
+	else
+	if (strcmp(e->lexptr, "return") == 0) {
+		print_return(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "array") == 0) {
+		print_array(fd, command);
+	}
 }
 
 void print_echo(FILE *fd, struct ast_node *command) {
@@ -153,23 +163,51 @@ void print_function(FILE *fd, struct ast_node *command) {
 void print_class(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "var ");
 
-	//name
+	// name
 	struct ast_node *name = dd_da_get(&command->children, 0);
 	print_node(fd, name);
 
-	fprintf(fd, " = function(");
+	fprintf(fd, " = function() {\n");
 
-	//arguments
-	struct ast_node *arg = dd_da_get(&command->children, 1);
-	print_node(fd, arg);
-
-	fprintf(fd, ") {\n");
+	// subclass
+	struct ast_node *subclass = dd_da_get(&command->children, 1);
+	struct entry *subentry = symtable_entryat(subclass->value);
+	fprintf(fd, "%s.call(this);\n", subentry->lexptr);
 
 	//components
 	struct ast_node *cmn = dd_da_get(&command->children, 2);
 	print_node(fd, cmn);
 
 	fprintf(fd, "}\n");
+}
+
+void print_return(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "return ");
+	for (int i = 0; i < command->children.elements; i++) {
+		print_node(fd, dd_da_get(&command->children, i));
+	}
+	fprintf(fd, ";\n");
+}
+
+void print_array(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "[\n");
+	for (int i = 0; i < command->children.elements; i++) {
+		if (i != 0) {
+			fprintf(fd, ",\n");
+		}
+		print_node(fd, dd_da_get(&command->children, i));
+	}
+	fprintf(fd, "]");
+}
+
+void print_identifier(FILE *fd, struct ast_node *command) {
+	struct entry *e = symtable_entryat(command->value);
+	fprintf(fd, "%s", e->lexptr);
+
+	for (int i = 0; i < command->children.elements; i++) {
+		fprintf(fd, ".");
+		print_node(fd, dd_da_get(&command->children, i));
+	}
 }
 
 void print_node(FILE *fd, struct ast_node *n) {
@@ -195,8 +233,7 @@ void print_node(FILE *fd, struct ast_node *n) {
 			break;
 		}
 		case AST_IDENTIFIER: {
-			struct entry *e = symtable_entryat(n->value);
-			fprintf(fd, "%s", e->lexptr);
+			print_identifier(fd, n);
 			break;
 		}
 	}

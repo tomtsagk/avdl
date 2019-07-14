@@ -37,6 +37,8 @@ char *keywords[] = {
 	"class",
 	"function",
 	"sprite",
+	"return",
+	"array",
 };
 
 // init data, parse, exit
@@ -198,9 +200,8 @@ arg:
 		ast_push(n);
 	}
 	|
-	DD_CONSTANT_SYMBOL {
-		struct entry *e = symtable_entryat($1);
-		struct ast_node *n = ast_create(AST_IDENTIFIER, $1);
+	identifier {
+		struct ast_node *n = ast_pop();
 		ast_push(n);
 	}
 	|
@@ -211,4 +212,18 @@ keyword:
 	DD_CONSTANT_SYMBOL
 	|
 	DD_CONSTANT_CHARACTER
+	;
+
+identifier:
+	DD_CONSTANT_SYMBOL {
+		struct ast_node *n = ast_create(AST_IDENTIFIER, $1);
+		ast_push(n);
+	}
+	|
+	identifier '.' DD_CONSTANT_SYMBOL {
+		struct ast_node *new = ast_create(AST_IDENTIFIER, $3);
+		struct ast_node *group = ast_pop();
+		ast_child_add(group, new);
+		ast_push(group);
+	}
 	;

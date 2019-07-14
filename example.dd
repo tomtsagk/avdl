@@ -1,18 +1,11 @@
-( echo "hello world" )
-( echo 5 2 4 6)
-
-( int my_var 2)
-( = my_var (+ 2 3) )
-
-( class world_main(group) (group
-
-	#World.call(this)
+( class world_main World (group
 
 	(function assets(group) (group
-		#return ["images/dd_logo.png"];
+		(return (array "images/dd_logo.png"))
 	))
 
 	(function start (group) (group
 		(sprite my_sprite "images/dd_logo.png")
+		(= this.my_sprite.x 100)
 	))
 ))

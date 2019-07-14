@@ -13,7 +13,10 @@ commands:
 (function name arguments commands) - declare function `name`, with arguments `arguments` which calls `commands`
 	when executed
 
-(class name arguments components) - declare class `name`, with arguments `arguments`
+(class name subclass components) - declare class `name`, subclass of `subclass`
 	and includes `components` (variables and functions)
 
 (sprite name texture) - create sprite `name` with texture `texture`
+
+(return arg0) - return `arg0` from a function
+(array arg0 arg1 .. argN) - create an array containing all children
