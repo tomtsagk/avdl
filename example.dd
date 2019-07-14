@@ -5,7 +5,34 @@
 	))
 
 	(function start (group) (group
-		(sprite my_sprite "images/dd_logo.png")
-		(= this.my_sprite.x 100)
+		(= this.padding 10)
+
+		# top left
+		(sprite tpLeft "images/dd_logo.png")
+		(= this.tpLeft.width  50)
+		(= this.tpLeft.height 50)
+		(= this.tpLeft.x this.padding)
+		(= this.tpLeft.y this.padding)
+
+		# bottom left
+		(sprite btmLeft "images/dd_logo.png")
+		(= this.btmLeft.width  50)
+		(= this.btmLeft.height 50)
+		(= this.btmLeft.x this.padding)
+		(= this.btmLeft.y (- (- eng.height this.btmLeft.height) this.padding))
+
+		# top right
+		(sprite tpRight "images/dd_logo.png")
+		(= this.tpRight.width  50)
+		(= this.tpRight.height 50)
+		(= this.tpRight.x (-(- eng.width this.tpRight.width) this.padding))
+		(= this.tpRight.y this.padding)
+
+		# bottom right
+		(sprite btmRight "images/dd_logo.png")
+		(= this.btmRight.width  50)
+		(= this.btmRight.height 50)
+		(= this.btmRight.x (-(- eng.width this.btmRight.width) this.padding))
+		(= this.btmRight.y (-(- eng.height this.btmRight.height) this.padding))
 	))
 ))
