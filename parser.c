@@ -52,13 +52,13 @@ void print_sprite(FILE *fd, struct ast_node *command) {
 	struct ast_node *name = dd_da_get(&command->children, 0);
 	print_node(fd, name);
 
-	fprintf(fd, " = new PIXI.Sprite(PIXI.loader.resources[");
+	fprintf(fd, " = new dd_sprite(");
 
 	//texture
 	struct ast_node *tex = dd_da_get(&command->children, 1);
 	print_node(fd, tex);
 
-	fprintf(fd, "].texture);\n");
+	fprintf(fd, ");\n");
 	fprintf(fd, "eng.app.stage.addChild(");
 	print_node(fd, name);
 	fprintf(fd, ");\n");
@@ -82,9 +82,8 @@ void print_operator_binary(FILE *fd, struct ast_node *command) {
 }
 
 void print_definition(FILE *fd, struct ast_node *command) {
-	struct ast_node *varname = dd_da_get(&command->children, 0);
-	struct entry *e = symtable_entryat(varname->value);
-	fprintf(fd, "var %s", e->lexptr);
+	fprintf(fd, "var ");
+	print_node(fd, dd_da_get(&command->children, 0));
 	if (command->children.elements >= 2) {
 		fprintf(fd, " = ");
 		print_node(fd, dd_da_get(&command->children, 1));
