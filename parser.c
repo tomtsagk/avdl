@@ -28,6 +28,24 @@ void print_class(FILE *fd, struct ast_node *command);
 void print_sprite(FILE *fd, struct ast_node *command);
 void print_return(FILE *fd, struct ast_node *command);
 void print_array(FILE *fd, struct ast_node *command);
+void print_func(FILE *fd, struct ast_node *command);
+void print_identifier(FILE *fd, struct ast_node *command);
+
+void print_func(FILE *fd, struct ast_node *command) {
+	print_node(fd, dd_da_get(&command->children, 0));
+	fprintf(fd, "(");
+
+	for (int i = 1; i < command->children.elements; i++) {
+		if (i != 1) {
+			fprintf(fd, ", ");
+		}
+		struct ast_node *child = dd_da_get(&command->children, i);
+		print_node(fd, child);
+	}
+
+	fprintf(fd, ");\n");
+
+}
 
 void print_sprite(FILE *fd, struct ast_node *command) {
 	//name
@@ -229,6 +247,10 @@ void print_node(FILE *fd, struct ast_node *n) {
 		}
 		case AST_IDENTIFIER: {
 			print_identifier(fd, n);
+			break;
+		}
+		case AST_FUNCTION: {
+			print_func(fd, n);
 			break;
 		}
 	}

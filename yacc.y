@@ -153,21 +153,31 @@ commands:
  */
 command:
 	'(' keyword optional_args ')' {
-		struct entry *e = symtable_entryat($2);
+
+		struct ast_node *opt_args = ast_pop();
+		struct ast_node *keyword = ast_pop();
+		struct entry *e = symtable_entryat(keyword->value);
+		int type = AST_COMMAND;
 		if (e->token == DD_KEYWORD) {
     			//printf("keyword symbol: %s\n", e->lexptr);
+			if (strcmp(e->lexptr, "group") == 0) {
+				type = AST_GROUP;
+			}
 		}
 		else {
 			sprintf(buffer, "not a keyword: '%s'", e->lexptr);
-			yyerror(buffer);
+			type = AST_FUNCTION;
+			//yyerror(buffer);
 	    		//printf("error symbol not keyword: %s\n", e->lexptr);
 		}
 
 		/* command node
 		 */
-		struct ast_node *opt_args = ast_pop();
-		opt_args->node_type = (strcmp(e->lexptr, "group") == 0? AST_GROUP : AST_COMMAND);
+		opt_args->node_type = type;
 		opt_args->value = $2;
+		if (type == AST_FUNCTION) {
+			ast_child_add_first(opt_args, keyword);
+		}
 		ast_push(opt_args);
 	};
 
@@ -209,9 +219,11 @@ arg:
 	;
 
 keyword:
-	DD_CONSTANT_SYMBOL
+	identifier
 	|
-	DD_CONSTANT_CHARACTER
+	DD_CONSTANT_CHARACTER {
+		ast_push(ast_create(AST_EMPTY, $1));
+	}
 	;
 
 identifier:

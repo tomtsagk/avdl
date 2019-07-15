@@ -1,3 +1,7 @@
+(function button_start (group) (group
+	(echo "button start func")
+))
+
 ( class world_main World (group
 
 	(function assets(group) (group
@@ -11,6 +15,8 @@
 		(sprite this.tpLeft "images/dd_logo.png")
 		(= this.tpLeft.width  50)
 		(= this.tpLeft.height 50)
+		(this.tpLeft.on "pointerdown" button_start)
+		(= this.tpLeft.interactive true)
 
 		# bottom left
 		(sprite this.btmLeft "images/dd_logo.png")
