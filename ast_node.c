@@ -69,7 +69,8 @@ void ast_print(struct ast_node *node) {
 			printf("STRING: %s", e->lexptr);
 			break;
 		case AST_GROUP: printf("GROUP"); break;
-		case AST_COMMAND: printf("COMMAND: %s", e->lexptr); break;
+		case AST_COMMAND_NATIVE: printf("COMMAND NATIVE: %s", e->lexptr); break;
+		case AST_COMMAND_CUSTOM: printf("COMMAND CUSTOM:"); break;
 
 		case AST_IDENTIFIER:
 			e = symtable_entryat(node->value);

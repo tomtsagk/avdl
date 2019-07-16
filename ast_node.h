@@ -19,9 +19,9 @@ enum AST_NODE_TYPE {
 
 	AST_EMPTY,
 
-	AST_COMMAND,
 	AST_GROUP,
-	AST_FUNCTION,
+	AST_COMMAND_NATIVE,
+	AST_COMMAND_CUSTOM,
 
 	/* variables - contain children that go through the struct hierarchy
 	 * example "this.x" results in a node AST_IDENTIFIER that points to the struct of "this" and

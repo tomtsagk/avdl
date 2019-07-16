@@ -198,5 +198,6 @@ void dd_da_free(struct dd_dynamic_array *da) {
 
 /* Get element */
 void *dd_da_get(struct dd_dynamic_array *da, unsigned int element) {
+	if (element >= da->elements) return 0;
 	return ((char*)da->array) +(element *da->element_size);
 }

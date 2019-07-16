@@ -44,8 +44,25 @@ char *keywords[] = {
 // init data, parse, exit
 int main(int argc, char *argv[])
 {
-	if (argc <= 1) {
-		printf("arg 1 should be output file\n");
+	/* tweakable data
+	 */
+	int show_ast = 0;
+	char *filename = 0;
+
+	// parse arguments
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "--print-ast") == 0) {
+			show_ast = 1;
+		}
+		else
+		if (!filename) {
+			filename = argv[i];
+		}
+	}
+
+	// make sure the minimum to parse exists
+	if (!filename) {
+		printf("no filename given\n");
 		return -1;
 	}
 
@@ -84,17 +101,21 @@ int main(int argc, char *argv[])
         yyparse();
 
 	// parse resulting ast tree to a file
-	parse_javascript(argv[1], game_node);
+	parse_javascript(filename, game_node);
 
 	//struct_print();
 
 	// print debug data and clean everything
 	/*
 	symtable_print();
-	symtable_clean();
-
 	*/
-	ast_print(game_node);
+
+	if (show_ast) {
+		ast_print(game_node);
+	}
+
+	// clean symtable and ast tree
+	symtable_clean();
 	ast_delete(game_node);
 
 	// success!
@@ -103,8 +124,10 @@ int main(int argc, char *argv[])
 
 %}
 
+// nothingness
 %token DD_ZERO
 
+// used for the languages keywords
 %token DD_KEYWORD
 
 /* constants */
@@ -152,31 +175,40 @@ commands:
  * has a keyword and optional arguments
  */
 command:
-	'(' keyword optional_args ')' {
+	'(' cmd_name optional_args ')' {
 
+		// get nodes
 		struct ast_node *opt_args = ast_pop();
-		struct ast_node *keyword = ast_pop();
-		struct entry *e = symtable_entryat(keyword->value);
-		int type = AST_COMMAND;
+		struct ast_node *cmd_name = ast_pop();
+
+		// find out if keyword is an native keyword or a custom one
+		struct entry *e = symtable_entryat(cmd_name->value);
+		int type;
 		if (e->token == DD_KEYWORD) {
     			//printf("keyword symbol: %s\n", e->lexptr);
 			if (strcmp(e->lexptr, "group") == 0) {
 				type = AST_GROUP;
 			}
+			else {
+				type = AST_COMMAND_NATIVE;
+			}
 		}
+		// not a native keyword, assume custom one
 		else {
 			sprintf(buffer, "not a keyword: '%s'", e->lexptr);
-			type = AST_FUNCTION;
+			type = AST_COMMAND_CUSTOM;
 			//yyerror(buffer);
 	    		//printf("error symbol not keyword: %s\n", e->lexptr);
 		}
 
 		/* command node
+		 * construct it in such a way that the parent ast node is the command
+		 * if a custom command, then first child is its name
 		 */
 		opt_args->node_type = type;
 		opt_args->value = $2;
-		if (type == AST_FUNCTION) {
-			ast_child_add_first(opt_args, keyword);
+		if (type == AST_COMMAND_CUSTOM) {
+			ast_child_add_first(opt_args, cmd_name);
 		}
 		ast_push(opt_args);
 	};
@@ -218,7 +250,10 @@ arg:
 	command
 	;
 
-keyword:
+/* command name
+ * can be either one character or an identifier (chain of symbols)
+ */
+cmd_name:
 	identifier
 	|
 	DD_CONSTANT_CHARACTER {
@@ -226,6 +261,10 @@ keyword:
 	}
 	;
 
+/* identifier
+ * can be a chain of symbols (chains with '.')
+ * example: this.my_obj.x
+ */
 identifier:
 	DD_CONSTANT_SYMBOL {
 		struct ast_node *n = ast_create(AST_IDENTIFIER, $1);

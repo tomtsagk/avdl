@@ -2,15 +2,18 @@
 	(echo "button start func")
 ))
 
+# main class
 ( class world_main World (group
 
+	# padding
+	(int padding 10)
+
+	# assets
 	(function assets(group) (group
 		(return (array "images/dd_logo.png"))
 	))
 
 	(function start (group) (group
-		(= this.padding 10)
-
 		# top left
 		(sprite this.tpLeft "images/dd_logo.png")
 		(= this.tpLeft.width  50)
@@ -35,16 +38,16 @@
 	))
 
 	(function resize (group) (group
-		(= this.tpLeft.x this.padding)
-		(= this.tpLeft.y this.padding)
+		(= this.tpLeft.x padding)
+		(= this.tpLeft.y padding)
 
-		(= this.btmLeft.x this.padding)
-		(= this.btmLeft.y (- eng.height this.btmLeft.height this.padding))
+		(= this.btmLeft.x padding)
+		(= this.btmLeft.y (- eng.height this.btmLeft.height padding))
 
-		(= this.tpRight.x (- eng.width this.tpRight.width this.padding))
-		(= this.tpRight.y this.padding)
+		(= this.tpRight.x (- eng.width this.tpRight.width padding))
+		(= this.tpRight.y padding)
 
-		(= this.btmRight.x (- eng.width  this.btmRight.width  this.padding))
-		(= this.btmRight.y (- eng.height this.btmRight.height this.padding))
+		(= this.btmRight.x (- eng.width  this.btmRight.width  padding))
+		(= this.btmRight.y (- eng.height this.btmRight.height padding))
 	))
 ))

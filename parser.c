@@ -28,10 +28,10 @@ void print_class(FILE *fd, struct ast_node *command);
 void print_sprite(FILE *fd, struct ast_node *command);
 void print_return(FILE *fd, struct ast_node *command);
 void print_array(FILE *fd, struct ast_node *command);
-void print_func(FILE *fd, struct ast_node *command);
+void print_function_call(FILE *fd, struct ast_node *command);
 void print_identifier(FILE *fd, struct ast_node *command);
 
-void print_func(FILE *fd, struct ast_node *command) {
+void print_function_call(FILE *fd, struct ast_node *command) {
 	print_node(fd, dd_da_get(&command->children, 0));
 	fprintf(fd, "(");
 
@@ -230,9 +230,13 @@ void print_node(FILE *fd, struct ast_node *n) {
 				print_node(fd, dd_da_get(&n->children, i));
 			}
 			break;
-		case AST_COMMAND: {
+		case AST_COMMAND_NATIVE: {
 			struct entry *e = symtable_entryat(n->value);
 			print_command(fd, n);
+			break;
+		}
+		case AST_COMMAND_CUSTOM: {
+			print_function_call(fd, n);
 			break;
 		}
 		case AST_NUMBER: {
@@ -246,10 +250,6 @@ void print_node(FILE *fd, struct ast_node *n) {
 		}
 		case AST_IDENTIFIER: {
 			print_identifier(fd, n);
-			break;
-		}
-		case AST_FUNCTION: {
-			print_func(fd, n);
 			break;
 		}
 	}
