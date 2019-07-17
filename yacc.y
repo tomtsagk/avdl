@@ -27,7 +27,7 @@ struct ast_node *game_node;
 
 char *keywords[] = {
 	"echo",
-	"int",
+	"def",
 	"=",
 	"+",
 	"-",
@@ -36,9 +36,9 @@ char *keywords[] = {
 	"group",
 	"class",
 	"function",
-	"sprite",
 	"return",
 	"array",
+	"new",
 };
 
 // init data, parse, exit

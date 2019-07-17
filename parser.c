@@ -25,11 +25,24 @@ void print_operator_binary(FILE *fd, struct ast_node *command);
 void print_number(FILE *fd, struct ast_node *command);
 void print_function(FILE *fd, struct ast_node *command);
 void print_class(FILE *fd, struct ast_node *command);
-void print_sprite(FILE *fd, struct ast_node *command);
 void print_return(FILE *fd, struct ast_node *command);
 void print_array(FILE *fd, struct ast_node *command);
 void print_function_call(FILE *fd, struct ast_node *command);
 void print_identifier(FILE *fd, struct ast_node *command);
+void print_new(FILE *fd, struct ast_node *command);
+
+void print_new(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "new ");
+	print_node(fd, dd_da_get(&command->children, 0));
+	fprintf(fd, "(");
+	for (int i = 1; i < command->children.elements; i++) {
+		if (i != 1) {
+			fprintf(fd, ", ");
+		}
+		print_node(fd, dd_da_get(&command->children, i));
+	}
+	fprintf(fd, ")");
+}
 
 void print_function_call(FILE *fd, struct ast_node *command) {
 	print_node(fd, dd_da_get(&command->children, 0));
@@ -45,23 +58,6 @@ void print_function_call(FILE *fd, struct ast_node *command) {
 
 	fprintf(fd, ");\n");
 
-}
-
-void print_sprite(FILE *fd, struct ast_node *command) {
-	//name
-	struct ast_node *name = dd_da_get(&command->children, 0);
-	print_node(fd, name);
-
-	fprintf(fd, " = new dd_sprite(");
-
-	//texture
-	struct ast_node *tex = dd_da_get(&command->children, 1);
-	print_node(fd, tex);
-
-	fprintf(fd, ");\n");
-	fprintf(fd, "eng.app.stage.addChild(");
-	print_node(fd, name);
-	fprintf(fd, ");\n");
 }
 
 void print_number(FILE *fd, struct ast_node *command) {
@@ -82,11 +78,17 @@ void print_operator_binary(FILE *fd, struct ast_node *command) {
 }
 
 void print_definition(FILE *fd, struct ast_node *command) {
-	fprintf(fd, "var ");
-	print_node(fd, dd_da_get(&command->children, 0));
-	if (command->children.elements >= 2) {
+	struct ast_node *varname = dd_da_get(&command->children, 1);
+
+	// if definition has children (like `this.x`) don't use `var`
+	if (varname->children.elements == 0) {
+		fprintf(fd, "var ");
+	}
+
+	print_node(fd, varname);
+	if (command->children.elements >= 3) {
 		fprintf(fd, " = ");
-		print_node(fd, dd_da_get(&command->children, 1));
+		print_node(fd, dd_da_get(&command->children, 2));
 	}
 	fprintf(fd, ";\n");
 }
@@ -99,8 +101,12 @@ void print_command(FILE *fd, struct ast_node *command) {
 		print_echo(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "int") == 0) {
+	if (strcmp(e->lexptr, "def") == 0) {
 		print_definition(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "new") == 0) {
+		print_new(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "=") == 0) {
@@ -121,10 +127,6 @@ void print_command(FILE *fd, struct ast_node *command) {
 	else
 	if (strcmp(e->lexptr, "class") == 0) {
 		print_class(fd, command);
-	}
-	else
-	if (strcmp(e->lexptr, "sprite") == 0) {
-		print_sprite(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "return") == 0) {

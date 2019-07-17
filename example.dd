@@ -6,7 +6,7 @@
 ( class world_main World (group
 
 	# padding
-	(int padding 10)
+	(def int padding 10)
 
 	# assets
 	(function assets(group) (group
@@ -14,27 +14,32 @@
 	))
 
 	(function start (group) (group
+
 		# top left
-		(sprite this.tpLeft "images/dd_logo.png")
+		(def dd_sprite this.tpLeft (new dd_sprite "images/dd_logo.png"))
 		(= this.tpLeft.width  50)
 		(= this.tpLeft.height 50)
 		(this.tpLeft.on "pointerdown" button_start)
 		(= this.tpLeft.interactive true)
+		(eng.app.stage.addChild this.tpLeft)
 
 		# bottom left
-		(sprite this.btmLeft "images/dd_logo.png")
+		(def dd_sprite this.btmLeft (new dd_sprite "images/dd_logo.png"))
 		(= this.btmLeft.width  50)
 		(= this.btmLeft.height 50)
+		(eng.app.stage.addChild this.btmLeft)
 
 		# top right
-		(sprite this.tpRight "images/dd_logo.png")
+		(def sprite this.tpRight (new dd_sprite "images/dd_logo.png"))
 		(= this.tpRight.width  50)
 		(= this.tpRight.height 50)
+		(eng.app.stage.addChild this.tpRight)
 
 		# bottom right
-		(sprite this.btmRight "images/dd_logo.png")
+		(def sprite this.btmRight (new dd_sprite "images/dd_logo.png"))
 		(= this.btmRight.width  50)
 		(= this.btmRight.height 50)
+		(eng.app.stage.addChild this.btmRight)
 	))
 
 	(function resize (group) (group
