@@ -33,12 +33,18 @@ char *keywords[] = {
 	"-",
 	"*",
 	"/",
+	">=",
+	"==",
+	"<=",
+	"<",
+	">",
 	"group",
 	"class",
 	"function",
 	"return",
 	"array",
 	"new",
+	"if",
 };
 
 // init data, parse, exit
@@ -131,7 +137,7 @@ int main(int argc, char *argv[])
 %token DD_KEYWORD
 
 /* constants */
-%token DD_CONSTANT_SYMBOL DD_CONSTANT_STRING DD_CONSTANT_NUMBER DD_CONSTANT_CHARACTER
+%token DD_CONSTANT_SYMBOL DD_CONSTANT_STRING DD_CONSTANT_NUMBER
 
 %%
 
@@ -255,10 +261,6 @@ arg:
  */
 cmd_name:
 	identifier
-	|
-	DD_CONSTANT_CHARACTER {
-		ast_push(ast_create(AST_EMPTY, $1));
-	}
 	;
 
 /* identifier

@@ -30,6 +30,15 @@ void print_array(FILE *fd, struct ast_node *command);
 void print_function_call(FILE *fd, struct ast_node *command);
 void print_identifier(FILE *fd, struct ast_node *command);
 void print_new(FILE *fd, struct ast_node *command);
+void print_if(FILE *fd, struct ast_node *command);
+
+void print_if(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "if (");
+	print_node(fd, dd_da_get(&command->children, 0));
+	fprintf(fd, ") {\n");
+	print_node(fd, dd_da_get(&command->children, 1));
+	fprintf(fd, "}\n");
+}
 
 void print_new(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "new ");
@@ -117,7 +126,12 @@ void print_command(FILE *fd, struct ast_node *command) {
 	if (strcmp(e->lexptr, "+") == 0
 	||  strcmp(e->lexptr, "-") == 0
 	||  strcmp(e->lexptr, "*") == 0
-	||  strcmp(e->lexptr, "/") == 0) {
+	||  strcmp(e->lexptr, "/") == 0
+	||  strcmp(e->lexptr, ">=") == 0
+	||  strcmp(e->lexptr, "==") == 0
+	||  strcmp(e->lexptr, "<=") == 0
+	||  strcmp(e->lexptr, "<") == 0
+	||  strcmp(e->lexptr, ">") == 0) {
 		print_operator_binary(fd, command);
 	}
 	else
@@ -135,6 +149,10 @@ void print_command(FILE *fd, struct ast_node *command) {
 	else
 	if (strcmp(e->lexptr, "array") == 0) {
 		print_array(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "if") == 0) {
+		print_if(fd, command);
 	}
 }
 
@@ -260,8 +278,8 @@ void print_node(FILE *fd, struct ast_node *n) {
 // responsible for creating a file and translating ast to target language
 void parse_javascript(const char *filename, struct ast_node *n) {
 	fd_global = fopen(filename, "w");
-	fprintf(fd_global, "var eng;\n");
+	fprintf(fd_global, "var eng = new engine();\n");
 	print_node(fd_global, n);
-	fprintf(fd_global, "eng = new engine(world_main);\n");
+	fprintf(fd_global, "eng.setWorld(world_main);\n");
 	fclose(fd_global);
 }

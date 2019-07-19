@@ -2,18 +2,35 @@
 	(echo "button start func")
 ))
 
+(echo (> 5 3))
+
 # main class
 ( class world_main World (group
 
 	# padding
 	(def int padding 10)
 
-	# assets
-	(function assets(group) (group
-		(return (array "images/dd_logo.png"))
+	(def dd_point p (new dd_point 0 0))
+	(def dd_point p1 (new dd_point eng.width 0))
+	(def dd_point p2 (new dd_point 0 eng.height))
+	(def dd_point p3 (new dd_point eng.width eng.height))
+
+	(def dd_sprite player)
+	(def int target 0)
+
+	(function update (group) (group
+		(= player.x (+ player.x 1))
+		(if (> player.x 100) (= player.x 0))
 	))
 
 	(function start (group) (group
+
+		(= player (new dd_sprite "images/dd_logo.png"))
+		(this.container.addChild player)
+
+		# init player
+		# moving to first position
+		# when done move to next position
 
 		# top left
 		(def dd_sprite this.tpLeft (new dd_sprite "images/dd_logo.png"))
@@ -21,25 +38,25 @@
 		(= this.tpLeft.height 50)
 		(this.tpLeft.on "pointerdown" button_start)
 		(= this.tpLeft.interactive true)
-		(eng.app.stage.addChild this.tpLeft)
+		(this.container.addChild this.tpLeft)
 
 		# bottom left
 		(def dd_sprite this.btmLeft (new dd_sprite "images/dd_logo.png"))
 		(= this.btmLeft.width  50)
 		(= this.btmLeft.height 50)
-		(eng.app.stage.addChild this.btmLeft)
+		(this.container.addChild this.btmLeft)
 
 		# top right
 		(def sprite this.tpRight (new dd_sprite "images/dd_logo.png"))
 		(= this.tpRight.width  50)
 		(= this.tpRight.height 50)
-		(eng.app.stage.addChild this.tpRight)
+		(this.container.addChild this.tpRight)
 
 		# bottom right
 		(def sprite this.btmRight (new dd_sprite "images/dd_logo.png"))
 		(= this.btmRight.width  50)
 		(= this.btmRight.height 50)
-		(eng.app.stage.addChild this.btmRight)
+		(this.container.addChild this.btmRight)
 	))
 
 	(function resize (group) (group
@@ -55,4 +72,10 @@
 		(= this.btmRight.x (- eng.width  this.btmRight.width  padding))
 		(= this.btmRight.y (- eng.height this.btmRight.height padding))
 	))
+
+	# assets
+	(function assets(group) (group
+		(return (array "images/dd_logo.png"))
+	))
+
 ))

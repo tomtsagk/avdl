@@ -6,7 +6,7 @@ extern int yylex();
 int linenum = 1;
 %}
 
-symbol [a-zA-Z][a-zA-Z0-9_]*
+symbol [-=+<>*/a-zA-Z][-=+<>*/a-zA-Z0-9_]*
 number [0-9]+
 
 %option noyywrap
@@ -30,7 +30,6 @@ number [0-9]+
 }
 
  /* pass-through symbols */
-[-/*=+><]	{ yylval = symtable_insert(yytext, yytext[0]); return DD_CONSTANT_CHARACTER; }
 [()\.]		{ return yytext[0]; }
 
  /* ignore whitespace */
