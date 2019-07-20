@@ -11,19 +11,21 @@
 	# targets
 	(def dd_point p (new dd_point 0 0))
 	(def dd_point p1 (new dd_point eng.width 0))
-	(def dd_point p2 (new dd_point 0 eng.height))
-	(def dd_point p3 (new dd_point eng.width eng.height))
+	(def dd_point p2 (new dd_point eng.width eng.height))
+	(def dd_point p3 (new dd_point 0 eng.height))
 
 	# player
 	(def dd_sprite player)
 	(def dd_point target p)
 
+	(function input (group) (this.nextTarget))
+
 	(function update (group) (group
-		(= player.x (+ player.x (/ (- target.x player.x) 10)) )
-		(= player.y (+ player.y (/ (- target.y player.y) 10)) )
+		(= player.x (+ player.x (/ (- target.x player.x) 50)) )
+		(= player.y (+ player.y (/ (- target.y player.y) 50)) )
 		(if	(&&
-			(< (dd_math.abs (- target.x player.x)) 1)
-			(< (dd_math.abs (- target.y player.y)) 1)
+			(< (dd_math.abs (- target.x player.x)) 5)
+			(< (dd_math.abs (- target.y player.y)) 5)
 			)
 			(this.nextTarget)
 		)

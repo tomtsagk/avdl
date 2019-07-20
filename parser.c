@@ -231,13 +231,18 @@ void print_class(FILE *fd, struct ast_node *command) {
 
 	fprintf(fd, " = function() {\n");
 
+	int cchild = 1;
+
 	// subclass
 	struct ast_node *subclass = dd_da_get(&command->children, 1);
-	struct entry *subentry = symtable_entryat(subclass->value);
-	fprintf(fd, "%s.call(this);\n", subentry->lexptr);
+	if (subclass->node_type == AST_IDENTIFIER) {
+		struct entry *subentry = symtable_entryat(subclass->value);
+		fprintf(fd, "%s.call(this);\n", subentry->lexptr);
+		cchild++;
+	}
 
 	//components
-	struct ast_node *cmn = dd_da_get(&command->children, 2);
+	struct ast_node *cmn = dd_da_get(&command->children, cchild);
 	print_node(fd, cmn);
 
 	fprintf(fd, "}\n");
