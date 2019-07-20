@@ -1,36 +1,26 @@
-(function button_start (group) (group
-	(echo "button start func")
-))
+# player
+# moves to 4 points, when it reaches one, it goes to the next
+(class playerClass (group
 
-# main class
-( class world_main World (group
-
-	# padding
-	(def int padding 10)
-
-	# targets
+	# points
 	(def dd_point p (new dd_point 0 0))
 	(def dd_point p1 (new dd_point eng.width 0))
 	(def dd_point p2 (new dd_point eng.width eng.height))
 	(def dd_point p3 (new dd_point 0 eng.height))
 
-	# player
-	(def dd_sprite player)
+	# sprite and target
+	(def dd_sprite this.sprite)
 	(def dd_point target p)
 
-	(function input (group) (this.nextTarget))
-
-	(function update (group) (group
-		(= player.x (+ player.x (/ (- target.x player.x) 50)) )
-		(= player.y (+ player.y (/ (- target.y player.y) 50)) )
-		(if	(&&
-			(< (dd_math.abs (- target.x player.x)) 5)
-			(< (dd_math.abs (- target.y player.y)) 5)
-			)
-			(this.nextTarget)
-		)
+	# init
+	(function init (group) (group
+		(= this.sprite (new dd_sprite "images/dd_logo.png"))
+		(= this.sprite.width  150)
+		(= this.sprite.height 150)
+		(this.sprite.anchor.set (/ 1 2))
 	))
 
+	# move to next target
 	(function nextTarget (group) (group
 		(if (== target p ) (= target p1)
 		    (== target p1) (= target p2)
@@ -39,23 +29,44 @@
 		)
 	))
 
+	# update
+	(function update (group) (group
+		(= this.sprite.x (+ this.sprite.x (/ (- target.x this.sprite.x) 50)) )
+		(= this.sprite.y (+ this.sprite.y (/ (- target.y this.sprite.y) 50)) )
+		(if	(&&
+			(< (dd_math.abs (- target.x this.sprite.x)) 5)
+			(< (dd_math.abs (- target.y this.sprite.y)) 5)
+			)
+			(this.nextTarget)
+		)
+	))
+))
+
+# main class
+( class world_main World (group
+
+	# padding
+	(def int padding 10)
+
+	# player
+	(def playerClass this.player)
+
+	(function input (group) (this.player.nextTarget))
+
+	(function update (group) (group
+		(this.player.update)
+	))
+
 	(function start (group) (group
 
-		(= player (new dd_sprite "images/dd_logo.png"))
-		(= player.width  150)
-		(= player.height 150)
-		(player.anchor.set (/ 1 2))
-		(this.container.addChild player)
-
-		# init player
-		# moving to first position
-		# when done move to next position
+		(= this.player (new playerClass))
+		(this.player.init)
+		(this.container.addChild this.player.sprite)
 
 		# top left
 		(def dd_sprite this.tpLeft (new dd_sprite "images/dd_logo.png"))
 		(= this.tpLeft.width  50)
 		(= this.tpLeft.height 50)
-		(this.tpLeft.on "pointerdown" button_start)
 		(= this.tpLeft.interactive true)
 		(this.container.addChild this.tpLeft)
 

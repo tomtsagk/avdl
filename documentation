@@ -1,3 +1,6 @@
+
+Any syntax followed by a "?" is optional
+
 commands:
 
 (echo arg0 arg1 .. argN) - prints all arguments to standard output
@@ -10,10 +13,13 @@ commands:
 (group arg0 arg1 .. argN) - group commands together, useful to pass multiple commands
 	when another command expects only 1
 
+(def type name value?) - define variable `name`, with given `type`,
+	optionally inialise it with `value`
+
 (function name arguments commands) - declare function `name`, with arguments `arguments` which calls `commands`
 	when executed
 
-(class name subclass components) - declare class `name`, subclass of `subclass`
+(class name subclass? components) - declare class `name`, subclass of `subclass`
 	and includes `components` (variables and functions)
 
 (sprite name texture) - create sprite `name` with texture `texture`
