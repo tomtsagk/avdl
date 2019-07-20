@@ -20,3 +20,7 @@ commands:
 
 (return arg0) - return `arg0` from a function
 (array arg0 arg1 .. argN) - create an array containing all children
+
+(if condition1 statement1 condition2 statement2 .. ( conditionN statementN ) / statementN) -
+	For every 2 children, if `condition1` is true, then execute `statement1`. Same for condition 2, 3 until N.
+	If there is an odd number of children, last statement will trigger if no other statement has.

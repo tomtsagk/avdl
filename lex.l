@@ -6,7 +6,7 @@ extern int yylex();
 int linenum = 1;
 %}
 
-symbol [-=+<>*/a-zA-Z][-=+<>*/a-zA-Z0-9_]*
+symbol [-=+<>*/&|a-zA-Z][-=+<>*/&|a-zA-Z0-9_]*
 number [0-9]+
 
 %option noyywrap

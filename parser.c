@@ -8,6 +8,9 @@
 #define DD_BUFFER_SIZE 1000
 static char buffer[DD_BUFFER_SIZE];
 
+// flags
+static int has_semicolon = 1;
+
 void print_node(FILE *fd, struct ast_node *n);
 
 // file descriptor for global data
@@ -33,11 +36,27 @@ void print_new(FILE *fd, struct ast_node *command);
 void print_if(FILE *fd, struct ast_node *command);
 
 void print_if(FILE *fd, struct ast_node *command) {
-	fprintf(fd, "if (");
-	print_node(fd, dd_da_get(&command->children, 0));
-	fprintf(fd, ") {\n");
-	print_node(fd, dd_da_get(&command->children, 1));
-	fprintf(fd, "}\n");
+
+	int cchild = 0;
+	while (cchild < command->children.elements) {
+
+		if (cchild != 0) {
+			fprintf(fd, "else ");
+		}
+
+		if (command->children.elements -cchild >= 2) {
+			fprintf(fd, "if (");
+			has_semicolon = 0;
+			print_node(fd, dd_da_get(&command->children, cchild));
+			has_semicolon = 1;
+			fprintf(fd, ")");
+			cchild++;
+		}
+		fprintf(fd, " {\n");
+		print_node(fd, dd_da_get(&command->children, cchild));
+		fprintf(fd, "}\n");
+		cchild++;
+	}
 }
 
 void print_new(FILE *fd, struct ast_node *command) {
@@ -65,7 +84,10 @@ void print_function_call(FILE *fd, struct ast_node *command) {
 		print_node(fd, child);
 	}
 
-	fprintf(fd, ");\n");
+	fprintf(fd, ")");
+	if (has_semicolon) {
+		fprintf(fd, ";\n");
+	}
 
 }
 
@@ -77,12 +99,18 @@ void print_operator_binary(FILE *fd, struct ast_node *command) {
 	struct entry *e = symtable_entryat(command->value);
 	struct ast_node *child1 = dd_da_get(&command->children, 0);
 
+	if (strcmp(e->lexptr, "=") != 0) {
+		fprintf(fd, "(");
+	}
 	print_node(fd, child1);
 
 	for (int i = 1; i < command->children.elements; i++) {
 		fprintf(fd, " %s ", e->lexptr);
 		struct ast_node *child2 = dd_da_get(&command->children, i);
 		print_node(fd, child2);
+	}
+	if (strcmp(e->lexptr, "=") != 0) {
+		fprintf(fd, ")");
 	}
 }
 
@@ -130,6 +158,8 @@ void print_command(FILE *fd, struct ast_node *command) {
 	||  strcmp(e->lexptr, ">=") == 0
 	||  strcmp(e->lexptr, "==") == 0
 	||  strcmp(e->lexptr, "<=") == 0
+	||  strcmp(e->lexptr, "&&") == 0
+	||  strcmp(e->lexptr, "||") == 0
 	||  strcmp(e->lexptr, "<") == 0
 	||  strcmp(e->lexptr, ">") == 0) {
 		print_operator_binary(fd, command);

@@ -2,30 +2,47 @@
 	(echo "button start func")
 ))
 
-(echo (> 5 3))
-
 # main class
 ( class world_main World (group
 
 	# padding
 	(def int padding 10)
 
+	# targets
 	(def dd_point p (new dd_point 0 0))
 	(def dd_point p1 (new dd_point eng.width 0))
 	(def dd_point p2 (new dd_point 0 eng.height))
 	(def dd_point p3 (new dd_point eng.width eng.height))
 
+	# player
 	(def dd_sprite player)
-	(def int target 0)
+	(def dd_point target p)
 
 	(function update (group) (group
-		(= player.x (+ player.x 1))
-		(if (> player.x 100) (= player.x 0))
+		(= player.x (+ player.x (/ (- target.x player.x) 10)) )
+		(= player.y (+ player.y (/ (- target.y player.y) 10)) )
+		(if	(&&
+			(< (dd_math.abs (- target.x player.x)) 1)
+			(< (dd_math.abs (- target.y player.y)) 1)
+			)
+			(this.nextTarget)
+		)
+	))
+
+	(function nextTarget (group) (group
+		(if (== target p ) (= target p1)
+		    (== target p1) (= target p2)
+		    (== target p2) (= target p3)
+		    (== target p3) (= target p )
+		)
 	))
 
 	(function start (group) (group
 
 		(= player (new dd_sprite "images/dd_logo.png"))
+		(= player.width  150)
+		(= player.height 150)
+		(player.anchor.set (/ 1 2))
 		(this.container.addChild player)
 
 		# init player
