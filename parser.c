@@ -4,6 +4,12 @@
 #include "yacc.tab.h"
 #include "symtable.h"
 #include <string.h>
+#include "file_op.h"
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #define DD_BUFFER_SIZE 1000
 static char buffer[DD_BUFFER_SIZE];
@@ -317,4 +323,14 @@ void parse_javascript(const char *filename, struct ast_node *n) {
 	print_node(fd_global, n);
 	fprintf(fd_global, "eng.setWorld(world_main);\n");
 	fclose(fd_global);
+
+	dir_create("build");
+	int dir = open("build", O_DIRECTORY);
+	if (!dir) {
+		printf("error opening `build/`: %s\n", strerror(errno));
+	}
+	file_copy_at(0, "/usr/share/ddlang/dd_pixi_engine.js", dir, "dd_pixi_engine.js", 0);
+	file_copy_at(0, "/usr/share/ddlang/index.html", dir, "index.html", 0);
+	file_copy_at(0, "/usr/share/ddlang/pixi.min.js", dir, "pixi.min.js", 0);
+	close(dir);
 }

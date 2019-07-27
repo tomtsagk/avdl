@@ -7,7 +7,6 @@
 #include "parser.h"
 #include <unistd.h>
 #include <stdlib.h>
-#include "file_op.h"
 
 // line number (got from lex.l)
 extern int linenum;
@@ -126,8 +125,6 @@ int main(int argc, char *argv[])
 	// clean symtable and ast tree
 	symtable_clean();
 	ast_delete(game_node);
-
-	file_copy(filename, "example.dd", 0);
 
 	// success!
 	return 0;
