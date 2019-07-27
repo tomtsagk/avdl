@@ -86,12 +86,6 @@ int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst)
 		printf("unable to open: %s\n", dst);
 	}
 
-	DIR *d2 = opendir(dst);
-	if (!d2) {
-		printf("unable to open dir: %s\n", src);
-		return -1;
-	}
-
 	struct dirent *dir;
 
 	while ((dir = readdir(d)) != NULL) {
@@ -101,6 +95,8 @@ int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst)
 		}
 		file_copy_at(src_dir, dir->d_name, dst_dir, dir->d_name, 0);
 	}
+	close(src_dir);
+	close(dst_dir);
 	closedir(d);
 	return 0;
 }

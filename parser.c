@@ -318,13 +318,18 @@ void print_node(FILE *fd, struct ast_node *n) {
 
 // responsible for creating a file and translating ast to target language
 void parse_javascript(const char *filename, struct ast_node *n) {
+	dir_create("build");
+
 	fd_global = fopen(filename, "w");
+	if (!fd_global) {
+		printf("unable to open '%s': %s\n", filename, strerror(errno));
+		return;
+	}
 	fprintf(fd_global, "var eng = new engine();\n");
 	print_node(fd_global, n);
 	fprintf(fd_global, "eng.setWorld(world_main);\n");
 	fclose(fd_global);
 
-	dir_create("build");
 	int dir = open("build", O_DIRECTORY);
 	if (!dir) {
 		printf("error opening `build/`: %s\n", strerror(errno));
