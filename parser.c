@@ -332,5 +332,8 @@ void parse_javascript(const char *filename, struct ast_node *n) {
 	file_copy_at(0, "/usr/share/ddlang/dd_pixi_engine.js", dir, "dd_pixi_engine.js", 0);
 	file_copy_at(0, "/usr/share/ddlang/index.html", dir, "index.html", 0);
 	file_copy_at(0, "/usr/share/ddlang/pixi.min.js", dir, "pixi.min.js", 0);
+
+	dir_create("build/images");
+	dir_copy_recursive(0, "images", dir, "images");
 	close(dir);
 }
