@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "yacc.tab.h"
 #include "symtable.h"
-extern int yylex();
 int linenum = 1;
 %}
 
@@ -29,13 +28,13 @@ number [0-9]+
 	return DD_CONSTANT_STRING;
 }
 
- /* pass-through symbols */
-[()\.]		{ return yytext[0]; }
-
  /* ignore whitespace */
 [ \t]		;
 
  /* count lines */
 \n		linenum++;
+
+ /* pass-through symbols */
+.	return (int) yytext[0];
 
 %%
