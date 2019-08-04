@@ -8,6 +8,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+extern FILE *yyin;
+extern YYSTYPE yylex(void);
+
 // line number (got from lex.l)
 extern int linenum;
 
@@ -56,13 +59,17 @@ int main(int argc, char *argv[])
 	 */
 	int show_ast = 0;
 	char *filename = 0;
+	FILE *input_file = stdin;
 
 	// parse arguments
 	for (int i = 1; i < argc; i++) {
+
+		// print abstract syntax tree
 		if (strcmp(argv[i], "--print-ast") == 0) {
 			show_ast = 1;
 		}
 		else
+		// input file
 		if (!filename) {
 			filename = argv[i];
 		}
@@ -72,6 +79,15 @@ int main(int argc, char *argv[])
 	if (!filename) {
 		printf("no filename given\n");
 		return -1;
+	}
+	else {
+		input_file = fopen(filename, "r");
+		if (!input_file) {
+			printf("unable to open input file: %s\n", filename);
+			return -1;
+		}
+
+		yyin = input_file;
 	}
 
 	// init data
@@ -109,7 +125,7 @@ int main(int argc, char *argv[])
         yyparse();
 
 	// parse resulting ast tree to a file
-	parse_javascript(filename, game_node);
+	parse_javascript("build/game.js", game_node);
 
 	//struct_print();
 
