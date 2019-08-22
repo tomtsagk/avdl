@@ -69,12 +69,14 @@ void print_new(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "new ");
 	print_node(fd, dd_da_get(&command->children, 0));
 	fprintf(fd, "(");
+	has_semicolon = 0;
 	for (int i = 1; i < command->children.elements; i++) {
 		if (i != 1) {
 			fprintf(fd, ", ");
 		}
 		print_node(fd, dd_da_get(&command->children, i));
 	}
+	has_semicolon = 1;
 	fprintf(fd, ")");
 }
 
@@ -82,6 +84,8 @@ void print_function_call(FILE *fd, struct ast_node *command) {
 	print_node(fd, dd_da_get(&command->children, 0));
 	fprintf(fd, "(");
 
+	int prev_semi = has_semicolon;
+	has_semicolon = 0;
 	for (int i = 1; i < command->children.elements; i++) {
 		if (i != 1) {
 			fprintf(fd, ", ");
@@ -89,6 +93,7 @@ void print_function_call(FILE *fd, struct ast_node *command) {
 		struct ast_node *child = dd_da_get(&command->children, i);
 		print_node(fd, child);
 	}
+	has_semicolon = prev_semi;
 
 	fprintf(fd, ")");
 	if (has_semicolon) {
@@ -215,8 +220,10 @@ void print_function(FILE *fd, struct ast_node *command) {
 	fprintf(fd, " = function(");
 
 	//arguments
+	has_semicolon = 0;
 	struct ast_node *arg = dd_da_get(&command->children, 1);
 	print_node(fd, arg);
+	has_semicolon = 1;
 
 	fprintf(fd, ") {\n");
 
