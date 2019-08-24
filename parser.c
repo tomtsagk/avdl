@@ -115,11 +115,14 @@ void print_operator_binary(FILE *fd, struct ast_node *command) {
 	}
 	print_node(fd, child1);
 
+	int temp_semicolon = has_semicolon;
+	has_semicolon = 0;
 	for (int i = 1; i < command->children.elements; i++) {
 		fprintf(fd, " %s ", e->lexptr);
 		struct ast_node *child2 = dd_da_get(&command->children, i);
 		print_node(fd, child2);
 	}
+	has_semicolon = temp_semicolon;
 	if (strcmp(e->lexptr, "=") != 0) {
 		fprintf(fd, ")");
 	}
@@ -199,12 +202,15 @@ void print_command(FILE *fd, struct ast_node *command) {
 
 void print_echo(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "console.log(");
+	int temp_semicolon = has_semicolon;
+	has_semicolon = 0;
 	for (int i = 0; i < command->children.elements; i++) {
 		if (i > 0) {
 			fprintf(fd, " +");
 		}
 		print_node(fd, dd_da_get(&command->children, i));
 	}
+	has_semicolon = temp_semicolon;
 	fprintf(fd, ");\n");
 }
 
