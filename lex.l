@@ -8,10 +8,11 @@ int linenum = 1;
 #define MAX_INCLUDE_DEPTH 10
 YY_BUFFER_STATE include_stack[MAX_INCLUDE_DEPTH];
 int include_stack_ptr = 0;
+
 %}
 
 symbol [-=+<>*/&|a-zA-Z][-=+<>*/&|a-zA-Z0-9_]*
-number [0-9]+
+number -?[0-9]+
 
 %option noyywrap
 
