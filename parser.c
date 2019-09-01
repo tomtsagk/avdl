@@ -32,6 +32,7 @@ void print_echo(FILE *fd, struct ast_node *command);
 void print_definition(FILE *fd, struct ast_node *command);
 void print_operator_binary(FILE *fd, struct ast_node *command);
 void print_number(FILE *fd, struct ast_node *command);
+void print_float(FILE *fd, struct ast_node *command);
 void print_function(FILE *fd, struct ast_node *command);
 void print_class(FILE *fd, struct ast_node *command);
 void print_return(FILE *fd, struct ast_node *command);
@@ -104,6 +105,10 @@ void print_function_call(FILE *fd, struct ast_node *command) {
 
 void print_number(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "%d", command->value);
+}
+
+void print_float(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "%f", command->fvalue);
 }
 
 void print_operator_binary(FILE *fd, struct ast_node *command) {
@@ -315,6 +320,10 @@ void print_node(FILE *fd, struct ast_node *n) {
 		}
 		case AST_NUMBER: {
 			print_number(fd, n);
+			break;
+		}
+		case AST_FLOAT: {
+			print_float(fd, n);
 			break;
 		}
 		case AST_STRING: {

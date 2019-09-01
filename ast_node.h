@@ -31,13 +31,17 @@ enum AST_NODE_TYPE {
 
 	/* constants - have no children, are parsed as-is */
 	AST_NUMBER,
+	AST_FLOAT,
 	AST_STRING,
 };
 
 // Struct for a single node
 struct ast_node {
 	enum AST_NODE_TYPE node_type;
-	int value;
+	union {
+		int value;
+		float fvalue;
+	};
 	struct dd_dynamic_array children;
 };
 

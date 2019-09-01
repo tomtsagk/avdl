@@ -14,6 +14,8 @@ extern YYSTYPE yylex(void);
 // line number (got from lex.l)
 extern int linenum;
 
+extern float parsing_float;
+
 // buffer for general use
 #define DD_BUFFER_SIZE 1000
 char buffer[DD_BUFFER_SIZE];
@@ -155,7 +157,7 @@ int main(int argc, char *argv[])
 %token DD_KEYWORD
 
 /* constants */
-%token DD_CONSTANT_SYMBOL DD_CONSTANT_STRING DD_CONSTANT_NUMBER
+%token DD_CONSTANT_SYMBOL DD_CONSTANT_STRING DD_CONSTANT_NUMBER DD_CONSTANT_FLOAT
 
 %%
 
@@ -265,6 +267,12 @@ optional_args:
 /* argument
  */
 arg:
+	DD_CONSTANT_FLOAT {
+		struct ast_node *n = ast_create(AST_FLOAT, 0);
+		n->fvalue = parsing_float;
+		ast_push(n);
+	}
+	|
    	DD_CONSTANT_NUMBER {
 		struct ast_node *n = ast_create(AST_NUMBER, $1);
 		ast_push(n);

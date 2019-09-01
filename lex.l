@@ -9,9 +9,13 @@ int linenum = 1;
 YY_BUFFER_STATE include_stack[MAX_INCLUDE_DEPTH];
 int include_stack_ptr = 0;
 
+// used to parse floats
+float parsing_float = 0;
+
 %}
 
 symbol [-=+<>*/&|a-zA-Z][-=+<>*/&|a-zA-Z0-9_]*
+float  -?[0-9]+\.[0-9]+
 number -?[0-9]+
 
 %option noyywrap
@@ -71,6 +75,7 @@ number -?[0-9]+
 
  /* constants and variables */
 {symbol}	{ yylval = symtable_insert(yytext, DD_ZERO); return DD_CONSTANT_SYMBOL; }
+{float} 	{ yylval = 0; parsing_float = atof(yytext); return DD_CONSTANT_FLOAT; }
 {number}	{ yylval = atoi(yytext); return DD_CONSTANT_NUMBER; }
 \"[^"]*\"	{
 	/* chop of the quotes from strings
