@@ -14,7 +14,6 @@ install: ${EXECUTABLE}
 	mkdir -p /usr/share/${EXECUTABLE}
 	install engines/pixi/${ENGINE} /usr/share/${EXECUTABLE}/${ENGINE}
 	install engines/pixi/index.html /usr/share/${EXECUTABLE}/index.html
-	install engines/pixi/pixi.min.js /usr/share/${EXECUTABLE}/pixi.min.js
 
 clean:
 	rm -f a.out lex.yy.c yacc.tab.c yacc.tab.h global
