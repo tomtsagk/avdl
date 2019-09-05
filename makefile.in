@@ -1,0 +1,25 @@
+EXECUTABLE=ddlang
+ENGINE=dd_pixi_engine.js
+ENGINE_PATH=engines/pixi
+INSTALL_LOCATION=@INSTALL_LOCATION@
+
+# compile the compiler itself
+${EXECUTABLE}: *.c lex.l yacc.y
+	flex lex.l
+	bison -d yacc.y
+	gcc -DINSTALL_LOCATION=${INSTALL_LOCATION} *.c -o ${EXECUTABLE}
+
+# compile the pixi engine
+${ENGINE_PATH}${ENGINE}: ${ENGINE_PATH}
+	${MAKE} -C ${ENGINE_PATH}
+
+# install the project in the system
+install: ${EXECUTABLE} ${ENGINE_PATH}/${ENGINE}
+	mkdir -p ${INSTALL_LOCATION}/bin
+	install ${EXECUTABLE} ${INSTALL_LOCATION}/bin/
+	mkdir -p ${INSTALL_LOCATION}/share/${EXECUTABLE}
+	install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${EXECUTABLE}/${ENGINE}
+	install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${EXECUTABLE}/index.html
+
+clean:
+	rm -f a.out lex.yy.c yacc.tab.c yacc.tab.h global
