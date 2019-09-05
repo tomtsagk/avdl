@@ -1,4 +1,8 @@
-EXECUTABLE=ddlang
+
+# Project Data
+PROJECT_NAME=ddlang
+
+EXECUTABLE=${PROJECT_NAME}
 ENGINE=dd_pixi_engine.js
 ENGINE_PATH=engines/pixi
 INSTALL_LOCATION=@INSTALL_LOCATION@
@@ -7,7 +11,7 @@ INSTALL_LOCATION=@INSTALL_LOCATION@
 ${EXECUTABLE}: *.c lex.l yacc.y
 	flex lex.l
 	bison -d yacc.y
-	gcc -DINSTALL_LOCATION=${INSTALL_LOCATION} *.c -o ${EXECUTABLE}
+	gcc -DINSTALL_LOCATION=${INSTALL_LOCATION} -DPROJECT_NAME=${PROJECT_NAME} *.c -o ${EXECUTABLE}
 
 # compile the pixi engine
 ${ENGINE_PATH}${ENGINE}: ${ENGINE_PATH}
@@ -17,9 +21,9 @@ ${ENGINE_PATH}${ENGINE}: ${ENGINE_PATH}
 install: ${EXECUTABLE} ${ENGINE_PATH}/${ENGINE}
 	mkdir -p ${INSTALL_LOCATION}/bin
 	install ${EXECUTABLE} ${INSTALL_LOCATION}/bin/
-	mkdir -p ${INSTALL_LOCATION}/share/${EXECUTABLE}
-	install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${EXECUTABLE}/${ENGINE}
-	install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${EXECUTABLE}/index.html
+	mkdir -p ${INSTALL_LOCATION}/share/${PROJECT_NAME}
+	install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${PROJECT_NAME}/${ENGINE}
+	install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${PROJECT_NAME}/index.html
 
 clean:
 	rm -f a.out lex.yy.c yacc.tab.c yacc.tab.h global

@@ -339,7 +339,11 @@ void print_node(FILE *fd, struct ast_node *n) {
 }
 
 #ifndef INSTALL_LOCATION
-#define INSTALL_LOCATION "/usr"
+#define INSTALL_LOCATION /usr
+#endif
+
+#ifndef PROJECT_NAME
+#define PROJECT_NAME ddlang
 #endif
 
 // responsible for creating a file and translating ast to target language
@@ -360,11 +364,11 @@ void parse_javascript(const char *filename, struct ast_node *n) {
 	if (!dir) {
 		printf("error opening `build/`: %s\n", strerror(errno));
 	}
-	sprintf(buffer, "%s/share/ddlang/dd_pixi_engine.js", "INSTALL_LOCATION");
+	sprintf(buffer, "%s/share/%s/dd_pixi_engine.js", "INSTALL_LOCATION", "PROJECT_NAME");
 	file_copy_at(0, buffer, dir, "dd_pixi_engine.js", 0);
-	sprintf(buffer, "%s/share/ddlang/index.html", "INSTALL_LOCATION");
+	sprintf(buffer, "%s/share/%s/index.html", "INSTALL_LOCATION", "PROJECT_NAME");
 	file_copy_at(0, buffer, dir, "index.html", 0);
-	sprintf(buffer, "%s/share/ddlang/pixi.min.js", "INSTALL_LOCATION");
+	sprintf(buffer, "%s/share/%s/pixi.min.js", "INSTALL_LOCATION", "PROJECT_NAME");
 	file_copy_at(0, buffer, dir, "pixi.min.js", 0);
 
 	dir_create("build/images");
