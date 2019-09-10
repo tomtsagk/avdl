@@ -1,0 +1,25 @@
+.TH DDLANG 1
+.SH NAME
+ddlang \- programming language for video games
+.SH SYNOPSIS
+.B ddlang
+[\fIoptions\fR]
+\fIfile\fR...
+.SH DESCRIPTION
+.B ddlang
+is a programming language designed to describe a video game
+in an abstract way, and then compile it to different platforms.
+.SH OPTIONS
+.TP
+\fB--print-ast\fR
+Print a representation of the abstract syntax tree, before it gets translated to the target language.
+.SH EXAMPLES
+To compile a file, use the following command:
+.PP
+.nf
+.RS
+ddlang my_file.dd
+.RE
+.fi
+.PP
+Unless an error occurs, this should create a directory called `build` in the current folder, with the compiled project inside.

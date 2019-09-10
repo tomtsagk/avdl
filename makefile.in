@@ -39,6 +39,8 @@ install: ${EXECUTABLE} ${ENGINE_PATH}/${ENGINE}
 	mkdir -p ${INSTALL_LOCATION}/share/${PROJECT_NAME}
 	install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${PROJECT_NAME}/${ENGINE}
 	install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${PROJECT_NAME}/index.html
+	mkdir -p ${INSTALL_LOCATION}/share/man/man1/
+	install manual/ddlang.1 ${INSTALL_LOCATION}/share/man/man1/
 
 clean:
 	rm -f ${EXECUTABLE} ${LEX_SRC} ${YACC_SRC} ${YACC_HEADER}
