@@ -210,15 +210,6 @@ command:
 		// find out if keyword is an native keyword or a custom one
 		struct entry *e = symtable_entryat(cmd_name->value);
 		int type;
-		if (strcmp(e->lexptr, "include") == 0) {
-			// create new buffer
-			struct ast_node *child = dd_da_get(&opt_args->children, 0);
-			struct entry *opt_args_e = symtable_entryat(child->value);
-			printf("include %s\n", opt_args_e->lexptr);
-
-			// open file
-			// push new buffer
-		}
 
 		if (e->token == DD_KEYWORD) {
     			//printf("keyword symbol: %s\n", e->lexptr);

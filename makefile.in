@@ -1,0 +1,44 @@
+
+# Project Data
+PROJECT_NAME=ddlang
+
+EXECUTABLE=${PROJECT_NAME}
+
+# Engine Data
+ENGINE=dd_pixi_engine.js
+ENGINE_PATH=engines/pixi
+
+INSTALL_LOCATION=@INSTALL_LOCATION@
+
+# Files for compilation
+SRC=$(wildcard src/*.c)
+
+YACC_SRC=yacc.tab.c
+YACC_HEADER=yacc.tab.h
+LEX_SRC=lex.yy.c
+
+# build the executable, depends on source, lex, yacc and all engines
+${EXECUTABLE}: ${SRC} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC} ${ENGINE}
+	gcc -DINSTALL_LOCATION=${INSTALL_LOCATION} -DPROJECT_NAME=${PROJECT_NAME} -Iinclude -I. ${SRC} ${YACC_SRC} ${LEX_SRC} -o ${EXECUTABLE}
+
+# how to build lex
+${LEX_SRC}: src/lex.l
+	flex src/lex.l
+
+# how to build yacc
+${YACC_SRC} ${YACC_HEADER}: src/yacc.y
+	bison -d src/yacc.y
+
+# how to build the pixi engine
+${ENGINE}: engines/pixi
+	${MAKE} -C engines/pixi
+
+install: ${EXECUTABLE} ${ENGINE_PATH}/${ENGINE}
+	mkdir -p ${INSTALL_LOCATION}/bin
+	install ${EXECUTABLE} ${INSTALL_LOCATION}/bin/
+	mkdir -p ${INSTALL_LOCATION}/share/${PROJECT_NAME}
+	install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${PROJECT_NAME}/${ENGINE}
+	install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${PROJECT_NAME}/index.html
+
+clean:
+	rm -f ${EXECUTABLE} ${LEX_SRC} ${YACC_SRC} ${YACC_HEADER}
