@@ -41,6 +41,11 @@ install: ${EXECUTABLE} ${ENGINE_PATH}/${ENGINE}
 	install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${PROJECT_NAME}/index.html
 	mkdir -p ${INSTALL_LOCATION}/share/man/man1/
 	install manual/ddlang.1 ${INSTALL_LOCATION}/share/man/man1/
+	mkdir -p ${INSTALL_LOCATION}/share/info/
+	install ddlang.info.gz ${INSTALL_LOCATION}/share/info/
 
 clean:
 	rm -f ${EXECUTABLE} ${LEX_SRC} ${YACC_SRC} ${YACC_HEADER}
+
+destclean:
+	rm -f ddlang.info.gz makefile

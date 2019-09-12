@@ -26,7 +26,10 @@ while [ $1 ]; do
 done
 
 # copy makefile
-cp makefile.in makefile
-
 # replace install location - make sure to escape slashes
+cp makefile.in makefile
 sed -i "s/@INSTALL_LOCATION@/${install_loc//\//\\\/}/g" makefile
+
+# prepare docs
+makeinfo doc/ddlang.texi
+gzip -f ddlang.info

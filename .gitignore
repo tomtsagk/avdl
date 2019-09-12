@@ -1,7 +1,13 @@
+
+# ignore generated files
 yacc.tab.c
 yacc.tab.h
 lex.yy.c
+makefile
 ddlang
 
+# ignore builds
 build/
-makefile
+
+# ignore generated docs
+ddlang.info.gz

@@ -1,0 +1,247 @@
+\input texinfo   @c -*-texinfo-*-
+@comment $Id@w{$}
+@comment %**start of header
+@settitle ddlang 0.0
+@syncodeindex pg cp
+@comment %**end of header
+
+@titlepage
+@title ddlang
+@subtitle for version 0.0
+@author Tom Tsagk (@email{tomtsagk@@gmail.com})
+@page
+@vskip 0pt plus 1filll
+@end titlepage
+
+@contents
+
+@ifnottex
+@node Top
+@top ddlang
+
+This manual is for ddlang (version 0.0).
+@end ifnottex
+
+@menu
+* Introduction::
+* Keywords::
+@end menu
+
+@node Introduction
+@chapter Introduction
+
+@code{ddlang} is a lisp-like programming language for making video games.
+Its syntax and keywords are meant to describe a game in an abstract way, which then the compiler
+can translate to specific platforms.
+
+@node Keywords
+@chapter Keywords
+
+@c command - echo
+@section echo
+
+@code{(echo arg0 arg1 .. argN)}
+
+Prints all arguments to standard output.
+Combines arguments together.
+The arguments can be one of the following types:
+@code{string}, @code{int}, @code{float}
+
+Example:
+
+@example
+(echo "The result is " my_var)
+@end example
+
+Assuming the variable @code{my_var} is 5, this will produce:
+
+@example
+The result is 5
+@end example
+
+@c command - def
+@section def
+
+@code{(def type name [value])}
+
+This defines a variable with the given @code{type} and @code{name}.
+
+@code{type} can be one of the following values:
+@itemize @bullet
+@c@item @code{string} to declare a string (any set of characters surrounded by quotes),
+@item @code{int} to declare integers,
+@item @code{float} to declare floating numbers.
+@end itemize
+
+@code{name} has to start with a letter (@code{[a-zA-Z]}),
+followed by any number of either letters (@code{[a-zA-Z]}),
+numbers (@code{[0-9]}), or an underscore (@code{_}).
+
+Optionally a @code{value} can be passed, to initialise the variable with.
+@code{value} should have the same type as @code{type}.
+
+Examples:
+
+@example
+(def int x)
+@end example
+
+This defines a variable @code{x} with type @code{int}.
+
+@example
+(def float y 0.5)
+@end example
+
+This defines a variable @code{y} with type @code{float} and initialised with the value @code{0.5}.
+
+@c binary operators
+@section Binary Operators
+
+@subsection =
+@code{(= var_name value)}
+
+Assigns @code{value} to the variable @code{var_name}. Example:
+
+@example
+(= x 5)
+@end example
+
+Assigns the value @code{5} to the variable @code{x}.
+
+@subsection +
+@code{(+ arg0 arg1 .. argN)}
+
+Adds all arguments together, and returns the result.
+
+@subsection -
+@code{(- arg0 arg1 .. argN)}
+
+Substracts all arguments together, and returns the result.
+
+@subsection *
+@code{(* arg0 arg1 .. argN)}
+
+Multiplies all arguments together, and returns the result.
+
+@subsection /
+@code{(/ arg0 arg1 .. argN)}
+
+Divines all arguments together, and returns the result.
+
+@subsection >=
+@code{(>= arg0 arg1 .. argN)}
+
+Compares all arguments left-to-right, and returns the result.
+
+@subsection ==
+@code{(== arg0 arg1 .. argN)}
+
+Compares all arguments left-to-right, and returns the result.
+
+@subsection <=
+@code{(<= arg0 arg1 .. argN)}
+
+Compares all arguments left-to-right, and returns the result.
+
+@subsection <
+@code{(< arg0 arg1 .. argN)}
+
+Compares all arguments left-to-right, and returns the result.
+
+@subsection >
+@code{(> arg0 arg1 .. argN)}
+
+Compares all arguments left-to-right, and returns the result.
+
+@subsection &&
+@code{(&& arg0 arg1 .. argN)}
+
+Returns @code{true} if all arguments are @code{true}, otherwise @code{false}.
+
+@subsection ||
+@code{(|| arg0 arg1 .. argN)}
+
+Returns @code{true} if any of the arguments are @code{true}, otherwise @code{false}.
+
+@c command group
+@section group
+
+@code{(group arg0 arg1 .. argN)}
+
+Groups commands together, useful to pass multiple commands when another command expects only one.
+
+@c command function
+@section function
+
+@code{(function name arguments command)}
+
+Declare a function called @code{name}, that expects the given @code{arguments}
+(Arguments are not yet implemented, for now they expect to be an empty group).
+When the function is called, it executes the given @code{command}.
+
+@code{command} can either be a single command or a @code{group} of commands.
+
+Example:
+
+@example
+(function print_hello_world (group)
+	(echo "hello world")
+)
+@end example
+
+This creates a function with name @code{print_hello_world}, takes no arguments (@code{(group)} is an empty group),
+and when called runs the command @code{(echo "hello world")}.
+
+New functions are called like a build-in command. For the example above, the function can be called with this:
+
+@example
+(print_hello_world)
+@end example
+
+@c command if
+@section if
+
+@code{(if cond1 stmt1 cond2 stmt2 .. [condN] stmtN)}
+
+For every 2 arguments, check if the condition (@code{cond1}) is true, then execute its statements (@code{stm1}).
+If there is an odd number of children, the last statement will trigger if no other statement has.
+
+@c command class
+@section class
+
+@code{(class name [subclass] data)}
+
+Declare a class called @code{name}, optionally a subclass of @code{subclass}
+and contains @code{data} (variables and functions).
+
+@c command new
+@section new
+
+@code{(new class_name)}
+
+Create a new instance of a class named @code{class_name}, and return its value.
+
+@c command sprite
+@section sprite
+
+@code{(sprite name filename)}
+
+Create a sprite called @code{name} with texture @code{filename}
+
+@c command return
+@section return
+
+@code{(return val)}
+
+Return the value @code{val} from a function.
+
+@c command array
+@section array
+
+@code{(array arg0 arg1 .. argN)}
+
+Creates an array containing all arguments.
+
+@printindex cp
+
+@bye
