@@ -28,7 +28,7 @@ void ast_child_add_first(struct ast_node *parent, struct ast_node *child) {
 void ast_delete_child(struct ast_node *node) {
 
 	// Delete children
-	for (int i = 0; i < node->children.elements; i++) {
+	for (unsigned int i = 0; i < node->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&node->children, i);
 		ast_delete_child(child);
 	}
@@ -59,7 +59,6 @@ void ast_print(struct ast_node *node) {
 	}
 
 	// Print actual node
-	char *type;
 	struct entry *e = symtable_entryat(node->value);
 	switch (node->node_type) {
 
@@ -86,7 +85,7 @@ void ast_print(struct ast_node *node) {
 
 	// Print children
 	tabs++;
-	for (int i = 0; i < node->children.elements; i++) {
+	for (unsigned int i = 0; i < node->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&node->children, i);
 		ast_print(child);
 	}
@@ -105,6 +104,9 @@ int ast_push(struct ast_node *n) {
 
 	ast_table_lastentry++;
 	ast_table[ast_table_lastentry] = n;
+
+	// everything is ok, return a true value
+	return 1;
 }
 
 struct ast_node *ast_pop() {

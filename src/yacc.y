@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 
 	/* keywords
 	 */
-	for (int i = 0; i < sizeof(keywords) /sizeof(char*); i++) {
+	for (unsigned int i = 0; i < sizeof(keywords) /sizeof(char*); i++) {
 		symtable_insert(keywords[i], DD_KEYWORD);
 	}
 	/*
@@ -270,7 +270,6 @@ arg:
 	}
 	|
    	DD_CONSTANT_STRING {
-		struct entry *e = symtable_entryat($1);
 		struct ast_node *n = ast_create(AST_STRING, $1);
 		ast_push(n);
 	}

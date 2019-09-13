@@ -44,7 +44,7 @@ void print_if(FILE *fd, struct ast_node *command);
 
 void print_if(FILE *fd, struct ast_node *command) {
 
-	int cchild = 0;
+	unsigned int cchild = 0;
 	while (cchild < command->children.elements) {
 
 		if (cchild != 0) {
@@ -71,7 +71,7 @@ void print_new(FILE *fd, struct ast_node *command) {
 	print_node(fd, dd_da_get(&command->children, 0));
 	fprintf(fd, "(");
 	has_semicolon = 0;
-	for (int i = 1; i < command->children.elements; i++) {
+	for (unsigned int i = 1; i < command->children.elements; i++) {
 		if (i != 1) {
 			fprintf(fd, ", ");
 		}
@@ -87,7 +87,7 @@ void print_function_call(FILE *fd, struct ast_node *command) {
 
 	int prev_semi = has_semicolon;
 	has_semicolon = 0;
-	for (int i = 1; i < command->children.elements; i++) {
+	for (unsigned int i = 1; i < command->children.elements; i++) {
 		if (i != 1) {
 			fprintf(fd, ", ");
 		}
@@ -122,7 +122,7 @@ void print_operator_binary(FILE *fd, struct ast_node *command) {
 
 	int temp_semicolon = has_semicolon;
 	has_semicolon = 0;
-	for (int i = 1; i < command->children.elements; i++) {
+	for (unsigned int i = 1; i < command->children.elements; i++) {
 		fprintf(fd, " %s ", e->lexptr);
 		struct ast_node *child2 = dd_da_get(&command->children, i);
 		print_node(fd, child2);
@@ -209,7 +209,7 @@ void print_echo(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "console.log(");
 	int temp_semicolon = has_semicolon;
 	has_semicolon = 0;
-	for (int i = 0; i < command->children.elements; i++) {
+	for (unsigned int i = 0; i < command->children.elements; i++) {
 		if (i > 0) {
 			fprintf(fd, " +");
 		}
@@ -220,8 +220,6 @@ void print_echo(FILE *fd, struct ast_node *command) {
 }
 
 void print_function(FILE *fd, struct ast_node *command) {
-	struct entry *e = symtable_entryat(command->value);
-
 	fprintf(fd, "this.");
 
 	//name
@@ -274,7 +272,7 @@ void print_class(FILE *fd, struct ast_node *command) {
 
 void print_return(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "return ");
-	for (int i = 0; i < command->children.elements; i++) {
+	for (unsigned int i = 0; i < command->children.elements; i++) {
 		print_node(fd, dd_da_get(&command->children, i));
 	}
 	fprintf(fd, ";\n");
@@ -282,7 +280,7 @@ void print_return(FILE *fd, struct ast_node *command) {
 
 void print_array(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "[\n");
-	for (int i = 0; i < command->children.elements; i++) {
+	for (unsigned int i = 0; i < command->children.elements; i++) {
 		if (i != 0) {
 			fprintf(fd, ",\n");
 		}
@@ -295,7 +293,7 @@ void print_identifier(FILE *fd, struct ast_node *command) {
 	struct entry *e = symtable_entryat(command->value);
 	fprintf(fd, "%s", e->lexptr);
 
-	for (int i = 0; i < command->children.elements; i++) {
+	for (unsigned int i = 0; i < command->children.elements; i++) {
 		fprintf(fd, ".");
 		print_node(fd, dd_da_get(&command->children, i));
 	}
@@ -305,12 +303,11 @@ void print_node(FILE *fd, struct ast_node *n) {
 	switch (n->node_type) {
 		case AST_GAME:
 		case AST_GROUP:
-			for (int i = 0; i < n->children.elements; i++) {
+			for (unsigned int i = 0; i < n->children.elements; i++) {
 				print_node(fd, dd_da_get(&n->children, i));
 			}
 			break;
 		case AST_COMMAND_NATIVE: {
-			struct entry *e = symtable_entryat(n->value);
 			print_command(fd, n);
 			break;
 		}
@@ -335,6 +332,7 @@ void print_node(FILE *fd, struct ast_node *n) {
 			print_identifier(fd, n);
 			break;
 		}
+		case AST_EMPTY: break;
 	}
 }
 
