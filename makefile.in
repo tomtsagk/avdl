@@ -19,8 +19,8 @@ LEX_SRC=lex.yy.c
 
 # build the executable, depends on source, lex, yacc and all engines
 ${EXECUTABLE}: ${SRC} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC} ${ENGINE}
-	gcc -Wall -Wpedantic -Wextra -DINSTALL_LOCATION=${INSTALL_LOCATION} \
-		-DPROJECT_NAME=${PROJECT_NAME} -Iinclude -I. ${SRC} ${YACC_SRC} ${LEX_SRC} -o ${EXECUTABLE}
+	gcc -Wall -Wpedantic -Wextra -DINSTALL_LOCATION=\"${INSTALL_LOCATION}\" \
+		-DPROJECT_NAME=\"${PROJECT_NAME}\" -Iinclude -I. ${SRC} ${YACC_SRC} ${LEX_SRC} -o ${EXECUTABLE}
 
 # how to build lex
 ${LEX_SRC}: src/lex.l
