@@ -44,6 +44,11 @@ install: ${EXECUTABLE} ${ENGINE_PATH}/${ENGINE}
 	install manual/ddlang.1 ${INSTALL_LOCATION}/share/man/man1/
 	mkdir -p ${INSTALL_LOCATION}/share/info/
 	install ddlang.info.gz ${INSTALL_LOCATION}/share/info/
+	# vim files
+	mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
+	install vim/syntax/ddlang.vim ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
+	mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
+	install vim/ftdetect/ddlang.vim ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
 
 clean:
 	rm -f ${EXECUTABLE} ${LEX_SRC} ${YACC_SRC} ${YACC_HEADER}
