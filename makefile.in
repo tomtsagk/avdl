@@ -53,5 +53,7 @@ install: ${EXECUTABLE} ${ENGINE_PATH}/${ENGINE}
 clean:
 	rm -f ${EXECUTABLE} ${LEX_SRC} ${YACC_SRC} ${YACC_HEADER}
 
-destclean:
+destclean: clean
 	rm -f ddlang.info.gz makefile
+
+.PHONY: clean destclean install
