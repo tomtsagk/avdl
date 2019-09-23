@@ -54,6 +54,16 @@ char *keywords[] = {
 	"if",
 };
 
+// assign the right parents to all nodes in the tree
+void assign_parent(struct ast_node *n) {
+	for (unsigned int i = 0; i < n->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&n->children, i);
+		child->parent = n;
+
+		assign_parent(child);
+	}
+}
+
 // init data, parse, exit
 int main(int argc, char *argv[])
 {
@@ -125,6 +135,8 @@ int main(int argc, char *argv[])
 
 	// parse!
         yyparse();
+
+	assign_parent(game_node);
 
 	// parse resulting ast tree to a file
 	parse_javascript("build/game.js", game_node);
