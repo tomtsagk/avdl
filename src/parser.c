@@ -136,8 +136,24 @@ void print_operator_binary(FILE *fd, struct ast_node *command) {
 void print_definition(FILE *fd, struct ast_node *command) {
 	struct ast_node *varname = dd_da_get(&command->children, 1);
 
+	int is_var = 1;
+
+	// if definition is direct child of class, use `this.VARNAME` instead of `var VARNAME`
+	struct ast_node *parent;
+	if (command->parent) {
+		parent = command->parent;
+		if (parent->node_type == AST_GROUP
+		&&  parent->parent->node_type == AST_COMMAND_NATIVE) {
+			struct entry *e = symtable_entryat(parent->parent->value);
+			if (strcmp(e->lexptr, "class") == 0) {
+				is_var = 0;
+				fprintf(fd, "this.");
+			}
+		}
+	}
+
 	// if definition has children (like `this.x`) don't use `var`
-	if (varname->children.elements == 0) {
+	if (is_var) {
 		fprintf(fd, "var ");
 	}
 
