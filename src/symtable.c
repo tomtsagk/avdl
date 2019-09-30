@@ -52,9 +52,7 @@ symtable_index symtable_insert(char s[], int tok) {
 		return 0;
 	}
 
-	// sym table about to get a new symbol - prepare it
-	int len;
-	len = strlen(s);
+	// add new entry to symbol table
 
 	// entry's index
 	symtable->lastentry++;
@@ -62,9 +60,9 @@ symtable_index symtable_insert(char s[], int tok) {
 	// create new entry
 	symentry = &symtable->entry[symtable->lastentry];
 	symentry->token = tok;
-	symentry->lexptr = malloc(sizeof(char) *len +1);
+	strncpy(symentry->lexptr, s, ENTRY_LEXPTR_SIZE -1);
+	symentry->lexptr[ENTRY_LEXPTR_SIZE-1] = '\0';
 	symentry->value = 0;
-	strcpy(symentry->lexptr, s);
 
 	return symtable->lastentry;
 }
@@ -74,9 +72,6 @@ void symtable_clean() {
 	struct symtable *csymtable;
 	while (symtable != 0) {
 		csymtable = symtable->parent;
-		for (int i = 0; i <= symtable->lastentry; i++) {
-			free(symtable->entry[i].lexptr);
-		}
 		free(symtable);
 		symtable = csymtable;
 	}

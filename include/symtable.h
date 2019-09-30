@@ -6,8 +6,9 @@ typedef int symtable_index;
 
 /* entry in the symbol table and its data
  */
+#define ENTRY_LEXPTR_SIZE 100
 struct entry {
-	char *lexptr;
+	char lexptr[ENTRY_LEXPTR_SIZE];
 	int token;
 	int value;
 };
