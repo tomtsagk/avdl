@@ -139,7 +139,8 @@ int main(int argc, char *argv[])
 	assign_parent(game_node);
 
 	// parse resulting ast tree to a file
-	parse_javascript("build/game.js", game_node);
+	//parse_javascript("build/game.js", game_node);
+	parse_cglut("build-cglut/game.c", game_node);
 
 	//struct_print();
 

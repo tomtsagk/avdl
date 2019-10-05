@@ -6,21 +6,33 @@
 // number of entries on each symtable
 #define SYMMAX 100
 
+// how many scopes to descent
+#define SYMTABLE_SCOPE_MAX 100
+
 // symtable
 struct symtable {
 	struct entry entry[SYMMAX];
 	int lastentry;
-	struct symtable *parent;
-} *symtable;
+} symtable_array[SYMTABLE_SCOPE_MAX], *symtable;
 
 /* init
  * allocate memory
  * no symbols inside
  */
 void symtable_init() {
-	symtable = malloc(sizeof(struct symtable));
+	symtable_current = -1;
+	symtable_push();
+}
+
+void symtable_push() {
+	symtable_current++;
+	symtable = &symtable_array[symtable_current];
 	symtable->lastentry = -1;
-	symtable->parent = 0;
+}
+
+void symtable_pop() {
+	symtable_current--;
+	symtable = &symtable_array[symtable_current];
 }
 
 // find symbol, and return its index
@@ -69,12 +81,14 @@ symtable_index symtable_insert(char s[], int tok) {
 
 // clean current system table and all it's parents
 void symtable_clean() {
+	/*
 	struct symtable *csymtable;
 	while (symtable != 0) {
 		csymtable = symtable->parent;
 		free(symtable);
 		symtable = csymtable;
 	}
+	*/
 }
 
 // print symbol table

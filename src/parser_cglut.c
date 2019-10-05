@@ -17,30 +17,35 @@ static char buffer[DD_BUFFER_SIZE];
 // flags
 static int has_semicolon = 1;
 
-void print_node(FILE *fd, struct ast_node *n);
-
 // file descriptor for global data
 FILE *fd_global;
 
+static void print_node(FILE *fd, struct ast_node *n);
+
+/*
 struct command_translation {
 	char *command;
 	char *translation;
 };
+*/
 
 static void print_command(FILE *fd, struct ast_node *command);
-static void print_echo(FILE *fd, struct ast_node *command);
-static void print_definition(FILE *fd, struct ast_node *command);
-static void print_operator_binary(FILE *fd, struct ast_node *command);
+static void print_class(FILE *fd, struct ast_node *command);
 static void print_number(FILE *fd, struct ast_node *command);
 static void print_float(FILE *fd, struct ast_node *command);
+static void print_identifier(FILE *fd, struct ast_node *command);
+static void print_definition(FILE *fd, struct ast_node *command);
+static void print_operator_binary(FILE *fd, struct ast_node *command);
+static void print_function_call(FILE *fd, struct ast_node *command);
+/*
+static void print_echo(FILE *fd, struct ast_node *command);
 static void print_function(FILE *fd, struct ast_node *command);
-static void print_class(FILE *fd, struct ast_node *command);
 static void print_return(FILE *fd, struct ast_node *command);
 static void print_array(FILE *fd, struct ast_node *command);
-static void print_function_call(FILE *fd, struct ast_node *command);
-static void print_identifier(FILE *fd, struct ast_node *command);
 static void print_new(FILE *fd, struct ast_node *command);
 static void print_if(FILE *fd, struct ast_node *command);
+*/
+/*
 
 void print_if(FILE *fd, struct ast_node *command) {
 
@@ -80,6 +85,7 @@ void print_new(FILE *fd, struct ast_node *command) {
 	has_semicolon = 1;
 	fprintf(fd, ")");
 }
+*/
 
 void print_function_call(FILE *fd, struct ast_node *command) {
 	print_node(fd, dd_da_get(&command->children, 0));
@@ -134,11 +140,21 @@ void print_operator_binary(FILE *fd, struct ast_node *command) {
 }
 
 void print_definition(FILE *fd, struct ast_node *command) {
+	struct ast_node *vartype = dd_da_get(&command->children, 0);
+	if (vartype->node_type == AST_IDENTIFIER) {
+		struct entry *e = symtable_entryat(vartype->value);
+		if (strcmp(e->lexptr, "float") != 0
+		&&  strcmp(e->lexptr, "int") != 0) {
+			fprintf(fd, "struct ");
+		}
+	}
+	struct entry *type_entry = symtable_entryat(vartype->value);
+	fprintf(fd, "%s ", type_entry->lexptr);
+
 	struct ast_node *varname = dd_da_get(&command->children, 1);
 
-	int is_var = 1;
-
 	// if definition is direct child of class, use `this.VARNAME` instead of `var VARNAME`
+	/*
 	struct ast_node *parent;
 	if (command->parent) {
 		parent = command->parent;
@@ -146,16 +162,11 @@ void print_definition(FILE *fd, struct ast_node *command) {
 		&&  parent->parent->node_type == AST_COMMAND_NATIVE) {
 			struct entry *e = symtable_entryat(parent->parent->value);
 			if (strcmp(e->lexptr, "class") == 0) {
-				is_var = 0;
 				fprintf(fd, "this.");
 			}
 		}
 	}
-
-	// if definition has children (like `this.x`) don't use `var`
-	if (is_var) {
-		fprintf(fd, "var ");
-	}
+	*/
 
 	print_node(fd, varname);
 	if (command->children.elements >= 3) {
@@ -170,7 +181,7 @@ void print_definition(FILE *fd, struct ast_node *command) {
 void print_command(FILE *fd, struct ast_node *command) {
 	struct entry *e = symtable_entryat(command->value);
 	if (strcmp(e->lexptr, "echo") == 0) {
-		print_echo(fd, command);
+		//print_echo(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "def") == 0) {
@@ -178,7 +189,7 @@ void print_command(FILE *fd, struct ast_node *command) {
 	}
 	else
 	if (strcmp(e->lexptr, "new") == 0) {
-		print_new(fd, command);
+		//print_new(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "=") == 0) {
@@ -201,7 +212,7 @@ void print_command(FILE *fd, struct ast_node *command) {
 	}
 	else
 	if (strcmp(e->lexptr, "function") == 0) {
-		print_function(fd, command);
+		//print_function(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "class") == 0) {
@@ -209,17 +220,18 @@ void print_command(FILE *fd, struct ast_node *command) {
 	}
 	else
 	if (strcmp(e->lexptr, "return") == 0) {
-		print_return(fd, command);
+		//print_return(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "array") == 0) {
-		print_array(fd, command);
+		//print_array(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "if") == 0) {
-		print_if(fd, command);
+		//print_if(fd, command);
 	}
 }
+/*
 
 void print_echo(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "console.log(");
@@ -260,31 +272,108 @@ void print_function(FILE *fd, struct ast_node *command) {
 
 }
 
+*/
 void print_class(FILE *fd, struct ast_node *command) {
-	fprintf(fd, "var ");
+	fprintf(fd, "struct ");
 
 	// name
 	struct ast_node *name = dd_da_get(&command->children, 0);
 	print_node(fd, name);
 
-	fprintf(fd, " = function() {\n");
+	fprintf(fd, " {\n");
 
 	int cchild = 1;
 
 	// subclass
 	struct ast_node *subclass = dd_da_get(&command->children, 1);
+	struct entry *subentry = 0;
 	if (subclass->node_type == AST_IDENTIFIER) {
-		struct entry *subentry = symtable_entryat(subclass->value);
-		fprintf(fd, "%s.call(this);\n", subentry->lexptr);
+		subentry = symtable_entryat(subclass->value);
+		fprintf(fd, "struct %s parent;\n", subentry->lexptr);
 		cchild++;
 	}
 
-	//components
+	// definitions in struct
 	struct ast_node *cmn = dd_da_get(&command->children, cchild);
-	print_node(fd, cmn);
+	for (int i = 0; i < cmn->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&cmn->children, i);
+		if (child->node_type == AST_COMMAND_NATIVE) {
+			struct entry *e = symtable_entryat(child->value);
+			if (strcmp(e->lexptr, "def") == 0) {
+				print_definition(fd, child);
+			}
+		}
+	}
 
-	fprintf(fd, "}\n");
+	fprintf(fd, "};\n");
+
+	// functions
+	for (int i = 0; i < cmn->children.elements; i++) {
+
+		// grab ast node and symbol table entry
+		struct ast_node *child = dd_da_get(&cmn->children, i);
+		if (child->node_type != AST_COMMAND_NATIVE) continue;
+		struct entry *echild = symtable_entryat(child->value);
+
+		// make sure to parse only functions at this point
+		if (strcmp(echild->lexptr, "function") != 0) continue;
+
+		// get function details
+		struct ast_node *funcname = dd_da_get(&child->children, 0);
+		struct entry *efuncname = symtable_entryat(funcname->value);
+
+		// print the function signature
+		fprintf(fd, "void ");
+		print_node(fd, name);
+		fprintf(fd, "_%s(struct ", efuncname->lexptr);
+		print_node(fd, name);
+		fprintf(fd, " *this");
+		// function arguments go here
+		fprintf(fd, ") {\n");
+
+		// parent init
+		if (strcmp(efuncname->lexptr, "create") == 0) {
+			if (subentry) {
+				fprintf(fd, "%s_create(this);\n", subentry->lexptr);
+			}
+
+			// if any function of the class is the same as one of the parents, replace it
+			for (int j = 0; j < cmn->children.elements; j++) {
+				// grab ast node and symbol table entry
+				struct ast_node *fchild = dd_da_get(&cmn->children, j);
+				if (fchild->node_type != AST_COMMAND_NATIVE) continue;
+				struct entry *efchild = symtable_entryat(fchild->value);
+				if (strcmp(efchild->lexptr, "function") != 0) continue;
+
+				struct ast_node *funcname2 = dd_da_get(&fchild->children, 0);
+				struct entry *efuncname2 = symtable_entryat(funcname2->value);
+
+				struct ast_node *funcoverride = dd_da_get(&fchild->children, 2);
+				if (funcoverride->node_type != AST_IDENTIFIER) continue;
+				struct entry *funcoverridename = symtable_entryat(funcoverride->value);
+
+				if (strcmp(funcoverridename->lexptr, "override") == 0) {
+					fprintf(fd, "this->parent.%s = ", efuncname2->lexptr);
+					print_node(fd, name);
+					fprintf(fd, "_%s;\n", efuncname2->lexptr);
+				}
+			}
+		}
+
+		int cmd_child = 2;
+		struct ast_node *ovr = dd_da_get(&child->children, cmd_child);
+		if (ovr->node_type == AST_IDENTIFIER) {
+			struct entry *eovr = symtable_entryat(ovr->value);
+			if (strcmp(eovr->lexptr, "override") == 0) {
+				cmd_child++;
+			}
+		}
+		print_node(fd, dd_da_get(&child->children, cmd_child));
+		fprintf(fd, "}\n");
+	}
+
 }
+/*
 
 void print_return(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "return ");
@@ -305,12 +394,22 @@ void print_array(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "]");
 }
 
+*/
 void print_identifier(FILE *fd, struct ast_node *command) {
 	struct entry *e = symtable_entryat(command->value);
+
+	if (command->children.elements > 0 && strcmp(e->lexptr, "this") == 0) {
+		fprintf(fd, "&");
+	}
 	fprintf(fd, "%s", e->lexptr);
 
 	for (unsigned int i = 0; i < command->children.elements; i++) {
-		fprintf(fd, ".");
+		if (i == 0 && strcmp(e->lexptr, "this") == 0) {
+			fprintf(fd, "->");
+		}
+		else {
+			fprintf(fd, ".");
+		}
 		print_node(fd, dd_da_get(&command->children, i));
 	}
 }
@@ -341,7 +440,7 @@ void print_node(FILE *fd, struct ast_node *n) {
 		}
 		case AST_STRING: {
 			struct entry *e = symtable_entryat(n->value);
-			fprintf(fd, "'%s'", e->lexptr);
+			fprintf(fd, "\"%s\"", e->lexptr);
 			break;
 		}
 		case AST_IDENTIFIER: {
@@ -361,31 +460,38 @@ void print_node(FILE *fd, struct ast_node *n) {
 #endif
 
 // responsible for creating a file and translating ast to target language
-void parse_javascript(const char *filename, struct ast_node *n) {
-	dir_create("build");
+void parse_cglut(const char *filename, struct ast_node *n) {
+	dir_create("build-cglut");
 
 	fd_global = fopen(filename, "w");
 	if (!fd_global) {
 		printf("unable to open '%s': %s\n", filename, strerror(errno));
 		return;
 	}
-	fprintf(fd_global, "var eng = new engine();\n");
+	fprintf(fd_global, "#include \"dd_filetomesh.h\"\n");
+	fprintf(fd_global, "#include \"dd_world.h\"\n");
+	fprintf(fd_global, "#include \"dd_object.h\"\n");
+	fprintf(fd_global, "#include <stdio.h>\n");
+	fprintf(fd_global, "#include <GL/glew.h>\n");
 	print_node(fd_global, n);
-	fprintf(fd_global, "eng.setWorld(world_main);\n");
+	fprintf(fd_global, "void dd_world_init() {"
+			"dd_world_change(sizeof(struct dd_world_main), (void (*)(struct dd_world *)) dd_world_main_create);"
+		"}\n"
+	);
 	fclose(fd_global);
 
 	int dir = open("build", O_DIRECTORY);
 	if (!dir) {
 		printf("error opening `build/`: %s\n", strerror(errno));
 	}
-	sprintf(buffer, "%s/share/%s/dd_pixi_engine.js", INSTALL_LOCATION, PROJECT_NAME);
-	file_copy_at(0, buffer, dir, "dd_pixi_engine.js", 0);
-	sprintf(buffer, "%s/share/%s/index.html", INSTALL_LOCATION, PROJECT_NAME);
-	file_copy_at(0, buffer, dir, "index.html", 0);
-	sprintf(buffer, "%s/share/%s/pixi.min.js", INSTALL_LOCATION, PROJECT_NAME);
-	file_copy_at(0, buffer, dir, "pixi.min.js", 0);
+	//sprintf(buffer, "%s/share/%s/dd_pixi_engine.js", INSTALL_LOCATION, PROJECT_NAME);
+	//file_copy_at(0, buffer, dir, "dd_pixi_engine.js", 0);
+	//sprintf(buffer, "%s/share/%s/index.html", INSTALL_LOCATION, PROJECT_NAME);
+	//file_copy_at(0, buffer, dir, "index.html", 0);
+	//sprintf(buffer, "%s/share/%s/pixi.min.js", INSTALL_LOCATION, PROJECT_NAME);
+	//file_copy_at(0, buffer, dir, "pixi.min.js", 0);
 
-	dir_create("build/images");
-	dir_copy_recursive(0, "images", dir, "images");
-	close(dir);
+	//dir_create("build/images");
+	//dir_copy_recursive(0, "images", dir, "images");
+	//close(dir);
 }

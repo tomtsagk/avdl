@@ -4,6 +4,8 @@
 // type for index on the system table
 typedef int symtable_index;
 
+int symtable_current;
+
 /* entry in the symbol table and its data
  */
 #define ENTRY_LEXPTR_SIZE 100
