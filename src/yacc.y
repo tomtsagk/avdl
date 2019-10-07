@@ -7,6 +7,7 @@
 #include "parser.h"
 #include <unistd.h>
 #include <stdlib.h>
+#include "struct_table.h"
 
 extern FILE *yyin;
 extern YYSTYPE yylex(void);
@@ -132,6 +133,7 @@ int main(int argc, char *argv[])
 	temp_entry->name = "dd_vector2d";
 	struct_insert(temp_entry);
 	*/
+	struct_table_init();
 
 	// parse!
         yyparse();
@@ -140,7 +142,14 @@ int main(int argc, char *argv[])
 
 	// parse resulting ast tree to a file
 	//parse_javascript("build/game.js", game_node);
-	parse_cglut("build-cglut/game.c", game_node);
+	//parse_cglut("build-cglut/game.c", game_node);
+	/*
+	struct_table_push("test_struct", "parent_struct");
+	struct_table_push_member("test_member", 0);
+	struct_table_push("test_struct2", "parent_struct");
+	struct_table_push("test_struct23", "parent_struct");
+	struct_table_print();
+	*/
 
 	//struct_print();
 
