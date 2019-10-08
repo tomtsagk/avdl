@@ -7,7 +7,7 @@ void struct_table_init() {
 	struct_table_current = -1;
 }
 
-void struct_table_push(const char *structname, const char *parentname) {
+int struct_table_push(const char *structname, const char *parentname) {
 	if (struct_table_current+1 > DD_STRUCT_TABLE_TOTAL) {
 		printf("struct_table_add: max number of struct tables reached\n");
 		exit(-1);
@@ -18,6 +18,22 @@ void struct_table_push(const char *structname, const char *parentname) {
 	strncpy(newTable->name, structname, DD_STRUCT_TABLE_NAME_SIZE -1);
 	newTable->name[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
 	newTable->member_total = 0;
+	newTable->parent = -1;
+
+	if (parentname) {
+		for (int i = 0; i < struct_table_current; i++) {
+			if (strcmp(struct_table[i].name, parentname) == 0) {
+				newTable->parent = i;
+				break;
+			}
+		}
+		if (newTable->parent < 0) {
+			printf("error: struct_table_push: no parent found with name '%s'\n", parentname);
+			exit(-1);
+		}
+	}
+
+	return struct_table_current -1;
 }
 
 void struct_table_push_member(const char *name, enum struct_table_type type) {

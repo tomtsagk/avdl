@@ -134,6 +134,7 @@ int main(int argc, char *argv[])
 	struct_insert(temp_entry);
 	*/
 	struct_table_init();
+	struct_table_push("dd_world", 0);
 
 	// parse!
         yyparse();
@@ -148,8 +149,8 @@ int main(int argc, char *argv[])
 	struct_table_push_member("test_member", 0);
 	struct_table_push("test_struct2", "parent_struct");
 	struct_table_push("test_struct23", "parent_struct");
-	struct_table_print();
 	*/
+	struct_table_print();
 
 	//struct_print();
 
@@ -234,12 +235,49 @@ command:
 		int type;
 
 		if (e->token == DD_KEYWORD) {
+			type = AST_COMMAND_NATIVE;
     			//printf("keyword symbol: %s\n", e->lexptr);
 			if (strcmp(e->lexptr, "group") == 0) {
 				type = AST_GROUP;
 			}
-			else {
-				type = AST_COMMAND_NATIVE;
+			else
+			if (strcmp(e->lexptr, "class") == 0) {
+				struct ast_node *classname = dd_da_get(&opt_args->children, 0);
+				struct entry *eclassname = symtable_entryat(classname->value);
+
+				// check if there is a parent
+				struct ast_node *parentname = dd_da_get(&opt_args->children, 1);
+				int struct_index;
+				if (parentname->node_type == AST_IDENTIFIER) {
+					struct entry *eparentname = symtable_entryat(parentname->value);
+					struct_index = struct_table_push(eclassname->lexptr, eparentname->lexptr);
+				}
+				else {
+					struct_index = struct_table_push(eclassname->lexptr, 0);
+				}
+				cmd_name->value = struct_index;
+
+				// find all definitions
+				struct ast_node *statements = dd_da_get(&opt_args->children, 2);
+				for (unsigned int i = 0; i < statements->children.elements; i++) {
+
+					// native command
+					struct ast_node *statement = dd_da_get(&statements->children, i);
+					if (statement->node_type == AST_COMMAND_NATIVE) {
+						struct entry *estatement = symtable_entryat(statement->value);
+
+						if (strcmp(estatement->lexptr, "def") == 0) {
+							struct ast_node *varname = dd_da_get(&statement->children, 1);
+							struct entry *evarname = symtable_entryat(varname->value);
+							struct_table_push_member(evarname->lexptr, 0);
+						}
+						if (strcmp(estatement->lexptr, "function") == 0) {
+							struct ast_node *varname = dd_da_get(&statement->children, 0);
+							struct entry *evarname = symtable_entryat(varname->value);
+							struct_table_push_member(evarname->lexptr, 0);
+						}
+					}
+				}
 			}
 		}
 		// not a native keyword, assume custom one

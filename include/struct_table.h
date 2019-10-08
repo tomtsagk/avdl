@@ -34,7 +34,7 @@ int struct_table_current;
 
 // functions
 void struct_table_init();
-void struct_table_push(const char *structname, const char *parentname);
+int struct_table_push(const char *structname, const char *parentname);
 void struct_table_push_member(const char *name, enum struct_table_type type);
 void struct_table_pop();
 void struct_table_print();

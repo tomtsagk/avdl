@@ -295,7 +295,7 @@ void print_class(FILE *fd, struct ast_node *command) {
 
 	// definitions in struct
 	struct ast_node *cmn = dd_da_get(&command->children, cchild);
-	for (int i = 0; i < cmn->children.elements; i++) {
+	for (unsigned int i = 0; i < cmn->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&cmn->children, i);
 		if (child->node_type == AST_COMMAND_NATIVE) {
 			struct entry *e = symtable_entryat(child->value);
@@ -308,7 +308,7 @@ void print_class(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "};\n");
 
 	// functions
-	for (int i = 0; i < cmn->children.elements; i++) {
+	for (unsigned int i = 0; i < cmn->children.elements; i++) {
 
 		// grab ast node and symbol table entry
 		struct ast_node *child = dd_da_get(&cmn->children, i);
@@ -338,7 +338,7 @@ void print_class(FILE *fd, struct ast_node *command) {
 			}
 
 			// if any function of the class is the same as one of the parents, replace it
-			for (int j = 0; j < cmn->children.elements; j++) {
+			for (unsigned int j = 0; j < cmn->children.elements; j++) {
 				// grab ast node and symbol table entry
 				struct ast_node *fchild = dd_da_get(&cmn->children, j);
 				if (fchild->node_type != AST_COMMAND_NATIVE) continue;
