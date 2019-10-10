@@ -267,18 +267,18 @@ command:
 							int type = 0;
 							printf("compare %s and %s\n", evartype->lexptr, "class");
 							if (strcmp(evartype->lexptr, "int") == 0) {
-								type = DD_STRUCT_TABLE_TYPE_INT;
+								type = DD_VARIABLE_TYPE_INT;
 							}
 							else
 							if (strcmp(evartype->lexptr, "float") == 0) {
-								type = DD_STRUCT_TABLE_TYPE_FLOAT;
+								type = DD_VARIABLE_TYPE_FLOAT;
 							}
 							else
 							if (strcmp(evartype->lexptr, "string") == 0) {
-								type = DD_STRUCT_TABLE_TYPE_STRING;
+								type = DD_VARIABLE_TYPE_STRING;
 							}
 							else {
-								type = DD_STRUCT_TABLE_TYPE_STRUCT;
+								type = DD_VARIABLE_TYPE_STRUCT;
 							}
 							struct_table_push_member(evarname->lexptr, type);
 						}

@@ -281,7 +281,7 @@ void print_class(FILE *fd, struct ast_node *command) {
 	// get struct
 	struct entry *ecmd = symtable_entryat(command->value);
 	int structIndex = ecmd->value;
-	char *name = struct_table_get_name(structIndex);
+	const char *name = struct_table_get_name(structIndex);
 
 	int previous_scope = scope;
 	scope = structIndex;

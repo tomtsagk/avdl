@@ -1,13 +1,8 @@
 #ifndef DD_STRUCT_TABLE_H
 #define DD_STRUCT_TABLE_H
 
-// struct types
-enum struct_table_type {
-	DD_STRUCT_TABLE_TYPE_INT,
-	DD_STRUCT_TABLE_TYPE_FLOAT,
-	DD_STRUCT_TABLE_TYPE_STRUCT,
-	DD_STRUCT_TABLE_TYPE_STRING,
-};
+// get variable types
+#include "dd_variable_type.h"
 
 // struct sizes
 #define DD_STRUCT_TABLE_NAME_SIZE 100
@@ -16,7 +11,7 @@ enum struct_table_type {
 // struct members
 struct struct_table_entry_member {
 	char name[DD_STRUCT_TABLE_NAME_SIZE];
-	enum struct_table_type type;
+	enum dd_variable_type type;
 };
 
 // structs
@@ -34,16 +29,27 @@ int struct_table_current;
 
 // functions
 void struct_table_init();
+
+// push/pop a struct to the table, optionally with a parent name (or `0` for none)
+// same for members
 int struct_table_push(const char *structname, const char *parentname);
-void struct_table_push_member(const char *name, enum struct_table_type type);
 void struct_table_pop();
+void struct_table_push_member(const char *name, enum dd_variable_type type);
+
+// print all structs and their members -- this is meant for debug only
 void struct_table_print();
 
-const char *struct_table_get_name(int index);
+// get name of struct, or name of member of struct, on given indices
+const char *struct_table_get_name(int structIndex);
 const char *struct_table_get_member_name(int structIndex, int memberIndex);
-int struct_table_get_member_type(int structIndex, int memberIndex);
+
+// get struct member type
+enum dd_variable_type struct_table_get_member_type(int structIndex, int memberIndex);
+
+// check if member is a primitive type, primitives are int, float and string
 int struct_table_is_member_primitive(int structIndex, int memberIndex);
 
+// get index of member
 int struct_table_get_member(int structIndex, const char *membername);
 
 #endif

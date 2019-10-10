@@ -1,0 +1,12 @@
+#ifndef DD_VARIABLE_TYPES_H
+#define DD_VARIABLE_TYPES_H
+
+// struct types
+enum dd_variable_type {
+	DD_VARIABLE_TYPE_INT,
+	DD_VARIABLE_TYPE_FLOAT,
+	DD_VARIABLE_TYPE_STRUCT,
+	DD_VARIABLE_TYPE_STRING,
+};
+
+#endif
