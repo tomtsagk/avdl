@@ -143,16 +143,8 @@ int main(int argc, char *argv[])
 
 	// parse resulting ast tree to a file
 	//parse_javascript("build/game.js", game_node);
-	//parse_cglut("build-cglut/game.c", game_node);
-	/*
-	struct_table_push("test_struct", "parent_struct");
-	struct_table_push_member("test_member", 0);
-	struct_table_push("test_struct2", "parent_struct");
-	struct_table_push("test_struct23", "parent_struct");
-	*/
+	parse_cglut("build-cglut/game.c", game_node);
 	struct_table_print();
-
-	//struct_print();
 
 	// print debug data and clean everything
 	/*
@@ -255,7 +247,7 @@ command:
 				else {
 					struct_index = struct_table_push(eclassname->lexptr, 0);
 				}
-				cmd_name->value = struct_index;
+				e->value = struct_index;
 
 				// find all definitions
 				struct ast_node *statements = dd_da_get(&opt_args->children, 2);
@@ -267,9 +259,28 @@ command:
 						struct entry *estatement = symtable_entryat(statement->value);
 
 						if (strcmp(estatement->lexptr, "def") == 0) {
+							struct ast_node *vartype = dd_da_get(&statement->children, 0);
+							struct entry *evartype = symtable_entryat(vartype->value);
+
 							struct ast_node *varname = dd_da_get(&statement->children, 1);
 							struct entry *evarname = symtable_entryat(varname->value);
-							struct_table_push_member(evarname->lexptr, 0);
+							int type = 0;
+							printf("compare %s and %s\n", evartype->lexptr, "class");
+							if (strcmp(evartype->lexptr, "int") == 0) {
+								type = DD_STRUCT_TABLE_TYPE_INT;
+							}
+							else
+							if (strcmp(evartype->lexptr, "float") == 0) {
+								type = DD_STRUCT_TABLE_TYPE_FLOAT;
+							}
+							else
+							if (strcmp(evartype->lexptr, "string") == 0) {
+								type = DD_STRUCT_TABLE_TYPE_STRING;
+							}
+							else {
+								type = DD_STRUCT_TABLE_TYPE_STRUCT;
+							}
+							struct_table_push_member(evarname->lexptr, type);
 						}
 						if (strcmp(estatement->lexptr, "function") == 0) {
 							struct ast_node *varname = dd_da_get(&statement->children, 0);

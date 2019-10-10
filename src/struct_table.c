@@ -33,7 +33,7 @@ int struct_table_push(const char *structname, const char *parentname) {
 		}
 	}
 
-	return struct_table_current -1;
+	return struct_table_current;
 }
 
 void struct_table_push_member(const char *name, enum struct_table_type type) {
@@ -43,6 +43,7 @@ void struct_table_push_member(const char *name, enum struct_table_type type) {
 		exit(-1);
 	}
 	struct struct_table_entry_member *newMember = &currentTable->members[currentTable->member_total];
+	newMember->type = type;
 	strncpy(newMember->name, name, DD_STRUCT_TABLE_NAME_SIZE -1);
 	currentTable->name[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
 	currentTable->member_total++;
@@ -64,4 +65,31 @@ void struct_table_print() {
 			printf("	member: %s\n", m->name);
 		}
 	}
+}
+
+const char *struct_table_get_name(int index) {
+	return struct_table[index].name;
+}
+
+/*
+const char *struct_table_get_member_name(int structIndex, int memberIndex) {
+}
+
+int struct_table_get_member_type(int structIndex, int memberIndex) {
+}
+*/
+
+int struct_table_get_member(int structIndex, const char *membername) {
+	for (int i = 0; i < struct_table[structIndex].member_total; i++) {
+		struct struct_table_entry_member *m = &struct_table[structIndex].members[i];
+		if (strcmp(m->name, membername) == 0) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+int struct_table_is_member_primitive(int structIndex, int memberIndex) {
+	struct struct_table_entry_member *m = &struct_table[structIndex].members[memberIndex];
+	return m->type != DD_STRUCT_TABLE_TYPE_STRUCT;
 }

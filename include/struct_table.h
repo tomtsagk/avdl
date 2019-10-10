@@ -39,4 +39,11 @@ void struct_table_push_member(const char *name, enum struct_table_type type);
 void struct_table_pop();
 void struct_table_print();
 
+const char *struct_table_get_name(int index);
+const char *struct_table_get_member_name(int structIndex, int memberIndex);
+int struct_table_get_member_type(int structIndex, int memberIndex);
+int struct_table_is_member_primitive(int structIndex, int memberIndex);
+
+int struct_table_get_member(int structIndex, const char *membername);
+
 #endif
