@@ -313,6 +313,25 @@ void print_class(FILE *fd, struct ast_node *command) {
 
 	fprintf(fd, "};\n");
 
+	// pre-define functions, so they are visible to all functions regardless of order
+	for (unsigned int i = 0; i < cmn->children.elements; i++) {
+
+		// grab ast node and symbol table entry, ensure this is a function
+		struct ast_node *child = dd_da_get(&cmn->children, i);
+		if (child->node_type != AST_COMMAND_NATIVE) continue;
+		struct entry *echild = symtable_entryat(child->value);
+		if (strcmp(echild->lexptr, "function") != 0) continue;
+
+		// get function details
+		struct ast_node *funcname = dd_da_get(&child->children, 0);
+		struct entry *efuncname = symtable_entryat(funcname->value);
+
+		// print the function signature
+		fprintf(fd, "void %s_%s(struct %s *this", name, efuncname->lexptr, name);
+		// function arguments
+		fprintf(fd, ");\n");
+	}
+
 	// functions
 	for (unsigned int i = 0; i < cmn->children.elements; i++) {
 
