@@ -117,3 +117,38 @@ int struct_table_is_member_primitive(int structIndex, int memberIndex) {
 	struct struct_table_entry_member *m = &struct_table[structIndex].members[memberIndex];
 	return m->type != DD_VARIABLE_TYPE_STRUCT;
 }
+
+int struct_table_has_member(int structIndex, const char *membername) {
+	if (structIndex < 0 || structIndex > struct_table_current) {
+		printf("error: struct_table_has_member: index out of bounds: %d\n", structIndex);
+		exit(-1);
+	}
+
+	struct struct_table_entry *e = &struct_table[structIndex];
+	for (int i = 0; i < e->member_total; i++) {
+		struct struct_table_entry_member *m = &e->members[i];
+		if (strcmp(m->name, membername) == 0) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int struct_table_is_member_parent(int structIndex, const char *membername) {
+	if (structIndex < 0 || structIndex > struct_table_current) {
+		printf("error: struct_table_is_member_parent: index out of bounds: %d\n", structIndex);
+		exit(-1);
+	}
+	struct struct_table_entry *t = &struct_table[structIndex];
+	if (t->parent != -1) {
+		//struct struct_table_entry *parent = &struct_table[t->parent];
+		if (struct_table_has_member(t->parent, membername)) {
+			return 1;
+		}
+		else {
+			return 1 *struct_table_is_member_parent(t->parent, membername);
+		}
+	}
+	return 0;
+}

@@ -308,6 +308,18 @@ void print_class(FILE *fd, struct ast_node *command) {
 			if (strcmp(e->lexptr, "def") == 0) {
 				print_definition(fd, child);
 			}
+			else
+			if (strcmp(e->lexptr, "function") == 0) {
+				struct ast_node *funcname = dd_da_get(&child->children, 0);
+				struct entry *efuncname = symtable_entryat(funcname->value);
+
+				// only include functions that are not overriding parent functions
+				if (!struct_table_is_member_parent(structIndex, efuncname->lexptr)) {
+					fprintf(fd, "void (*%s)(struct %s *", efuncname->lexptr, name);
+					// function arguments
+					fprintf(fd, ");\n");
+				}
+			}
 		}
 	}
 
@@ -370,11 +382,7 @@ void print_class(FILE *fd, struct ast_node *command) {
 				struct ast_node *funcname2 = dd_da_get(&fchild->children, 0);
 				struct entry *efuncname2 = symtable_entryat(funcname2->value);
 
-				struct ast_node *funcoverride = dd_da_get(&fchild->children, 2);
-				if (funcoverride->node_type != AST_IDENTIFIER) continue;
-				struct entry *funcoverridename = symtable_entryat(funcoverride->value);
-
-				if (strcmp(funcoverridename->lexptr, "override") == 0) {
+				if (struct_table_is_member_parent(structIndex, efuncname2->lexptr)) {
 					fprintf(fd, "this->parent.%s = %s_%s;\n", efuncname2->lexptr, name, efuncname2->lexptr);
 				}
 			}

@@ -135,6 +135,9 @@ int main(int argc, char *argv[])
 	*/
 	struct_table_init();
 	struct_table_push("dd_world", 0);
+	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION);
+	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION);
 
 	// parse!
         yyparse();
@@ -265,7 +268,6 @@ command:
 							struct ast_node *varname = dd_da_get(&statement->children, 1);
 							struct entry *evarname = symtable_entryat(varname->value);
 							int type = 0;
-							printf("compare %s and %s\n", evartype->lexptr, "class");
 							if (strcmp(evartype->lexptr, "int") == 0) {
 								type = DD_VARIABLE_TYPE_INT;
 							}
