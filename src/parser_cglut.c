@@ -278,9 +278,12 @@ void print_function(FILE *fd, struct ast_node *command) {
 */
 void print_class(FILE *fd, struct ast_node *command) {
 
+	// get name
+	struct ast_node *classname = dd_da_get(&command->children, 0);
+	struct entry *eclassname = symtable_entryat(classname->value);
+
 	// get struct
-	struct entry *ecmd = symtable_entryat(command->value);
-	int structIndex = ecmd->value;
+	int structIndex = struct_table_get_index(eclassname->lexptr);
 	const char *name = struct_table_get_name(structIndex);
 
 	int previous_scope = scope;

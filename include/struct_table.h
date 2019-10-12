@@ -41,6 +41,7 @@ void struct_table_print();
 
 // get name of struct, or name of member of struct, on given indices
 const char *struct_table_get_name(int structIndex);
+int struct_table_get_index(const char *structname);
 const char *struct_table_get_member_name(int structIndex, int memberIndex);
 
 // get struct member type
