@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
 	/* tweakable data
 	 */
 	int show_ast = 0;
+	int show_struct_table = 0;
 	char *filename = 0;
 	FILE *input_file = stdin;
 
@@ -80,6 +81,10 @@ int main(int argc, char *argv[])
 		// print abstract syntax tree
 		if (strcmp(argv[i], "--print-ast") == 0) {
 			show_ast = 1;
+		}
+		else
+		if (strcmp(argv[i], "--print-struct-table") == 0) {
+			show_struct_table = 1;
 		}
 		else
 		// input file
@@ -147,16 +152,18 @@ int main(int argc, char *argv[])
 	// parse resulting ast tree to a file
 	//parse_javascript("build/game.js", game_node);
 	parse_cglut("build-cglut/game.c", game_node);
-	//struct_table_print();
 
-	// print debug data and clean everything
-	/*
-	symtable_print();
-	*/
+	// print debug data
 
 	if (show_ast) {
 		ast_print(game_node);
 	}
+
+	if (show_struct_table) {
+		struct_table_print();
+	}
+
+	//symtable_print();
 
 	// clean symtable and ast tree
 	symtable_clean();
