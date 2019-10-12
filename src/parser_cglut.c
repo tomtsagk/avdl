@@ -382,8 +382,13 @@ void print_class(FILE *fd, struct ast_node *command) {
 				struct ast_node *funcname2 = dd_da_get(&fchild->children, 0);
 				struct entry *efuncname2 = symtable_entryat(funcname2->value);
 
-				if (struct_table_is_member_parent(structIndex, efuncname2->lexptr)) {
-					fprintf(fd, "this->parent.%s = %s_%s;\n", efuncname2->lexptr, name, efuncname2->lexptr);
+				int parent_level = struct_table_is_member_parent(structIndex, efuncname2->lexptr);
+				if (parent_level) {
+					fprintf(fd, "this->");
+					for (int i = 0; i < parent_level; i++) {
+						fprintf(fd, "parent.");
+					}
+					fprintf(fd, "%s = %s_%s;\n", efuncname2->lexptr, name, efuncname2->lexptr);
 				}
 			}
 		}
@@ -520,10 +525,14 @@ void parse_cglut(const char *filename, struct ast_node *n) {
 	);
 	fclose(fd_global);
 
+	system("gcc build-cglut/game.c -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -w");
+
+	/*
 	int dir = open("build", O_DIRECTORY);
 	if (!dir) {
 		printf("error opening `build/`: %s\n", strerror(errno));
 	}
+	*/
 	//sprintf(buffer, "%s/share/%s/dd_pixi_engine.js", INSTALL_LOCATION, PROJECT_NAME);
 	//file_copy_at(0, buffer, dir, "dd_pixi_engine.js", 0);
 	//sprintf(buffer, "%s/share/%s/index.html", INSTALL_LOCATION, PROJECT_NAME);

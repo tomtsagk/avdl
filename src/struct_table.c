@@ -135,20 +135,26 @@ int struct_table_has_member(int structIndex, const char *membername) {
 	return 0;
 }
 
-int struct_table_is_member_parent(int structIndex, const char *membername) {
+static int parent_level;
+static int struct_table_is_member_parent_search(int structIndex, const char *membername) {
 	if (structIndex < 0 || structIndex > struct_table_current) {
 		printf("error: struct_table_is_member_parent: index out of bounds: %d\n", structIndex);
 		exit(-1);
 	}
 	struct struct_table_entry *t = &struct_table[structIndex];
 	if (t->parent != -1) {
-		//struct struct_table_entry *parent = &struct_table[t->parent];
+		parent_level++;
 		if (struct_table_has_member(t->parent, membername)) {
-			return 1;
+			return parent_level;
 		}
 		else {
-			return 1 *struct_table_is_member_parent(t->parent, membername);
+			struct_table_is_member_parent_search(t->parent, membername);
 		}
 	}
 	return 0;
+}
+
+int struct_table_is_member_parent(int structIndex, const char *membername) {
+	parent_level = 0;
+	return struct_table_is_member_parent_search(structIndex, membername);
 }
