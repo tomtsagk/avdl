@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 	// parse resulting ast tree to a file
 	//parse_javascript("build/game.js", game_node);
 	parse_cglut("build-cglut/game.c", game_node);
-	struct_table_print();
+	//struct_table_print();
 
 	// print debug data and clean everything
 	/*
