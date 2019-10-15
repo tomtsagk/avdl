@@ -144,15 +144,29 @@ void print_operator_binary(FILE *fd, struct ast_node *command) {
 
 void print_definition(FILE *fd, struct ast_node *command) {
 	struct ast_node *vartype = dd_da_get(&command->children, 0);
+	struct entry *type_entry = symtable_entryat(vartype->value);
+	char *type;
+	int arrayElements = 0;
 	if (vartype->node_type == AST_IDENTIFIER) {
-		struct entry *e = symtable_entryat(vartype->value);
-		if (strcmp(e->lexptr, "float") != 0
-		&&  strcmp(e->lexptr, "int") != 0) {
+		if (strcmp(type_entry->lexptr, "float") != 0
+		&&  strcmp(type_entry->lexptr, "int") != 0) {
 			fprintf(fd, "struct ");
 		}
+		type = type_entry->lexptr;
 	}
-	struct entry *type_entry = symtable_entryat(vartype->value);
-	fprintf(fd, "%s ", type_entry->lexptr);
+	else
+	if (vartype->node_type == AST_COMMAND_NATIVE) {
+		if (strcmp(type_entry->lexptr, "array") == 0) {
+			struct ast_node *arraytype = dd_da_get(&vartype->children, 0);
+			struct entry *earraytype = symtable_entryat(arraytype->value);
+			type = earraytype->lexptr;
+			arrayElements = 1;
+
+			struct ast_node *arraynumber = dd_da_get(&vartype->children, 1);
+			arrayElements = arraynumber->value;
+		}
+	}
+	fprintf(fd, "%s ", type);
 
 	struct ast_node *varname = dd_da_get(&command->children, 1);
 
@@ -172,6 +186,10 @@ void print_definition(FILE *fd, struct ast_node *command) {
 	*/
 
 	print_node(fd, varname);
+	if (arrayElements) {
+		fprintf(fd, "[%d]", arrayElements);
+	}
+
 	if (command->children.elements >= 3) {
 		fprintf(fd, " = ");
 		print_node(fd, dd_da_get(&command->children, 2));
