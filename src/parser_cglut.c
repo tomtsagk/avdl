@@ -457,14 +457,21 @@ void print_identifier(FILE *fd, struct ast_node *command) {
 	}
 	fprintf(fd, "%s", e->lexptr);
 
+	int arraySize = 0;
+	if (command-> arraySize > 0) arraySize = command->arraySize;
 	for (unsigned int i = 0; i < command->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&command->children, i);
 		if (i == 0 && strcmp(e->lexptr, "this") == 0) {
 			fprintf(fd, "->");
 		}
 		else {
 			fprintf(fd, ".");
 		}
-		print_node(fd, dd_da_get(&command->children, i));
+		print_node(fd, child);
+	}
+
+	if (arraySize) {
+		fprintf(fd, "[%d]", arraySize);
 	}
 }
 

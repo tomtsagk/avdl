@@ -386,15 +386,26 @@ cmd_name:
  * example: this.my_obj.x
  */
 identifier:
-	DD_CONSTANT_SYMBOL {
+	DD_CONSTANT_SYMBOL optional_array_index {
 		struct ast_node *n = ast_create(AST_IDENTIFIER, $1);
+		n->arraySize = $2;
 		ast_push(n);
 	}
 	|
-	identifier '.' DD_CONSTANT_SYMBOL {
+	identifier '.' DD_CONSTANT_SYMBOL optional_array_index {
 		struct ast_node *new = ast_create(AST_IDENTIFIER, $3);
+		new->arraySize = $4;
 		struct ast_node *group = ast_pop();
 		ast_child_add(group, new);
 		ast_push(group);
+	}
+	;
+
+optional_array_index: {
+		$$ = 0;
+	}
+	|
+	'[' DD_CONSTANT_NUMBER ']' {
+		$$ = $2;
 	}
 	;
