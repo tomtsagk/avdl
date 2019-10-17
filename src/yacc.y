@@ -388,13 +388,25 @@ cmd_name:
 identifier:
 	DD_CONSTANT_SYMBOL optional_array_index {
 		struct ast_node *n = ast_create(AST_IDENTIFIER, $1);
-		n->arraySize = $2;
+
+		// check if an array, and add as a child
+		if ($2) {
+			struct ast_node *opt_index = ast_pop();
+			ast_child_add(n, opt_index);
+		}
+
 		ast_push(n);
 	}
 	|
 	identifier '.' DD_CONSTANT_SYMBOL optional_array_index {
 		struct ast_node *new = ast_create(AST_IDENTIFIER, $3);
-		new->arraySize = $4;
+
+		// check if an array, and add as a child
+		if ($3) {
+			struct ast_node *opt_index = ast_pop();
+			ast_child_add(new, opt_index);
+		}
+
 		struct ast_node *group = ast_pop();
 		ast_child_add(group, new);
 		ast_push(group);
@@ -402,10 +414,12 @@ identifier:
 	;
 
 optional_array_index: {
-		$$ = -1;
+		$$ = 0;
 	}
 	|
-	'[' DD_CONSTANT_NUMBER ']' {
-		$$ = $2;
+	'[' optional_args ']' {
+		$$ = 1;
+		struct ast_node *n = ast_pop();
+		ast_push(n);
 	}
 	;

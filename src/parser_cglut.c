@@ -457,9 +457,20 @@ void print_identifier(FILE *fd, struct ast_node *command) {
 	}
 	fprintf(fd, "%s", e->lexptr);
 
-	int arraySize = -1;
-	if (command-> arraySize >= 0) arraySize = command->arraySize;
-	for (unsigned int i = 0; i < command->children.elements; i++) {
+	// check if member of array
+	int cchild = 0;
+	if (command->children.elements > 0) {
+		struct ast_node *c = dd_da_get(&command->children, cchild);
+		if (c->node_type == AST_GROUP) {
+			cchild++;
+			fprintf(fd, "[");
+			print_node(fd, c);
+			fprintf(fd, "]");
+		}
+	}
+
+	// print children
+	for (unsigned int i = cchild; i < command->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&command->children, i);
 		if (i == 0 && strcmp(e->lexptr, "this") == 0) {
 			fprintf(fd, "->");
@@ -470,9 +481,6 @@ void print_identifier(FILE *fd, struct ast_node *command) {
 		print_node(fd, child);
 	}
 
-	if (arraySize >= 0) {
-		fprintf(fd, "[%d]", arraySize);
-	}
 }
 
 void print_node(FILE *fd, struct ast_node *n) {
