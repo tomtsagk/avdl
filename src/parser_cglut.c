@@ -174,7 +174,7 @@ void print_definition(FILE *fd, struct ast_node *command) {
 	*/
 
 	print_node(fd, varname);
-	if (arrayElements) {
+	if (arrayElements > 0) {
 		fprintf(fd, "[%d]", arrayElements);
 	}
 
@@ -457,8 +457,8 @@ void print_identifier(FILE *fd, struct ast_node *command) {
 	}
 	fprintf(fd, "%s", e->lexptr);
 
-	int arraySize = 0;
-	if (command-> arraySize > 0) arraySize = command->arraySize;
+	int arraySize = -1;
+	if (command-> arraySize >= 0) arraySize = command->arraySize;
 	for (unsigned int i = 0; i < command->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&command->children, i);
 		if (i == 0 && strcmp(e->lexptr, "this") == 0) {
@@ -470,7 +470,7 @@ void print_identifier(FILE *fd, struct ast_node *command) {
 		print_node(fd, child);
 	}
 
-	if (arraySize) {
+	if (arraySize >= 0) {
 		fprintf(fd, "[%d]", arraySize);
 	}
 }

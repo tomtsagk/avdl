@@ -10,7 +10,7 @@ struct ast_node *ast_create(enum AST_NODE_TYPE node_type, int value) {
 	struct ast_node *new_node = malloc(sizeof(struct ast_node));
 	new_node->node_type = node_type;
 	new_node->value = value;
-	new_node->arraySize = 0;
+	new_node->arraySize = -1;
 	dd_da_init(&new_node->children, sizeof(struct ast_node));
 	new_node->parent = 0;
 	return new_node;

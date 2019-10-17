@@ -402,7 +402,7 @@ identifier:
 	;
 
 optional_array_index: {
-		$$ = 0;
+		$$ = -1;
 	}
 	|
 	'[' DD_CONSTANT_NUMBER ']' {
