@@ -53,6 +53,7 @@ char *keywords[] = {
 	"array",
 	"new",
 	"if",
+	"for",
 };
 
 // assign the right parents to all nodes in the tree
@@ -402,7 +403,7 @@ identifier:
 		struct ast_node *new = ast_create(AST_IDENTIFIER, $3);
 
 		// check if an array, and add as a child
-		if ($3) {
+		if ($4) {
 			struct ast_node *opt_index = ast_pop();
 			ast_child_add(new, opt_index);
 		}

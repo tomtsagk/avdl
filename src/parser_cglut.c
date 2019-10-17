@@ -40,6 +40,7 @@ static void print_identifier(FILE *fd, struct ast_node *command);
 static void print_definition(FILE *fd, struct ast_node *command);
 static void print_operator_binary(FILE *fd, struct ast_node *command);
 static void print_function_call(FILE *fd, struct ast_node *command);
+static void print_for(FILE *fd, struct ast_node *command);
 /*
 static void print_echo(FILE *fd, struct ast_node *command);
 static void print_function(FILE *fd, struct ast_node *command);
@@ -182,7 +183,9 @@ void print_definition(FILE *fd, struct ast_node *command) {
 		fprintf(fd, " = ");
 		print_node(fd, dd_da_get(&command->children, 2));
 	}
-	fprintf(fd, ";\n");
+	if (has_semicolon) {
+		fprintf(fd, ";\n");
+	}
 }
 
 /* find out which command it is, and call the right function
@@ -203,7 +206,9 @@ void print_command(FILE *fd, struct ast_node *command) {
 	else
 	if (strcmp(e->lexptr, "=") == 0) {
 		print_operator_binary(fd, command);
-		fprintf(fd, ";\n");
+		if (has_semicolon) {
+			fprintf(fd, ";\n");
+		}
 	}
 	else
 	if (strcmp(e->lexptr, "+") == 0
@@ -238,6 +243,10 @@ void print_command(FILE *fd, struct ast_node *command) {
 	else
 	if (strcmp(e->lexptr, "if") == 0) {
 		//print_if(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "for") == 0) {
+		print_for(fd, command);
 	}
 }
 /*
@@ -481,6 +490,21 @@ void print_identifier(FILE *fd, struct ast_node *command) {
 		print_node(fd, child);
 	}
 
+}
+
+static void print_for(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "for (");
+	int prev_semicolon = has_semicolon;
+	has_semicolon = 0;
+	print_node(fd, dd_da_get(&command->children, 0));
+	fprintf(fd, ";");
+	print_node(fd, dd_da_get(&command->children, 1));
+	fprintf(fd, ";");
+	print_node(fd, dd_da_get(&command->children, 2));
+	has_semicolon = prev_semicolon;
+	fprintf(fd, ") {\n");
+	print_node(fd, dd_da_get(&command->children, 3));
+	fprintf(fd, "}\n");
 }
 
 void print_node(FILE *fd, struct ast_node *n) {
