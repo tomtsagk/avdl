@@ -36,7 +36,7 @@ void symtable_pop() {
 }
 
 // find symbol, and return its index
-symtable_index lookup(char s[]) {
+symtable_index symtable_lookup(char s[]) {
 	int p;
 	for (p = 0; p <= symtable->lastentry; p++) {
 		if (strcmp(symtable->entry[p].lexptr, s) == 0) {
@@ -53,7 +53,7 @@ symtable_index symtable_insert(char s[], int tok) {
 	struct entry *symentry;
 
 	// entry already in sym table - return it
-	int index = lookup(s);
+	int index = symtable_lookup(s);
 	if (index >= 0) {
 		return index;
 	}

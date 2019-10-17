@@ -299,6 +299,15 @@ command:
 					}
 				}
 			}
+			else
+			if (strcmp(e->lexptr, "array") == 0) {
+				struct ast_node *type = dd_da_get(&opt_args->children, 0);
+				struct ast_node *amount = dd_da_get(&opt_args->children, 1);
+				struct ast_node *n = ast_create(AST_IDENTIFIER, type->value);
+				n->arraySize = amount->value;
+				ast_push(n);
+				goto CONTINUE;
+			}
 		}
 		// not a native keyword, assume custom one
 		else {
@@ -318,6 +327,9 @@ command:
 			ast_child_add_first(opt_args, cmd_name);
 		}
 		ast_push(opt_args);
+
+		CONTINUE:
+		opt_args->value;
 	};
 
 /* optional args

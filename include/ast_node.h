@@ -42,6 +42,7 @@ struct ast_node {
 		int value;
 		float fvalue;
 	};
+	int arraySize;
 	struct dd_dynamic_array children;
 	struct ast_node *parent;
 };
