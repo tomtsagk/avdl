@@ -561,9 +561,7 @@ void parse_cglut(const char *filename, struct ast_node *n) {
 		printf("unable to open '%s': %s\n", filename, strerror(errno));
 		return;
 	}
-	fprintf(fd_global, "#include \"dd_filetomesh.h\"\n");
-	fprintf(fd_global, "#include \"dd_world.h\"\n");
-	fprintf(fd_global, "#include \"dd_object.h\"\n");
+	fprintf(fd_global, "#include \"dd_ddcglut.h\"\n");
 	fprintf(fd_global, "#include <stdio.h>\n");
 	fprintf(fd_global, "#include <GL/glew.h>\n");
 	print_node(fd_global, n);
@@ -573,7 +571,7 @@ void parse_cglut(const char *filename, struct ast_node *n) {
 	);
 	fclose(fd_global);
 
-	system("gcc build-cglut/game.c -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -w");
+	system("gcc build-cglut/game.c -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w");
 
 	/*
 	int dir = open("build", O_DIRECTORY);
