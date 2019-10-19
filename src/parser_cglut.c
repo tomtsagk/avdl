@@ -41,17 +41,16 @@ static void print_definition(FILE *fd, struct ast_node *command);
 static void print_operator_binary(FILE *fd, struct ast_node *command);
 static void print_function_call(FILE *fd, struct ast_node *command);
 static void print_for(FILE *fd, struct ast_node *command);
+static void print_if(FILE *fd, struct ast_node *command);
 /*
 static void print_echo(FILE *fd, struct ast_node *command);
 static void print_function(FILE *fd, struct ast_node *command);
 static void print_return(FILE *fd, struct ast_node *command);
 static void print_array(FILE *fd, struct ast_node *command);
 static void print_new(FILE *fd, struct ast_node *command);
-static void print_if(FILE *fd, struct ast_node *command);
 */
-/*
 
-void print_if(FILE *fd, struct ast_node *command) {
+static void print_if(FILE *fd, struct ast_node *command) {
 
 	unsigned int cchild = 0;
 	while (cchild < command->children.elements) {
@@ -74,6 +73,7 @@ void print_if(FILE *fd, struct ast_node *command) {
 		cchild++;
 	}
 }
+/*
 
 void print_new(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "new ");
@@ -242,7 +242,7 @@ void print_command(FILE *fd, struct ast_node *command) {
 	}
 	else
 	if (strcmp(e->lexptr, "if") == 0) {
-		//print_if(fd, command);
+		print_if(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "for") == 0) {
