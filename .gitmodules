@@ -1,3 +1,6 @@
 [submodule "engines/pixi"]
 	path = engines/pixi
 	url = https://notabug.org/tomtsagk/pixijs-game_engine
+[submodule "engines/cglut"]
+	path = engines/cglut
+	url = https://notabug.org/tomtsagk/cglut-game-engine

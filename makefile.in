@@ -5,8 +5,8 @@ PROJECT_NAME=ddlang
 EXECUTABLE=${PROJECT_NAME}
 
 # Engine Data
-ENGINE=dd_pixi_engine.js
-ENGINE_PATH=engines/pixi
+ENGINE_PATH=engines/cglut
+ENGINE_OUT=${ENGINE_PATH}/libddcglut.a
 
 INSTALL_LOCATION=@INSTALL_LOCATION@
 
@@ -18,7 +18,7 @@ YACC_HEADER=yacc.tab.h
 LEX_SRC=lex.yy.c
 
 # build the executable, depends on source, lex, yacc and all engines
-${EXECUTABLE}: ${SRC} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC} ${ENGINE}
+${EXECUTABLE}: ${SRC} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC}
 	gcc -Wall -Wpedantic -Wextra -DINSTALL_LOCATION=\"${INSTALL_LOCATION}\" \
 		-DPROJECT_NAME=\"${PROJECT_NAME}\" -Iinclude -I. ${SRC} ${YACC_SRC} ${LEX_SRC} -o ${EXECUTABLE}
 
@@ -30,16 +30,17 @@ ${LEX_SRC}: src/lex.l
 ${YACC_SRC} ${YACC_HEADER}: src/yacc.y
 	bison -d src/yacc.y
 
-# how to build the pixi engine
-${ENGINE}: engines/pixi
-	${MAKE} -C engines/pixi
+# how to build the cglut engine
+engine:
+	${MAKE} -C ${ENGINE_PATH}
 
-install: ${EXECUTABLE} ${ENGINE_PATH}/${ENGINE}
+install: ${EXECUTABLE}# ${ENGINE_PATH}/${ENGINE}
+	${MAKE} -C ${ENGINE_PATH} PREFIX=${INSTALL_LOCATION} install
 	mkdir -p ${INSTALL_LOCATION}/bin
 	install ${EXECUTABLE} ${INSTALL_LOCATION}/bin/
-	mkdir -p ${INSTALL_LOCATION}/share/${PROJECT_NAME}
-	install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${PROJECT_NAME}/${ENGINE}
-	install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${PROJECT_NAME}/index.html
+	#mkdir -p ${INSTALL_LOCATION}/share/${PROJECT_NAME}
+	#install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${PROJECT_NAME}/${ENGINE}
+	#install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${PROJECT_NAME}/index.html
 	mkdir -p ${INSTALL_LOCATION}/share/man/man1/
 	install manual/ddlang.1 ${INSTALL_LOCATION}/share/man/man1/
 	mkdir -p ${INSTALL_LOCATION}/share/info/
@@ -56,4 +57,4 @@ clean:
 destclean: clean
 	rm -f ddlang.info.gz makefile
 
-.PHONY: clean destclean install
+.PHONY: clean destclean install engine
