@@ -42,6 +42,7 @@ static void print_operator_binary(FILE *fd, struct ast_node *command);
 static void print_function_call(FILE *fd, struct ast_node *command);
 static void print_for(FILE *fd, struct ast_node *command);
 static void print_if(FILE *fd, struct ast_node *command);
+static void print_function_arguments(FILE *fd, struct ast_node *command);
 /*
 static void print_echo(FILE *fd, struct ast_node *command);
 static void print_function(FILE *fd, struct ast_node *command);
@@ -291,6 +292,18 @@ void print_function(FILE *fd, struct ast_node *command) {
 }
 
 */
+
+static void print_function_arguments(FILE *fd, struct ast_node *command) {
+	for (unsigned int i = 0; i+1 < command->children.elements; i += 2) {
+		if (i != 0) {
+			fprintf(fd, ", ");
+		}
+		print_node(fd, dd_da_get(&command->children, i));
+		fprintf(fd, " ");
+		print_node(fd, dd_da_get(&command->children, i+1));
+	}
+}
+
 void print_class(FILE *fd, struct ast_node *command) {
 
 	// get name
@@ -335,6 +348,11 @@ void print_class(FILE *fd, struct ast_node *command) {
 				if (!struct_table_is_member_parent(structIndex, efuncname->lexptr)) {
 					fprintf(fd, "void (*%s)(struct %s *", efuncname->lexptr, name);
 					// function arguments
+					struct ast_node *funcargs = dd_da_get(&child->children, 1);
+					if (funcargs->children.elements >= 2) {
+						fprintf(fd, ", ");
+					}
+					print_function_arguments(fd, funcargs);
 					fprintf(fd, ");\n");
 				}
 			}
@@ -359,6 +377,11 @@ void print_class(FILE *fd, struct ast_node *command) {
 		// print the function signature
 		fprintf(fd, "void %s_%s(struct %s *this", name, efuncname->lexptr, name);
 		// function arguments
+		struct ast_node *funcargs = dd_da_get(&child->children, 1);
+		if (funcargs->children.elements >= 2) {
+			fprintf(fd, ", ");
+		}
+		print_function_arguments(fd, funcargs);
 		fprintf(fd, ");\n");
 	}
 
@@ -380,6 +403,11 @@ void print_class(FILE *fd, struct ast_node *command) {
 		// print the function signature
 		fprintf(fd, "void %s_%s(struct %s *this", name, efuncname->lexptr, name);
 		// function arguments go here
+		struct ast_node *funcargs = dd_da_get(&child->children, 1);
+		if (funcargs->children.elements >= 2) {
+			fprintf(fd, ", ");
+		}
+		print_function_arguments(fd, funcargs);
 		fprintf(fd, ") {\n");
 
 		// init function
