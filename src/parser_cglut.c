@@ -36,7 +36,7 @@ static void print_command(FILE *fd, struct ast_node *command);
 static void print_class(FILE *fd, struct ast_node *command);
 static void print_number(FILE *fd, struct ast_node *command);
 static void print_float(FILE *fd, struct ast_node *command);
-static void print_identifier(FILE *fd, struct ast_node *command);
+static void print_identifier(FILE *fd, struct ast_node *command, int ignore_last);
 static void print_definition(FILE *fd, struct ast_node *command);
 static void print_operator_binary(FILE *fd, struct ast_node *command);
 static void print_function_call(FILE *fd, struct ast_node *command);
@@ -93,13 +93,21 @@ void print_new(FILE *fd, struct ast_node *command) {
 */
 
 void print_function_call(FILE *fd, struct ast_node *command) {
-	print_node(fd, dd_da_get(&command->children, 0));
+	struct ast_node *funcname = dd_da_get(&command->children, 0);
+	struct entry *efuncname = symtable_entryat(funcname->value);
+	print_identifier(fd, funcname, 0);
 	fprintf(fd, "(");
+
+	int has_arg = 0;
+	if (funcname->children.elements > 0) {
+		print_identifier(fd, funcname, 1);
+		has_arg = 1;
+	}
 
 	int prev_semi = has_semicolon;
 	has_semicolon = 0;
 	for (unsigned int i = 1; i < command->children.elements; i++) {
-		if (i != 1) {
+		if (i != 1 || has_arg) {
 			fprintf(fd, ", ");
 		}
 		struct ast_node *child = dd_da_get(&command->children, i);
@@ -436,6 +444,9 @@ void print_class(FILE *fd, struct ast_node *command) {
 					}
 					fprintf(fd, "%s = %s_%s;\n", efuncname2->lexptr, name, efuncname2->lexptr);
 				}
+				else {
+					fprintf(fd, "this->%s = %s_%s;\n", efuncname2->lexptr, name, efuncname2->lexptr);
+				}
 			}
 		}
 
@@ -476,7 +487,7 @@ void print_array(FILE *fd, struct ast_node *command) {
 }
 
 */
-void print_identifier(FILE *fd, struct ast_node *command) {
+void print_identifier(FILE *fd, struct ast_node *command, int ignore_last) {
 	struct entry *e = symtable_entryat(command->value);
 
 	if (command->children.elements > 0 && strcmp(e->lexptr, "this") == 0) {
@@ -507,7 +518,7 @@ void print_identifier(FILE *fd, struct ast_node *command) {
 	}
 
 	// print children
-	for (unsigned int i = cchild; i < command->children.elements; i++) {
+	for (unsigned int i = cchild; i < command->children.elements -(ignore_last ? 1 : 0); i++) {
 		struct ast_node *child = dd_da_get(&command->children, i);
 		if (i == 0 && strcmp(e->lexptr, "this") == 0) {
 			fprintf(fd, "->");
@@ -565,7 +576,7 @@ void print_node(FILE *fd, struct ast_node *n) {
 			break;
 		}
 		case AST_IDENTIFIER: {
-			print_identifier(fd, n);
+			print_identifier(fd, n, 0);
 			break;
 		}
 		case AST_EMPTY: break;
