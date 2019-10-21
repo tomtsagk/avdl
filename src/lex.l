@@ -77,6 +77,8 @@ number -?[0-9]+
 {symbol}	{ yylval = symtable_insert(yytext, DD_ZERO); return DD_CONSTANT_SYMBOL; }
 {float} 	{ yylval = 0; parsing_float = atof(yytext); return DD_CONSTANT_FLOAT; }
 {number}	{ yylval = atoi(yytext); return DD_CONSTANT_NUMBER; }
+\'.\'		{ yylval = yytext[1]; return DD_CONSTANT_NUMBER; }
+
 \"[^"]*\"	{
 	/* chop of the quotes from strings
 	 * add it to symbol table

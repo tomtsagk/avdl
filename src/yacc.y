@@ -144,6 +144,7 @@ int main(int argc, char *argv[])
 	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION);
 	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION);
+	struct_table_push_member("key_input", DD_VARIABLE_TYPE_FUNCTION);
 
 	// parse!
         yyparse();
