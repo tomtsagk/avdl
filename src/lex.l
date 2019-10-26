@@ -14,7 +14,7 @@ float parsing_float = 0;
 
 %}
 
-symbol [-=+<>*/&|a-zA-Z][-=+<>*/&|a-zA-Z0-9_]*
+symbol [-=+<>*/%&|a-zA-Z][-=+<>*/&|a-zA-Z0-9_]*
 float  -?[0-9]+\.[0-9]+
 number -?[0-9]+
 

@@ -224,6 +224,7 @@ void print_command(FILE *fd, struct ast_node *command) {
 	||  strcmp(e->lexptr, "-") == 0
 	||  strcmp(e->lexptr, "*") == 0
 	||  strcmp(e->lexptr, "/") == 0
+	||  strcmp(e->lexptr, "%") == 0
 	||  strcmp(e->lexptr, ">=") == 0
 	||  strcmp(e->lexptr, "==") == 0
 	||  strcmp(e->lexptr, "<=") == 0
