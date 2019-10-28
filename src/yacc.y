@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "struct_table.h"
+#include "dd_commands.h"
 
 extern FILE *yyin;
 extern YYSTYPE yylex(void);
@@ -30,42 +31,6 @@ void yyerror(const char *str)
 
 // game node, parent of all nodes
 struct ast_node *game_node;
-
-char *keywords[] = {
-	"echo",
-	"def",
-	"=",
-	"+",
-	"-",
-	"*",
-	"/",
-	"%",
-	">=",
-	"==",
-	"<=",
-	"&&",
-	"||",
-	"<",
-	">",
-	"group",
-	"class",
-	"function",
-	"return",
-	"array",
-	"new",
-	"if",
-	"for",
-};
-
-// assign the right parents to all nodes in the tree
-void assign_parent(struct ast_node *n) {
-	for (unsigned int i = 0; i < n->children.elements; i++) {
-		struct ast_node *child = dd_da_get(&n->children, i);
-		child->parent = n;
-
-		assign_parent(child);
-	}
-}
 
 // init data, parse, exit
 int main(int argc, char *argv[])
@@ -118,8 +83,8 @@ int main(int argc, char *argv[])
 
 	/* keywords
 	 */
-	for (unsigned int i = 0; i < sizeof(keywords) /sizeof(char*); i++) {
-		symtable_insert(keywords[i], DD_KEYWORD);
+	for (unsigned int i = 0; i < keywords_total; i++) {
+		symtable_insert(keywords[i].keyword, DD_KEYWORD);
 	}
 	/*
 	symtable_insert("DD_WIDTH", DD_INTERNAL_WIDTH);
@@ -150,8 +115,6 @@ int main(int argc, char *argv[])
 
 	// parse!
         yyparse();
-
-	assign_parent(game_node);
 
 	// parse resulting ast tree to a file
 	//parse_javascript("build/game.js", game_node);
@@ -235,6 +198,9 @@ command:
 		// get nodes
 		struct ast_node *opt_args = ast_pop();
 		struct ast_node *cmd_name = ast_pop();
+
+		struct ast_node *cmd = parse_command(cmd_name, opt_args);
+		ast_print(cmd);
 
 		// find out if keyword is an native keyword or a custom one
 		struct entry *e = symtable_entryat(cmd_name->value);

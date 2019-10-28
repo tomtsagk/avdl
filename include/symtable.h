@@ -19,8 +19,8 @@ struct entry {
 void symtable_init();
 
 // lookup and insert functions
-symtable_index symtable_lookup(char s[]);
-symtable_index symtable_insert(char s[], int tok);
+symtable_index symtable_lookup(const char s[]);
+symtable_index symtable_insert(const char s[], int tok);
 
 /* scope functions
  * push: create a new (empty) symtable as a child of the current one

@@ -36,7 +36,7 @@ void symtable_pop() {
 }
 
 // find symbol, and return its index
-symtable_index symtable_lookup(char s[]) {
+symtable_index symtable_lookup(const char s[]) {
 	int p;
 	for (p = 0; p <= symtable->lastentry; p++) {
 		if (strcmp(symtable->entry[p].lexptr, s) == 0) {
@@ -47,7 +47,7 @@ symtable_index symtable_lookup(char s[]) {
 }
 
 // insert new symbol
-symtable_index symtable_insert(char s[], int tok) {
+symtable_index symtable_insert(const char s[], int tok) {
 
 	// entry to be returned
 	struct entry *symentry;
