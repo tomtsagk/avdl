@@ -57,4 +57,6 @@ int struct_table_get_member(int structIndex, const char *membername);
 int struct_table_has_member(int structIndex, const char *membername);
 int struct_table_is_member_parent(int structIndex, const char *membername);
 
+int struct_table_get_member_scope(int structIndex, int memberIndex);
+
 #endif

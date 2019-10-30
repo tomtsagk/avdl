@@ -491,8 +491,34 @@ void print_array(FILE *fd, struct ast_node *command) {
 void print_identifier(FILE *fd, struct ast_node *command, int ignore_last) {
 	struct entry *e = symtable_entryat(command->value);
 
-	if (command->children.elements > 0 && strcmp(e->lexptr, "this") == 0) {
+	printf("\n\nIDENTIFIER:\n");
+	ast_print(command);
+	if (command->children.elements > 0) {
+		int current_scope = scope;
+		int current_child = 0;
 
+		while (current_child < command->children.elements) {
+			struct ast_node *n = dd_da_get(&command->children, current_child);
+			struct entry *e = symtable_entryat(n->value);
+
+			int memberId = struct_table_get_member(current_scope, e->lexptr);
+			// not last child, update scope
+			if (current_child < command->children.elements-1) {
+				if (struct_table_is_member_primitive(current_scope, memberId)) {
+					current_scope = struct_table_get_member_scope(current_scope, memberId);
+				}
+			}
+			// last child, decide if it pointer or not
+			else {
+				if (!struct_table_is_member_primitive(current_scope, memberId)) {
+					fprintf(fd, "&");
+				}
+			}
+
+			current_child++;
+		}
+
+		/*
 		if (scope != -1) {
 			struct ast_node *n = dd_da_get(&command->children, 0);
 			struct entry *e = symtable_entryat(n->value);
@@ -501,8 +527,8 @@ void print_identifier(FILE *fd, struct ast_node *command, int ignore_last) {
 			if (!struct_table_is_member_primitive(scope, memberId)) {
 				fprintf(fd, "&");
 			}
-
 		}
+		*/
 	}
 	fprintf(fd, "%s", e->lexptr);
 

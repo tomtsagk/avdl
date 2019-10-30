@@ -5,7 +5,7 @@
 
 struct keyword_function {
 	char *keyword;
-	void (*function)(void);
+	struct ast_node *(*function)(struct ast_node *name, struct ast_node *args);
 };
 
 // keywords available in the language

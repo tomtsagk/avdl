@@ -167,3 +167,12 @@ int struct_table_get_index(const char *structname) {
 	}
 	return -1;
 }
+
+int struct_table_get_member_scope(int structIndex, int memberIndex) {
+	struct struct_table_entry_member *m = &struct_table[structIndex].members[memberIndex];
+	if (m->type == DD_VARIABLE_TYPE_STRUCT) {
+		return struct_table_get_index(m->name);
+	}
+	printf("struct_table_get_member_scope: error: type is not struct\n");
+	exit(-1);
+}

@@ -4,30 +4,33 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+static struct ast_node *parse_group(struct ast_node *cmd_name, struct ast_node *opt_args);
+static struct ast_node *parse_def(struct ast_node *cmd_name, struct ast_node *opt_args);
+
 const struct keyword_function keywords[] = {
-	{"echo", 0},
-	{"def", 0},
-	{"=", 0},
-	{"+", 0},
-	{"-", 0},
-	{"*", 0},
-	{"/", 0},
-	{"%", 0},
-	{">=", 0},
-	{"==", 0},
-	{"<=", 0},
-	{"&&", 0},
-	{"||", 0},
-	{"<", 0},
-	{">", 0},
-	{"group", 0},
-	{"class", 0},
-	{"function", 0},
-	{"return", 0},
-	{"array", 0},
-	{"new", 0},
-	{"if", 0},
-	{"for", 0},
+	{"echo", parse_group},
+	{"def", parse_group},
+	{"=", parse_group},
+	{"+", parse_group},
+	{"-", parse_group},
+	{"*", parse_group},
+	{"/", parse_group},
+	{"%", parse_group},
+	{">=", parse_group},
+	{"==", parse_group},
+	{"<=", parse_group},
+	{"&&", parse_group},
+	{"||", parse_group},
+	{"<", parse_group},
+	{">", parse_group},
+	{"group", parse_group},
+	{"class", parse_group},
+	{"function", parse_group},
+	{"return", parse_group},
+	{"array", parse_group},
+	{"new", parse_group},
+	{"if", parse_group},
+	{"for", parse_group},
 };
 unsigned int keywords_total = sizeof(keywords) /sizeof(struct keyword_function);
 
@@ -39,12 +42,11 @@ struct ast_node *parse_command(struct ast_node *cmd_name, struct ast_node *opt_a
 	for (unsigned int i = 0; i < keywords_total; i++) {
 		if (strcmp(keywords[i].keyword, e->lexptr) == 0) {
 			if (keywords[i].function) {
-				keywords[i].function();
-				return 0;
+				return keywords[i].function(cmd_name, opt_args);
 			}
 			else {
 				printf("error, command '%s' does not have a way to be parsed\n", e->lexptr);
-				//exit(-1);
+				exit(-1);
 			}
 		}
 	}
@@ -52,4 +54,18 @@ struct ast_node *parse_command(struct ast_node *cmd_name, struct ast_node *opt_a
 	// default behaviour
 	struct ast_node *ast = ast_create(AST_EMPTY, 0);
 	return ast;
+}
+
+// group is pass-through
+static struct ast_node *parse_group(struct ast_node *cmd_name, struct ast_node *opt_args) {
+	struct entry *e = symtable_entryat(cmd_name->value);
+	if (strcmp(e->lexptr, "group") == 0) {
+		opt_args->node_type = AST_GROUP;
+	}
+	return opt_args;
+}
+
+// definition - def <type> <name> <init-value?>
+static struct ast_node *parse_def(struct ast_node *cmd_name, struct ast_node *opt_args) {
+	return opt_args;
 }

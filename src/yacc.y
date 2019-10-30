@@ -199,8 +199,14 @@ command:
 		struct ast_node *opt_args = ast_pop();
 		struct ast_node *cmd_name = ast_pop();
 
+		/*
 		struct ast_node *cmd = parse_command(cmd_name, opt_args);
-		ast_print(cmd);
+		//ast_print(cmd);
+
+		ast_push(cmd);
+
+		goto CONTINUE;
+		*/
 
 		// find out if keyword is an native keyword or a custom one
 		struct entry *e = symtable_entryat(cmd_name->value);
