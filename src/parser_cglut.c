@@ -491,19 +491,18 @@ void print_array(FILE *fd, struct ast_node *command) {
 void print_identifier(FILE *fd, struct ast_node *command, int ignore_last) {
 	struct entry *e = symtable_entryat(command->value);
 
-	printf("\n\nIDENTIFIER:\n");
-	ast_print(command);
 	if (command->children.elements > 0) {
 		int current_scope = scope;
 		int current_child = 0;
 
-		while (current_child < command->children.elements) {
+		int target = command->children.elements -(ignore_last ? 1 : 0);
+		while (current_child < target) {
 			struct ast_node *n = dd_da_get(&command->children, current_child);
 			struct entry *e = symtable_entryat(n->value);
 
 			int memberId = struct_table_get_member(current_scope, e->lexptr);
 			// not last child, update scope
-			if (current_child < command->children.elements-1) {
+			if (current_child < target-1) {
 				if (struct_table_is_member_primitive(current_scope, memberId)) {
 					current_scope = struct_table_get_member_scope(current_scope, memberId);
 				}
