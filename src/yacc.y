@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
 	 */
 	int show_ast = 0;
 	int show_struct_table = 0;
+	int compile = 1;
 	char *filename = 0;
 	FILE *input_file = stdin;
 
@@ -50,8 +51,14 @@ int main(int argc, char *argv[])
 			show_ast = 1;
 		}
 		else
+		// print struct table
 		if (strcmp(argv[i], "--print-struct-table") == 0) {
 			show_struct_table = 1;
+		}
+		else
+		// don't compile
+		if (strcmp(argv[i], "--no-compile") == 0) {
+			compile = 0;
 		}
 		else
 		// input file
@@ -114,11 +121,16 @@ int main(int argc, char *argv[])
 	struct_table_push("dd_matrix", 0);
 
 	// parse!
-        yyparse();
+	if (compile) {
+	        yyparse();
 
-	// parse resulting ast tree to a file
-	//parse_javascript("build/game.js", game_node);
-	parse_cglut("build-cglut/game.c", game_node);
+		// parse resulting ast tree to a file
+		//parse_javascript("build/game.js", game_node);
+		parse_cglut("build-cglut/game.c", game_node);
+	}
+	else {
+		parse_cglut("build-cglut/game.c", 0);
+	}
 
 	// print debug data
 

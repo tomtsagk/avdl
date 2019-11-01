@@ -43,8 +43,8 @@ static void print_function_call(FILE *fd, struct ast_node *command);
 static void print_for(FILE *fd, struct ast_node *command);
 static void print_if(FILE *fd, struct ast_node *command);
 static void print_function_arguments(FILE *fd, struct ast_node *command);
-/*
 static void print_echo(FILE *fd, struct ast_node *command);
+/*
 static void print_function(FILE *fd, struct ast_node *command);
 static void print_return(FILE *fd, struct ast_node *command);
 static void print_array(FILE *fd, struct ast_node *command);
@@ -202,7 +202,7 @@ void print_definition(FILE *fd, struct ast_node *command) {
 void print_command(FILE *fd, struct ast_node *command) {
 	struct entry *e = symtable_entryat(command->value);
 	if (strcmp(e->lexptr, "echo") == 0) {
-		//print_echo(fd, command);
+		print_echo(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "def") == 0) {
@@ -259,15 +259,14 @@ void print_command(FILE *fd, struct ast_node *command) {
 		print_for(fd, command);
 	}
 }
-/*
 
 void print_echo(FILE *fd, struct ast_node *command) {
-	fprintf(fd, "console.log(");
+	fprintf(fd, "printf(\"%%s\\n\", ");
 	int temp_semicolon = has_semicolon;
 	has_semicolon = 0;
 	for (unsigned int i = 0; i < command->children.elements; i++) {
 		if (i > 0) {
-			fprintf(fd, " +");
+			fprintf(fd, " ");
 		}
 		print_node(fd, dd_da_get(&command->children, i));
 	}
@@ -275,6 +274,7 @@ void print_echo(FILE *fd, struct ast_node *command) {
 	fprintf(fd, ");\n");
 }
 
+/*
 void print_function(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "this.");
 
@@ -619,22 +619,25 @@ void print_node(FILE *fd, struct ast_node *n) {
 
 // responsible for creating a file and translating ast to target language
 void parse_cglut(const char *filename, struct ast_node *n) {
-	dir_create("build-cglut");
 
-	fd_global = fopen(filename, "w");
-	if (!fd_global) {
-		printf("unable to open '%s': %s\n", filename, strerror(errno));
-		return;
+	if (n) {
+		dir_create("build-cglut");
+
+		fd_global = fopen(filename, "w");
+		if (!fd_global) {
+			printf("unable to open '%s': %s\n", filename, strerror(errno));
+			return;
+		}
+		fprintf(fd_global, "#include \"dd_ddcglut.h\"\n");
+		fprintf(fd_global, "#include <stdio.h>\n");
+		fprintf(fd_global, "#include <GL/glew.h>\n");
+		print_node(fd_global, n);
+		fprintf(fd_global, "void dd_world_init() {"
+				"dd_world_change(sizeof(struct dd_world_main), (void (*)(struct dd_world *)) dd_world_main_create);"
+			"}\n"
+		);
+		fclose(fd_global);
 	}
-	fprintf(fd_global, "#include \"dd_ddcglut.h\"\n");
-	fprintf(fd_global, "#include <stdio.h>\n");
-	fprintf(fd_global, "#include <GL/glew.h>\n");
-	print_node(fd_global, n);
-	fprintf(fd_global, "void dd_world_init() {"
-			"dd_world_change(sizeof(struct dd_world_main), (void (*)(struct dd_world *)) dd_world_main_create);"
-		"}\n"
-	);
-	fclose(fd_global);
 
 	system("gcc build-cglut/game.c -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w");
 
