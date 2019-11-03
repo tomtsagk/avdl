@@ -633,7 +633,7 @@ void parse_cglut(const char *filename, struct ast_node *n) {
 		fprintf(fd_global, "#include <GL/glew.h>\n");
 		print_node(fd_global, n);
 		fprintf(fd_global, "void dd_world_init() {"
-				"dd_world_change(sizeof(struct dd_world_main), (void (*)(struct dd_world *)) dd_world_main_create);"
+				"dd_world_set(dd_world_main);"
 			"}\n"
 		);
 		fclose(fd_global);
