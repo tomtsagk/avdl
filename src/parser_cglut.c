@@ -34,6 +34,7 @@ struct command_translation {
 
 static void print_command(FILE *fd, struct ast_node *command);
 static void print_class(FILE *fd, struct ast_node *command);
+static void print_class_definition(FILE *fd, struct ast_node *command);
 static void print_number(FILE *fd, struct ast_node *command);
 static void print_float(FILE *fd, struct ast_node *command);
 static void print_identifier(FILE *fd, struct ast_node *command, int ignore_last);
@@ -326,73 +327,19 @@ void print_class(FILE *fd, struct ast_node *command) {
 	int previous_scope = scope;
 	scope = structIndex;
 
-	fprintf(fd, "struct %s {\n", name);
-
 	int cchild = 1;
+
 
 	// subclass
 	struct ast_node *subclass = dd_da_get(&command->children, 1);
 	struct entry *subentry = 0;
 	if (subclass->node_type == AST_IDENTIFIER) {
 		subentry = symtable_entryat(subclass->value);
-		fprintf(fd, "struct %s parent;\n", subentry->lexptr);
 		cchild++;
 	}
 
 	// definitions in struct
 	struct ast_node *cmn = dd_da_get(&command->children, cchild);
-	for (unsigned int i = 0; i < cmn->children.elements; i++) {
-		struct ast_node *child = dd_da_get(&cmn->children, i);
-		if (child->node_type == AST_COMMAND_NATIVE) {
-			struct entry *e = symtable_entryat(child->value);
-			if (strcmp(e->lexptr, "def") == 0) {
-				print_definition(fd, child);
-			}
-			else
-			if (strcmp(e->lexptr, "function") == 0) {
-				struct ast_node *funcname = dd_da_get(&child->children, 0);
-				struct entry *efuncname = symtable_entryat(funcname->value);
-
-				// only include functions that are not overriding parent functions
-				if (!struct_table_is_member_parent(structIndex, efuncname->lexptr)) {
-					fprintf(fd, "void (*%s)(struct %s *", efuncname->lexptr, name);
-					// function arguments
-					struct ast_node *funcargs = dd_da_get(&child->children, 1);
-					if (funcargs->children.elements >= 2) {
-						fprintf(fd, ", ");
-					}
-					print_function_arguments(fd, funcargs);
-					fprintf(fd, ");\n");
-				}
-			}
-		}
-	}
-
-	fprintf(fd, "};\n");
-
-	// pre-define functions, so they are visible to all functions regardless of order
-	for (unsigned int i = 0; i < cmn->children.elements; i++) {
-
-		// grab ast node and symbol table entry, ensure this is a function
-		struct ast_node *child = dd_da_get(&cmn->children, i);
-		if (child->node_type != AST_COMMAND_NATIVE) continue;
-		struct entry *echild = symtable_entryat(child->value);
-		if (strcmp(echild->lexptr, "function") != 0) continue;
-
-		// get function details
-		struct ast_node *funcname = dd_da_get(&child->children, 0);
-		struct entry *efuncname = symtable_entryat(funcname->value);
-
-		// print the function signature
-		fprintf(fd, "void %s_%s(struct %s *this", name, efuncname->lexptr, name);
-		// function arguments
-		struct ast_node *funcargs = dd_da_get(&child->children, 1);
-		if (funcargs->children.elements >= 2) {
-			fprintf(fd, ", ");
-		}
-		print_function_arguments(fd, funcargs);
-		fprintf(fd, ");\n");
-	}
 
 	// functions
 	for (unsigned int i = 0; i < cmn->children.elements; i++) {
@@ -465,6 +412,88 @@ void print_class(FILE *fd, struct ast_node *command) {
 
 	scope = previous_scope;
 
+}
+
+static void print_class_definition(FILE *fd, struct ast_node *command) {
+
+	// get name
+	struct ast_node *classname = dd_da_get(&command->children, 0);
+	struct entry *eclassname = symtable_entryat(classname->value);
+
+	// get struct
+	int structIndex = struct_table_get_index(eclassname->lexptr);
+	const char *name = struct_table_get_name(structIndex);
+
+	int previous_scope = scope;
+	scope = structIndex;
+
+	fprintf(fd, "struct %s {\n", name);
+
+	int cchild = 1;
+
+	// subclass
+	struct ast_node *subclass = dd_da_get(&command->children, 1);
+	struct entry *subentry = 0;
+	if (subclass->node_type == AST_IDENTIFIER) {
+		subentry = symtable_entryat(subclass->value);
+		fprintf(fd, "struct %s parent;\n", subentry->lexptr);
+		cchild++;
+	}
+
+	// definitions in struct
+	struct ast_node *cmn = dd_da_get(&command->children, cchild);
+	for (unsigned int i = 0; i < cmn->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&cmn->children, i);
+		if (child->node_type == AST_COMMAND_NATIVE) {
+			struct entry *e = symtable_entryat(child->value);
+			if (strcmp(e->lexptr, "def") == 0) {
+				print_definition(fd, child);
+			}
+			else
+			if (strcmp(e->lexptr, "function") == 0) {
+				struct ast_node *funcname = dd_da_get(&child->children, 0);
+				struct entry *efuncname = symtable_entryat(funcname->value);
+
+				// only include functions that are not overriding parent functions
+				if (!struct_table_is_member_parent(structIndex, efuncname->lexptr)) {
+					fprintf(fd, "void (*%s)(struct %s *", efuncname->lexptr, name);
+					// function arguments
+					struct ast_node *funcargs = dd_da_get(&child->children, 1);
+					if (funcargs->children.elements >= 2) {
+						fprintf(fd, ", ");
+					}
+					print_function_arguments(fd, funcargs);
+					fprintf(fd, ");\n");
+				}
+			}
+		}
+	}
+
+	fprintf(fd, "};\n");
+
+	// pre-define functions, so they are visible to all functions regardless of order
+	for (unsigned int i = 0; i < cmn->children.elements; i++) {
+
+		// grab ast node and symbol table entry, ensure this is a function
+		struct ast_node *child = dd_da_get(&cmn->children, i);
+		if (child->node_type != AST_COMMAND_NATIVE) continue;
+		struct entry *echild = symtable_entryat(child->value);
+		if (strcmp(echild->lexptr, "function") != 0) continue;
+
+		// get function details
+		struct ast_node *funcname = dd_da_get(&child->children, 0);
+		struct entry *efuncname = symtable_entryat(funcname->value);
+
+		// print the function signature
+		fprintf(fd, "void %s_%s(struct %s *this", name, efuncname->lexptr, name);
+		// function arguments
+		struct ast_node *funcargs = dd_da_get(&child->children, 1);
+		if (funcargs->children.elements >= 2) {
+			fprintf(fd, ", ");
+		}
+		print_function_arguments(fd, funcargs);
+		fprintf(fd, ");\n");
+	}
 }
 /*
 
@@ -576,6 +605,16 @@ void print_node(FILE *fd, struct ast_node *n) {
 	switch (n->node_type) {
 		case AST_GAME:
 		case AST_GROUP:
+			// for classes, pre-define them so they can interact with each other
+			for (unsigned int i = 0; i < n->children.elements; i++) {
+				struct ast_node *child = dd_da_get(&n->children, i);
+				if (child->node_type == AST_COMMAND_NATIVE) {
+					struct entry *e = symtable_entryat(child->value);
+					if (strcmp(e->lexptr, "class") == 0) {
+						print_class_definition(fd, child);
+					}
+				}
+			}
 			for (unsigned int i = 0; i < n->children.elements; i++) {
 				print_node(fd, dd_da_get(&n->children, i));
 			}
@@ -647,12 +686,6 @@ void parse_cglut(const char *filename, struct ast_node *n) {
 		printf("error opening `build/`: %s\n", strerror(errno));
 	}
 	*/
-	//sprintf(buffer, "%s/share/%s/dd_pixi_engine.js", INSTALL_LOCATION, PROJECT_NAME);
-	//file_copy_at(0, buffer, dir, "dd_pixi_engine.js", 0);
-	//sprintf(buffer, "%s/share/%s/index.html", INSTALL_LOCATION, PROJECT_NAME);
-	//file_copy_at(0, buffer, dir, "index.html", 0);
-	//sprintf(buffer, "%s/share/%s/pixi.min.js", INSTALL_LOCATION, PROJECT_NAME);
-	//file_copy_at(0, buffer, dir, "pixi.min.js", 0);
 
 	//dir_create("build/images");
 	//dir_copy_recursive(0, "images", dir, "images");
