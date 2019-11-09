@@ -45,8 +45,8 @@ static void print_for(FILE *fd, struct ast_node *command);
 static void print_if(FILE *fd, struct ast_node *command);
 static void print_function_arguments(FILE *fd, struct ast_node *command);
 static void print_echo(FILE *fd, struct ast_node *command);
-/*
 static void print_function(FILE *fd, struct ast_node *command);
+/*
 static void print_return(FILE *fd, struct ast_node *command);
 static void print_array(FILE *fd, struct ast_node *command);
 static void print_new(FILE *fd, struct ast_node *command);
@@ -237,7 +237,7 @@ void print_command(FILE *fd, struct ast_node *command) {
 	}
 	else
 	if (strcmp(e->lexptr, "function") == 0) {
-		//print_function(fd, command);
+		print_function(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "class") == 0) {
@@ -275,21 +275,23 @@ void print_echo(FILE *fd, struct ast_node *command) {
 	fprintf(fd, ");\n");
 }
 
-/*
-void print_function(FILE *fd, struct ast_node *command) {
-	fprintf(fd, "this.");
+static void print_function(FILE *fd, struct ast_node *command) {
+
+	fprintf(fd, "void ");
 
 	//name
 	struct ast_node *name = dd_da_get(&command->children, 0);
 	print_node(fd, name);
 
-	fprintf(fd, " = function(");
+	fprintf(fd, "(");
 
 	//arguments
+	/*
 	has_semicolon = 0;
 	struct ast_node *arg = dd_da_get(&command->children, 1);
 	print_node(fd, arg);
 	has_semicolon = 1;
+	*/
 
 	fprintf(fd, ") {\n");
 
@@ -300,8 +302,6 @@ void print_function(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "};\n");
 
 }
-
-*/
 
 static void print_function_arguments(FILE *fd, struct ast_node *command) {
 	for (unsigned int i = 0; i+1 < command->children.elements; i += 2) {
