@@ -61,7 +61,7 @@ void struct_table_push_member(const char *name, enum dd_variable_type type) {
 	struct struct_table_entry_member *newMember = &currentStruct->members[currentStruct->member_total];
 	newMember->type = type;
 	strncpy(newMember->name, name, DD_STRUCT_TABLE_NAME_SIZE -1);
-	currentStruct->name[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
+	newMember->name[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
 	currentStruct->member_total++;
 }
 
@@ -78,7 +78,12 @@ void struct_table_pop() {
 void struct_table_print() {
 	for (int i = 0; i <= struct_table_current; i++) {
 		struct struct_table_entry *s = &struct_table[i];
-		printf("struct: %s\n", s->name);
+		printf("struct: %s", s->name);
+		if (s->parent >= 0) {
+			printf(":%s", struct_table_get_name(s->parent));
+		}
+		printf("\n");
+
 		for (int j = 0; j < s->member_total; j++) {
 			struct struct_table_entry_member *m = &s->members[j];
 			printf("	member: %s\n", m->name);

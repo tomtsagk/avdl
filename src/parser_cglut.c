@@ -532,7 +532,7 @@ void print_identifier(FILE *fd, struct ast_node *command, int ignore_last) {
 			int memberId = struct_table_get_member(current_scope, e->lexptr);
 			// not last child, update scope
 			if (current_child < target-1) {
-				if (struct_table_is_member_primitive(current_scope, memberId)) {
+				if (!struct_table_is_member_primitive(current_scope, memberId)) {
 					current_scope = struct_table_get_member_scope(current_scope, memberId);
 				}
 			}
