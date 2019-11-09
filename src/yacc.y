@@ -119,6 +119,11 @@ int main(int argc, char *argv[])
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION);
 	struct_table_push_member("key_input", DD_VARIABLE_TYPE_FUNCTION);
 	struct_table_push("dd_matrix", 0);
+	struct_table_push("dd_mesh", 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION);
+	struct_table_push_member("set_primitive", DD_VARIABLE_TYPE_FUNCTION);
+	struct_table_push("dd_meshColour", "dd_mesh");
 
 	// parse!
 	if (compile) {
