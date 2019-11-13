@@ -52,7 +52,7 @@ int struct_table_push(const char *structname, const char *parentname) {
  * check if there is space in the struct
  * add a new member to it
  */
-void struct_table_push_member(const char *name, enum dd_variable_type type) {
+void struct_table_push_member(const char *name, enum dd_variable_type type, const char *nametype) {
 	struct struct_table_entry *currentStruct = &struct_table[struct_table_current];
 	if (currentStruct->member_total+1 >= DD_STRUCT_TABLE_MEMBER_TOTAL) {
 		printf("struct_table_push_member: struct '%s': maximum number of members reached\n", currentStruct->name);
@@ -62,6 +62,13 @@ void struct_table_push_member(const char *name, enum dd_variable_type type) {
 	newMember->type = type;
 	strncpy(newMember->name, name, DD_STRUCT_TABLE_NAME_SIZE -1);
 	newMember->name[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
+	if (nametype) {
+		strncpy(newMember->nametype, nametype, DD_STRUCT_TABLE_NAME_SIZE -1);
+		newMember->nametype[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
+	}
+	else {
+		newMember->nametype[0] = '\0';
+	}
 	currentStruct->member_total++;
 }
 
@@ -140,27 +147,31 @@ int struct_table_has_member(int structIndex, const char *membername) {
 	return 0;
 }
 
-static int parent_level, parent_level_oldest;
+static int parent_level;
 static int struct_table_is_member_parent_search(int structIndex, const char *membername) {
 	if (structIndex < 0 || structIndex > struct_table_current) {
 		printf("error: struct_table_is_member_parent: index out of bounds: %d\n", structIndex);
 		exit(-1);
 	}
+
+	parent_level++;
 	struct struct_table_entry *t = &struct_table[structIndex];
-	if (t->parent != -1) {
-		parent_level++;
-		if (struct_table_has_member(t->parent, membername)) {
-			parent_level_oldest = parent_level;
-			//return parent_level;
-		}
+
+	// is member of this struct
+	if (struct_table_has_member(structIndex, membername)) {
+		return parent_level;
+	}
+	else
+	// is not member of this struct - check parent if exists
+	if (t->parent >= 0) {
 		return struct_table_is_member_parent_search(t->parent, membername);
 	}
-	return parent_level_oldest;
+
+	return -1;
 }
 
 int struct_table_is_member_parent(int structIndex, const char *membername) {
-	parent_level = 0;
-	parent_level_oldest = 0;
+	parent_level = -1;
 	return struct_table_is_member_parent_search(structIndex, membername);
 }
 
@@ -174,10 +185,15 @@ int struct_table_get_index(const char *structname) {
 }
 
 int struct_table_get_member_scope(int structIndex, int memberIndex) {
+	if (structIndex < 0 || structIndex > struct_table_current) {
+		printf("error: struct_table_get_member_scope: index out of bounds: %d\n", structIndex);
+		exit(-1);
+	}
+
 	struct struct_table_entry_member *m = &struct_table[structIndex].members[memberIndex];
 	if (m->type == DD_VARIABLE_TYPE_STRUCT) {
-		return struct_table_get_index(m->name);
+		return struct_table_get_index(m->nametype);
 	}
-	printf("struct_table_get_member_scope: error: type is not struct\n");
+	printf("struct_table_get_member_scope: error: '%s' of '%s' is not struct\n", m->name, struct_table_get_name(structIndex));
 	exit(-1);
 }

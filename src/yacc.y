@@ -114,15 +114,15 @@ int main(int argc, char *argv[])
 	*/
 	struct_table_init();
 	struct_table_push("dd_world", 0);
-	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION);
-	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION);
-	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION);
-	struct_table_push_member("key_input", DD_VARIABLE_TYPE_FUNCTION);
+	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("key_input", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_matrix", 0);
 	struct_table_push("dd_mesh", 0);
-	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION);
-	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION);
-	struct_table_push_member("set_primitive", DD_VARIABLE_TYPE_FUNCTION);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("set_primitive", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_meshColour", "dd_mesh");
 
 	// parse!
@@ -267,6 +267,7 @@ command:
 
 							struct ast_node *varname = dd_da_get(&statement->children, 1);
 							struct entry *evarname = symtable_entryat(varname->value);
+							char *nametype = 0;
 							int type = 0;
 							if (strcmp(evartype->lexptr, "int") == 0) {
 								type = DD_VARIABLE_TYPE_INT;
@@ -281,13 +282,28 @@ command:
 							}
 							else {
 								type = DD_VARIABLE_TYPE_STRUCT;
+								nametype = evartype->lexptr;
 							}
-							struct_table_push_member(evarname->lexptr, type);
+
+							// only add it to the struct table if not member of any of its parents
+							if (struct_table_is_member_parent(
+								struct_table_get_index(eclassname->lexptr),
+								evarname->lexptr) == -1) {
+
+								struct_table_push_member(evarname->lexptr, type, nametype);
+							}
 						}
 						if (strcmp(estatement->lexptr, "function") == 0) {
 							struct ast_node *varname = dd_da_get(&statement->children, 0);
 							struct entry *evarname = symtable_entryat(varname->value);
-							struct_table_push_member(evarname->lexptr, 0);
+
+							// only add it to the struct table if not member of any of its parents
+							if (struct_table_is_member_parent(
+								struct_table_get_index(eclassname->lexptr),
+								evarname->lexptr) == -1) {
+
+								struct_table_push_member(evarname->lexptr, 0, 0);
+							}
 						}
 					}
 				}

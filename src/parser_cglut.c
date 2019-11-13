@@ -37,7 +37,8 @@ static void print_class(FILE *fd, struct ast_node *command);
 static void print_class_definition(FILE *fd, struct ast_node *command);
 static void print_number(FILE *fd, struct ast_node *command);
 static void print_float(FILE *fd, struct ast_node *command);
-static void print_identifier(FILE *fd, struct ast_node *command, int ignore_last);
+static void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last);
+static void print_identifier(FILE *fd, struct ast_node *command);
 static void print_definition(FILE *fd, struct ast_node *command);
 static void print_operator_binary(FILE *fd, struct ast_node *command);
 static void print_function_call(FILE *fd, struct ast_node *command);
@@ -96,12 +97,12 @@ void print_new(FILE *fd, struct ast_node *command) {
 void print_function_call(FILE *fd, struct ast_node *command) {
 	struct ast_node *funcname = dd_da_get(&command->children, 0);
 	struct entry *efuncname = symtable_entryat(funcname->value);
-	print_identifier(fd, funcname, 0);
+	print_identifier_chain(fd, funcname, 0);
 	fprintf(fd, "(");
 
 	int has_arg = 0;
 	if (funcname->children.elements > 0) {
-		print_identifier(fd, funcname, 1);
+		print_identifier_chain(fd, funcname, 1);
 		has_arg = 1;
 	}
 
@@ -385,7 +386,7 @@ void print_class(FILE *fd, struct ast_node *command) {
 				struct entry *efuncname2 = symtable_entryat(funcname2->value);
 
 				int parent_level = struct_table_is_member_parent(structIndex, efuncname2->lexptr);
-				if (parent_level) {
+				if (parent_level > 0) {
 					fprintf(fd, "this->");
 					for (int i = 0; i < parent_level; i++) {
 						fprintf(fd, "parent.");
@@ -455,7 +456,7 @@ static void print_class_definition(FILE *fd, struct ast_node *command) {
 				struct entry *efuncname = symtable_entryat(funcname->value);
 
 				// only include functions that are not overriding parent functions
-				if (!struct_table_is_member_parent(structIndex, efuncname->lexptr)) {
+				if (struct_table_is_member_parent(structIndex, efuncname->lexptr) == 0) {
 					fprintf(fd, "void (*%s)(struct %s *", efuncname->lexptr, name);
 					// function arguments
 					struct ast_node *funcargs = dd_da_get(&child->children, 1);
@@ -517,7 +518,7 @@ void print_array(FILE *fd, struct ast_node *command) {
 }
 
 */
-void print_identifier(FILE *fd, struct ast_node *command, int ignore_last) {
+void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last) {
 	struct entry *e = symtable_entryat(command->value);
 
 	if (command->children.elements > 0) {
@@ -545,19 +546,48 @@ void print_identifier(FILE *fd, struct ast_node *command, int ignore_last) {
 
 			current_child++;
 		}
+	}
+	print_identifier(fd, command);
 
-		/*
-		if (scope != -1) {
-			struct ast_node *n = dd_da_get(&command->children, 0);
-			struct entry *e = symtable_entryat(n->value);
-			int memberId = struct_table_get_member(scope, e->lexptr);
-			// if its not a primitive, add a & to access its memory
-			if (!struct_table_is_member_primitive(scope, memberId)) {
-				fprintf(fd, "&");
+	int lscope = -1;
+	// print children
+	for (unsigned int i = 0; i < command->children.elements -(ignore_last ? 1 : 0); i++) {
+		struct ast_node *child = dd_da_get(&command->children, i);
+		if (child->node_type == AST_GROUP && i == 0) continue;
+		struct entry *echild = symtable_entryat(child->value);
+
+		if (i == 0 && strcmp(e->lexptr, "this") == 0) {
+			fprintf(fd, "->");
+			lscope = scope;
+		}
+		else {
+			if (i == 0) {
+				lscope = -1;
+			}
+			fprintf(fd, ".");
+		}
+
+		// if scope exists, check if the following identifier is part of a parent class
+		if (lscope >= 0) {
+			int parent_level = struct_table_is_member_parent(lscope, echild->lexptr);
+			if (parent_level >= 0) {
+				for (int j = 0; j < parent_level; j++) {
+					fprintf(fd, "parent.");
+				}
 			}
 		}
-		*/
+
+		print_identifier(fd, child);
+
+		// update scope
+		if (lscope >= 0 && !struct_table_is_member_primitive(lscope, struct_table_get_member(lscope, echild->lexptr))) {
+			lscope = struct_table_get_member_scope(lscope, struct_table_get_member(lscope, echild->lexptr));
+		}
 	}
+}
+
+void print_identifier(FILE *fd, struct ast_node *command) {
+	struct entry *e = symtable_entryat(command->value);
 	fprintf(fd, "%s", e->lexptr);
 
 	// check if member of array
@@ -571,19 +601,6 @@ void print_identifier(FILE *fd, struct ast_node *command, int ignore_last) {
 			fprintf(fd, "]");
 		}
 	}
-
-	// print children
-	for (unsigned int i = cchild; i < command->children.elements -(ignore_last ? 1 : 0); i++) {
-		struct ast_node *child = dd_da_get(&command->children, i);
-		if (i == 0 && strcmp(e->lexptr, "this") == 0) {
-			fprintf(fd, "->");
-		}
-		else {
-			fprintf(fd, ".");
-		}
-		print_node(fd, child);
-	}
-
 }
 
 static void print_for(FILE *fd, struct ast_node *command) {
@@ -641,7 +658,7 @@ void print_node(FILE *fd, struct ast_node *n) {
 			break;
 		}
 		case AST_IDENTIFIER: {
-			print_identifier(fd, n, 0);
+			print_identifier_chain(fd, n, 0);
 			break;
 		}
 		case AST_EMPTY: break;
