@@ -50,6 +50,7 @@ enum dd_variable_type struct_table_get_member_type(int structIndex, int memberIn
 
 // check if member is a primitive type, primitives are int, float and string
 int struct_table_is_member_primitive(int structIndex, int memberIndex);
+int struct_table_is_member_primitive_string(int structIndex, const char *membername);
 
 // get index of member
 int struct_table_get_member(int structIndex, const char *membername);
@@ -59,5 +60,6 @@ int struct_table_has_member(int structIndex, const char *membername);
 int struct_table_is_member_parent(int structIndex, const char *membername);
 
 int struct_table_get_member_scope(int structIndex, int memberIndex);
+int struct_table_get_member_scope_string(int structIndex, const char *memberIndex);
 
 #endif

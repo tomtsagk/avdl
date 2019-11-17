@@ -107,10 +107,11 @@ const char *struct_table_get_name(int index) {
 	return struct_table[index].name;
 }
 
-/*
 const char *struct_table_get_member_name(int structIndex, int memberIndex) {
+	return struct_table[structIndex].members[memberIndex].name;
 }
 
+/*
 int struct_table_get_member_type(int structIndex, int memberIndex) {
 }
 */
@@ -128,6 +129,19 @@ int struct_table_get_member(int structIndex, const char *membername) {
 int struct_table_is_member_primitive(int structIndex, int memberIndex) {
 	struct struct_table_entry_member *m = &struct_table[structIndex].members[memberIndex];
 	return m->type != DD_VARIABLE_TYPE_STRUCT;
+}
+
+int struct_table_is_member_primitive_string(int structIndex, const char *membername) {
+	if (struct_table_has_member(structIndex, membername)) {
+		int memberId = struct_table_get_member(structIndex, membername);
+		struct struct_table_entry_member *m = &struct_table[structIndex].members[memberId];
+		return m->type != DD_VARIABLE_TYPE_STRUCT;
+	}
+	else
+	if (struct_table[structIndex].parent) {
+		return struct_table_is_member_primitive_string(struct_table[structIndex].parent, membername);
+	}
+	return 0;
 }
 
 int struct_table_has_member(int structIndex, const char *membername) {
@@ -195,5 +209,29 @@ int struct_table_get_member_scope(int structIndex, int memberIndex) {
 		return struct_table_get_index(m->nametype);
 	}
 	printf("struct_table_get_member_scope: error: '%s' of '%s' is not struct\n", m->name, struct_table_get_name(structIndex));
+	exit(-1);
+}
+
+int struct_table_get_member_scope_string(int structIndex, const char *membername) {
+	if (structIndex < 0 || structIndex > struct_table_current) {
+		printf("error: struct_table_get_member_scope_string: index out of bounds: %d\n", structIndex);
+		exit(-1);
+	}
+
+	if (struct_table_has_member(structIndex, membername)) {
+		int memberIndex = struct_table_get_member(structIndex, membername);
+		struct struct_table_entry_member *m = &struct_table[structIndex].members[memberIndex];
+		if (m->type == DD_VARIABLE_TYPE_STRUCT) {
+			return struct_table_get_index(m->nametype);
+		}
+		printf("struct_table_get_member_scope: error: '%s' of '%s' is not struct\n", m->name, struct_table_get_name(structIndex));
+		exit(-1);
+	}
+	else
+	if (struct_table[structIndex].parent) {
+		return struct_table_get_member_scope_string(struct_table[structIndex].parent, membername);
+	}
+
+	printf("struct_table_get_member_scope: error: \n");
 	exit(-1);
 }
