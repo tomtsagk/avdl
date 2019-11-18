@@ -124,10 +124,12 @@ int main(int argc, char *argv[])
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("set_primitive", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("copy", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_meshColour", "dd_mesh");
 	struct_table_push_member("set_colour", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_meshTexture", "dd_meshColour");
 	struct_table_push_member("loadTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("set_primitive_texcoords", DD_VARIABLE_TYPE_FUNCTION, 0);
 
 	// parse!
 	if (compile) {
