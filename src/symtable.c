@@ -4,7 +4,7 @@
 #include "symtable.h"
 
 // number of entries on each symtable
-#define SYMMAX 100
+#define SYMMAX 200
 
 // how many scopes to descent
 #define SYMTABLE_SCOPE_MAX 100
@@ -60,7 +60,7 @@ symtable_index symtable_insert(const char s[], int tok) {
 
 	// make sure sym table has space
 	if (symtable->lastentry +1 >= SYMMAX) {
-		printf("symbol table full");
+		printf("symbol table full\n");
 		return 0;
 	}
 
