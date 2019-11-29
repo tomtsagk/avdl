@@ -323,6 +323,22 @@ command:
 				ast_push(n);
 				goto CONTINUE;
 			}
+			else
+			if (strcmp(e->lexptr, "ref") == 0) {
+				struct ast_node *type = dd_da_get(&opt_args->children, 0);
+				struct ast_node *n = ast_create(AST_IDENTIFIER, type->value);
+				n->isRef = 1;
+				ast_push(n);
+				goto CONTINUE;
+			}
+			else
+			if (strcmp(e->lexptr, "def") == 0) {
+				struct ast_node *varname = dd_da_get(&opt_args->children, 1);
+				struct entry *evarname = symtable_entryat(varname->value);
+				struct ast_node *vartype = dd_da_get(&opt_args->children, 0);
+				struct entry *evartype = symtable_entryat(vartype->value);
+				evarname->scope = evartype->lexptr;
+			}
 		}
 		// not a native keyword, assume custom one
 		else {

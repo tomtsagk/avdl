@@ -13,6 +13,8 @@ struct entry {
 	char lexptr[ENTRY_LEXPTR_SIZE];
 	int token;
 	int value;
+	int isRef;
+	char *scope;
 };
 
 // init

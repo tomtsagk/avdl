@@ -169,6 +169,12 @@ void print_definition(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "%s ", type);
 
 	struct ast_node *varname = dd_da_get(&command->children, 1);
+	struct entry *evarname = symtable_entryat(varname->value);
+
+	if (vartype->isRef) {
+		evarname->isRef = 1;
+		fprintf(fd, "*");
+	}
 
 	// if definition is direct child of class, use `this.VARNAME` instead of `var VARNAME`
 	/*
@@ -522,7 +528,13 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 	struct entry *e = symtable_entryat(command->value);
 
 	if (command->children.elements > 0) {
-		int current_scope = scope;
+		int current_scope;
+		if (strcmp(e->lexptr, "this") == 0) {
+			current_scope = scope;
+		}
+		else {
+			current_scope = struct_table_get_index(e->scope);
+		}
 		int current_child = 0;
 
 		int target = command->children.elements -(ignore_last ? 1 : 0);
@@ -539,7 +551,7 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 			}
 			// last child, decide if it pointer or not
 			else {
-				if (!struct_table_is_member_primitive_string(current_scope, e->lexptr)) {
+				if (!struct_table_is_member_primitive_string(current_scope, e->lexptr) && !e->isRef) {
 					fprintf(fd, "&");
 				}
 			}
@@ -550,15 +562,23 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 	print_identifier(fd, command);
 
 	int lscope = -1;
+	int nextRef = e->isRef;
 	// print children
 	for (unsigned int i = 0; i < command->children.elements -(ignore_last ? 1 : 0); i++) {
 		struct ast_node *child = dd_da_get(&command->children, i);
 		if (child->node_type == AST_GROUP && i == 0) continue;
 		struct entry *echild = symtable_entryat(child->value);
 
-		if (i == 0 && strcmp(e->lexptr, "this") == 0) {
+		if ((i == 0 && strcmp(e->lexptr, "this") == 0) || nextRef) {
 			fprintf(fd, "->");
-			lscope = scope;
+			if (!nextRef) {
+				lscope = scope;
+			}
+			else
+			{
+				lscope = struct_table_get_index(e->scope);
+			}
+			nextRef = 0;
 		}
 		else {
 			if (i == 0) {
@@ -578,6 +598,9 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 		}
 
 		print_identifier(fd, child);
+		if (echild->isRef) {
+			nextRef = 1;
+		}
 
 		// update scope
 		if (lscope >= 0 && !struct_table_is_member_primitive(lscope, struct_table_get_member(lscope, echild->lexptr))) {
