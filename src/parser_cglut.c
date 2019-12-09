@@ -718,7 +718,7 @@ void parse_cglut(const char *filename, struct ast_node *n) {
 		fclose(fd_global);
 	}
 
-	system("gcc build-cglut/game.c -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w");
+	system("gcc build-cglut/game.c -O3 -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
 
 	/*
 	int dir = open("build", O_DIRECTORY);
