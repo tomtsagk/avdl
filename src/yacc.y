@@ -116,6 +116,7 @@ int main(int argc, char *argv[])
 	struct_table_push("dd_world", 0);
 	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("resize", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("key_input", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_matrix", 0);
