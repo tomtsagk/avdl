@@ -4,7 +4,7 @@
 #include "symtable.h"
 
 // number of entries on each symtable
-#define SYMMAX 200
+#define SYMMAX 300
 
 // how many scopes to descent
 #define SYMTABLE_SCOPE_MAX 100
