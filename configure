@@ -31,5 +31,5 @@ cp makefile.in makefile
 sed -i "s/@INSTALL_LOCATION@/${install_loc//\//\\\/}/g" makefile
 
 # prepare docs
-makeinfo doc/ddlang.texi
-gzip -f ddlang.info
+makeinfo doc/avdl.texi
+gzip -f avdl.info

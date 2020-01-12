@@ -1,6 +1,7 @@
 
 # Project Data
-PROJECT_NAME=ddlang
+PROJECT_NAME=avdl
+PROJECT_VERSION=1.0.0
 
 EXECUTABLE=${PROJECT_NAME}
 
@@ -42,19 +43,19 @@ install: ${EXECUTABLE}# ${ENGINE_PATH}/${ENGINE}
 	#install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${PROJECT_NAME}/${ENGINE}
 	#install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${PROJECT_NAME}/index.html
 	mkdir -p ${INSTALL_LOCATION}/share/man/man1/
-	install manual/ddlang.1 ${INSTALL_LOCATION}/share/man/man1/
+	install manual/avdl.1 ${INSTALL_LOCATION}/share/man/man1/
 	mkdir -p ${INSTALL_LOCATION}/share/info/
-	install ddlang.info.gz ${INSTALL_LOCATION}/share/info/
+	install avdl.info.gz ${INSTALL_LOCATION}/share/info/
 	# vim files
 	mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
-	install vim/syntax/ddlang.vim ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
+	install vim/syntax/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
 	mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
-	install vim/ftdetect/ddlang.vim ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
+	install vim/ftdetect/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
 
 clean:
 	rm -f ${EXECUTABLE} ${LEX_SRC} ${YACC_SRC} ${YACC_HEADER}
 
 destclean: clean
-	rm -f ddlang.info.gz makefile
+	rm -f avdl.info.gz makefile
 
 .PHONY: clean destclean install engine

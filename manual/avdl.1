@@ -1,24 +1,27 @@
-.TH DDLANG 1
+.TH AVDL 1
 .SH NAME
-ddlang \- programming language for video games
+avdl \- abstract video-game development language
 .SH SYNOPSIS
-.B ddlang
+.B avdl
 [\fIoptions\fR]
 \fIfile\fR...
 .SH DESCRIPTION
-.B ddlang
+.B avdl
 is a programming language designed to describe a video game
 in an abstract way, and then compile it to different platforms.
 .SH OPTIONS
 .TP
 \fB--print-ast\fR
 Print a representation of the abstract syntax tree, before it gets translated to the target language.
+.TP
+\fB--print-struct-table\fR
+Print a representation of the struct table.
 .SH EXAMPLES
 To compile a file, use the following command:
 .PP
 .nf
 .RS
-ddlang my_file.dd
+avdl my_file.dd
 .RE
 .fi
 .PP

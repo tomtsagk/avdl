@@ -1,13 +1,13 @@
 \input texinfo   @c -*-texinfo-*-
 @comment $Id@w{$}
 @comment %**start of header
-@settitle ddlang 0.0
+@settitle avdl 1.0
 @syncodeindex pg cp
 @comment %**end of header
 
 @titlepage
-@title ddlang
-@subtitle for version 0.0
+@title avdl
+@subtitle for version 1.0
 @author Tom Tsagk (@email{tomtsagk@@gmail.com})
 @page
 @vskip 0pt plus 1filll
@@ -17,9 +17,9 @@
 
 @ifnottex
 @node Top
-@top ddlang
+@top avdl
 
-This manual is for ddlang (version 0.0).
+This manual is for avdl (version 1.0).
 @end ifnottex
 
 @menu
@@ -30,7 +30,7 @@ This manual is for ddlang (version 0.0).
 @node Introduction
 @chapter Introduction
 
-@code{ddlang} is a lisp-like programming language for making video games.
+@code{avdl} is a lisp-like programming language for making video games.
 Its syntax and keywords are meant to describe a game in an abstract way, which then the compiler
 can translate to specific platforms.
 
