@@ -1,5 +1,5 @@
 " Vim syntax file
-" Language: ddlang
+" Language: avdl
 " Maintainer: Tom Tsagk
 " Latest Revision: 15 September 2019
 
@@ -15,7 +15,7 @@ syn region ddString start='"' end='"'
 syn match ddComment '#.*$'
 
 " colours
-let b:current_syntax = "ddlang"
+let b:current_syntax = "avdl"
 
 hi def link ddNumber      Constant
 hi def link ddString      Constant

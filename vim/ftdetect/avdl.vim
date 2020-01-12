@@ -1,1 +1,1 @@
-au BufRead,BufNewFile *.dd set filetype=ddlang
+au BufRead,BufNewFile *.dd set filetype=avdl
