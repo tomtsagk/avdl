@@ -386,7 +386,23 @@ void print_class(FILE *fd, struct ast_node *command) {
 				struct ast_node *fchild = dd_da_get(&cmn->children, j);
 				if (fchild->node_type != AST_COMMAND_NATIVE) continue;
 				struct entry *efchild = symtable_entryat(fchild->value);
-				if (strcmp(efchild->lexptr, "function") != 0) continue;
+
+				// initialise all non-primitive members
+				if (strcmp(efchild->lexptr, "def") == 0 && fchild->children.elements > 1) {
+					struct ast_node *defchild = dd_da_get(&fchild->children, 0);
+					if (defchild->node_type == AST_IDENTIFIER) {
+						struct entry *edefchild = symtable_entryat(defchild->value);
+						if (strcmp(edefchild->lexptr, "int") != 0
+						&&  strcmp(edefchild->lexptr, "float") != 0
+						&&  strcmp(edefchild->lexptr, "string") != 0) {
+							struct ast_node *varname = dd_da_get(&fchild->children, 1);
+							struct entry *evarname = symtable_entryat(varname->value);
+							fprintf(fd, "%s_create(&this->%s);\n", edefchild->lexptr, evarname->lexptr);
+						}
+					}
+					continue;
+				}
+				else if (strcmp(efchild->lexptr, "function") != 0) continue;
 
 				struct ast_node *funcname2 = dd_da_get(&fchild->children, 0);
 				struct entry *efuncname2 = symtable_entryat(funcname2->value);
