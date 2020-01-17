@@ -32,6 +32,7 @@ const struct keyword_function keywords[] = {
 	{"if", parse_group},
 	{"for", parse_group},
 	{"ref", parse_group},
+	{"asset", parse_group},
 };
 unsigned int keywords_total = sizeof(keywords) /sizeof(struct keyword_function);
 

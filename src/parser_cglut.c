@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "struct_table.h"
+#include <time.h>
 
 #define DD_BUFFER_SIZE 1000
 static char buffer[DD_BUFFER_SIZE];
@@ -23,6 +24,13 @@ FILE *fd_global;
 
 int scope = -1;
 
+char asset_names[100][100];
+int asset_names_index = -1;
+
+// out directory
+int out_dir;
+const char *dirname = "build-cglut";
+
 static void print_node(FILE *fd, struct ast_node *n);
 
 /*
@@ -32,6 +40,7 @@ struct command_translation {
 };
 */
 
+static void print_asset(FILE *fd, struct ast_node *command);
 static void print_command(FILE *fd, struct ast_node *command);
 static void print_class(FILE *fd, struct ast_node *command);
 static void print_class_definition(FILE *fd, struct ast_node *command);
@@ -205,6 +214,40 @@ void print_definition(FILE *fd, struct ast_node *command) {
 	}
 }
 
+void print_asset(FILE *fd, struct ast_node *command) {
+
+	// get node
+	struct ast_node *assetName = dd_da_get(&command->children, 0);
+	struct entry *eassetName = symtable_entryat(assetName->value);
+
+	// print the final asset path (relative to the out_dir)
+	print_node(fd, assetName);
+
+	// stat source and destination asset, if source is newer, copy to destination
+	struct stat stat_src_asset;
+	if (stat(eassetName->lexptr, &stat_src_asset) == -1) {
+		printf("error stat-ing asset: %s\n", eassetName->lexptr);
+		exit(-1);
+	}
+
+	struct stat stat_dst_asset;
+	strcpy(buffer, dirname);
+	strcat(buffer, "/");
+	strcat(buffer, eassetName->lexptr);
+	if (stat(buffer, &stat_dst_asset) == -1) {
+		//printf("error stat-ing destination: %s\n", buffer);
+		file_copy_at(0, eassetName->lexptr, out_dir, eassetName->lexptr, 0);
+	}
+
+	// check last modification time
+	time_t time_src = mktime(gmtime(&stat_src_asset.st_mtime));
+	time_t time_dst = mktime(gmtime(&stat_dst_asset.st_mtime));
+
+	if (time_src > time_dst) {
+		file_copy_at(0, eassetName->lexptr, out_dir, eassetName->lexptr, 0);
+	}
+}
+
 /* find out which command it is, and call the right function
  */
 void print_command(FILE *fd, struct ast_node *command) {
@@ -265,6 +308,10 @@ void print_command(FILE *fd, struct ast_node *command) {
 	else
 	if (strcmp(e->lexptr, "for") == 0) {
 		print_for(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "asset") == 0) {
+		print_asset(fd, command);
 	}
 }
 
@@ -716,7 +763,12 @@ void print_node(FILE *fd, struct ast_node *n) {
 void parse_cglut(const char *filename, struct ast_node *n) {
 
 	if (n) {
-		dir_create("build-cglut");
+		dir_create(dirname);
+		out_dir = open(dirname, O_DIRECTORY);
+		if (!out_dir) {
+			printf("error opening `%s`: %s\n", dirname, strerror(errno));
+			return;
+		}
 
 		fd_global = fopen(filename, "w");
 		if (!fd_global) {
@@ -732,6 +784,7 @@ void parse_cglut(const char *filename, struct ast_node *n) {
 				"dd_world_set(dd_world_main);"
 			"}\n"
 		);
+		close(out_dir);
 		fclose(fd_global);
 	}
 

@@ -4,10 +4,10 @@ yacc.tab.c
 yacc.tab.h
 lex.yy.c
 makefile
-ddlang
+avdl
 
 # ignore builds
 build/
 
 # ignore generated docs
-ddlang.info.gz
+avdl.info.gz
