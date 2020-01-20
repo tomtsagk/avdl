@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include "struct_table.h"
 #include "dd_commands.h"
+#include <errno.h>
 
 extern FILE *yyin;
 extern YYSTYPE yylex(void);
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
 	int show_struct_table = 0;
 	int compile = 1;
 	char *filename = 0;
-	FILE *input_file = stdin;
+	FILE *input_file = 0;
 
 	// parse arguments
 	for (int i = 1; i < argc; i++) {
@@ -65,17 +66,21 @@ int main(int argc, char *argv[])
 		if (!filename) {
 			filename = argv[i];
 		}
+		else {
+			printf("avdl error: '%s': Only one input file can be provided at a time\n", argv[i]);
+			return -1;
+		}
 	}
 
 	// make sure the minimum to parse exists
 	if (!filename) {
-		printf("no filename given\n");
+		printf("avdl error: No filename given\n");
 		return -1;
 	}
 	else {
 		input_file = fopen(filename, "r");
 		if (!input_file) {
-			printf("unable to open input file: %s\n", filename);
+			printf("avdl error: Unable to open '%s': %s\n", filename, strerror(errno));
 			return -1;
 		}
 
