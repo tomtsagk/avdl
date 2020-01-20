@@ -756,7 +756,7 @@ void print_node(FILE *fd, struct ast_node *n) {
 #endif
 
 #ifndef PROJECT_NAME
-#define PROJECT_NAME "ddlang"
+#define PROJECT_NAME "avdl"
 #endif
 
 // responsible for creating a file and translating ast to target language
