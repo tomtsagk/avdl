@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include "struct_table.h"
 #include <time.h>
+#include <errno.h>
 
 #define DD_BUFFER_SIZE 1000
 static char buffer[DD_BUFFER_SIZE];
@@ -226,7 +227,7 @@ void print_asset(FILE *fd, struct ast_node *command) {
 	// stat source and destination asset, if source is newer, copy to destination
 	struct stat stat_src_asset;
 	if (stat(eassetName->lexptr, &stat_src_asset) == -1) {
-		printf("error stat-ing asset: %s\n", eassetName->lexptr);
+		printf("avdl error: Unable to stat '%s': %s\n", eassetName->lexptr, strerror(errno));
 		exit(-1);
 	}
 
