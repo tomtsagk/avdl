@@ -45,6 +45,7 @@ static void print_asset(FILE *fd, struct ast_node *command);
 static void print_command(FILE *fd, struct ast_node *command);
 static void print_class(FILE *fd, struct ast_node *command);
 static void print_class_definition(FILE *fd, struct ast_node *command);
+static void print_class_function(FILE *fd, struct ast_node *command);
 static void print_number(FILE *fd, struct ast_node *command);
 static void print_float(FILE *fd, struct ast_node *command);
 static void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last);
@@ -292,7 +293,11 @@ void print_command(FILE *fd, struct ast_node *command) {
 	}
 	else
 	if (strcmp(e->lexptr, "class") == 0) {
-		print_class(fd, command);
+		//print_class(fd, command);
+	}
+	else
+	if (strcmp(e->lexptr, "class_function") == 0) {
+		print_class_function(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "return") == 0) {
@@ -332,12 +337,12 @@ void print_echo(FILE *fd, struct ast_node *command) {
 
 static void print_function(FILE *fd, struct ast_node *command) {
 
-	fprintf(fd, "void ");
-
 	//name
 	struct ast_node *name = dd_da_get(&command->children, 0);
-	print_node(fd, name);
+	struct entry *ename = symtable_entryat(name->value);
 
+	fprintf(fd, "void ");
+	print_node(fd, name);
 	fprintf(fd, "(");
 
 	//arguments
@@ -356,6 +361,10 @@ static void print_function(FILE *fd, struct ast_node *command) {
 
 	fprintf(fd, "};\n");
 
+	// `dd_gameInit` is the "main" function, where everything begins
+	if (strcmp(ename->lexptr, "dd_gameInit") == 0) {
+		fprintf(fd_global, "int main(int argc, char *argv[]) {dd_main(argc, argv);}\n");
+	}
 }
 
 static void print_function_arguments(FILE *fd, struct ast_node *command) {
@@ -469,20 +478,94 @@ void print_class(FILE *fd, struct ast_node *command) {
 			}
 		}
 
-		int cmd_child = 2;
-		struct ast_node *ovr = dd_da_get(&child->children, cmd_child);
-		if (ovr->node_type == AST_IDENTIFIER) {
-			struct entry *eovr = symtable_entryat(ovr->value);
-			if (strcmp(eovr->lexptr, "override") == 0) {
-				cmd_child++;
-			}
-		}
-		print_node(fd, dd_da_get(&child->children, cmd_child));
-		fprintf(fd, "}\n");
+		/*
+		 * statements
+		print_node(fd, dd_da_get(&child->children, 2));
+		*/
+		//fprintf(fd, "}\n");
 	}
 
 	scope = previous_scope;
 
+}
+
+void print_class_function(FILE *fd, struct ast_node *command) {
+
+	// get name
+	struct ast_node *classname = dd_da_get(&command->children, 0);
+	struct entry *eclassname = symtable_entryat(classname->value);
+
+	int previous_scope = scope;
+	scope = struct_table_get_index(eclassname->lexptr);
+
+	// get function name
+	struct ast_node *funcname = dd_da_get(&command->children, 1);
+	struct entry *efuncname = symtable_entryat(funcname->value);
+
+	// get struct
+	int structIndex = struct_table_get_index(eclassname->lexptr);
+	const char *name = struct_table_get_name(structIndex);
+
+	// subclass
+	int subclassIndex = struct_table_get_parent(structIndex);
+	/*
+	struct ast_node *subclass = dd_da_get(&command->children, 1);
+	struct entry *subentry = 0;
+	if (subclass->node_type == AST_IDENTIFIER) {
+		subentry = symtable_entryat(subclass->value);
+	}
+	*/
+
+	struct ast_node *statements = dd_da_get(&command->children, 3);
+
+	fprintf(fd, "void %s_%s(struct %s *this", eclassname->lexptr, efuncname->lexptr, eclassname->lexptr);
+	// function arguments go here
+	struct ast_node *funcargs = dd_da_get(&command->children, 2);
+	if (funcargs->children.elements >= 2) {
+		fprintf(fd, ", ");
+	}
+	print_function_arguments(fd, funcargs);
+	//print_node(fd, dd_da_get(&command->children, 2));
+	fprintf(fd, ") {\n");
+
+	if (strcmp(efuncname->lexptr, "create") == 0) {
+
+		// subclass
+		if (subclassIndex >= 0) {
+			fprintf(fd, "%s_create(this);\n", struct_table_get_name(subclassIndex));
+		}
+
+		// `create` function, add initialisation of functions
+		//
+		// if any function of the class is the same as one of the parents, replace it
+		for (unsigned int j = 0; j < struct_table_get_member_total(structIndex); j++) {
+
+			// call the constructor for all non-primitive members
+			if (!struct_table_is_member_primitive(structIndex, j)) {
+				fprintf(fd, "%s_create(&this->%s);\n",
+					struct_table_get_member_nametype(structIndex, j),
+					struct_table_get_member_name(structIndex, j));
+			}
+			else if (struct_table_get_member_type(structIndex, j) == DD_VARIABLE_TYPE_FUNCTION) {
+				int parent_level =
+					struct_table_is_member_parent(structIndex, struct_table_get_member_name(structIndex, j));
+				fprintf(fd, "this->", struct_table_get_member_name(structIndex, j));
+				for (int i = 0; i < parent_level; i++) {
+					fprintf(fd, "parent.");
+				}
+				fprintf(fd, "%s = %s_%s;\n",
+					struct_table_get_member_name(structIndex, j),
+					struct_table_get_name(structIndex),
+					struct_table_get_member_name(structIndex, j)
+				);
+			}
+		}
+	}
+
+	print_node(fd, statements);
+	fprintf(fd, "}\n");
+
+	scope = previous_scope;
 }
 
 static void print_class_definition(FILE *fd, struct ast_node *command) {
@@ -706,15 +789,20 @@ static void print_for(FILE *fd, struct ast_node *command) {
 }
 
 void print_node(FILE *fd, struct ast_node *n) {
+	if (n->isIncluded) {
+		return;
+	}
+
 	switch (n->node_type) {
 		case AST_GAME:
 		case AST_GROUP:
 			// for classes, pre-define them so they can interact with each other
 			for (unsigned int i = 0; i < n->children.elements; i++) {
 				struct ast_node *child = dd_da_get(&n->children, i);
-				if (child->node_type == AST_COMMAND_NATIVE) {
+				if (child->node_type == AST_COMMAND_NATIVE && !child->isIncluded) {
 					struct entry *e = symtable_entryat(child->value);
 					if (strcmp(e->lexptr, "class") == 0) {
+						printf("print class definition?\n");
 						print_class_definition(fd, child);
 					}
 				}
@@ -742,6 +830,11 @@ void print_node(FILE *fd, struct ast_node *n) {
 		case AST_STRING: {
 			struct entry *e = symtable_entryat(n->value);
 			fprintf(fd, "\"%s\"", e->lexptr);
+			break;
+		}
+		case AST_INCLUDE: {
+			struct entry *e = symtable_entryat(n->value);
+			fprintf(fd, "#include \"%s.h\";\n", e->lexptr);
 			break;
 		}
 		case AST_IDENTIFIER: {
@@ -786,6 +879,44 @@ void parse_cglut(const char *filename, struct ast_node *n) {
 	}
 
 	system("gcc build-cglut/game.c -O3 -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
+
+	/*
+	int dir = open("build", O_DIRECTORY);
+	if (!dir) {
+		printf("error opening `build/`: %s\n", strerror(errno));
+	}
+	*/
+
+	//dir_create("build/images");
+	//dir_copy_recursive(0, "images", dir, "images");
+	//close(dir);
+}
+
+// responsible for creating a file and translating ast to target language
+void parse_cglut_translate_only(const char *filename, struct ast_node *n) {
+
+	if (n) {
+		dir_create(dirname);
+		out_dir = open(dirname, O_DIRECTORY);
+		if (!out_dir) {
+			printf("error opening `%s`: %s\n", dirname, strerror(errno));
+			return;
+		}
+
+		fd_global = fopen(filename, "w");
+		if (!fd_global) {
+			printf("unable to open '%s': %s\n", filename, strerror(errno));
+			return;
+		}
+		fprintf(fd_global, "#include \"dd_ddcglut.h\"\n");
+		fprintf(fd_global, "#include <stdio.h>\n");
+		fprintf(fd_global, "#include <GL/glew.h>\n");
+		print_node(fd_global, n);
+		close(out_dir);
+		fclose(fd_global);
+	}
+
+	//system("gcc build-cglut/game.c -O3 -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
 
 	/*
 	int dir = open("build", O_DIRECTORY);

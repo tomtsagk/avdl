@@ -7,6 +7,8 @@
 #include "parser.h"
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <time.h>
 #include "struct_table.h"
 #include "dd_commands.h"
 #include <errno.h>
@@ -18,6 +20,11 @@ extern YYSTYPE yylex(void);
 extern int linenum;
 
 extern float parsing_float;
+
+extern int include_stack_ptr;
+
+char included_files[10][100];
+int included_files_num = 0;
 
 // buffer for general use
 #define DD_BUFFER_SIZE 1000
@@ -33,6 +40,8 @@ void yyerror(const char *str)
 // game node, parent of all nodes
 struct ast_node *game_node;
 
+#define MAX_INPUT_FILES 10
+
 // init data, parse, exit
 int main(int argc, char *argv[])
 {
@@ -41,8 +50,10 @@ int main(int argc, char *argv[])
 	int show_ast = 0;
 	int show_struct_table = 0;
 	int compile = 1;
-	char *filename = 0;
+	int translate_only = 0;
+	char *filename[MAX_INPUT_FILES];
 	FILE *input_file = 0;
+	int input_file_total = 0;
 
 	// parse arguments
 	for (int i = 1; i < argc; i++) {
@@ -62,113 +73,180 @@ int main(int argc, char *argv[])
 			compile = 0;
 		}
 		else
+		// only translate (not compile)
+		if (strcmp(argv[i], "--translate-only") == 0) {
+			translate_only = 1;
+		}
+		else
 		// input file
-		if (!filename) {
-			filename = argv[i];
+		if (input_file_total < MAX_INPUT_FILES) {
+			filename[input_file_total] = argv[i];
+			input_file_total++;
 		}
 		else {
-			printf("avdl error: '%s': Only one input file can be provided at a time\n", argv[i]);
+			printf("avdl error: '%s': Only %d input files can be provided at a time\n", argv[i], MAX_INPUT_FILES);
 			return -1;
 		}
 	}
 
 	// make sure the minimum to parse exists
-	if (!filename) {
+	if (input_file_total <= 0) {
 		printf("avdl error: No filename given\n");
 		return -1;
 	}
-	else {
-		input_file = fopen(filename, "r");
+
+	// compile all given input files
+	for (int i = 0; i < input_file_total; i++) {
+
+		included_files_num = 0;
+
+		input_file = fopen(filename[i], "r");
 		if (!input_file) {
-			printf("avdl error: Unable to open '%s': %s\n", filename, strerror(errno));
+			printf("avdl error: Unable to open '%s': %s\n", filename[i], strerror(errno));
 			return -1;
 		}
 
 		yyin = input_file;
+
+		// init data
+		linenum = 1;
+
+		// initial symbols
+		symtable_init();
+
+		/* keywords
+		 */
+		for (unsigned int i = 0; i < keywords_total; i++) {
+			symtable_insert(keywords[i].keyword, DD_KEYWORD);
+		}
+		/*
+		symtable_insert("DD_WIDTH", DD_INTERNAL_WIDTH);
+		symtable_insert("DD_HEIGHT", DD_INTERNAL_HEIGHT);
+		*/
+
+		// initialise the parent node
+		game_node = ast_create(AST_GAME, 0);
+
+		// init structs
+		/*
+		struct struct_entry *temp_entry = malloc(sizeof(struct struct_entry));
+		temp_entry->name = "dd_world";
+		struct_insert(temp_entry);
+		temp_entry = malloc(sizeof(struct struct_entry));
+		temp_entry->name = "dd_sprite";
+		struct_insert(temp_entry);
+		temp_entry = malloc(sizeof(struct struct_entry));
+		temp_entry->name = "dd_vector2d";
+		struct_insert(temp_entry);
+		*/
+		struct_table_init();
+		struct_table_push("dd_world", 0);
+		struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("resize", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("key_input", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push("dd_matrix", 0);
+		struct_table_push("dd_mesh", 0);
+		struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("set_primitive", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("copy", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push("dd_meshColour", "dd_mesh");
+		struct_table_push_member("set_colour", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push("dd_meshTexture", "dd_meshColour");
+		struct_table_push_member("loadTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("set_primitive_texcoords", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push("dd_sound", 0);
+		struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("play", DD_VARIABLE_TYPE_FUNCTION, 0);
+
+		// parse!
+		if (compile) {
+		        yyparse();
+			fclose(input_file);
+
+			// parse resulting ast tree to a file
+			//parse_javascript("build/game.js", game_node);
+			//parse_cglut("build-cglut/game.c", game_node);
+			buffer[0] = '\0';
+			sprintf(buffer, "build-cglut/%s.c", filename[i]);
+			parse_cglut_translate_only(buffer, game_node);
+
+			if (show_ast) {
+				ast_print(game_node);
+			}
+
+			for (int i = 0; i < included_files_num; i++) {
+				include_stack_ptr = 0;
+				symtable_clean();
+				input_file = fopen(included_files[i], "r");
+				if (!input_file) {
+					printf("avdl error: Unable to open included file '%s': %s\n", included_files[i], strerror(errno));
+					return -1;
+				}
+
+				sprintf(buffer, "build-cglut/%s.h", included_files[i]);
+
+				// stat source and destination asset, if source is newer, copy to destination
+				struct stat stat_src_asset;
+				if (stat(included_files[i], &stat_src_asset) == -1) {
+					printf("avdl error: Unable to stat '%s': %s\n", included_files[i], strerror(errno));
+					exit(-1);
+				}
+
+				struct stat stat_dst_asset;
+				if (stat(buffer, &stat_dst_asset) == -1) {
+					yyin = input_file;
+					game_node = ast_create(AST_GAME, 0);
+					yyparse();
+					fclose(input_file);
+					parse_cglut_translate_only(buffer, game_node);
+					if (show_ast) {
+						ast_print(game_node);
+					}
+				}
+
+				// check last modification time
+				time_t time_src = mktime(gmtime(&stat_src_asset.st_mtime));
+				time_t time_dst = mktime(gmtime(&stat_dst_asset.st_mtime));
+
+				if (time_src > time_dst) {
+					yyin = input_file;
+					game_node = ast_create(AST_GAME, 0);
+					yyparse();
+					fclose(input_file);
+					parse_cglut_translate_only(buffer, game_node);
+					if (show_ast) {
+						ast_print(game_node);
+					}
+				}
+			}
+		}
+		else {
+			parse_cglut("build-cglut/game.c", 0);
+		}
+
+		// print debug data
+		/*
+		if (show_ast) {
+			ast_print(game_node);
+		}
+		*/
+
+		if (show_struct_table) {
+			struct_table_print();
+		}
+
+		//symtable_print();
+
+		// clean symtable and ast tree
+		symtable_clean();
+		ast_delete(game_node);
 	}
-
-	// init data
-	linenum = 1;
-
-	// initial symbols
-	symtable_init();
-
-	/* keywords
-	 */
-	for (unsigned int i = 0; i < keywords_total; i++) {
-		symtable_insert(keywords[i].keyword, DD_KEYWORD);
-	}
-	/*
-	symtable_insert("DD_WIDTH", DD_INTERNAL_WIDTH);
-	symtable_insert("DD_HEIGHT", DD_INTERNAL_HEIGHT);
-	*/
-
-	game_node = ast_create(AST_GAME, 0);
-
-	// init structs
-	/*
-	struct struct_entry *temp_entry = malloc(sizeof(struct struct_entry));
-	temp_entry->name = "dd_world";
-	struct_insert(temp_entry);
-	temp_entry = malloc(sizeof(struct struct_entry));
-	temp_entry->name = "dd_sprite";
-	struct_insert(temp_entry);
-	temp_entry = malloc(sizeof(struct struct_entry));
-	temp_entry->name = "dd_vector2d";
-	struct_insert(temp_entry);
-	*/
-	struct_table_init();
-	struct_table_push("dd_world", 0);
-	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("resize", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("key_input", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push("dd_matrix", 0);
-	struct_table_push("dd_mesh", 0);
-	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("set_primitive", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("copy", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push("dd_meshColour", "dd_mesh");
-	struct_table_push_member("set_colour", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push("dd_meshTexture", "dd_meshColour");
-	struct_table_push_member("loadTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("set_primitive_texcoords", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push("dd_sound", 0);
-	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("play", DD_VARIABLE_TYPE_FUNCTION, 0);
-
-	// parse!
-	if (compile) {
-	        yyparse();
-
-		// parse resulting ast tree to a file
-		//parse_javascript("build/game.js", game_node);
-		parse_cglut("build-cglut/game.c", game_node);
-	}
-	else {
-		parse_cglut("build-cglut/game.c", 0);
-	}
-
-	// print debug data
-
-	if (show_ast) {
-		ast_print(game_node);
-	}
-
-	if (show_struct_table) {
-		struct_table_print();
-	}
-
-	//symtable_print();
-
-	// clean symtable and ast tree
-	symtable_clean();
-	ast_delete(game_node);
 
 	// success!
 	return 0;
@@ -183,7 +261,7 @@ int main(int argc, char *argv[])
 %token DD_KEYWORD
 
 /* constants */
-%token DD_CONSTANT_SYMBOL DD_CONSTANT_STRING DD_CONSTANT_NUMBER DD_CONSTANT_FLOAT
+%token DD_CONSTANT_SYMBOL DD_CONSTANT_STRING DD_CONSTANT_NUMBER DD_CONSTANT_FLOAT DD_CONSTANT_INCLUDE
 
 %%
 
@@ -220,8 +298,7 @@ commands:
 		struct ast_node *n = ast_pop();
 		ast_child_add_first(n, ast_pop());
 		ast_push(n);
-	}
-	;
+	};
 
 /* single command
  * has a keyword and optional arguments
@@ -232,6 +309,7 @@ command:
 		// get nodes
 		struct ast_node *opt_args = ast_pop();
 		struct ast_node *cmd_name = ast_pop();
+
 
 		/*
 		struct ast_node *cmd = parse_command(cmd_name, opt_args);
@@ -248,7 +326,6 @@ command:
 
 		if (e->token == DD_KEYWORD) {
 			type = AST_COMMAND_NATIVE;
-    			//printf("keyword symbol: %s\n", e->lexptr);
 			if (strcmp(e->lexptr, "group") == 0) {
 				type = AST_GROUP;
 			}
@@ -278,14 +355,30 @@ command:
 					if (statement->node_type == AST_COMMAND_NATIVE) {
 						struct entry *estatement = symtable_entryat(statement->value);
 
-						if (strcmp(estatement->lexptr, "def") == 0) {
-							struct ast_node *vartype = dd_da_get(&statement->children, 0);
-							struct entry *evartype = symtable_entryat(vartype->value);
+						int isFunction = strcmp(estatement->lexptr, "function") == 0;
+						if (strcmp(estatement->lexptr, "def") == 0
+						||  isFunction) {
+							struct ast_node *vartype = 0;
+							struct entry *evartype = 0;
+							if (!isFunction) {
+								vartype = dd_da_get(&statement->children, 0);
+								evartype = symtable_entryat(vartype->value);
+							}
 
-							struct ast_node *varname = dd_da_get(&statement->children, 1);
+							int varnameIndex = isFunction ? 0 : 1;
+
+							struct ast_node *varname = dd_da_get(&statement->children, varnameIndex);
 							struct entry *evarname = symtable_entryat(varname->value);
+
+							// ignore constructor
+							if (isFunction && strcmp(evarname->lexptr, "create") == 0) continue;
+
 							char *nametype = 0;
 							int type = 0;
+							if (isFunction) {
+								type = DD_VARIABLE_TYPE_FUNCTION;
+							}
+							else
 							if (strcmp(evartype->lexptr, "int") == 0) {
 								type = DD_VARIABLE_TYPE_INT;
 							}
@@ -303,12 +396,15 @@ command:
 							}
 
 							// only add it to the struct table if not member of any of its parents
+							/*
 							if (struct_table_is_member_parent(
 								struct_table_get_index(eclassname->lexptr),
 								evarname->lexptr) == -1) {
 
 								struct_table_push_member(evarname->lexptr, type, nametype);
 							}
+							*/
+							struct_table_push_member(evarname->lexptr, type, nametype);
 						}
 						if (strcmp(estatement->lexptr, "function") == 0) {
 							struct ast_node *varname = dd_da_get(&statement->children, 0);
@@ -368,10 +464,18 @@ command:
 		if (type == AST_COMMAND_CUSTOM) {
 			ast_child_add_first(opt_args, cmd_name);
 		}
+		opt_args->isIncluded = include_stack_ptr != 0;
 		ast_push(opt_args);
 
 		CONTINUE:
 		opt_args->value;
+	}
+	|
+	DD_CONSTANT_INCLUDE {
+		//struct ast_node *group = ast_pop();
+		//printf("cmd include\n");
+		ast_push(ast_create(AST_INCLUDE, $1));
+		//ast_push(group);
 	};
 
 /* optional args

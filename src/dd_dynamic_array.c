@@ -199,7 +199,7 @@ void dd_da_free(struct dd_dynamic_array *da) {
 /* Get element */
 void *dd_da_get(struct dd_dynamic_array *da, unsigned int element) {
 	if (element >= da->elements) {
-		printf("dd_da_get: index out of bounds: %d\n", element);
+		printf("dd_da_get: out of bounds error: %d / %d\n", element, da->elements);
 		exit(-1);
 	}
 	return ((char*)da->array) +(element *da->element_size);

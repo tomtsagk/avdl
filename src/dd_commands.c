@@ -25,6 +25,7 @@ const struct keyword_function keywords[] = {
 	{">", parse_group},
 	{"group", parse_group},
 	{"class", parse_group},
+	{"class_function", parse_group},
 	{"function", parse_group},
 	{"return", parse_group},
 	{"array", parse_group},

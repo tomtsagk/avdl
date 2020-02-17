@@ -12,6 +12,9 @@ int include_stack_ptr = 0;
 // used to parse floats
 float parsing_float = 0;
 
+extern char included_files[10][100];
+extern int included_files_num;
+
 %}
 
 symbol [-=+<>*/%&|a-zA-Z][-=+<>*/&|a-zA-Z0-9_]*
@@ -51,11 +54,21 @@ number -?[0-9]+
 		exit(1);
 	}
 
+	yylval = symtable_insert(yytext, DD_CONSTANT_INCLUDE);
+	if (included_files_num >= 10) {
+		printf("max number of included files reached\n");
+		exit(-1);
+	}
+	strcpy(included_files[included_files_num], yytext);
+	included_files_num++;
+
 	// switch buffer to new file
 	yy_switch_to_buffer( yy_create_buffer( yyin, YY_BUF_SIZE ) );
 
 	// normal parse
 	BEGIN(INITIAL);
+
+	return DD_CONSTANT_INCLUDE;
 }
 
 <<EOF>> {

@@ -33,6 +33,8 @@ enum AST_NODE_TYPE {
 	AST_NUMBER,
 	AST_FLOAT,
 	AST_STRING,
+
+	AST_INCLUDE,
 };
 
 // Struct for a single node
@@ -44,6 +46,7 @@ struct ast_node {
 	};
 	int arraySize;
 	int isRef;
+	int isIncluded;
 	struct dd_dynamic_array children;
 	struct ast_node *parent;
 };

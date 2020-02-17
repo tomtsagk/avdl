@@ -111,10 +111,9 @@ const char *struct_table_get_member_name(int structIndex, int memberIndex) {
 	return struct_table[structIndex].members[memberIndex].name;
 }
 
-/*
-int struct_table_get_member_type(int structIndex, int memberIndex) {
+enum dd_variable_type struct_table_get_member_type(int structIndex, int memberIndex) {
+	return struct_table[structIndex].members[memberIndex].type;
 }
-*/
 
 int struct_table_get_member(int structIndex, const char *membername) {
 	for (int i = 0; i < struct_table[structIndex].member_total; i++) {
@@ -162,6 +161,7 @@ int struct_table_has_member(int structIndex, const char *membername) {
 }
 
 static int parent_level;
+static int parent_level_current;
 static int struct_table_is_member_parent_search(int structIndex, const char *membername) {
 	if (structIndex < 0 || structIndex > struct_table_current) {
 		printf("error: struct_table_is_member_parent: index out of bounds: %d\n", structIndex);
@@ -173,15 +173,15 @@ static int struct_table_is_member_parent_search(int structIndex, const char *mem
 
 	// is member of this struct
 	if (struct_table_has_member(structIndex, membername)) {
-		return parent_level;
-	}
-	else
-	// is not member of this struct - check parent if exists
-	if (t->parent >= 0) {
-		return struct_table_is_member_parent_search(t->parent, membername);
+		parent_level_current = parent_level;
 	}
 
-	return -1;
+	if (t->parent == -1) {
+		return parent_level_current;
+	}
+
+	//return -1;
+	return struct_table_is_member_parent_search(t->parent, membername);
 }
 
 int struct_table_is_member_parent(int structIndex, const char *membername) {
@@ -231,7 +231,21 @@ int struct_table_get_member_scope_string(int structIndex, const char *membername
 	if (struct_table[structIndex].parent) {
 		return struct_table_get_member_scope_string(struct_table[structIndex].parent, membername);
 	}
+	printf("failed searching for %d %s\n", structIndex, membername);
+	struct_table_print();
 
 	printf("struct_table_get_member_scope: error: \n");
 	exit(-1);
+}
+
+int struct_table_get_parent(int structIndex) {
+	return struct_table[structIndex].parent;
+}
+
+int struct_table_get_member_total(int structIndex) {
+	return struct_table[structIndex].member_total;
+}
+
+char *struct_table_get_member_nametype(int structIndex, int memberIndex) {
+	return struct_table[structIndex].members[memberIndex].nametype;
 }

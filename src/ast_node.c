@@ -12,6 +12,7 @@ struct ast_node *ast_create(enum AST_NODE_TYPE node_type, int value) {
 	new_node->value = value;
 	new_node->arraySize = -1;
 	new_node->isRef = 0;
+	new_node->isIncluded = 0;
 	dd_da_init(&new_node->children, sizeof(struct ast_node));
 	new_node->parent = 0;
 	return new_node;
@@ -73,6 +74,7 @@ void ast_print(struct ast_node *node) {
 		case AST_GROUP: printf("GROUP"); break;
 		case AST_COMMAND_NATIVE: printf("COMMAND NATIVE: %s", e->lexptr); break;
 		case AST_COMMAND_CUSTOM: printf("COMMAND CUSTOM:"); break;
+		case AST_INCLUDE: printf("INCLUDE:"); break;
 
 		case AST_IDENTIFIER:
 			e = symtable_entryat(node->value);
@@ -83,6 +85,8 @@ void ast_print(struct ast_node *node) {
 			printf("%d | %d", node->node_type, node->value);
 			break;
 	}
+
+	printf("included: %d", node->isIncluded);
 
 	printf("\n");
 
