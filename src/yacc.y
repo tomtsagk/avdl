@@ -50,7 +50,6 @@ int main(int argc, char *argv[])
 	int show_ast = 0;
 	int show_struct_table = 0;
 	int compile = 1;
-	int translate_only = 0;
 	char *filename[MAX_INPUT_FILES];
 	FILE *input_file = 0;
 	int input_file_total = 0;
@@ -68,14 +67,9 @@ int main(int argc, char *argv[])
 			show_struct_table = 1;
 		}
 		else
-		// don't compile
-		if (strcmp(argv[i], "--no-compile") == 0) {
-			compile = 0;
-		}
-		else
 		// only translate (not compile)
 		if (strcmp(argv[i], "--translate-only") == 0) {
-			translate_only = 1;
+			compile = 0;
 		}
 		else
 		// input file
@@ -98,6 +92,7 @@ int main(int argc, char *argv[])
 	// compile all given input files
 	for (int i = 0; i < input_file_total; i++) {
 
+		linenum = 1;
 		included_files_num = 0;
 
 		input_file = fopen(filename[i], "r");
@@ -246,6 +241,19 @@ int main(int argc, char *argv[])
 		// clean symtable and ast tree
 		symtable_clean();
 		ast_delete(game_node);
+	}
+
+	// compile the final executable
+	if (compile) {
+		buffer[0] = '\0';
+		sprintf(buffer, "gcc ");
+		for (int i = 0; i < input_file_total; i++) {
+			strcat(buffer, "build-cglut/");
+			strcat(buffer, filename[i]);
+			strcat(buffer, ".c ");
+		}
+		strcat(buffer, "-O3 -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
+		system(buffer);
 	}
 
 	// success!
