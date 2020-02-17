@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 static struct ast_node *parse_group(struct ast_node *cmd_name, struct ast_node *opt_args);
-static struct ast_node *parse_def(struct ast_node *cmd_name, struct ast_node *opt_args);
+//static struct ast_node *parse_def(struct ast_node *cmd_name, struct ast_node *opt_args);
 
 const struct keyword_function keywords[] = {
 	{"echo", parse_group},
@@ -69,6 +69,9 @@ static struct ast_node *parse_group(struct ast_node *cmd_name, struct ast_node *
 }
 
 // definition - def <type> <name> <init-value?>
+/*
 static struct ast_node *parse_def(struct ast_node *cmd_name, struct ast_node *opt_args) {
+	(void) cmd_name;
 	return opt_args;
 }
+*/

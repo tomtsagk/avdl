@@ -63,7 +63,7 @@ int struct_table_get_member_scope(int structIndex, int memberIndex);
 int struct_table_get_member_scope_string(int structIndex, const char *memberIndex);
 
 int struct_table_get_parent(int structIndex);
-int struct_table_get_member_total(int structIndex);
+unsigned int struct_table_get_member_total(int structIndex);
 char *struct_table_get_member_nametype(int structIndex, int memberIndex);
 
 #endif

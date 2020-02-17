@@ -349,6 +349,7 @@ void print_node(FILE *fd, struct ast_node *n) {
 			break;
 		}
 		case AST_EMPTY: break;
+		case AST_INCLUDE: break;
 	}
 }
 

@@ -242,7 +242,7 @@ int struct_table_get_parent(int structIndex) {
 	return struct_table[structIndex].parent;
 }
 
-int struct_table_get_member_total(int structIndex) {
+unsigned int struct_table_get_member_total(int structIndex) {
 	return struct_table[structIndex].member_total;
 }
 

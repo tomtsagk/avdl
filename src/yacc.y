@@ -476,7 +476,7 @@ command:
 		ast_push(opt_args);
 
 		CONTINUE:
-		opt_args->value;
+		(void) opt_args->value;
 	}
 	|
 	DD_CONSTANT_INCLUDE {

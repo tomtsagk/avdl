@@ -43,7 +43,7 @@ struct command_translation {
 
 static void print_asset(FILE *fd, struct ast_node *command);
 static void print_command(FILE *fd, struct ast_node *command);
-static void print_class(FILE *fd, struct ast_node *command);
+//static void print_class(FILE *fd, struct ast_node *command);
 static void print_class_definition(FILE *fd, struct ast_node *command);
 static void print_class_function(FILE *fd, struct ast_node *command);
 static void print_number(FILE *fd, struct ast_node *command);
@@ -107,7 +107,7 @@ void print_new(FILE *fd, struct ast_node *command) {
 
 void print_function_call(FILE *fd, struct ast_node *command) {
 	struct ast_node *funcname = dd_da_get(&command->children, 0);
-	struct entry *efuncname = symtable_entryat(funcname->value);
+	//struct entry *efuncname = symtable_entryat(funcname->value);
 	print_identifier_chain(fd, funcname, 0);
 	fprintf(fd, "(");
 
@@ -378,6 +378,7 @@ static void print_function_arguments(FILE *fd, struct ast_node *command) {
 	}
 }
 
+/*
 void print_class(FILE *fd, struct ast_node *command) {
 
 	// get name
@@ -478,16 +479,14 @@ void print_class(FILE *fd, struct ast_node *command) {
 			}
 		}
 
-		/*
-		 * statements
 		print_node(fd, dd_da_get(&child->children, 2));
-		*/
 		//fprintf(fd, "}\n");
 	}
 
 	scope = previous_scope;
 
 }
+		*/
 
 void print_class_function(FILE *fd, struct ast_node *command) {
 
@@ -504,7 +503,7 @@ void print_class_function(FILE *fd, struct ast_node *command) {
 
 	// get struct
 	int structIndex = struct_table_get_index(eclassname->lexptr);
-	const char *name = struct_table_get_name(structIndex);
+	//const char *name = struct_table_get_name(structIndex);
 
 	// subclass
 	int subclassIndex = struct_table_get_parent(structIndex);
@@ -549,7 +548,7 @@ void print_class_function(FILE *fd, struct ast_node *command) {
 			else if (struct_table_get_member_type(structIndex, j) == DD_VARIABLE_TYPE_FUNCTION) {
 				int parent_level =
 					struct_table_is_member_parent(structIndex, struct_table_get_member_name(structIndex, j));
-				fprintf(fd, "this->", struct_table_get_member_name(structIndex, j));
+				fprintf(fd, "this->");
 				for (int i = 0; i < parent_level; i++) {
 					fprintf(fd, "parent.");
 				}
@@ -578,7 +577,7 @@ static void print_class_definition(FILE *fd, struct ast_node *command) {
 	int structIndex = struct_table_get_index(eclassname->lexptr);
 	const char *name = struct_table_get_name(structIndex);
 
-	int previous_scope = scope;
+	//int previous_scope = scope;
 	scope = structIndex;
 
 	fprintf(fd, "struct %s {\n", name);
@@ -689,7 +688,7 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 			struct ast_node *n = dd_da_get(&command->children, current_child);
 			struct entry *e = symtable_entryat(n->value);
 
-			int memberId = struct_table_get_member(current_scope, e->lexptr);
+			//int memberId = struct_table_get_member(current_scope, e->lexptr);
 			// not last child, update scope
 			if (current_child < target-1) {
 				if (!struct_table_is_member_primitive_string(current_scope, e->lexptr)) {
