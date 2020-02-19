@@ -94,6 +94,7 @@ int main(int argc, char *argv[])
 
 		linenum = 1;
 		included_files_num = 0;
+		include_stack_ptr = 0;
 
 		input_file = fopen(filename[i], "r");
 		if (!input_file) {
@@ -159,70 +160,66 @@ int main(int argc, char *argv[])
 		struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
 		struct_table_push_member("play", DD_VARIABLE_TYPE_FUNCTION, 0);
 
-		// parse!
-		if (compile) {
-		        yyparse();
-			fclose(input_file);
+		yyparse();
+		fclose(input_file);
 
-			// parse resulting ast tree to a file
-			//parse_javascript("build/game.js", game_node);
-			//parse_cglut("build-cglut/game.c", game_node);
-			buffer[0] = '\0';
-			sprintf(buffer, "build-cglut/%s.c", filename[i]);
-			parse_cglut_translate_only(buffer, game_node);
+		// parse resulting ast tree to a file
+		//parse_javascript("build/game.js", game_node);
+		//parse_cglut("build-cglut/game.c", game_node);
+		buffer[0] = '\0';
+		sprintf(buffer, "build-cglut/%s.c", filename[i]);
+		parse_cglut_translate_only(buffer, game_node, 0);
 
-			if (show_ast) {
-				ast_print(game_node);
-			}
-
-			for (int i = 0; i < included_files_num; i++) {
-				include_stack_ptr = 0;
-				symtable_clean();
-				input_file = fopen(included_files[i], "r");
-				if (!input_file) {
-					printf("avdl error: Unable to open included file '%s': %s\n", included_files[i], strerror(errno));
-					return -1;
-				}
-
-				sprintf(buffer, "build-cglut/%s.h", included_files[i]);
-
-				// stat source and destination asset, if source is newer, copy to destination
-				struct stat stat_src_asset;
-				if (stat(included_files[i], &stat_src_asset) == -1) {
-					printf("avdl error: Unable to stat '%s': %s\n", included_files[i], strerror(errno));
-					exit(-1);
-				}
-
-				struct stat stat_dst_asset;
-				if (stat(buffer, &stat_dst_asset) == -1) {
-					yyin = input_file;
-					game_node = ast_create(AST_GAME, 0);
-					yyparse();
-					fclose(input_file);
-					parse_cglut_translate_only(buffer, game_node);
-					if (show_ast) {
-						ast_print(game_node);
-					}
-				}
-
-				// check last modification time
-				time_t time_src = mktime(gmtime(&stat_src_asset.st_mtime));
-				time_t time_dst = mktime(gmtime(&stat_dst_asset.st_mtime));
-
-				if (time_src > time_dst) {
-					yyin = input_file;
-					game_node = ast_create(AST_GAME, 0);
-					yyparse();
-					fclose(input_file);
-					parse_cglut_translate_only(buffer, game_node);
-					if (show_ast) {
-						ast_print(game_node);
-					}
-				}
-			}
+		if (show_ast) {
+			ast_print(game_node);
 		}
-		else {
-			parse_cglut("build-cglut/game.c", 0);
+
+		for (int i = 0; i < included_files_num; i++) {
+			include_stack_ptr = 0;
+			symtable_clean();
+			input_file = fopen(included_files[i], "r");
+			if (!input_file) {
+				printf("avdl error: Unable to open included file '%s': %s\n", included_files[i], strerror(errno));
+				return -1;
+			}
+
+			sprintf(buffer, "build-cglut/%s.h", included_files[i]);
+
+			// stat source and destination asset, if source is newer, copy to destination
+			struct stat stat_src_asset;
+			if (stat(included_files[i], &stat_src_asset) == -1) {
+				printf("avdl error: Unable to stat '%s': %s\n", included_files[i], strerror(errno));
+				exit(-1);
+			}
+
+			struct stat stat_dst_asset;
+			if (stat(buffer, &stat_dst_asset) == -1) {
+				yyin = input_file;
+				game_node = ast_create(AST_GAME, 0);
+				yyparse();
+				fclose(input_file);
+				parse_cglut_translate_only(buffer, game_node, 1);
+				if (show_ast) {
+					ast_print(game_node);
+				}
+				continue;
+			}
+
+			// check last modification time
+			time_t time_src = mktime(gmtime(&stat_src_asset.st_mtime));
+			time_t time_dst = mktime(gmtime(&stat_dst_asset.st_mtime));
+
+			if (time_src > time_dst) {
+				yyin = input_file;
+				game_node = ast_create(AST_GAME, 0);
+				yyparse();
+				fclose(input_file);
+				parse_cglut_translate_only(buffer, game_node, 1);
+				if (show_ast) {
+					ast_print(game_node);
+				}
+				continue;
+			}
 		}
 
 		// print debug data

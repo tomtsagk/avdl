@@ -54,13 +54,24 @@ number -?[0-9]+
 		exit(1);
 	}
 
-	yylval = symtable_insert(yytext, DD_CONSTANT_INCLUDE);
-	if (included_files_num >= 10) {
-		printf("max number of included files reached\n");
-		exit(-1);
+	// ignore duplicates
+	int isAlreadyIncluded = 0;
+	for (int i = 0; i < included_files_num; i++) {
+		if (strcmp(included_files[i], yytext) == 0) {
+			isAlreadyIncluded = 1;
+			break;
+		}
 	}
-	strcpy(included_files[included_files_num], yytext);
-	included_files_num++;
+
+	if (!isAlreadyIncluded) {
+		yylval = symtable_insert(yytext, DD_CONSTANT_INCLUDE);
+		if (included_files_num >= 10) {
+			printf("max number of included files reached\n");
+			exit(-1);
+		}
+		strcpy(included_files[included_files_num], yytext);
+		included_files_num++;
+	}
 
 	// switch buffer to new file
 	yy_switch_to_buffer( yy_create_buffer( yyin, YY_BUF_SIZE ) );

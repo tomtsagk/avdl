@@ -801,7 +801,6 @@ void print_node(FILE *fd, struct ast_node *n) {
 				if (child->node_type == AST_COMMAND_NATIVE && !child->isIncluded) {
 					struct entry *e = symtable_entryat(child->value);
 					if (strcmp(e->lexptr, "class") == 0) {
-						printf("print class definition?\n");
 						print_class_definition(fd, child);
 					}
 				}
@@ -892,7 +891,7 @@ void parse_cglut(const char *filename, struct ast_node *n) {
 }
 
 // responsible for creating a file and translating ast to target language
-void parse_cglut_translate_only(const char *filename, struct ast_node *n) {
+void parse_cglut_translate_only(const char *filename, struct ast_node *n, int isIncluded) {
 
 	if (n) {
 		dir_create(dirname);
@@ -907,10 +906,21 @@ void parse_cglut_translate_only(const char *filename, struct ast_node *n) {
 			printf("unable to open '%s': %s\n", filename, strerror(errno));
 			return;
 		}
+
+		if (isIncluded) {
+			fprintf(fd_global, "#ifndef DD_%s_H\n", filename);
+			fprintf(fd_global, "#define DD_%s_H\n", filename);
+		}
+
 		fprintf(fd_global, "#include \"dd_ddcglut.h\"\n");
 		fprintf(fd_global, "#include <stdio.h>\n");
 		fprintf(fd_global, "#include <GL/glew.h>\n");
 		print_node(fd_global, n);
+
+		if (isIncluded) {
+			fprintf(fd_global, "#endif\n");
+		}
+
 		close(out_dir);
 		fclose(fd_global);
 	}
