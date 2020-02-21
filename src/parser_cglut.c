@@ -908,8 +908,16 @@ void parse_cglut_translate_only(const char *filename, struct ast_node *n, int is
 		}
 
 		if (isIncluded) {
-			fprintf(fd_global, "#ifndef DD_%s_H\n", filename);
-			fprintf(fd_global, "#define DD_%s_H\n", filename);
+			strcpy(buffer, filename);
+			for (int i = 0; buffer[i] != '\0'; i++) {
+				if (!(buffer[i] >= 'a' && buffer[i] <= 'z')
+				&&  !(buffer[i] >= 'A' && buffer[i] <= 'Z')
+				&& buffer[i] != '_') {
+					buffer[i] = '_';
+				}
+			}
+			fprintf(fd_global, "#ifndef DD_%s_H\n", buffer);
+			fprintf(fd_global, "#define DD_%s_H\n", buffer);
 		}
 
 		fprintf(fd_global, "#include \"dd_ddcglut.h\"\n");

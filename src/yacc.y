@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
 	int show_ast = 0;
 	int show_struct_table = 0;
 	int compile = 1;
+	int translate = 1;
 	char *filename[MAX_INPUT_FILES];
 	FILE *input_file = 0;
 	int input_file_total = 0;
@@ -72,6 +73,10 @@ int main(int argc, char *argv[])
 			compile = 0;
 		}
 		else
+		if (strcmp(argv[i], "--no-translate") == 0) {
+			translate = 0;
+		}
+		else
 		// input file
 		if (input_file_total < MAX_INPUT_FILES) {
 			filename[input_file_total] = argv[i];
@@ -90,7 +95,7 @@ int main(int argc, char *argv[])
 	}
 
 	// compile all given input files
-	for (int i = 0; i < input_file_total; i++) {
+	for (int i = 0; i < input_file_total && translate; i++) {
 
 		linenum = 1;
 		included_files_num = 0;
@@ -250,6 +255,7 @@ int main(int argc, char *argv[])
 			strcat(buffer, ".c ");
 		}
 		strcat(buffer, "-O3 -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
+		//printf("command: %s\n", buffer);
 		system(buffer);
 	}
 
