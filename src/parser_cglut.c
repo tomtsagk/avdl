@@ -293,7 +293,7 @@ void print_command(FILE *fd, struct ast_node *command) {
 	}
 	else
 	if (strcmp(e->lexptr, "class") == 0) {
-		//print_class(fd, command);
+		print_class_definition(fd, command);
 	}
 	else
 	if (strcmp(e->lexptr, "class_function") == 0) {
@@ -795,16 +795,6 @@ void print_node(FILE *fd, struct ast_node *n) {
 	switch (n->node_type) {
 		case AST_GAME:
 		case AST_GROUP:
-			// for classes, pre-define them so they can interact with each other
-			for (unsigned int i = 0; i < n->children.elements; i++) {
-				struct ast_node *child = dd_da_get(&n->children, i);
-				if (child->node_type == AST_COMMAND_NATIVE && !child->isIncluded) {
-					struct entry *e = symtable_entryat(child->value);
-					if (strcmp(e->lexptr, "class") == 0) {
-						print_class_definition(fd, child);
-					}
-				}
-			}
 			for (unsigned int i = 0; i < n->children.elements; i++) {
 				print_node(fd, dd_da_get(&n->children, i));
 			}

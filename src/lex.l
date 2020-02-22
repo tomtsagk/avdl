@@ -63,8 +63,8 @@ number -?[0-9]+
 		}
 	}
 
+	yylval = symtable_insert(yytext, DD_CONSTANT_INCLUDE);
 	if (!isAlreadyIncluded) {
-		yylval = symtable_insert(yytext, DD_CONSTANT_INCLUDE);
 		if (included_files_num >= 10) {
 			printf("max number of included files reached\n");
 			exit(-1);

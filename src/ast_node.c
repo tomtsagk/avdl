@@ -86,7 +86,7 @@ void ast_print(struct ast_node *node) {
 			break;
 	}
 
-	printf("included: %d", node->isIncluded);
+	printf(" included: %d", node->isIncluded);
 
 	printf("\n");
 
