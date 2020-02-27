@@ -222,9 +222,26 @@ void print_asset(FILE *fd, struct ast_node *command) {
 	struct ast_node *assetName = dd_da_get(&command->children, 0);
 	struct entry *eassetName = symtable_entryat(assetName->value);
 
-	// print the final asset path (relative to the out_dir)
-	print_node(fd, assetName);
+	strcpy(buffer, eassetName->lexptr);
+	char *lastDot = 0;
+	int currentChar = 0;
+	while (buffer[currentChar] != '\0') {
+		if (buffer[currentChar] == '.') {
+			lastDot = buffer +currentChar;
+		}
+		currentChar++;
+	}
 
+	if (lastDot != 0) {
+		lastDot[0] = '\0';
+	}
+	strcat(buffer, ".asset");
+	fprintf(fd, "\"%s\"", buffer);
+
+	// print the final asset path (relative to the out_dir)
+	//print_node(fd, assetName);
+
+	/*
 	// stat source and destination asset, if source is newer, copy to destination
 	struct stat stat_src_asset;
 	if (stat(eassetName->lexptr, &stat_src_asset) == -1) {
@@ -248,6 +265,7 @@ void print_asset(FILE *fd, struct ast_node *command) {
 	if (time_src > time_dst) {
 		file_copy_at(0, eassetName->lexptr, out_dir, eassetName->lexptr, 0);
 	}
+	*/
 }
 
 /* find out which command it is, and call the right function
@@ -822,7 +840,10 @@ void print_node(FILE *fd, struct ast_node *n) {
 		}
 		case AST_INCLUDE: {
 			struct entry *e = symtable_entryat(n->value);
-			fprintf(fd, "#include \"%s.h\";\n", e->lexptr);
+			strcpy(buffer, e->lexptr);
+			buffer[strlen(buffer)-3] = 'h';
+			buffer[strlen(buffer)-2] = '\0';
+			fprintf(fd, "#include \"%s\"\n", buffer);
 			break;
 		}
 		case AST_IDENTIFIER: {

@@ -12,6 +12,7 @@
 #include "struct_table.h"
 #include "dd_commands.h"
 #include <errno.h>
+#include "file_op.h"
 
 extern FILE *yyin;
 extern YYSTYPE yylex(void);
@@ -49,11 +50,22 @@ int main(int argc, char *argv[])
 	 */
 	int show_ast = 0;
 	int show_struct_table = 0;
-	int compile = 1;
-	int translate = 1;
-	char *filename[MAX_INPUT_FILES];
+	char filename[MAX_INPUT_FILES][100];
 	FILE *input_file = 0;
 	int input_file_total = 0;
+	char *outname = 0;
+
+	/*
+	 * phases
+	 *
+	 * translate: translate `.dd` files to `.c`
+	 * compile: compile `.c` files to `.o`
+	 * link: link all `.o` files to an executable
+	 *
+	 */
+	int translate = 1;
+	int compile = 1;
+	int link = 1;
 
 	// parse arguments
 	for (int i = 1; i < argc; i++) {
@@ -68,7 +80,26 @@ int main(int argc, char *argv[])
 			show_struct_table = 1;
 		}
 		else
-		// only translate (not compile)
+		/* phase arguments
+		 * -c: skip linking
+		 */
+		if (strcmp(argv[i], "-c") == 0) {
+			link = 0;
+		}
+		else
+		if (strcmp(argv[i], "-o") == 0) {
+			if (argc > i+1) {
+				outname = argv[i+1];
+				i++;
+			}
+			else {
+				printf("avdl error: name is expected after `-o`\n");
+				return -1;
+			}
+		}
+		else
+		 /*
+		// only translate
 		if (strcmp(argv[i], "--translate-only") == 0) {
 			compile = 0;
 		}
@@ -77,9 +108,12 @@ int main(int argc, char *argv[])
 			translate = 0;
 		}
 		else
+		*/
 		// input file
 		if (input_file_total < MAX_INPUT_FILES) {
-			filename[input_file_total] = argv[i];
+			strncpy(filename[input_file_total], argv[i], 100);
+			filename[input_file_total][99] = '\0';
+			//filename[input_file_total] = argv[i];
 			input_file_total++;
 		}
 		else {
@@ -94,10 +128,22 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	// compile all given input files
+	if (outname && !link && input_file_total > 1) {
+		printf("avdl error: cannot supply `-o` with `-c` and multiple input files\n");
+		return -1;
+	}
+
+	if (translate) {
+		//printf("~~~ translation phase ~~~\n");
+	}
+	// translate all given input files
 	for (int i = 0; i < input_file_total && translate; i++) {
 
-		linenum = 1;
+		// check if file is meant to be compiled, or is already compiled
+		if (strcmp(filename[i] +strlen(filename[i]) -3, ".dd") != 0) {
+			continue;
+		}
+
 		included_files_num = 0;
 		include_stack_ptr = 0;
 
@@ -168,18 +214,30 @@ int main(int argc, char *argv[])
 		yyparse();
 		fclose(input_file);
 
+		//printf("transpiling: %s", filename[i]);
 		// parse resulting ast tree to a file
-		//parse_javascript("build/game.js", game_node);
-		//parse_cglut("build-cglut/game.c", game_node);
-		buffer[0] = '\0';
-		sprintf(buffer, "build-cglut/%s.c", filename[i]);
-		parse_cglut_translate_only(buffer, game_node, 0);
+		filename[i][strlen(filename[i]) -2] = 'c';
+		filename[i][strlen(filename[i]) -1] = '\0';
+		//printf(" to %s\n", filename[i]);
+		parse_cglut_translate_only(filename[i], game_node, 0);
 
+		// print debug data
 		if (show_ast) {
 			ast_print(game_node);
 		}
 
+		if (show_struct_table) {
+			struct_table_print();
+		}
+
+		//symtable_print();
+
+		// clean symtable and ast tree
+		symtable_clean();
+		ast_delete(game_node);
+
 		for (int i = 0; i < included_files_num; i++) {
+			//printf("transpiling included file: %s\n", included_files[i]);
 			include_stack_ptr = 0;
 			symtable_clean();
 			input_file = fopen(included_files[i], "r");
@@ -188,7 +246,11 @@ int main(int argc, char *argv[])
 				return -1;
 			}
 
-			sprintf(buffer, "build-cglut/%s.h", included_files[i]);
+			strcpy(buffer, included_files[i]);
+			buffer[strlen(buffer)-3] = 'h';
+			buffer[strlen(buffer)-2] = '\0';
+			//printf("transpiling to: %s\n", buffer);
+			//sprintf(buffer, "build-cglut/%s.h", included_files[i]);
 
 			// stat source and destination asset, if source is newer, copy to destination
 			struct stat stat_src_asset;
@@ -226,35 +288,79 @@ int main(int argc, char *argv[])
 				continue;
 			}
 		}
+	}
 
-		// print debug data
-		/*
-		if (show_ast) {
-			ast_print(game_node);
+	if (compile) {
+		//printf("~~~ compilation phase ~~~\n");
+	}
+	// compile all given input files
+	for (int i = 0; i < input_file_total && compile; i++) {
+
+		// check if file is meant to be compiled, or is already compiled
+		if (strcmp(filename[i] +strlen(filename[i]) -2, ".c") != 0) {
+			continue;
 		}
-		*/
 
-		if (show_struct_table) {
-			struct_table_print();
+		//printf("compiling: %s\n", filename[i]);
+
+		// compile
+		strcpy(buffer, "gcc -c -w ");
+		strcat(buffer, filename[i]);
+		strcat(buffer, " -o ");
+		if (outname && !link) {
+			strcat(buffer, outname);
+		}
+		else {
+			filename[i][strlen(filename[i]) -1] = 'o';
+			strcat(buffer, filename[i]);
+		}
+		strcat(buffer, " -O3 -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
+		//printf("command: %s\n", buffer);
+		system(buffer);
+	}
+
+	if (1) {
+		//printf("~~~ asset phase ~~~\n");
+	}
+	// compile all given input files
+	for (int i = 0; i < input_file_total && compile; i++) {
+
+		// check if file is asset
+		if (strcmp(filename[i] +strlen(filename[i]) -4, ".ply") != 0
+		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".bmp") != 0) {
+			continue;
 		}
 
-		//symtable_print();
+		if (outname) {
+			strcpy(buffer, outname);
+		}
+		else {
+			strcpy(buffer, filename[i]);
+			buffer[strlen(buffer) -4] = '\0';
+			strcat(buffer, ".asset");
+		}
 
-		// clean symtable and ast tree
-		symtable_clean();
-		ast_delete(game_node);
+		//printf("compiling asset: %s to %s\n", filename[i], buffer);
+
+		file_copy(filename[i], buffer, 0);
 	}
 
 	// compile the final executable
-	if (compile) {
+	if (link) {
+		//printf("~~~ link phase ~~~\n");
 		buffer[0] = '\0';
 		sprintf(buffer, "gcc ");
 		for (int i = 0; i < input_file_total; i++) {
-			strcat(buffer, "build-cglut/");
 			strcat(buffer, filename[i]);
-			strcat(buffer, ".c ");
+			strcat(buffer, " ");
 		}
-		strcat(buffer, "-O3 -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
+		strcat(buffer, "-O3 -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer -o ");
+		if (outname) {
+			strcat(buffer, outname);
+		}
+		else {
+			strcat(buffer, "game");
+		}
 		//printf("command: %s\n", buffer);
 		system(buffer);
 	}
