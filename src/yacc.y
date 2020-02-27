@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
 	FILE *input_file = 0;
 	int input_file_total = 0;
 	char *outname = 0;
+	char *includePath = 0;
 
 	/*
 	 * phases
@@ -98,17 +99,17 @@ int main(int argc, char *argv[])
 			}
 		}
 		else
-		 /*
-		// only translate
-		if (strcmp(argv[i], "--translate-only") == 0) {
-			compile = 0;
+		if (strcmp(argv[i], "-I") == 0) {
+			if (argc > i+1) {
+				includePath = argv[i+1];
+				i++;
+			}
+			else {
+				printf("avdl error: include path is expected after `-I`\n");
+				return -1;
+			}
 		}
 		else
-		if (strcmp(argv[i], "--no-translate") == 0) {
-			translate = 0;
-		}
-		else
-		*/
 		// input file
 		if (input_file_total < MAX_INPUT_FILES) {
 			strncpy(filename[input_file_total], argv[i], 100);
@@ -315,6 +316,10 @@ int main(int argc, char *argv[])
 			strcat(buffer, filename[i]);
 		}
 		strcat(buffer, " -O3 -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
+		if (includePath) {
+			strcat(buffer, " -I ");
+			strcat(buffer, includePath);
+		}
 		//printf("command: %s\n", buffer);
 		system(buffer);
 	}
