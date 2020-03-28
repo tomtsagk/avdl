@@ -58,6 +58,7 @@ static void print_if(FILE *fd, struct ast_node *command);
 static void print_function_arguments(FILE *fd, struct ast_node *command);
 static void print_echo(FILE *fd, struct ast_node *command);
 static void print_function(FILE *fd, struct ast_node *command);
+static void print_extern(FILE *fd, struct ast_node *command);
 /*
 static void print_return(FILE *fd, struct ast_node *command);
 static void print_array(FILE *fd, struct ast_node *command);
@@ -337,6 +338,10 @@ void print_command(FILE *fd, struct ast_node *command) {
 	if (strcmp(e->lexptr, "asset") == 0) {
 		print_asset(fd, command);
 	}
+	else
+	if (strcmp(e->lexptr, "extern") == 0) {
+		print_extern(fd, command);
+	}
 }
 
 void print_echo(FILE *fd, struct ast_node *command) {
@@ -394,6 +399,15 @@ static void print_function_arguments(FILE *fd, struct ast_node *command) {
 		fprintf(fd, " ");
 		print_node(fd, dd_da_get(&command->children, i+1));
 	}
+}
+
+static void print_extern(FILE *fd, struct ast_node *command) {
+	fprintf(fd, "extern ");
+	for (unsigned int i = 0; i < command->children.elements; i++) {
+		print_node(fd, dd_da_get(&command->children, i));
+		fprintf(fd, " ");
+	}
+	fprintf(fd, ";\n");
 }
 
 /*
