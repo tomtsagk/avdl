@@ -211,6 +211,9 @@ int main(int argc, char *argv[])
 		struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0);
 		struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
 		struct_table_push_member("play", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("playLoop", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("stop", DD_VARIABLE_TYPE_FUNCTION, 0);
+		struct_table_push_member("setVolume", DD_VARIABLE_TYPE_FUNCTION, 0);
 
 		yyparse();
 		fclose(input_file);
