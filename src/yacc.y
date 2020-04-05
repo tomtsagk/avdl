@@ -436,165 +436,35 @@ command:
 		struct ast_node *opt_args = ast_pop();
 		struct ast_node *cmd_name = ast_pop();
 
-
 		/*
-		struct ast_node *cmd = parse_command(cmd_name, opt_args);
-		//ast_print(cmd);
-
-		ast_push(cmd);
-
-		goto CONTINUE;
-		*/
-
-		// find out if keyword is an native keyword or a custom one
-		struct entry *e = symtable_entryat(cmd_name->value);
-		int type;
-
-		if (e->token == DD_KEYWORD) {
-			type = AST_COMMAND_NATIVE;
-			if (strcmp(e->lexptr, "group") == 0) {
-				type = AST_GROUP;
-			}
-			else
-			if (strcmp(e->lexptr, "class") == 0) {
-				struct ast_node *classname = dd_da_get(&opt_args->children, 0);
-				struct entry *eclassname = symtable_entryat(classname->value);
-
-				// check if there is a parent
-				struct ast_node *parentname = dd_da_get(&opt_args->children, 1);
-				int struct_index;
-				if (parentname->node_type == AST_IDENTIFIER) {
-					struct entry *eparentname = symtable_entryat(parentname->value);
-					struct_index = struct_table_push(eclassname->lexptr, eparentname->lexptr);
-				}
-				else {
-					struct_index = struct_table_push(eclassname->lexptr, 0);
-				}
-				e->value = struct_index;
-
-				// find all definitions
-				struct ast_node *statements = dd_da_get(&opt_args->children, 2);
-				for (unsigned int i = 0; i < statements->children.elements; i++) {
-
-					// native command
-					struct ast_node *statement = dd_da_get(&statements->children, i);
-					if (statement->node_type == AST_COMMAND_NATIVE) {
-						struct entry *estatement = symtable_entryat(statement->value);
-
-						int isFunction = strcmp(estatement->lexptr, "function") == 0;
-						if (strcmp(estatement->lexptr, "def") == 0
-						||  isFunction) {
-							struct ast_node *vartype = 0;
-							struct entry *evartype = 0;
-							if (!isFunction) {
-								vartype = dd_da_get(&statement->children, 0);
-								evartype = symtable_entryat(vartype->value);
-							}
-
-							int varnameIndex = isFunction ? 0 : 1;
-
-							struct ast_node *varname = dd_da_get(&statement->children, varnameIndex);
-							struct entry *evarname = symtable_entryat(varname->value);
-
-							// ignore constructor
-							if (isFunction && strcmp(evarname->lexptr, "create") == 0) continue;
-
-							char *nametype = 0;
-							int type = 0;
-							if (isFunction) {
-								type = DD_VARIABLE_TYPE_FUNCTION;
-							}
-							else
-							if (strcmp(evartype->lexptr, "int") == 0) {
-								type = DD_VARIABLE_TYPE_INT;
-							}
-							else
-							if (strcmp(evartype->lexptr, "float") == 0) {
-								type = DD_VARIABLE_TYPE_FLOAT;
-							}
-							else
-							if (strcmp(evartype->lexptr, "string") == 0) {
-								type = DD_VARIABLE_TYPE_STRING;
-							}
-							else {
-								type = DD_VARIABLE_TYPE_STRUCT;
-								nametype = evartype->lexptr;
-							}
-
-							// only add it to the struct table if not member of any of its parents
-							/*
-							if (struct_table_is_member_parent(
-								struct_table_get_index(eclassname->lexptr),
-								evarname->lexptr) == -1) {
-
-								struct_table_push_member(evarname->lexptr, type, nametype);
-							}
-							*/
-							struct_table_push_member(evarname->lexptr, type, nametype);
-						}
-						if (strcmp(estatement->lexptr, "function") == 0) {
-							struct ast_node *varname = dd_da_get(&statement->children, 0);
-							struct entry *evarname = symtable_entryat(varname->value);
-
-							// only add it to the struct table if not member of any of its parents
-							if (struct_table_is_member_parent(
-								struct_table_get_index(eclassname->lexptr),
-								evarname->lexptr) == -1) {
-
-								struct_table_push_member(evarname->lexptr, 0, 0);
-							}
-						}
-					}
-				}
-			}
-			else
-			if (strcmp(e->lexptr, "array") == 0) {
-				struct ast_node *type = dd_da_get(&opt_args->children, 0);
-				struct ast_node *amount = dd_da_get(&opt_args->children, 1);
-				struct ast_node *n = ast_create(AST_IDENTIFIER, type->value);
-				n->arraySize = amount->value;
-				ast_push(n);
-				goto CONTINUE;
-			}
-			else
-			if (strcmp(e->lexptr, "ref") == 0) {
-				struct ast_node *type = dd_da_get(&opt_args->children, 0);
-				struct ast_node *n = ast_create(AST_IDENTIFIER, type->value);
-				n->isRef = 1;
-				ast_push(n);
-				goto CONTINUE;
-			}
-			else
-			if (strcmp(e->lexptr, "def") == 0) {
-				struct ast_node *varname = dd_da_get(&opt_args->children, 1);
-				struct entry *evarname = symtable_entryat(varname->value);
-				struct ast_node *vartype = dd_da_get(&opt_args->children, 0);
-				struct entry *evartype = symtable_entryat(vartype->value);
-				evarname->scope = evartype->lexptr;
-			}
-		}
-		// not a native keyword, assume custom one
-		else {
-			sprintf(buffer, "not a keyword: '%s'", e->lexptr);
-			type = AST_COMMAND_CUSTOM;
-			//yyerror(buffer);
-	    		//printf("error symbol not keyword: %s\n", e->lexptr);
-		}
-
-		/* command node
-		 * construct it in such a way that the parent ast node is the command
-		 * if a custom command, then first child is its name
+		 * Attempt to parse native command
+		 * if no ast_node is returned, it must be a custom command
+		 * Custom commands are currently "Pass-Through"
+		 *
 		 */
-		opt_args->node_type = type;
-		opt_args->value = $2;
-		if (type == AST_COMMAND_CUSTOM) {
-			ast_child_add_first(opt_args, cmd_name);
-		}
-		opt_args->isIncluded = include_stack_ptr != 0;
-		ast_push(opt_args);
+		struct ast_node *cmd = parse_command(cmd_name, opt_args);
 
-		CONTINUE:
-		(void) opt_args->value;
+		// Known (native) command
+		if (cmd) {
+			ast_push(cmd);
+		}
+		// Not a known command, must be a custom one
+		else {
+			struct entry *e = symtable_entryat(cmd_name->value);
+			sprintf(buffer, "not a keyword: '%s'", e->lexptr);
+			//yyerror(buffer);
+			//printf("error symbol not keyword: %s\n", e->lexptr);
+
+			/* command node
+			 * construct it in such a way that the parent ast node is the command
+			 * if a custom command, then first child is its name
+			 */
+			opt_args->node_type = AST_COMMAND_CUSTOM;
+			opt_args->value = $2;
+			ast_child_add_first(opt_args, cmd_name);
+			opt_args->isIncluded = include_stack_ptr != 0;
+			ast_push(opt_args);
+		}
 	}
 	|
 	DD_CONSTANT_INCLUDE {
