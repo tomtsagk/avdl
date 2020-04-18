@@ -407,12 +407,23 @@ static void print_function_arguments(FILE *fd, struct ast_node *command) {
 				break;
 			}
 		}
+
+		struct ast_node *type = dd_da_get(&command->children, i);
+		struct ast_node *varname = dd_da_get(&command->children, i+1);
 		if (!isPrimitive) {
 			fprintf(fd, "struct ");
+			//struct entry *etype = symtable_entryat(type->value);
+			struct entry *evarname = symtable_entryat(varname->value);
+			evarname->scope = e1->lexptr;
+			evarname->isRef = 1;
 		}
-		print_node(fd, dd_da_get(&command->children, i));
+
+		print_node(fd, type);
 		fprintf(fd, " ");
-		print_node(fd, dd_da_get(&command->children, i+1));
+		if (!isPrimitive) {
+			fprintf(fd, "*");
+		}
+		print_node(fd, varname);
 	}
 }
 
@@ -720,6 +731,7 @@ void print_array(FILE *fd, struct ast_node *command) {
 void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last) {
 	struct entry *e = symtable_entryat(command->value);
 
+	// decide if identifier chain is for a primitive or a structure
 	if (command->children.elements > 0) {
 		int current_scope;
 		if (strcmp(e->lexptr, "this") == 0) {
