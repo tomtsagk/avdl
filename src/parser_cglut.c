@@ -34,6 +34,9 @@ const char *dirname = "build-cglut";
 
 static void print_node(FILE *fd, struct ast_node *n);
 
+extern const char *primitive_keywords[];
+extern unsigned int primitive_keywords_count;
+
 /*
 struct command_translation {
 	char *command;
@@ -394,6 +397,18 @@ static void print_function_arguments(FILE *fd, struct ast_node *command) {
 	for (unsigned int i = 0; i+1 < command->children.elements; i += 2) {
 		if (i != 0) {
 			fprintf(fd, ", ");
+		}
+		struct ast_node *c1 = dd_da_get(&command->children, i);
+		struct entry *e1 = symtable_entryat(c1->value);
+		int isPrimitive = 0;
+		for (unsigned int i = 0; i < primitive_keywords_count; i++) {
+			if (strcmp(primitive_keywords[i], e1->lexptr) == 0) {
+				isPrimitive = 1;
+				break;
+			}
+		}
+		if (!isPrimitive) {
+			fprintf(fd, "struct ");
 		}
 		print_node(fd, dd_da_get(&command->children, i));
 		fprintf(fd, " ");

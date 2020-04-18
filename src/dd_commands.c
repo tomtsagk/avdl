@@ -8,6 +8,7 @@
 const char *primitive_keywords[] = {
 	"int",
 	"float",
+	"char",
 };
 unsigned int primitive_keywords_count = sizeof(primitive_keywords) /sizeof(char *);
 
