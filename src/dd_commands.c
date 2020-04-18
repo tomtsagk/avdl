@@ -5,6 +5,12 @@
 #include <stdio.h>
 #include "struct_table.h"
 
+const char *primitive_keywords[] = {
+	"int",
+	"float",
+};
+unsigned int primitive_keywords_count = sizeof(primitive_keywords) /sizeof(char *);
+
 extern int include_stack_ptr;
 
 static struct ast_node *parse_through(struct ast_node *cmd_name, struct ast_node *opt_args);
@@ -171,10 +177,34 @@ static struct ast_node *parse_array(struct ast_node *cmd_name, struct ast_node *
 }
 
 static struct ast_node *parse_def(struct ast_node *cmd_name, struct ast_node *opt_args) {
+
 	struct ast_node *varname = dd_da_get(&opt_args->children, 1);
 	struct entry *evarname = symtable_entryat(varname->value);
+
 	struct ast_node *vartype = dd_da_get(&opt_args->children, 0);
 	struct entry *evartype = symtable_entryat(vartype->value);
+
+	int isValid = 0;
+
+	// check if primitive type
+	for (unsigned int i = 0; i < primitive_keywords_count; i++) {
+		if (strcmp(primitive_keywords[i], evartype->lexptr) == 0) {
+			isValid = 1;
+			break;
+		}
+	}
+
+	// check if struct type
+	if (struct_table_get_index(evartype->lexptr) >= 0) {
+		isValid = 1;
+	}
+
+	// check if valid type was entered
+	if (!isValid) {
+		printf("avdl error: declared invalid type: %s\n", evartype->lexptr);
+		exit(-1);
+	}
+
 	evarname->scope = evartype->lexptr;
 	return parse_through(cmd_name, opt_args);
 }
