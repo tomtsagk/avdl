@@ -348,12 +348,49 @@ void print_command(FILE *fd, struct ast_node *command) {
 }
 
 void print_echo(FILE *fd, struct ast_node *command) {
-	fprintf(fd, "printf(\"%%s\\n\", ");
+	fprintf(fd, "printf(\"");
+
+	// print the format depending on the children's types
+	for (unsigned int i = 0; i < command->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&command->children, i);
+
+		// Primitive types
+		if (child->node_type == AST_NUMBER) {
+			fprintf(fd, "%%d");
+		}
+		else
+		if (child->node_type == AST_FLOAT) {
+			fprintf(fd, "%%f");
+		}
+		else
+		if (child->node_type == AST_STRING) {
+			fprintf(fd, "%%s");
+		}
+		else
+		// Identifier - check its type
+		if (child->node_type == AST_IDENTIFIER) {
+			struct entry *e = symtable_entryat(child->value);
+			if (strcmp(e->scope, "int") == 0) {
+				fprintf(fd, "%%d");
+			}
+			else
+			if (strcmp(e->scope, "float") == 0) {
+				fprintf(fd, "%%f");
+			}
+			else
+			if (strcmp(e->scope, "string") == 0) {
+				fprintf(fd, "%%s");
+			}
+		}
+	}
+	fprintf(fd, "\\n\", ");
+
+	// give the children to printf's format
 	int temp_semicolon = has_semicolon;
 	has_semicolon = 0;
 	for (unsigned int i = 0; i < command->children.elements; i++) {
 		if (i > 0) {
-			fprintf(fd, " ");
+			fprintf(fd, ", ");
 		}
 		print_node(fd, dd_da_get(&command->children, i));
 	}
