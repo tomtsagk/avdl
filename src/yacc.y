@@ -51,7 +51,6 @@ int main(int argc, char *argv[])
 	int show_ast = 0;
 	int show_struct_table = 0;
 	char filename[MAX_INPUT_FILES][100];
-	FILE *input_file = 0;
 	int input_file_total = 0;
 	char *outname = 0;
 	char *includePath = 0;
@@ -88,6 +87,7 @@ int main(int argc, char *argv[])
 			link = 0;
 		}
 		else
+		// output filename
 		if (strcmp(argv[i], "-o") == 0) {
 			if (argc > i+1) {
 				outname = argv[i+1];
@@ -99,6 +99,7 @@ int main(int argc, char *argv[])
 			}
 		}
 		else
+		// add include path
 		if (strcmp(argv[i], "-I") == 0) {
 			if (argc > i+1) {
 				includePath = argv[i+1];
@@ -114,9 +115,9 @@ int main(int argc, char *argv[])
 		if (input_file_total < MAX_INPUT_FILES) {
 			strncpy(filename[input_file_total], argv[i], 100);
 			filename[input_file_total][99] = '\0';
-			//filename[input_file_total] = argv[i];
 			input_file_total++;
 		}
+		// error argument
 		else {
 			printf("avdl error: '%s': Only %d input files can be provided at a time\n", argv[i], MAX_INPUT_FILES);
 			return -1;
@@ -148,6 +149,7 @@ int main(int argc, char *argv[])
 		included_files_num = 0;
 		include_stack_ptr = 0;
 
+		FILE *input_file = 0;
 		input_file = fopen(filename[i], "r");
 		if (!input_file) {
 			printf("avdl error: Unable to open '%s': %s\n", filename[i], strerror(errno));
@@ -167,26 +169,11 @@ int main(int argc, char *argv[])
 		for (unsigned int i = 0; i < keywords_total; i++) {
 			symtable_insert(keywords[i].keyword, DD_KEYWORD);
 		}
-		/*
-		symtable_insert("DD_WIDTH", DD_INTERNAL_WIDTH);
-		symtable_insert("DD_HEIGHT", DD_INTERNAL_HEIGHT);
-		*/
 
 		// initialise the parent node
 		game_node = ast_create(AST_GAME, 0);
 
 		// init structs
-		/*
-		struct struct_entry *temp_entry = malloc(sizeof(struct struct_entry));
-		temp_entry->name = "dd_world";
-		struct_insert(temp_entry);
-		temp_entry = malloc(sizeof(struct struct_entry));
-		temp_entry->name = "dd_sprite";
-		struct_insert(temp_entry);
-		temp_entry = malloc(sizeof(struct struct_entry));
-		temp_entry->name = "dd_vector2d";
-		struct_insert(temp_entry);
-		*/
 		struct_table_init();
 
 		yyparse();
@@ -197,7 +184,7 @@ int main(int argc, char *argv[])
 		filename[i][strlen(filename[i]) -2] = 'c';
 		filename[i][strlen(filename[i]) -1] = '\0';
 		//printf(" to %s\n", filename[i]);
-		parse_cglut_translate_only(filename[i], game_node, 0);
+		transpile_cglut(filename[i], game_node, 0);
 
 		// print debug data
 		if (show_ast) {
@@ -243,7 +230,7 @@ int main(int argc, char *argv[])
 				game_node = ast_create(AST_GAME, 0);
 				yyparse();
 				fclose(input_file);
-				parse_cglut_translate_only(buffer, game_node, 1);
+				transpile_cglut(buffer, game_node, 1);
 				if (show_ast) {
 					ast_print(game_node);
 				}
@@ -259,7 +246,7 @@ int main(int argc, char *argv[])
 				game_node = ast_create(AST_GAME, 0);
 				yyparse();
 				fclose(input_file);
-				parse_cglut_translate_only(buffer, game_node, 1);
+				transpile_cglut(buffer, game_node, 1);
 				if (show_ast) {
 					ast_print(game_node);
 				}
@@ -358,7 +345,7 @@ int main(int argc, char *argv[])
 %token DD_ZERO
 
 // used for the languages keywords
-%token DD_KEYWORD
+%token DD_KEYWORD DD_FUNCTION
 
 /* constants */
 %token DD_CONSTANT_SYMBOL DD_CONSTANT_STRING DD_CONSTANT_NUMBER DD_CONSTANT_FLOAT DD_CONSTANT_INCLUDE
@@ -425,9 +412,14 @@ command:
 		// Not a known command, must be a custom one
 		else {
 			struct entry *e = symtable_entryat(cmd_name->value);
+			if (e->token == DD_FUNCTION) {
+				//printf("function: %s\n", e->lexptr);
+			}
+			else {
+				//printf("error symbol not keyword: %s\n", e->lexptr);
+			}
 			sprintf(buffer, "not a keyword: '%s'", e->lexptr);
 			//yyerror(buffer);
-			//printf("error symbol not keyword: %s\n", e->lexptr);
 
 			/* command node
 			 * construct it in such a way that the parent ast node is the command

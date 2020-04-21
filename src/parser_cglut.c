@@ -941,46 +941,7 @@ void print_node(FILE *fd, struct ast_node *n) {
 #endif
 
 // responsible for creating a file and translating ast to target language
-void parse_cglut(const char *filename, struct ast_node *n) {
-
-	if (n) {
-		dir_create(dirname);
-		out_dir = open(dirname, O_DIRECTORY);
-		if (!out_dir) {
-			printf("error opening `%s`: %s\n", dirname, strerror(errno));
-			return;
-		}
-
-		fd_global = fopen(filename, "w");
-		if (!fd_global) {
-			printf("unable to open '%s': %s\n", filename, strerror(errno));
-			return;
-		}
-		fprintf(fd_global, "#include \"dd_ddcglut.h\"\n");
-		fprintf(fd_global, "#include <stdio.h>\n");
-		fprintf(fd_global, "#include <GL/glew.h>\n");
-		fprintf(fd_global, "int main(int argc, char *argv[]) {dd_main(argc, argv);}\n");
-		print_node(fd_global, n);
-		close(out_dir);
-		fclose(fd_global);
-	}
-
-	system("gcc build-cglut/game.c -O3 -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
-
-	/*
-	int dir = open("build", O_DIRECTORY);
-	if (!dir) {
-		printf("error opening `build/`: %s\n", strerror(errno));
-	}
-	*/
-
-	//dir_create("build/images");
-	//dir_copy_recursive(0, "images", dir, "images");
-	//close(dir);
-}
-
-// responsible for creating a file and translating ast to target language
-void parse_cglut_translate_only(const char *filename, struct ast_node *n, int isIncluded) {
+void transpile_cglut(const char *filename, struct ast_node *n, int isIncluded) {
 
 	if (n) {
 		dir_create(dirname);
@@ -1021,17 +982,4 @@ void parse_cglut_translate_only(const char *filename, struct ast_node *n, int is
 		close(out_dir);
 		fclose(fd_global);
 	}
-
-	//system("gcc build-cglut/game.c -O3 -o build-cglut/game -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
-
-	/*
-	int dir = open("build", O_DIRECTORY);
-	if (!dir) {
-		printf("error opening `build/`: %s\n", strerror(errno));
-	}
-	*/
-
-	//dir_create("build/images");
-	//dir_copy_recursive(0, "images", dir, "images");
-	//close(dir);
 }

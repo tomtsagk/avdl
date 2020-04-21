@@ -3,9 +3,7 @@
 
 #include "ast_node.h"
 
-// parse ast_node tree
-void parse_javascript(const char *filename, struct ast_node *n);
-void parse_cglut(const char *filename, struct ast_node *n);
-void parse_cglut_translate_only(const char *filename, struct ast_node *n, int isIncluded);
+// transpile ast_node tree to file
+void transpile_cglut(const char *filename, struct ast_node *n, int isIncluded);
 
 #endif

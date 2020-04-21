@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "struct_table.h"
 
+// keywords for primitive data
 const char *primitive_keywords[] = {
 	"int",
 	"float",
@@ -14,12 +15,14 @@ unsigned int primitive_keywords_count = sizeof(primitive_keywords) /sizeof(char 
 
 extern int include_stack_ptr;
 
+// how to parse commands
 static struct ast_node *parse_through(struct ast_node *cmd_name, struct ast_node *opt_args);
 static struct ast_node *parse_def(struct ast_node *cmd_name, struct ast_node *opt_args);
 static struct ast_node *parse_array(struct ast_node *cmd_name, struct ast_node *opt_args);
 static struct ast_node *parse_group(struct ast_node *cmd_name, struct ast_node *opt_args);
 static struct ast_node *parse_class(struct ast_node *cmd_name, struct ast_node *opt_args);
 
+// native keywords
 const struct keyword_function keywords[] = {
 	{"echo", parse_through},
 	{"def", parse_def},
@@ -61,16 +64,13 @@ struct ast_node *parse_command(struct ast_node *cmd_name, struct ast_node *opt_a
 				return keywords[i].function(cmd_name, opt_args);
 			}
 			else {
-				return 0;
-				//printf("error: command '%s' does not have a way to be parsed\n", e->lexptr);
-				//exit(-1);
+				printf("error: command '%s' does not have a way to be parsed\n", e->lexptr);
+				exit(-1);
 			}
 		}
 	}
 
-	// default behaviour
-	//struct ast_node *ast = ast_create(AST_EMPTY, 0);
-	//return ast;
+	// not a native command, can't be parsed
 	return 0;
 }
 
