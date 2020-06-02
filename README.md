@@ -10,21 +10,9 @@ without focusing on platform-specific implementations.
 These are games made by me, using this language.
 Their purpose were mainly to show what this language can do.
 
-### Shuffled Nightmares
-
-This is a small puzzle game, where the user is presented
-with a shuffled puzzle, with the task to unshuffle it.
-Once done, a "Nightmare" will be revealed in front of them.
-The game has 12 stages and a random mode.
-
-When making this I wanted to make sure the language
-can initialise a game properly, draw 3D graphics,
-including textures, handle input and play audio.
-
-Check it out here:
-
-[Steam](https://store.steampowered.com/app/1289510/)
-[Itch.io](https://darkdimension.itch.io/shuffled-nightmares)
+* Shuffled Nightmares -
+[Steam](https://store.steampowered.com/app/1289510/) |
+[Itch.io](https://darkdimension.itch.io/shuffled-nightmares) |
 [GameJolt](https://gamejolt.com/games/shuffled_nightmares/484001)
 
 ## Documentation
