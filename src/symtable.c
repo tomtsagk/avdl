@@ -4,6 +4,8 @@
 #include "symtable.h"
 #include "yacc.tab.h"
 
+int symtable_current = -1;
+
 static const char *native_functions[] = {
 	"dd_translatef",
 	"dd_math_rand",

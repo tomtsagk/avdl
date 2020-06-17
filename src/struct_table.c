@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+struct struct_table_entry struct_table[DD_STRUCT_TABLE_TOTAL];
+int struct_table_current = 0;
+
 // initialise the struct table index to no tables
 void struct_table_init() {
 	struct_table_current = -1;
@@ -10,6 +13,7 @@ void struct_table_init() {
 	// Engine's initial structs and their members
 	struct_table_push("dd_world", 0);
 	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("onload", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("resize", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
@@ -26,6 +30,8 @@ void struct_table_init() {
 	struct_table_push("dd_meshColour", "dd_mesh");
 	struct_table_push_member("set_colour", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_meshTexture", "dd_meshColour");
+	struct_table_push_member("preloadTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("applyTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("loadTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("set_primitive_texcoords", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_sound", 0);

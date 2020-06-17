@@ -25,8 +25,8 @@ struct struct_table_entry {
 
 // struct table
 #define DD_STRUCT_TABLE_TOTAL 100
-struct struct_table_entry struct_table[DD_STRUCT_TABLE_TOTAL];
-int struct_table_current;
+extern struct struct_table_entry struct_table[DD_STRUCT_TABLE_TOTAL];
+extern int struct_table_current;
 
 // functions
 void struct_table_init();
