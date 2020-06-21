@@ -46,6 +46,13 @@ void struct_table_init() {
 	struct_table_push_member("getX", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("getY", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("getZ", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push("dd_string3d", 0);
+	struct_table_push_member("setAlign", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("setColorFront", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("setColorBack", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("drawInt", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
 }
 
 // push a new struct to the table
