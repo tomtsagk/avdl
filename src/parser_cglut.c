@@ -780,7 +780,7 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 		int current_child = 0;
 
 		int target = command->children.elements -(ignore_last ? 1 : 0);
-		while (current_child < target) {
+		while (current_child < target && current_scope >= 0) {
 			struct ast_node *n = dd_da_get(&command->children, current_child);
 			struct entry *e = symtable_entryat(n->value);
 
