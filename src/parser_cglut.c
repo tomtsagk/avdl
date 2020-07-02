@@ -175,8 +175,14 @@ void print_definition(FILE *fd, struct ast_node *command) {
 	char *type;
 	int arrayElements = vartype->arraySize;
 	if (vartype->node_type == AST_IDENTIFIER) {
-		if (strcmp(type_entry->lexptr, "float") != 0
-		&&  strcmp(type_entry->lexptr, "int") != 0) {
+		int isPrimitive = 0;
+		for (unsigned int i = 0; i < primitive_keywords_count; i++) {
+			if (strcmp(primitive_keywords[i], type_entry->lexptr) == 0) {
+				isPrimitive = 1;
+				break;
+			}
+		}
+		if (!isPrimitive) {
 			fprintf(fd, "struct ");
 		}
 		type = type_entry->lexptr;

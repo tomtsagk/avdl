@@ -137,6 +137,10 @@ static struct ast_node *parse_class(struct ast_node *cmd_name, struct ast_node *
 				if (strcmp(evartype->lexptr, "string") == 0) {
 					type = DD_VARIABLE_TYPE_STRING;
 				}
+				else
+				if (strcmp(evartype->lexptr, "char") == 0) {
+					type = DD_VARIABLE_TYPE_CHAR;
+				}
 				else {
 					type = DD_VARIABLE_TYPE_STRUCT;
 					nametype = evartype->lexptr;
