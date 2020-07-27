@@ -297,7 +297,8 @@ int main(int argc, char *argv[])
 		// check if file is asset
 		if (strcmp(filename[i] +strlen(filename[i]) -4, ".ply") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".bmp") != 0
-		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".wav") != 0) {
+		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".wav") != 0
+		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".ogg") != 0) {
 			continue;
 		}
 
