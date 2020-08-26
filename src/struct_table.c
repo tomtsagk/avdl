@@ -29,6 +29,9 @@ void struct_table_init() {
 	struct_table_push_member("copy", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_meshColour", "dd_mesh");
 	struct_table_push_member("set_colour", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push("dd_meshRising", "dd_meshColour");
+	struct_table_push_member("set_animation_max", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("set_animation_current", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_meshTexture", "dd_meshColour");
 	struct_table_push_member("preloadTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("applyTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
