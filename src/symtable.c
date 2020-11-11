@@ -37,7 +37,7 @@ static const char *native_functions[] = {
 static unsigned int native_functions_count = sizeof(native_functions) /sizeof(char *);
 
 // number of entries on each symtable
-#define SYMMAX 400
+#define SYMMAX 600
 
 // how many scopes to descent
 #define SYMTABLE_SCOPE_MAX 100
