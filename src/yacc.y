@@ -43,6 +43,8 @@ struct ast_node *game_node;
 
 #define MAX_INPUT_FILES 10
 
+enum AVDL_PLATFORM avdl_platform = AVDL_PLATFORM_NATIVE;
+
 // init data, parse, exit
 int main(int argc, char *argv[])
 {
@@ -109,6 +111,12 @@ int main(int argc, char *argv[])
 				printf("avdl error: include path is expected after `-I`\n");
 				return -1;
 			}
+		}
+		else
+		// compiling for android
+		if (strcmp(argv[i], "--android") == 0) {
+			avdl_platform = AVDL_PLATFORM_ANDROID;
+			link = 0;
 		}
 		else
 		// input file

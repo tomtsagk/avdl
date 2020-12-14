@@ -13,6 +13,7 @@
 #include "struct_table.h"
 #include <time.h>
 #include <errno.h>
+#include "dd_commands.h"
 
 #define DD_BUFFER_SIZE 1000
 static char buffer[DD_BUFFER_SIZE];
@@ -245,7 +246,10 @@ void print_asset(FILE *fd, struct ast_node *command) {
 	if (lastDot != 0) {
 		lastDot[0] = '\0';
 	}
-	strcat(buffer, ".asset");
+
+	if (avdl_platform == AVDL_PLATFORM_NATIVE) {
+		strcat(buffer, ".asset");
+	}
 	fprintf(fd, "\"%s\"", buffer);
 
 	// print the final asset path (relative to the out_dir)
@@ -976,9 +980,11 @@ void transpile_cglut(const char *filename, struct ast_node *n, int isIncluded) {
 			fprintf(fd_global, "#define DD_%s_H\n", buffer);
 		}
 
-		fprintf(fd_global, "#include \"dd_ddcglut.h\"\n");
+		fprintf(fd_global, "#include \"dd_cglut.h\"\n");
 		fprintf(fd_global, "#include <stdio.h>\n");
-		fprintf(fd_global, "#include <GL/glew.h>\n");
+		if (avdl_platform == AVDL_PLATFORM_NATIVE) {
+			fprintf(fd_global, "#include <GL/glew.h>\n");
+		}
 		print_node(fd_global, n);
 
 		if (isIncluded) {
