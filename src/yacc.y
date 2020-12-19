@@ -83,8 +83,14 @@ int main(int argc, char *argv[])
 		}
 		else
 		/* phase arguments
+		 * -t: translate only
 		 * -c: skip linking
 		 */
+		if (strcmp(argv[i], "-t") == 0) {
+			compile = 0;
+			link = 0;
+		}
+		else
 		if (strcmp(argv[i], "-c") == 0) {
 			link = 0;
 		}
@@ -187,12 +193,21 @@ int main(int argc, char *argv[])
 		yyparse();
 		fclose(input_file);
 
+		/*
+		 * if only transpiling, check output file
+		 */
 		//printf("transpiling: %s", filename[i]);
 		// parse resulting ast tree to a file
-		filename[i][strlen(filename[i]) -2] = 'c';
-		filename[i][strlen(filename[i]) -1] = '\0';
-		//printf(" to %s\n", filename[i]);
-		transpile_cglut(filename[i], game_node, 0);
+		if (!compile && !link && outname) {
+			strcpy(buffer, outname);
+		}
+		else {
+			filename[i][strlen(filename[i]) -2] = 'c';
+			filename[i][strlen(filename[i]) -1] = '\0';
+			strcpy(buffer, filename[i]);
+		}
+		//printf(" to %s\n", buffer);
+		transpile_cglut(buffer, game_node, 0);
 
 		// print debug data
 		if (show_ast) {
@@ -219,7 +234,14 @@ int main(int argc, char *argv[])
 				return -1;
 			}
 
-			strcpy(buffer, included_files[i]);
+			// temporary solution for transpiling headers
+			if (avdl_platform == AVDL_PLATFORM_ANDROID) {
+				strcpy(buffer, "objects-android/");
+				strcat(buffer, included_files[i]);
+			}
+			else {
+				strcpy(buffer, included_files[i]);
+			}
 			buffer[strlen(buffer)-3] = 'h';
 			buffer[strlen(buffer)-2] = '\0';
 			//printf("transpiling to: %s\n", buffer);

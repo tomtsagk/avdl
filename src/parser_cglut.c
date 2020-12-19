@@ -233,21 +233,66 @@ void print_asset(FILE *fd, struct ast_node *command) {
 	struct ast_node *assetName = dd_da_get(&command->children, 0);
 	struct entry *eassetName = symtable_entryat(assetName->value);
 
-	strcpy(buffer, eassetName->lexptr);
-	char *lastDot = 0;
-	int currentChar = 0;
-	while (buffer[currentChar] != '\0') {
-		if (buffer[currentChar] == '.') {
-			lastDot = buffer +currentChar;
+	/*
+	 * for android, find the file name, without its extention
+	 * and use that
+	 */
+	if (avdl_platform == AVDL_PLATFORM_ANDROID) {
+
+		/*
+		 * find the last '/' and last '.' on the file name,
+		 * so if it has the form of `mydir/myfile.ply`
+		 * it can be parsed to `myfile`
+		 */
+		char *lastSlash = 0;
+		char *lastDot = 0;
+		char *tempChar = eassetName->lexptr;
+		while (tempChar[0] != '\0') {
+			if (tempChar[0] == '/') {
+				lastSlash = tempChar;
+			}
+			if (tempChar[0] == '.') {
+				lastDot = tempChar;
+			}
+			tempChar++;
 		}
-		currentChar++;
-	}
 
-	if (lastDot != 0) {
-		lastDot[0] = '\0';
-	}
+		// no slash - start from the beginning of the file
+		if (!lastSlash) {
+			lastSlash = eassetName->lexptr;
+		}
+		// found slash - start from the next letter
+		else {
+			lastSlash++;
+		}
 
+		// no dot - parse until the end of the filename
+		if (!lastDot) {
+			lastDot = eassetName->lexptr +strlen(eassetName->lexptr);
+		}
+
+		// copy parsed string to buffer
+		strncpy(buffer, lastSlash, lastDot -lastSlash);
+		buffer[lastDot -lastSlash] = '\0';
+	}
+	else
+	// on native, pass assets as-is
 	if (avdl_platform == AVDL_PLATFORM_NATIVE) {
+
+		strcpy(buffer, eassetName->lexptr);
+		char *lastDot = 0;
+		int currentChar = 0;
+		while (buffer[currentChar] != '\0') {
+			if (buffer[currentChar] == '.') {
+				lastDot = buffer +currentChar;
+			}
+			currentChar++;
+		}
+
+		if (lastDot != 0) {
+			lastDot[0] = '\0';
+		}
+
 		strcat(buffer, ".asset");
 	}
 	fprintf(fd, "\"%s\"", buffer);
