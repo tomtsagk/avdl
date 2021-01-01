@@ -403,7 +403,7 @@ void print_command(FILE *fd, struct ast_node *command) {
 }
 
 void print_echo(FILE *fd, struct ast_node *command) {
-	fprintf(fd, "printf(\"");
+	fprintf(fd, "dd_log(\"");
 
 	// print the format depending on the children's types
 	for (unsigned int i = 0; i < command->children.elements; i++) {
@@ -438,7 +438,7 @@ void print_echo(FILE *fd, struct ast_node *command) {
 			}
 		}
 	}
-	fprintf(fd, "\\n\", ");
+	fprintf(fd, "\", ");
 
 	// give the children to printf's format
 	int temp_semicolon = has_semicolon;
