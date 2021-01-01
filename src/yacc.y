@@ -299,7 +299,7 @@ int main(int argc, char *argv[])
 		//printf("compiling: %s\n", filename[i]);
 
 		// compile
-		strcpy(buffer, "gcc -c -w ");
+		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -c -w ");
 		strcat(buffer, filename[i]);
 		strcat(buffer, " -o ");
 		if (outname && !link) {
@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
 	if (link) {
 		//printf("~~~ link phase ~~~\n");
 		buffer[0] = '\0';
-		sprintf(buffer, "gcc ");
+		sprintf(buffer, "gcc -DDD_PLATFORM_NATIVE ");
 		for (int i = 0; i < input_file_total; i++) {
 			strcat(buffer, filename[i]);
 			strcat(buffer, " ");
