@@ -29,10 +29,6 @@ int scope = -1;
 char asset_names[100][100];
 int asset_names_index = -1;
 
-// out directory
-int out_dir;
-const char *dirname = "build-cglut";
-
 static void print_node(FILE *fd, struct ast_node *n);
 
 extern const char *primitive_keywords[];
@@ -996,47 +992,59 @@ void print_node(FILE *fd, struct ast_node *n) {
 #endif
 
 // responsible for creating a file and translating ast to target language
-void transpile_cglut(const char *filename, struct ast_node *n, int isIncluded) {
+int transpile_cglut(const char *filename, struct ast_node *n, int isIncluded) {
 
-	if (n) {
-		dir_create(dirname);
-		out_dir = open(dirname, O_DIRECTORY);
-		if (!out_dir) {
-			printf("error opening `%s`: %s\n", dirname, strerror(errno));
-			return;
-		}
-
-		fd_global = fopen(filename, "w");
-		if (!fd_global) {
-			printf("unable to open '%s': %s\n", filename, strerror(errno));
-			return;
-		}
-
-		if (isIncluded) {
-			strcpy(buffer, filename);
-			for (int i = 0; buffer[i] != '\0'; i++) {
-				if (!(buffer[i] >= 'a' && buffer[i] <= 'z')
-				&&  !(buffer[i] >= 'A' && buffer[i] <= 'Z')
-				&& buffer[i] != '_') {
-					buffer[i] = '_';
-				}
-			}
-			fprintf(fd_global, "#ifndef DD_%s_H\n", buffer);
-			fprintf(fd_global, "#define DD_%s_H\n", buffer);
-		}
-
-		fprintf(fd_global, "#include \"dd_cglut.h\"\n");
-		fprintf(fd_global, "#include <stdio.h>\n");
-		if (avdl_platform == AVDL_PLATFORM_NATIVE) {
-			fprintf(fd_global, "#include <GL/glew.h>\n");
-		}
-		print_node(fd_global, n);
-
-		if (isIncluded) {
-			fprintf(fd_global, "#endif\n");
-		}
-
-		close(out_dir);
-		fclose(fd_global);
+	/*
+	 * make sure given filename and node
+	 * have a value
+	 */
+	if (!filename) {
+		printf("avdl: transpile_cglut: no filename given to transpile to\n");
+		return -1;
 	}
-}
+
+	if (!n) {
+		printf("avdl: transpile_cglut: no node given to transpile\n");
+		return -1;
+	}
+
+	// open given file to write to
+	fd_global = fopen(filename, "w");
+	if (!fd_global) {
+		printf("avdl: transpile_cglut: unable to open '%s': %s\n", filename, strerror(errno));
+		return -1;
+	}
+
+	// on header files, create header guards
+	if (isIncluded) {
+		strcpy(buffer, filename);
+		for (int i = 0; buffer[i] != '\0'; i++) {
+			if (!(buffer[i] >= 'a' && buffer[i] <= 'z')
+			&&  !(buffer[i] >= 'A' && buffer[i] <= 'Z')
+			&& buffer[i] != '_') {
+				buffer[i] = '_';
+			}
+		}
+		fprintf(fd_global, "#ifndef DD_%s_H\n", buffer);
+		fprintf(fd_global, "#define DD_%s_H\n", buffer);
+	}
+
+	// print node to file
+	fprintf(fd_global, "#include \"dd_cglut.h\"\n");
+	print_node(fd_global, n);
+
+	// on header files, end header guard
+	if (isIncluded) {
+		fprintf(fd_global, "#endif\n");
+	}
+
+	// clean up
+	if (fclose(fd_global) != 0) {
+		printf("avdl: transpile_cglut: unable to close '%s': %s\n", filename, strerror(errno));
+		return -1;
+	}
+
+	// everything OK
+	return 0;
+
+} // transpile_cglut

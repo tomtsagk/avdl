@@ -207,7 +207,10 @@ int main(int argc, char *argv[])
 			strcpy(buffer, filename[i]);
 		}
 		//printf(" to %s\n", buffer);
-		transpile_cglut(buffer, game_node, 0);
+		if (transpile_cglut(buffer, game_node, 0) != 0) {
+			printf("avdl: transpilation failed to file: %s\n", buffer);
+			return -1;
+		}
 
 		// print debug data
 		if (show_ast) {
@@ -260,7 +263,10 @@ int main(int argc, char *argv[])
 				game_node = ast_create(AST_GAME, 0);
 				yyparse();
 				fclose(input_file);
-				transpile_cglut(buffer, game_node, 1);
+				if (transpile_cglut(buffer, game_node, 1) != 0) {
+					printf("avdl: transpilation failed to file: %s\n", buffer);
+					return -1;
+				}
 				if (show_ast) {
 					ast_print(game_node);
 				}
@@ -276,7 +282,10 @@ int main(int argc, char *argv[])
 				game_node = ast_create(AST_GAME, 0);
 				yyparse();
 				fclose(input_file);
-				transpile_cglut(buffer, game_node, 1);
+				if (transpile_cglut(buffer, game_node, 1) != 0) {
+					printf("avdl: transpilation failed to file: %s\n", buffer);
+					return -1;
+				}
 				if (show_ast) {
 					ast_print(game_node);
 				}
