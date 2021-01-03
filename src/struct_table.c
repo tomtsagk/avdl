@@ -241,11 +241,17 @@ int struct_table_is_member_parent(int structIndex, const char *membername) {
 }
 
 int struct_table_get_index(const char *structname) {
+
+	if (!structname) {
+		return -1;
+	}
+
 	for (int i = 0; i <= struct_table_current; i++) {
 		if (strcmp(struct_table[i].name, structname) == 0) {
 			return i;
 		}
 	}
+
 	return -1;
 }
 

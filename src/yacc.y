@@ -315,7 +315,10 @@ int main(int argc, char *argv[])
 			strcat(buffer, includePath);
 		}
 		//printf("command: %s\n", buffer);
-		system(buffer);
+		if (system(buffer)) {
+			printf("avdl: error compiling file: %s\n", filename[i]);
+			exit(-1);
+		}
 	}
 
 	if (1) {
@@ -363,7 +366,10 @@ int main(int argc, char *argv[])
 			strcat(buffer, "game");
 		}
 		//printf("command: %s\n", buffer);
-		system(buffer);
+		if (system(buffer)) {
+			printf("avdl: error linking files\n");
+			exit(-1);
+		}
 	}
 
 	// success!
