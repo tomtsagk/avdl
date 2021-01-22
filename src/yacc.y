@@ -367,7 +367,7 @@ int main(int argc, char *argv[])
 			strcat(buffer, filename[i]);
 			strcat(buffer, " ");
 		}
-		strcat(buffer, "-O3 -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer -lpthread -lssl -lcrypto $(curl-config --cflags) $(curl-config --libs) -o ");
+		strcat(buffer, "-O3 -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer -lpthread -lssl -lcrypto -o ");
 		if (outname) {
 			strcat(buffer, outname);
 		}
