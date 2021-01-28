@@ -37,6 +37,7 @@ void struct_table_init() {
 	struct_table_push_member("applyTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("loadTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("set_primitive_texcoords", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("copyTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_sound", 0);
 	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
