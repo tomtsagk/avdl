@@ -45,6 +45,15 @@ struct ast_node *game_node;
 
 enum AVDL_PLATFORM avdl_platform = AVDL_PLATFORM_NATIVE;
 
+const char *dependencies[] = {
+	"GLEW",
+	"m",
+	"glut",
+	"SDL2-2.0",
+	"SDL2_mixer-2.0",
+};
+unsigned int dependencies_count = sizeof(dependencies) /sizeof(char *);
+
 // init data, parse, exit
 int main(int argc, char *argv[])
 {
@@ -56,6 +65,7 @@ int main(int argc, char *argv[])
 	int input_file_total = 0;
 	char *outname = 0;
 	char *includePath = 0;
+	int getDependencies = 0;
 
 	/*
 	 * phases
@@ -72,6 +82,10 @@ int main(int argc, char *argv[])
 	// parse arguments
 	for (int i = 1; i < argc; i++) {
 
+		if (strcmp(argv[i], "--dependencies") == 0) {
+			getDependencies = 1;
+		}
+		else
 		// print abstract syntax tree
 		if (strcmp(argv[i], "--print-ast") == 0) {
 			show_ast = 1;
@@ -142,6 +156,18 @@ int main(int argc, char *argv[])
 	if (input_file_total <= 0) {
 		printf("avdl error: No filename given\n");
 		return -1;
+	}
+
+	if (getDependencies) {
+		for (int i = 0; i < dependencies_count; i++) {
+			strcpy(buffer, "ldd ");
+			strcat(buffer, filename[0]);
+			strcat(buffer, " | grep 'lib");
+			strcat(buffer, dependencies[i]);
+			strcat(buffer, "\\.' | sed 's/^.*=> \\(.*\\) .*$/\\1/'");
+			system(buffer);
+		}
+		return 0;
 	}
 
 	if (outname && !link && input_file_total > 1) {
