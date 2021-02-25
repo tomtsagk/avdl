@@ -6,8 +6,8 @@ PROJECT_VERSION=1.0.0
 EXECUTABLE=${PROJECT_NAME}
 
 # Engine Data
-ENGINE_PATH=engines/cglut
-ENGINE_OUT=${ENGINE_PATH}/libddcglut.a
+ENGINE_PATH=engines/cengine
+ENGINE_OUT=${ENGINE_PATH}/build/libavdl-cengine.a
 
 INSTALL_LOCATION=@INSTALL_LOCATION@
 
@@ -20,7 +20,7 @@ LEX_SRC=lex.yy.c
 
 # build the executable, depends on source, lex, yacc and all engines
 ${EXECUTABLE}: ${SRC} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC}
-	gcc -Wall -Wpedantic -Wextra -DINSTALL_LOCATION=\"${INSTALL_LOCATION}\" \
+	gcc -Wall -Wpedantic -Wextra -DINSTALL_LOCATION=\"${INSTALL_LOCATION}/usr\" \
 		-DPROJECT_NAME=\"${PROJECT_NAME}\" -Iinclude -I. ${SRC} ${YACC_SRC} ${LEX_SRC} -o ${EXECUTABLE}
 
 # how to build lex
@@ -31,26 +31,31 @@ ${LEX_SRC}: src/lex.l
 ${YACC_SRC} ${YACC_HEADER}: src/yacc.y
 	bison -d src/yacc.y
 
-# how to build the cglut engine
+# how to build the c engine
 engine:
 	${MAKE} -C ${ENGINE_PATH}
 
 install: ${EXECUTABLE}# ${ENGINE_PATH}/${ENGINE}
 	${MAKE} -C ${ENGINE_PATH} PREFIX=${INSTALL_LOCATION} install
-	mkdir -p ${INSTALL_LOCATION}/bin
-	install ${EXECUTABLE} ${INSTALL_LOCATION}/bin/
+	mkdir -p ${INSTALL_LOCATION}/usr/bin
+	install ${EXECUTABLE} ${INSTALL_LOCATION}/usr/bin/
 	#mkdir -p ${INSTALL_LOCATION}/share/${PROJECT_NAME}
 	#install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${PROJECT_NAME}/${ENGINE}
 	#install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${PROJECT_NAME}/index.html
-	mkdir -p ${INSTALL_LOCATION}/share/man/man1/
-	install manual/avdl.1 ${INSTALL_LOCATION}/share/man/man1/
-	mkdir -p ${INSTALL_LOCATION}/share/info/
-	install avdl.info.gz ${INSTALL_LOCATION}/share/info/
+	#mkdir -p ${INSTALL_LOCATION}/share/man/man1/
+	#install manual/avdl.1 ${INSTALL_LOCATION}/share/man/man1/
+	#mkdir -p ${INSTALL_LOCATION}/share/info/
+	#install avdl.info.gz ${INSTALL_LOCATION}/share/info/
 	# vim files
-	mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
-	install vim/syntax/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
-	mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
-	install vim/ftdetect/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
+	#mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
+	#install vim/syntax/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
+	#mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
+	#install vim/ftdetect/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
+
+tarball: ${PROJECT_NAME}.tar
+
+${PROJECT_NAME}.tar:
+	tar cf $@ src makefile engines include
 
 clean:
 	rm -f ${EXECUTABLE} ${LEX_SRC} ${YACC_SRC} ${YACC_HEADER}
