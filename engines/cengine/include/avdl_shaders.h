@@ -1,18 +1,13 @@
-#ifndef DD_SHADERS_D
-#define DD_SHADERS_D
+#ifndef AVDL_SHADERS_D
+#define AVDL_SHADERS_D
 
-unsigned int create_shader(int type, const char *src);
-unsigned int create_program(unsigned int vsdr, unsigned int fsdr);
-
-//Converts file contents to char* and calls create_shader with it
-unsigned int load_shader(int type, const char *fname);
-
-/* Takes filename vertex and fragment shader as parameters, 
- * calls load_shader for each of them,
- * returns create_program with the created shaders.
+/*
+ * Takes a string for the vertex and one for the fragment shader as parameters,
+ * returns the number of the created program, or `0` if an error occured.
  */
 unsigned int load_program(const char *vfname, const char *ffname);
 
+extern const char *shader_vertex_universal;
 extern const char *shader_vertex;
 extern const char *shader_vertex110;
 extern const char *shader_vertexES;

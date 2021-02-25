@@ -339,9 +339,6 @@ void handleResize(int w, int h) {
 	// perspective projection matrix
 	dd_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0);
 
-	GLuint MatrixID = glGetUniformLocation(defaultProgram, "matrixProjection");
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)&matPerspective);
-
 	if (cworld->resize) {
 		cworld->resize(cworld);
 	}

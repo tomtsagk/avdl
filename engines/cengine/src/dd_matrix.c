@@ -258,10 +258,11 @@ void dd_matrix_print(float mat[16]) {
  */
 struct dd_matrix dd_cam[DD_MATRIX_STACK_LIMIT];
 int dd_cam_index = 0;
+extern struct dd_matrix matPerspective;
 
 void dd_matrix_globalInit() {
 	dd_cam_index = 0;
-	dd_matrix_identity((float *) &dd_cam[0]);
+	dd_matrix_copy((float *) &dd_cam[0], (float *) &matPerspective);
 }
 
 void dd_matrix_push() {

@@ -6,10 +6,38 @@
 
 unsigned int create_shader(int type, const char *src)
 {
-	//Create shader and compile it
+	/*
+	 * create shader and compile it
+	 */
 	unsigned int sdr = glCreateShader(type);
+	if (!sdr || glGetError() != GL_NO_ERROR) {
+		dd_log("avdl: create_shader: error creating shader");
+		return 0;
+	}
 	glShaderSource(sdr, 1, &src, 0);
+	if (glGetError() != GL_NO_ERROR) {
+		dd_log("avdl: create_shader: error getting shader source");
+		return 0;
+	}
 	glCompileShader(sdr);
+	if (glGetError() != GL_NO_ERROR) {
+		dd_log("avdl: create_shader: error compiling shader source");
+		return 0;
+	}
+
+	//Get compilation log
+	int logsz;
+	glGetShaderiv(sdr, GL_INFO_LOG_LENGTH, &logsz);
+	if (logsz > 1) {
+		char *buf = malloc(sizeof(char) *(logsz +1));
+		glGetShaderInfoLog(sdr, logsz, 0, buf);
+		buf[logsz] = 0;
+		dd_log("avdl: compilation of %s shader failed: %s",
+			type == GL_VERTEX_SHADER   ? "vertex" :
+			type == GL_FRAGMENT_SHADER ? "fragment" :
+			"<unknown>", buf);
+		free(buf);
+	}
 
 	//Check compilation status
 	int status;
@@ -18,20 +46,6 @@ unsigned int create_shader(int type, const char *src)
 	//Compilation failed
 	if (!status)
 	{
-		//Get compilation log
-		int logsz;
-		glGetShaderiv(sdr, GL_INFO_LOG_LENGTH, &logsz);
-		if (logsz > 1) {
-			char *buf = malloc(sizeof(char) *(logsz +1));
-			glGetShaderInfoLog(sdr, logsz, 0, buf);
-			buf[logsz] = 0;
-			dd_log("avdl: compilation of %s shader failed: %s",
-				type == GL_VERTEX_SHADER   ? "vertex" :
-				type == GL_FRAGMENT_SHADER ? "fragment" : 
-				"<unknown>", buf);
-			free(buf);
-		}
-		
 		//Delete shader and return nothing
 		glDeleteShader(sdr);
 		return 0;
@@ -43,20 +57,31 @@ unsigned int create_shader(int type, const char *src)
 
 unsigned int create_program(unsigned int vsdr, unsigned int fsdr)
 {
-	//No shaders given
-	if (!vsdr && !fsdr) {
+	// no shaders given
+	if (!vsdr || !fsdr) {
 		dd_log("create_program called with invalid shader objects, aborting");
 		return 0;
 	}
 
-	//Create program, attach shaders and link program
+	// create program, attach shaders and link program
 	unsigned int prog = glCreateProgram();
-	if (vsdr) glAttachShader(prog, vsdr);
-	if (fsdr) glAttachShader(prog, fsdr);
+	glAttachShader(prog, vsdr);
+	glAttachShader(prog, fsdr);
 	glBindAttribLocation(prog, 0, "position");
 	glBindAttribLocation(prog, 1, "colour");
 	glBindAttribLocation(prog, 2, "texCoord");
 	glLinkProgram(prog);
+
+	//Get compilation log
+	int logsz;
+	glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &logsz);
+	if (logsz > 1) {
+		char *buf = malloc(sizeof(char) *(logsz +1));
+		glGetProgramInfoLog(prog, logsz, 0, buf);
+		buf[logsz] = 0;
+		dd_log("linking shader program failed.\nshader program linker log: %s", buf);
+		free(buf);
+	}
 
 	//Check compilation status
 	int status;
@@ -64,16 +89,6 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr)
 
 	//Compilation failed
 	if (!status) {
-		//Get compilation log
-		int logsz;
-		glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &logsz);
-		if (logsz > 1) {
-			char *buf = malloc(sizeof(char) *(logsz +1));
-			glGetProgramInfoLog(prog, logsz, 0, buf);
-			buf[logsz] = 0;
-			dd_log("linking shader program failed.\nshader program linker log: %s", buf);
-			free(buf);
-		}
 
 		//Delete program and return nothing
 		glDeleteProgram(prog);
@@ -84,63 +99,59 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr)
 	return prog;
 }
 
-unsigned int load_shader(int type, const char *shader)
-{
-	//Create shader
-	unsigned int sdr = create_shader(type, shader);
-	/*
-	if (type == GL_VERTEX_SHADER) {
-	}
-	else {
-		//Open shader's file
-		FILE *fp = fopen(fname, "rb");
-		if (!fp) {
-			dd_log("failed to open shader \"%s\": %s", fname, strerror(errno));
-			return 0;
-		}
-
-		//Calculate amount of characters
-		fseek(fp, 0, SEEK_END);
-		int sz = ftell(fp);
-		rewind(fp);
-
-		//Create new char array to hold file's content (terminating with 0)
-		char *src = malloc(sizeof(char) *(sz + 1));
-		fread(src, 1, sz, fp);
-		src[sz] = 0;
-		fclose(fp);
-		sdr = create_shader(type, src);
-		free(src);
-	}
-	*/
-
-	//Return shader's number
-	return sdr;
-}
-
+/*
+ * load each shader, and link them into a program
+ */
 unsigned int load_program(const char *vfname, const char *ffname)
 {
-	//Vertex shader
+	// vertex shader
 	unsigned int vsdr = 0;
 	if (vfname) {
-		if ( !(vsdr = load_shader(GL_VERTEX_SHADER, vfname)) ) {
+		if ( !(vsdr = create_shader(GL_VERTEX_SHADER, vfname)) ) {
 			return 0;
 		}
 	}
 
-	//Fragment shader
+	// fragment shader
 	unsigned int fsdr = 0;
 	if (ffname) {
-		if ( !(fsdr = load_shader(GL_FRAGMENT_SHADER, ffname)) )
+		if ( !(fsdr = create_shader(GL_FRAGMENT_SHADER, ffname)) )
 		{
 			glDeleteShader(vsdr);
 			return 0;
 		}
 	}
 
-	//Shaders created - create program
+	// shaders created - create program
 	return create_program(vsdr, fsdr);
 }
+
+const char *shader_vertex_universal =
+"#version XXX YY\n"
+
+"#if __VERSION__ > 120\n"
+"#define AVDL_IN in\n"
+"#define AVDL_OUT out\n"
+"#else\n"
+"#define AVDL_IN attribute\n"
+"#define AVDL_OUT varying\n"
+"#endif\n"
+
+"AVDL_IN vec4 position;\n"
+"AVDL_IN vec3 colour;\n"
+"AVDL_IN vec2 texCoord;\n"
+
+"uniform mat4 matrix;\n"
+
+"AVDL_OUT vec2 outTexCoord;\n"
+"AVDL_OUT vec4 outColour;\n"
+
+"void main() {\n"
+"	gl_Position = matrix *position;\n"
+"	outColour = vec4(colour.rgb, 1);\n"
+"	outTexCoord  = texCoord;\n"
+"}\n"
+;
 
 const char *shader_vertex =
 "#version 130\n"
@@ -148,10 +159,9 @@ const char *shader_vertex =
 "in vec3 colour;\n"
 "in vec2 texCoord;\n"
 "uniform mat4 matrix;\n"
-"uniform mat4 matrixProjection;\n"
 "out vec2 outTexCoord;\n"
 "void main() {\n"
-"	gl_Position = matrixProjection *matrix *position;\n"
+"	gl_Position = matrix *position;\n"
 "	gl_FrontColor = vec4(colour.rgb, 1);\n"
 "	outTexCoord  = texCoord;\n"
 "}\n"
@@ -174,11 +184,10 @@ const char *shader_vertexES =
 "in vec3 colour;\n"
 "in vec2 texCoord;\n"
 "uniform mat4 matrix;\n"
-"uniform mat4 matrixProjection;\n"
 "out vec2 outTexCoord;\n"
 "out vec4 outColour;\n"
 "void main() {\n"
-"	gl_Position = matrixProjection *matrix *position;\n"
+"	gl_Position = matrix *position;\n"
 "	outTexCoord  = texCoord;\n"
 "	outColour  = vec4(colour.rgb, 1);\n"
 "}\n"
@@ -189,11 +198,10 @@ const char *shader_vertexES101 =
 "attribute vec3 colour;\n"
 "attribute vec2 texCoord;\n"
 "uniform mat4 matrix;\n"
-"uniform mat4 matrixProjection;\n"
 "varying vec2 outTexCoord;\n"
 "varying vec4 outColour;\n"
 "void main() {\n"
-"	gl_Position = matrixProjection *matrix *position;\n"
+"	gl_Position = matrix *position;\n"
 "	outTexCoord  = texCoord;\n"
 "	outColour  = vec4(colour.rgb, 1);\n"
 "}\n"
@@ -244,12 +252,11 @@ const char *shader_rising_vertex =
 "in vec3 colour;\n"
 "in vec2 texCoord;\n"
 "uniform mat4 matrix;\n"
-"uniform mat4 matrixProjection;\n"
 "out vec2 outTexCoord;\n"
 "uniform float animationMax;\n"
 "uniform float animationCurrent;\n"
 "void main() {\n"
-"	gl_Position = matrixProjection *matrix *position;\n"
+"	gl_Position = matrix *position;\n"
 
 "	if (-position.z > animationCurrent) {\n"
 "		if (-position.z -animationCurrent > 5) {\n"
@@ -271,12 +278,11 @@ const char *shader_rising_vertex110 =
 "attribute vec3 colour;\n"
 "attribute vec2 texCoord;\n"
 "uniform mat4 matrix;\n"
-"uniform mat4 matrixProjection;\n"
 "varying vec2 outTexCoord;\n"
 "uniform float animationMax;\n"
 "uniform float animationCurrent;\n"
 "void main() {\n"
-"	gl_Position = matrixProjection *matrix *position;\n"
+"	gl_Position = matrix *position;\n"
 
 "	if (-position.z > animationCurrent) {\n"
 "		if (-position.z -animationCurrent > 5.0) {\n"
@@ -299,11 +305,10 @@ const char *shader_rising_vertexES =
 "in vec2 texCoord;\n"
 "uniform float animationCurrent;\n"
 "uniform mat4 matrix;\n"
-"uniform mat4 matrixProjection;\n"
 "out vec2 outTexCoord;\n"
 "out vec4 outColour;\n"
 "void main() {\n"
-"	vec4 pos = matrixProjection *matrix *position;\n"
+"	vec4 pos = matrix *position;\n"
 
 "	if (-position.z > animationCurrent) {\n"
 "		if (-position.z -animationCurrent > 5.0) {\n"
@@ -328,11 +333,10 @@ const char *shader_rising_vertexES101 =
 "attribute vec2 texCoord;\n"
 "uniform float animationCurrent;\n"
 "uniform mat4 matrix;\n"
-"uniform mat4 matrixProjection;\n"
 "varying vec2 outTexCoord;\n"
 "varying vec4 outColour;\n"
 "void main() {\n"
-"	vec4 pos = matrixProjection *matrix *position;\n"
+"	vec4 pos = matrix *position;\n"
 
 "	if (-position.z > animationCurrent) {\n"
 "		if (-position.z -animationCurrent > 5.0) {\n"
