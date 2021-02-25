@@ -8,8 +8,6 @@
 
 // world interface and starting world
 #include "avdl_cengine.h"
-#include "dd_log.h"
-#include "shaders.h"
 
 pthread_t updatePthread;
 

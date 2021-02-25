@@ -1,12 +1,7 @@
-#include "dd_string3d.h"
-#include "dd_mesh.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "shaders.h"
-#include "dd_opengl.h"
-#include "dd_log.h"
-#include "dd_matrix.h"
+#include "avdl_cengine.h"
 
 static struct dd_mesh letter[26];
 static struct dd_mesh number[26];

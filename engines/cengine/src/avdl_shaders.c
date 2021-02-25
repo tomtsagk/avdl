@@ -1,10 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "shaders.h"
 #include <errno.h>
 #include <string.h>
-#include <dd_log.h>
-#include "dd_opengl.h"
+#include "avdl_cengine.h"
 
 unsigned int create_shader(int type, const char *src)
 {

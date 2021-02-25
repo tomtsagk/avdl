@@ -15,6 +15,8 @@
 #include "dd_mouse.h"
 #include "dd_string3d.h"
 #include "dd_meshRising.h"
+#include "avdl_shaders.h"
+#include "dd_log.h"
 
 #if DD_PLATFORM_NATIVE
 /* files temporarily not available in android */
