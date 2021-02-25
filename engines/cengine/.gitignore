@@ -1,2 +1,2 @@
-*.o
-libddcglut.a
+# compiled build directory
+build/

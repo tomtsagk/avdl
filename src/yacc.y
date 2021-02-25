@@ -344,7 +344,7 @@ int main(int argc, char *argv[])
 			filename[i][strlen(filename[i]) -1] = 'o';
 			strcat(buffer, filename[i]);
 		}
-		strcat(buffer, " -O3 -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer");
+		strcat(buffer, " -O3 -lGL -lGLU -lGLEW -lglut -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer");
 		if (includePath) {
 			strcat(buffer, " -I ");
 			strcat(buffer, includePath);
@@ -393,7 +393,7 @@ int main(int argc, char *argv[])
 			strcat(buffer, filename[i]);
 			strcat(buffer, " ");
 		}
-		strcat(buffer, "-O3 -lGL -lGLU -lGLEW -lglut -lddcglut -lm -w -lSDL2 -lSDL2_mixer -lpthread -o ");
+		strcat(buffer, "-O3 -lGL -lGLU -lGLEW -lglut -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread -o ");
 		if (outname) {
 			strcat(buffer, outname);
 		}

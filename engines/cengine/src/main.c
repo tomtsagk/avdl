@@ -7,13 +7,7 @@
 #include <pthread.h>
 
 // world interface and starting world
-#include "dd_world.h"
-#include "dd_game.h"
-#include "dd_fov.h"
-#include "dd_cglut.h"
-#include "dd_mouse.h"
-#include "dd_string3d.h"
-#include "dd_opengl.h"
+#include "avdl_cengine.h"
 #include "dd_log.h"
 #include "shaders.h"
 

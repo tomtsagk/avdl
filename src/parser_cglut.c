@@ -1030,7 +1030,7 @@ int transpile_cglut(const char *filename, struct ast_node *n, int isIncluded) {
 	}
 
 	// print node to file
-	fprintf(fd_global, "#include \"dd_cglut.h\"\n");
+	fprintf(fd_global, "#include \"avdl_cengine.h\"\n");
 	print_node(fd_global, n);
 
 	// on header files, end header guard
