@@ -1,23 +1,24 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include "avdl_cengine.h"
 
 const char *shader_glsl_versions[] = {
-#ifdef DD_PLATFORM_ANDROID
-	"100",
-	"101",
-	"300 es",
-	"310 es",
-	"320 es",
-#elif DD_PLATFORM_NATIVE
+	// GLSL
 	"110",
 	"120",
 	"130",
 	"140",
 	"150",
 	"330",
+
+	// GLSL ES
+	"100",
+	"101",
+	"300 es",
+	"310 es",
+	"320 es",
+
 	/* Future versions to potentially support
 	"400",
 	"410",
@@ -26,7 +27,6 @@ const char *shader_glsl_versions[] = {
 	"440",
 	"450",
 	*/
-#endif
 };
 const int shader_glsl_versions_count = sizeof(shader_glsl_versions) /sizeof(char *);
 
@@ -45,6 +45,9 @@ unsigned int create_shader(int type, const char *src) {
 	const char *newSource2 = newSource;
 	strcpy(newSource, versionSource);
 	strcat(newSource, src);
+
+	// potentially compile the actual glsl version first
+	//dd_log("glsl version: %s", glGetStringi(GL_SHADING_LANGUAGE_VERSION, 0));
 
 	// try all supported versions, until one works
 	for (int i = 0; i < shader_glsl_versions_count; i++) {
@@ -162,23 +165,23 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
 /*
  * load each shader, and link them into a program
  */
-unsigned int load_program(const char *vfname, const char *ffname) {
-	// vertex shader
+unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
+
+	// check input
+	if (!vfname || !ffname) return 0;
+
+	// create vertex shader
 	unsigned int vsdr = 0;
-	if (vfname) {
-		if ( !(vsdr = create_shader(GL_VERTEX_SHADER, vfname)) ) {
-			return 0;
-		}
+	if ( !(vsdr = create_shader(GL_VERTEX_SHADER, vfname)) ) {
+		return 0;
 	}
 
-	// fragment shader
+	// create fragment shader
 	unsigned int fsdr = 0;
-	if (ffname) {
-		if ( !(fsdr = create_shader(GL_FRAGMENT_SHADER, ffname)) )
-		{
-			glDeleteShader(vsdr);
-			return 0;
-		}
+	if ( !(fsdr = create_shader(GL_FRAGMENT_SHADER, ffname)) )
+	{
+		glDeleteShader(vsdr);
+		return 0;
 	}
 
 	// shaders created - create program
@@ -211,9 +214,12 @@ const char *shader_vertex_universal =
 ;
 
 const char *shader_fragment_universal =
+"#if __VERSION__ > 120 || __VERSION__ == 100\n"
+"precision mediump float;\n"
+"#endif\n"
+
 "#if __VERSION__ > 120\n"
 "#define AVDL_IN in\n"
-"precision mediump float;\n"
 "#else\n"
 "#define AVDL_IN varying\n"
 "#endif\n"
@@ -236,101 +242,11 @@ const char *shader_fragment_universal =
 "	avdl_frag_color = outColour +avdl_texture(image, outTexCoord);\n"
 "}\n"
 ;
-/*
-const char *shader_vertex =
-"#version 130\n"
-"in vec4 position;\n"
-"in vec3 colour;\n"
-"in vec2 texCoord;\n"
-"uniform mat4 matrix;\n"
-"out vec2 outTexCoord;\n"
-"void main() {\n"
-"	gl_Position = matrix *position;\n"
-"	gl_FrontColor = vec4(colour.rgb, 1);\n"
-"	outTexCoord  = texCoord;\n"
-"}\n"
-;
-const char *shader_vertex110 =
-"#version 110\n"
-"attribute vec4 position;\n"
-"attribute vec3 colour;\n"
-"attribute vec2 texCoord;\n"
-"uniform mat4 matrix;\n"
-"varying vec2 outTexCoord;\n"
-"void main() {\n"
-"	gl_Position = matrix *position;\n"
-"	gl_FrontColor = vec4(colour.rgb, 1);\n"
-"	outTexCoord  = texCoord;\n"
-"}\n"
-;
-const char *shader_vertexES =
-"#version 310 es\n"
-"in vec4 position;\n"
-"in vec3 colour;\n"
-"in vec2 texCoord;\n"
-"uniform mat4 matrix;\n"
-"out vec2 outTexCoord;\n"
-"out vec4 outColour;\n"
-"void main() {\n"
-"	gl_Position = matrix *position;\n"
-"	outTexCoord  = texCoord;\n"
-"	outColour  = vec4(colour.rgb, 1);\n"
-"}\n"
-;
-const char *shader_vertexES101 =
-"#version 101\n"
-"attribute vec4 position;\n"
-"attribute vec3 colour;\n"
-"attribute vec2 texCoord;\n"
-"uniform mat4 matrix;\n"
-"varying vec2 outTexCoord;\n"
-"varying vec4 outColour;\n"
-"void main() {\n"
-"	gl_Position = matrix *position;\n"
-"	outTexCoord  = texCoord;\n"
-"	outColour  = vec4(colour.rgb, 1);\n"
-"}\n"
-;
-const char *shader_fragment =
-"#version 130\n"
-"uniform sampler2D image;\n"
-"in vec2 outTexCoord;\n"
-"void main() {\n"
-"	gl_FragColor = gl_Color;\n"
-"	gl_FragColor += texture2D(image, outTexCoord);\n"
-"}\n"
-;
-const char *shader_fragment110 =
-"#version 110\n"
-"uniform sampler2D image;\n"
-"varying vec2 outTexCoord;\n"
-"void main() {\n"
-"	gl_FragColor = gl_Color;\n"
-"	gl_FragColor += texture2D(image, outTexCoord);\n"
-"}\n"
-;
-const char *shader_fragmentES =
-"#version 310 es\n"
-"uniform sampler2D image;\n"
-"in highp vec2 outTexCoord;\n"
-"in highp vec4 outColour;\n"
-"layout(location = 0) out highp vec4 frag_color;\n"
-"void main() {\n"
-"	frag_color = outColour;\n"
-"	frag_color += texture(image, outTexCoord);\n"
-"}\n"
-;
-const char *shader_fragmentES101 =
-//"#version 101\n"
-"uniform sampler2D image;\n"
-"varying mediump vec2 outTexCoord;\n"
-"varying mediump vec4 outColour;\n"
-"void main() {\n"
-"	gl_FragColor = outColour;\n"
-"	gl_FragColor += texture2D(image, outTexCoord);\n"
-"}\n"
-;
 
+/*
+ * the rising shader was created for a specific game, so
+ * it will eventually be removed from here and moved there.
+ *
 const char *shader_rising_vertex =
 "#version 130\n"
 "in vec4 position;\n"
@@ -436,23 +352,6 @@ const char *shader_rising_vertexES101 =
 "	gl_Position = pos;\n"
 "	outColour = vec4(colour.rgb, 1.0);\n"
 "	outTexCoord  = texCoord;\n"
-"}\n"
-;
-*/
-
-/*
-const char *shader_fragment =
-"#version 130\n"
-"uniform sampler2D image;\n"
-"in vec2 outTexCoord;\n"
-"uniform float time;\n"
-"float rand(vec2 co) {"
-"	return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);"
-"}"
-"void main() {\n"
-"	gl_FragColor = gl_Color;\n"
-"	gl_FragColor += texture2D(image, outTexCoord);\n"
-"	gl_FragColor += 0.2 *rand(vec2(time, time)) -0.1;\n"
 "}\n"
 ;
 */

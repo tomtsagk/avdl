@@ -123,7 +123,9 @@ void dd_string3d_init() {
 	}
 
 	#if DD_PLATFORM_ANDROID
-	fontProgram = load_program(fontShader_vertexES, fontShader_fragmentES);
+	fontProgram = 0;
+	/*
+	fontProgram = avdl_loadProgram(fontShader_vertexES, fontShader_fragmentES);
 	if (!fontProgram) {
 		fontProgram = load_program(fontShader_vertexES101, fontShader_fragmentES101);
 		if (!fontProgram) {
@@ -135,6 +137,7 @@ void dd_string3d_init() {
 			dd_log("");
 		}
 	}
+	*/
 
 	#elif DD_PLATFORM_NATIVE
 

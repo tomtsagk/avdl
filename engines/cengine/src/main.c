@@ -148,68 +148,20 @@ int dd_main(int argc, char *argv[]) {
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.8, 0.6, 1.0, 1);
 
-	#if DD_PLATFORM_ANDROID
-	defaultProgram = load_program(shader_vertexES, shader_fragmentES);
+	/*
+	 * load shaders
+	 */
+	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
 	if (!defaultProgram) {
-		defaultProgram = load_program(shader_vertexES101, shader_fragmentES101);
-		if (!defaultProgram) {
-			dd_log("avdl: error loading shaders");
-			exit(-1);
-		}
-		else {
-			dd_log("avdl: falling back to glsl version es 101");
-			dd_log("");
-		}
-	}
-
-	risingProgram = load_program(shader_rising_vertexES, shader_fragmentES);
-	if (!risingProgram) {
-		risingProgram = load_program(shader_rising_vertexES101, shader_fragmentES101);
-		if (!risingProgram) {
-			dd_log("avdl: error loading shaders");
-			exit(-1);
-		}
-		else {
-			dd_log("avdl: falling back to glsl version es 101");
-			dd_log("");
-		}
-	}
-	#else
-	//defaultProgram = load_program(shader_vertex110, shader_fragment110);
-	defaultProgram = load_program(shader_vertex_universal, shader_fragment_universal);
-	if (!defaultProgram) {
-		/*
-		defaultProgram = load_program(shader_vertex110, shader_fragment110);
-		if (!defaultProgram) {
-		*/
-			dd_log("avdl: error loading shaders");
-			exit(-1);
-			/*
-		}
-		else {
-			dd_log("avdl: falling back to version 1.10");
-			dd_log("");
-		}
-		*/
+		dd_log("avdl: error loading shaders");
+		exit(-1);
 	}
 	risingProgram = 0;
-	/*
-	risingProgram = load_program(shader_rising_vertex, shader_fragment);
-	if (!risingProgram) {
-		risingProgram = load_program(shader_rising_vertex110, shader_fragment110);
-		if (!risingProgram) {
-			dd_log("avdl: error loading shaders");
-			exit(-1);
-		}
-		else {
-			dd_log("avdl: falling back to version 1.10");
-			dd_log("");
-		}
-	}
-	*/
-	#endif
 	glUseProgram(defaultProgram);
 
+	/*
+	 * strin3d initialisation for displaying text
+	 */
 	if (dd_string3d_isActive()) {
 		dd_string3d_init();
 	}
@@ -234,11 +186,11 @@ int dd_main(int argc, char *argv[]) {
 	dd_world_change(dd_default_world_size, dd_default_world_constructor);
 
 	/* commented out - for now
-	*/
 	dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
 	dd_log("Renderer: %s", glGetString(GL_RENDERER));
 	dd_log("Version GL: %s", glGetString(GL_VERSION));
 	dd_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	*/
 
 	#if DD_PLATFORM_NATIVE
 	// give functions to glut
