@@ -1,0 +1,30 @@
+cmake_minimum_required(VERSION 3.4.1)
+
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall -Werror")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDD_PLATFORM_ANDROID -Wfatal-errors -fexceptions -Wno-incompatible-pointer-types -Wno-parentheses-equality")
+add_definitions("-DANDROID_NDK -DDISABLE_IMPORTGL")
+
+# include directories for header files
+# uncomment the following lines for subdirectories
+#include_directories(${CMAKE_SOURCE_DIR}/game)
+#include_directories(${CMAKE_SOURCE_DIR}/engine)
+include_directories(${CMAKE_SOURCE_DIR})
+
+# files in the avdl library
+add_library(avdl SHARED
+
+	# engine files
+
+	# game files
+)
+
+target_link_libraries(
+	avdl
+	android
+	dl
+	EGL
+	GLESv2
+	#GLESv3
+	log
+	m
+)
