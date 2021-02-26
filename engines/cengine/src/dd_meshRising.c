@@ -22,9 +22,11 @@ extern struct dd_matrix matPerspective;
 
 /* draw the mesh itself */
 void dd_meshRising_draw(struct dd_meshRising *m) {
+	/*
 	glUseProgram(risingProgram);
 	GLuint MatrixID2 = glGetUniformLocation(risingProgram, "matrixProjection");
 	glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, (float *)&matPerspective);
+	*/
 	GLuint MatrixID = glGetUniformLocation(risingProgram, "matrix");
 	glUniformMatrix4fv(MatrixID , 1, GL_FALSE, (float *)dd_matrix_globalGet());
 
@@ -32,7 +34,7 @@ void dd_meshRising_draw(struct dd_meshRising *m) {
 	glUniform1f(animLoc, m->animationCurrent);
 	dd_meshColour_draw((struct dd_meshColour*) m);
 
-	glUseProgram(defaultProgram);
+	//glUseProgram(defaultProgram);
 }
 
 void dd_meshRising_set_animation_max(struct dd_meshRising *m, float val) {

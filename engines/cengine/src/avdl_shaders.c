@@ -4,59 +4,119 @@
 #include <string.h>
 #include "avdl_cengine.h"
 
-unsigned int create_shader(int type, const char *src)
-{
+const char *shader_glsl_versions[] = {
+#ifdef DD_PLATFORM_ANDROID
+	"100",
+	"101",
+	"300 es",
+	"310 es",
+	"320 es",
+#elif DD_PLATFORM_NATIVE
+	"110",
+	"120",
+	"130",
+	"140",
+	"150",
+	"330",
+	/* Future versions to potentially support
+	"400",
+	"410",
+	"420",
+	"430",
+	"440",
+	"450",
+	*/
+#endif
+};
+const int shader_glsl_versions_count = sizeof(shader_glsl_versions) /sizeof(char *);
+
+const char *versionSource = "#version XXX YY\n";
+
+unsigned int create_shader(int type, const char *src) {
+
 	/*
-	 * create shader and compile it
+	 * set up a copy of the source code, and try different versions of it
 	 */
-	unsigned int sdr = glCreateShader(type);
-	if (!sdr || glGetError() != GL_NO_ERROR) {
-		dd_log("avdl: create_shader: error creating shader");
+	if (!src || strlen(src) < 20) {
+		dd_log("avdl: create_shader: no source given, or source smaller than 20");
 		return 0;
 	}
-	glShaderSource(sdr, 1, &src, 0);
-	if (glGetError() != GL_NO_ERROR) {
-		dd_log("avdl: create_shader: error getting shader source");
-		return 0;
-	}
-	glCompileShader(sdr);
-	if (glGetError() != GL_NO_ERROR) {
-		dd_log("avdl: create_shader: error compiling shader source");
-		return 0;
-	}
+	char *newSource = malloc(strlen(src) +strlen(versionSource) +1);
+	const char *newSource2 = newSource;
+	strcpy(newSource, versionSource);
+	strcat(newSource, src);
 
-	//Get compilation log
-	int logsz;
-	glGetShaderiv(sdr, GL_INFO_LOG_LENGTH, &logsz);
-	if (logsz > 1) {
-		char *buf = malloc(sizeof(char) *(logsz +1));
-		glGetShaderInfoLog(sdr, logsz, 0, buf);
-		buf[logsz] = 0;
-		dd_log("avdl: compilation of %s shader failed: %s",
-			type == GL_VERTEX_SHADER   ? "vertex" :
-			type == GL_FRAGMENT_SHADER ? "fragment" :
-			"<unknown>", buf);
-		free(buf);
+	// try all supported versions, until one works
+	for (int i = 0; i < shader_glsl_versions_count; i++) {
+		newSource[ 9] = shader_glsl_versions[i][0];
+		newSource[10] = shader_glsl_versions[i][1];
+		newSource[11] = shader_glsl_versions[i][2];
+
+		if (strlen(shader_glsl_versions[i]) >= 6) {
+			newSource[13] = shader_glsl_versions[i][4];
+			newSource[14] = shader_glsl_versions[i][5];
+		}
+		else {
+			newSource[13] = ' ';
+			newSource[14] = ' ';
+		}
+
+		/*
+		 * create shader and compile it
+		 */
+		unsigned int sdr = glCreateShader(type);
+		if (!sdr || glGetError() != GL_NO_ERROR) {
+			dd_log("avdl: create_shader: error creating shader");
+			return 0;
+		}
+		glShaderSource(sdr, 1, &newSource2, 0);
+		if (glGetError() != GL_NO_ERROR) {
+			dd_log("avdl: create_shader: error getting shader source");
+			return 0;
+		}
+		glCompileShader(sdr);
+		if (glGetError() != GL_NO_ERROR) {
+			dd_log("avdl: create_shader: error compiling shader source");
+			return 0;
+		}
+
+		//Get compilation log
+		int logsz;
+		glGetShaderiv(sdr, GL_INFO_LOG_LENGTH, &logsz);
+		if (logsz > 1) {
+			char *buf = malloc(sizeof(char) *(logsz +1));
+			glGetShaderInfoLog(sdr, logsz, 0, buf);
+			buf[logsz] = 0;
+			dd_log("avdl: compilation of %s shader failed: %s",
+				type == GL_VERTEX_SHADER   ? "vertex" :
+				type == GL_FRAGMENT_SHADER ? "fragment" :
+				"<unknown>", buf);
+			free(buf);
+		}
+
+		//Check compilation status
+		int status;
+		glGetShaderiv(sdr, GL_COMPILE_STATUS, &status);
+
+		//Compilation failed
+		if (!status)
+		{
+			//Delete shader and return nothing
+			glDeleteShader(sdr);
+			continue;
+		}
+		else {
+			free(newSource);
+			return sdr;
+		}
 	}
+	free(newSource);
 
-	//Check compilation status
-	int status;
-	glGetShaderiv(sdr, GL_COMPILE_STATUS, &status);
-
-	//Compilation failed
-	if (!status)
-	{
-		//Delete shader and return nothing
-		glDeleteShader(sdr);
-		return 0;
-	}
-
-	//Return shader
-	return sdr;
+	// no shader compiled
+	return 0;
 }
 
-unsigned int create_program(unsigned int vsdr, unsigned int fsdr)
-{
+unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
 	// no shaders given
 	if (!vsdr || !fsdr) {
 		dd_log("create_program called with invalid shader objects, aborting");
@@ -102,8 +162,7 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr)
 /*
  * load each shader, and link them into a program
  */
-unsigned int load_program(const char *vfname, const char *ffname)
-{
+unsigned int load_program(const char *vfname, const char *ffname) {
 	// vertex shader
 	unsigned int vsdr = 0;
 	if (vfname) {
@@ -127,8 +186,6 @@ unsigned int load_program(const char *vfname, const char *ffname)
 }
 
 const char *shader_vertex_universal =
-"#version XXX YY\n"
-
 "#if __VERSION__ > 120\n"
 "#define AVDL_IN in\n"
 "#define AVDL_OUT out\n"
@@ -153,6 +210,33 @@ const char *shader_vertex_universal =
 "}\n"
 ;
 
+const char *shader_fragment_universal =
+"#if __VERSION__ > 120\n"
+"#define AVDL_IN in\n"
+"precision mediump float;\n"
+"#else\n"
+"#define AVDL_IN varying\n"
+"#endif\n"
+
+"#if __VERSION__ > 150\n"
+"layout(location = 0) out mediump vec4 frag_color;\n"
+"#define avdl_frag_color frag_color\n"
+"#define avdl_texture(x, y) texture(x, y)\n"
+"#else\n"
+"#define avdl_frag_color gl_FragColor\n"
+"#define avdl_texture(x, y) texture2D(x, y)\n"
+"#endif\n"
+
+"AVDL_IN vec4 outColour;\n"
+"AVDL_IN vec2 outTexCoord;\n"
+
+"uniform sampler2D image;\n"
+
+"void main() {\n"
+"	avdl_frag_color = outColour +avdl_texture(image, outTexCoord);\n"
+"}\n"
+;
+/*
 const char *shader_vertex =
 "#version 130\n"
 "in vec4 position;\n"
@@ -171,9 +255,10 @@ const char *shader_vertex110 =
 "attribute vec4 position;\n"
 "attribute vec3 colour;\n"
 "attribute vec2 texCoord;\n"
+"uniform mat4 matrix;\n"
 "varying vec2 outTexCoord;\n"
 "void main() {\n"
-"	gl_Position = gl_ProjectionMatrix *gl_ModelViewMatrix *position;\n"
+"	gl_Position = matrix *position;\n"
 "	gl_FrontColor = vec4(colour.rgb, 1);\n"
 "	outTexCoord  = texCoord;\n"
 "}\n"
@@ -353,6 +438,7 @@ const char *shader_rising_vertexES101 =
 "	outTexCoord  = texCoord;\n"
 "}\n"
 ;
+*/
 
 /*
 const char *shader_fragment =

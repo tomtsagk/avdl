@@ -136,6 +136,8 @@ int dd_main(int argc, char *argv[]) {
 	// initialise glut and a window
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	//glutInitContextVersion(2, 0);
+	//glutInitContextProfile(GLUT_CORE_PROFILE);
 
 	glutInitWindowSize(dd_gameInitWindowWidth, dd_gameInitWindowHeight);
 	glutCreateWindow(gameTitle);
@@ -173,18 +175,25 @@ int dd_main(int argc, char *argv[]) {
 		}
 	}
 	#else
-	defaultProgram = load_program(shader_vertex, shader_fragment);
+	//defaultProgram = load_program(shader_vertex110, shader_fragment110);
+	defaultProgram = load_program(shader_vertex_universal, shader_fragment_universal);
 	if (!defaultProgram) {
+		/*
 		defaultProgram = load_program(shader_vertex110, shader_fragment110);
 		if (!defaultProgram) {
+		*/
 			dd_log("avdl: error loading shaders");
 			exit(-1);
+			/*
 		}
 		else {
 			dd_log("avdl: falling back to version 1.10");
 			dd_log("");
 		}
+		*/
 	}
+	risingProgram = 0;
+	/*
 	risingProgram = load_program(shader_rising_vertex, shader_fragment);
 	if (!risingProgram) {
 		risingProgram = load_program(shader_rising_vertex110, shader_fragment110);
@@ -197,6 +206,7 @@ int dd_main(int argc, char *argv[]) {
 			dd_log("");
 		}
 	}
+	*/
 	#endif
 	glUseProgram(defaultProgram);
 
@@ -224,11 +234,11 @@ int dd_main(int argc, char *argv[]) {
 	dd_world_change(dd_default_world_size, dd_default_world_constructor);
 
 	/* commented out - for now
+	*/
 	dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
 	dd_log("Renderer: %s", glGetString(GL_RENDERER));
 	dd_log("Version GL: %s", glGetString(GL_VERSION));
 	dd_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-	*/
 
 	#if DD_PLATFORM_NATIVE
 	// give functions to glut

@@ -11,10 +11,12 @@ static const char *fontShader_vertexES101;
 static const char *fontShader_fragmentES;
 static const char *fontShader_fragmentES101;
 #elif DD_PLATFORM_NATIVE
+/*
 static const char *fontShader_vertex;
 static const char *fontShader_vertex110;
 static const char *fontShader_fragment;
 static const char *fontShader_fragment110;
+*/
 #endif
 static GLuint fontProgram;
 extern GLuint defaultProgram;
@@ -33,10 +35,14 @@ int dd_string3d_isActive() {
 extern struct dd_matrix matPerspective;
 
 static void dd_string3d_drawLetter(struct dd_string3d *font, struct dd_mesh *o) {
+	/*
 	glUseProgram(fontProgram);
 	GLuint MatrixID2 = glGetUniformLocation(fontProgram, "matrixProjection");
 	glUniformMatrix4fv(MatrixID2, 1, GL_FALSE, (float *)&matPerspective);
 	GLuint MatrixID = glGetUniformLocation(fontProgram, "matrix");
+	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+	*/
+	GLuint MatrixID = glGetUniformLocation(defaultProgram, "matrix");
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
 
 	glEnableVertexAttribArray(0);
@@ -77,7 +83,7 @@ static void dd_string3d_drawLetter(struct dd_string3d *font, struct dd_mesh *o) 
 	glDrawArrays(GL_TRIANGLES, 0, o->vcount);
 
 	glDisableVertexAttribArray(0);
-	glUseProgram(defaultProgram);
+	//glUseProgram(defaultProgram);
 }
 
 void dd_string3d_init() {
@@ -132,6 +138,8 @@ void dd_string3d_init() {
 
 	#elif DD_PLATFORM_NATIVE
 
+	fontProgram = 0;
+	/*
 	// Prepare shader for drawing letters
 	fontProgram = load_program(fontShader_vertex, fontShader_fragment);
 	if (!fontProgram) {
@@ -145,6 +153,7 @@ void dd_string3d_init() {
 			dd_log("");
 		}
 	}
+	*/
 
 	#endif
 
@@ -291,6 +300,7 @@ static const char *fontShader_fragmentES101 =
 "}\n"
 ;
 #elif DD_PLATFORM_NATIVE
+/*
 static const char *fontShader_vertex =
 "#version 130\n"
 "in vec4 position;\n"
@@ -342,4 +352,5 @@ static const char *fontShader_fragment110 =
 "	gl_FragColor = gl_Color;\n"
 "}\n"
 ;
+*/
 #endif
