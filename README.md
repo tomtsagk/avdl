@@ -10,10 +10,16 @@ without focusing on platform-specific implementations.
 These are games made by me, using this language.
 Their purpose were mainly to show what this language can do.
 
+* The king is gone -
+[Steam](https://store.steampowered.com/app/1468820/) |
+[Itch.io](https://darkdimension.itch.io/the-king-is-gone) |
+[GameJolt](https://gamejolt.com/games/the-king-is-gone/518056)
+
 * Shuffled Nightmares -
 [Steam](https://store.steampowered.com/app/1289510/) |
 [Itch.io](https://darkdimension.itch.io/shuffled-nightmares) |
-[GameJolt](https://gamejolt.com/games/shuffled_nightmares/484001)
+[GameJolt](https://gamejolt.com/games/shuffled_nightmares/484001) |
+[Google Play](https://play.google.com/store/apps/details?id=org.darkdimension.shuffled_nightmares)
 
 ## Documentation
 
