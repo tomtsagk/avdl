@@ -18,8 +18,16 @@ YACC_SRC=yacc.tab.c
 YACC_HEADER=yacc.tab.h
 LEX_SRC=lex.yy.c
 
+# android
+DIRECTORIES=engines/android/app/src/main/cpp/engine/
+CENGINE_FILES_HEADER=$(wildcard engines/cengine/include/*.h)
+CENGINE_FILES_SRC=$(wildcard engines/cengine/src/*.c)
+CENGINE_FILES_ANDROID_HEADER=$(CENGINE_FILES_HEADER:engines/cengine/include/%.h=engines/android/app/src/main/cpp/engine/%.h)
+CENGINE_FILES_ANDROID_SRC=$(CENGINE_FILES_SRC:engines/cengine/src/%.c=engines/android/app/src/main/cpp/engine/%.c)
+CENGINE_FILES_LOCAL=$(CENGINE_FILES_SRC:engines/cengine/src/%.c=engine\/%.c)
+
 # build the executable, depends on source, lex, yacc and all engines
-${EXECUTABLE}: ${SRC} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC}
+${EXECUTABLE}: ${DIRECTORIES} ${SRC} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC} ${CENGINE_FILES_ANDROID_HEADER} ${CENGINE_FILES_ANDROID_SRC} engines/android/app/src/main/cpp/CMakeLists.txt
 	gcc -Wall -Wpedantic -Wextra -DINSTALL_LOCATION=\"${INSTALL_LOCATION}/usr\" \
 		-DPROJECT_NAME=\"${PROJECT_NAME}\" -Iinclude -I. ${SRC} ${YACC_SRC} ${LEX_SRC} -o ${EXECUTABLE}
 
@@ -42,8 +50,8 @@ install: ${EXECUTABLE}# ${ENGINE_PATH}/${ENGINE}
 	#mkdir -p ${INSTALL_LOCATION}/share/${PROJECT_NAME}
 	#install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${PROJECT_NAME}/${ENGINE}
 	#install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${PROJECT_NAME}/index.html
-	#mkdir -p ${INSTALL_LOCATION}/share/man/man1/
-	#install manual/avdl.1 ${INSTALL_LOCATION}/share/man/man1/
+	mkdir -p ${INSTALL_LOCATION}/usr/share/man/man1/
+	install manual/avdl.1 ${INSTALL_LOCATION}/usr/share/man/man1/
 	#mkdir -p ${INSTALL_LOCATION}/share/info/
 	#install avdl.info.gz ${INSTALL_LOCATION}/share/info/
 	# vim files
@@ -51,6 +59,8 @@ install: ${EXECUTABLE}# ${ENGINE_PATH}/${ENGINE}
 	#install vim/syntax/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
 	#mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
 	#install vim/ftdetect/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
+	mkdir -p ${INSTALL_LOCATION}/usr/share/avdl/android
+	cp -r engines/android/* ${INSTALL_LOCATION}/usr/share/avdl/android
 
 tarball: ${PROJECT_NAME}.tar
 
@@ -62,5 +72,19 @@ clean:
 
 destclean: clean
 	rm -f avdl.info.gz makefile
+
+# android files
+engines/android/app/src/main/cpp/engine/%.h: engines/cengine/include/%.h
+	cp $< $@
+
+engines/android/app/src/main/cpp/engine/%.c: engines/cengine/src/%.c
+	cp $< $@
+
+engines/android/app/src/main/cpp/CMakeLists.txt: engines/android/app/src/main/cpp/CMakeLists.txt.in
+	sed 's/%AVDL_ENGINE_FILES%/${CENGINE_FILES_LOCAL}/' $< > $@
+
+${DIRECTORIES}:
+	mkdir -p $@
+
 
 .PHONY: clean destclean install engine

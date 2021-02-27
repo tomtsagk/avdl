@@ -188,7 +188,7 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 	return create_program(vsdr, fsdr);
 }
 
-const char *shader_vertex_universal =
+const char *avdl_shaderDefault_vertex =
 "#if __VERSION__ > 120\n"
 "#define AVDL_IN in\n"
 "#define AVDL_OUT out\n"
@@ -213,7 +213,7 @@ const char *shader_vertex_universal =
 "}\n"
 ;
 
-const char *shader_fragment_universal =
+const char *avdl_shaderDefault_fragment =
 "#if __VERSION__ > 120 || __VERSION__ == 100\n"
 "precision mediump float;\n"
 "#endif\n"

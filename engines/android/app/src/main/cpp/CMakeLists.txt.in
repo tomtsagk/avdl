@@ -7,13 +7,13 @@ add_definitions("-DANDROID_NDK -DDISABLE_IMPORTGL")
 # include directories for header files
 # uncomment the following lines for subdirectories
 #include_directories(${CMAKE_SOURCE_DIR}/game)
-#include_directories(${CMAKE_SOURCE_DIR}/engine)
+include_directories(${CMAKE_SOURCE_DIR}/engine)
 include_directories(${CMAKE_SOURCE_DIR})
 
 # files in the avdl library
 add_library(avdl SHARED
 
-	# engine files
+	%AVDL_ENGINE_FILES%
 
 	# game files
 )
