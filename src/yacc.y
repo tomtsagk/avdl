@@ -263,14 +263,7 @@ int main(int argc, char *argv[])
 				return -1;
 			}
 
-			// temporary solution for transpiling headers
-			if (avdl_platform == AVDL_PLATFORM_ANDROID) {
-				strcpy(buffer, "objects-android/");
-				strcat(buffer, included_files[i]);
-			}
-			else {
-				strcpy(buffer, included_files[i]);
-			}
+			strcpy(buffer, included_files[i]);
 			buffer[strlen(buffer)-3] = 'h';
 			buffer[strlen(buffer)-2] = '\0';
 			//printf("transpiling to: %s\n", buffer);
