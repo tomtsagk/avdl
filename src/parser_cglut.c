@@ -722,6 +722,42 @@ void print_class_function(FILE *fd, struct ast_node *command) {
 			}
 		}
 	}
+	// function to clean objects in class
+	else if (strcmp(efuncname->lexptr, "clean") == 0) {
+
+		// subclass
+		if (subclassIndex >= 0) {
+			fprintf(fd, "%s_clean(this);\n", struct_table_get_name(subclassIndex));
+		}
+
+		// for each member in struct
+		for (unsigned int j = 0; j < struct_table_get_member_total(structIndex); j++) {
+
+			// clean all non-primitive members in struct
+			if (!struct_table_is_member_primitive(structIndex, j)) {
+
+				// if an array, clean all members
+				int arrayCount = struct_table_getMemberArrayCount(structIndex, j);
+				if (arrayCount > 1) {
+					fprintf(fd, "for (int i = 0; i < %d; i++) {\n", arrayCount);
+					fprintf(fd, "%s_clean(&this->%s[i]);\n}\n",
+						struct_table_get_member_nametype(structIndex, j),
+						struct_table_get_member_name(structIndex, j)
+					);
+				}
+				// no array, just clean member
+				else {
+					fprintf(fd, "%s_clean(&this->%s);\n",
+						struct_table_get_member_nametype(structIndex, j),
+						struct_table_get_member_name(structIndex, j)
+					);
+				}
+
+			}
+
+		} // for each member
+
+	} // clean objects
 
 	print_node(fd, statements);
 	fprintf(fd, "}\n");
