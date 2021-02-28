@@ -1,28 +1,62 @@
-.TH AVDL 1
+./" Written by Tom Tsagk <tomtsagk@darkdimension.org>
+.TH AVDL 1 "2021-02-28" "avdl 0.0.0"
+
 .SH NAME
-avdl \- abstract video-game development language
+avdl \- abstract video-game development language compiler
+
 .SH SYNOPSIS
-.B avdl
-[\fIoptions\fR]
-\fIfile\fR...
+.B avdl\fR [\fB-c\fR] [\fB-o \fIoutput\fR] \fIfile\fR...
+
 .SH DESCRIPTION
 .B avdl
-is a programming language designed to describe a video game
-in an abstract way, and then compile it to different platforms.
+is a high level programming language designed to describe a video game
+in an abstract way, and then compile it for different platforms.
+
 .SH OPTIONS
+
 .TP
-\fB--print-ast\fR
-Print a representation of the abstract syntax tree, before it gets translated to the target language.
+\fB-c\fR
+Only compile the given file to an object file.
+Each given file will be compiled to a file with the same name
+but with a \fB.o\fR suffix.
+If \fB-o\fR is active, only one input file can be given.
+
 .TP
-\fB--print-struct-table\fR
-Print a representation of the struct table.
+\fB-o \fIoutput\fR
+Provide a name for the \fIoutput\fR file.
+If \fB-c\fR is active, \fIoutput\fR will be an object file.
+Otherwise, \fIoutput\fR will be the executable file.
+
 .SH EXAMPLES
 To compile a file, use the following command:
 .PP
 .nf
 .RS
-avdl my_file.dd
+avdl file1 file2
 .RE
 .fi
 .PP
-Unless an error occurs, this should create a directory called `build` in the current folder, with the compiled project inside.
+Unless an error occurs, this will compile and link all given files and produce
+a file named \fBgame\fR in the current directory, which is the executable for
+the game itself.
+
+It's also possible to compile each file individually, and link them
+all together in separate steps. This can be used to compile only parts
+of a project that have changed, instead of the whole project:
+.PP
+.nf
+.RS
+avdl -c file1 -o file1.avo
+avdl -c file2 -o file2.avo
+avdl file1.avo file2.avo -o my_game
+.RE
+.fi
+.PP
+Take a look at \fBsamples/\fR for examples of actual projects.
+
+.SH BUGS
+The compiler is still new, sometimes when a syntax error occurs, a sane
+error message might not be generated.
+
+.SH AUTHOR
+Tom Tsagk (tomtsagk@darkdimension.org)
