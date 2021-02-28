@@ -13,6 +13,7 @@ struct struct_table_entry_member {
 	char name[DD_STRUCT_TABLE_NAME_SIZE];
 	enum dd_variable_type type;
 	char nametype[DD_STRUCT_TABLE_NAME_SIZE];
+	int arrayCount;
 };
 
 // structs
@@ -35,7 +36,8 @@ void struct_table_init();
 // same for members
 int struct_table_push(const char *structname, const char *parentname);
 void struct_table_pop();
-void struct_table_push_member(const char *name, enum dd_variable_type type, const char *nametype);
+struct struct_table_entry_member *struct_table_push_member(const char *name, enum dd_variable_type type, const char *nametype);
+void struct_table_push_member_array(const char *name, enum dd_variable_type type, const char *nametype, int arrayCount);
 
 // print all structs and their members -- this is meant for debug only
 void struct_table_print();
@@ -44,6 +46,7 @@ void struct_table_print();
 const char *struct_table_get_name(int structIndex);
 int struct_table_get_index(const char *structname);
 const char *struct_table_get_member_name(int structIndex, int memberIndex);
+int struct_table_getMemberArrayCount(int structIndex, int memberIndex);
 
 // get struct member type
 enum dd_variable_type struct_table_get_member_type(int structIndex, int memberIndex);

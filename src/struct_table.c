@@ -104,7 +104,7 @@ int struct_table_push(const char *structname, const char *parentname) {
  * check if there is space in the struct
  * add a new member to it
  */
-void struct_table_push_member(const char *name, enum dd_variable_type type, const char *nametype) {
+struct struct_table_entry_member *struct_table_push_member(const char *name, enum dd_variable_type type, const char *nametype) {
 	struct struct_table_entry *currentStruct = &struct_table[struct_table_current];
 	if (currentStruct->member_total+1 >= DD_STRUCT_TABLE_MEMBER_TOTAL) {
 		printf("struct_table_push_member: struct '%s': maximum number of members reached\n", currentStruct->name);
@@ -114,6 +114,7 @@ void struct_table_push_member(const char *name, enum dd_variable_type type, cons
 	newMember->type = type;
 	strncpy(newMember->name, name, DD_STRUCT_TABLE_NAME_SIZE -1);
 	newMember->name[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
+	newMember->arrayCount = 1;
 	if (nametype) {
 		strncpy(newMember->nametype, nametype, DD_STRUCT_TABLE_NAME_SIZE -1);
 		newMember->nametype[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
@@ -122,6 +123,13 @@ void struct_table_push_member(const char *name, enum dd_variable_type type, cons
 		newMember->nametype[0] = '\0';
 	}
 	currentStruct->member_total++;
+
+	return &currentStruct->members[currentStruct->member_total -1];
+}
+
+void struct_table_push_member_array(const char *name, enum dd_variable_type type, const char *nametype, int arrayCount) {
+	struct struct_table_entry_member *newMember = struct_table_push_member(name, type, nametype);
+	newMember->arrayCount = arrayCount;
 }
 
 void struct_table_pop() {
@@ -161,6 +169,10 @@ const char *struct_table_get_name(int index) {
 
 const char *struct_table_get_member_name(int structIndex, int memberIndex) {
 	return struct_table[structIndex].members[memberIndex].name;
+}
+
+int struct_table_getMemberArrayCount(int structIndex, int memberIndex) {
+	return struct_table[structIndex].members[memberIndex].arrayCount;
 }
 
 enum dd_variable_type struct_table_get_member_type(int structIndex, int memberIndex) {

@@ -673,6 +673,7 @@ void print_class_function(FILE *fd, struct ast_node *command) {
 	//print_node(fd, dd_da_get(&command->children, 2));
 	fprintf(fd, ") {\n");
 
+	// function to create objects
 	if (strcmp(efuncname->lexptr, "create") == 0) {
 
 		// subclass
@@ -687,9 +688,24 @@ void print_class_function(FILE *fd, struct ast_node *command) {
 
 			// call the constructor for all non-primitive members
 			if (!struct_table_is_member_primitive(structIndex, j)) {
-				fprintf(fd, "%s_create(&this->%s);\n",
-					struct_table_get_member_nametype(structIndex, j),
-					struct_table_get_member_name(structIndex, j));
+
+				// if an array, initialise all members
+				int arrayCount = struct_table_getMemberArrayCount(structIndex, j);
+				if (arrayCount > 1) {
+					fprintf(fd, "for (int i = 0; i < %d; i++) {\n", arrayCount);
+					fprintf(fd, "%s_create(&this->%s[i]);\n}\n",
+						struct_table_get_member_nametype(structIndex, j),
+						struct_table_get_member_name(structIndex, j)
+					);
+				}
+				// no array, just initialise member
+				else {
+					fprintf(fd, "%s_create(&this->%s);\n",
+						struct_table_get_member_nametype(structIndex, j),
+						struct_table_get_member_name(structIndex, j)
+					);
+				}
+
 			}
 			else if (struct_table_get_member_type(structIndex, j) == DD_VARIABLE_TYPE_FUNCTION) {
 				int parent_level =

@@ -107,9 +107,11 @@ static struct ast_node *parse_class(struct ast_node *cmd_name, struct ast_node *
 			||  isFunction) {
 				struct ast_node *vartype = 0;
 				struct entry *evartype = 0;
+				int arrayCount = 1;
 				if (!isFunction) {
 					vartype = dd_da_get(&statement->children, 0);
 					evartype = symtable_entryat(vartype->value);
+					arrayCount = vartype->arraySize;
 				}
 
 				int varnameIndex = isFunction ? 0 : 1;
@@ -146,7 +148,7 @@ static struct ast_node *parse_class(struct ast_node *cmd_name, struct ast_node *
 					nametype = evartype->lexptr;
 				}
 
-				struct_table_push_member(evarname->lexptr, type, nametype);
+				struct_table_push_member_array(evarname->lexptr, type, nametype, arrayCount);
 			}
 			if (strcmp(estatement->lexptr, "function") == 0) {
 				struct ast_node *varname = dd_da_get(&statement->children, 0);
