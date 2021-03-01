@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (getDependencies) {
-		for (int i = 0; i < dependencies_count; i++) {
+		for (unsigned int i = 0; i < dependencies_count; i++) {
 			strcpy(buffer, "ldd ");
 			strcat(buffer, filename[0]);
 			strcat(buffer, " | grep 'lib");

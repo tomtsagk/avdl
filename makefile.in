@@ -1,22 +1,50 @@
-
-# Project Data
+#
+# project data
+#
 PROJECT_NAME=avdl
-PROJECT_VERSION=1.0.0
+PROJECT_VERSION=0.0.0
 
-EXECUTABLE=${PROJECT_NAME}
+#
+# compiler data
+#
+#COMPILER_FLAGS=-Wall -Werror -Wpedantic
+COMPILER_FLAGS=-Wall -Wpedantic
+COMPILER_DEFINES=-DINSTALL_LOCATION=\"${INSTALL_LOCATION}/usr\" \
+	-DPROJECT_NAME=\"${PROJECT_NAME}\"
+COMPILER_INCLUDES=-Iinclude -I${DIRECTORY_OBJ}
 
-# Engine Data
+#
+# directories
+#
+DIRECTORY_BUILD=build
+DIRECTORY_EXE=${DIRECTORY_BUILD}/bin
+DIRECTORY_OBJ=${DIRECTORY_BUILD}/objects
+DIRECTORY_ALL=${DIRECTORY_BUILD} ${DIRECTORY_EXE} ${DIRECTORY_OBJ}
+
+#
+# source files
+#
+YACC_SRC=${DIRECTORY_OBJ}/yacc.tab.c
+LEX_SRC=${DIRECTORY_OBJ}/lex.yy.c
+SRC=$(wildcard src/*.c)# ${YACC_SRC} ${LEX_SRC}
+OBJ=${SRC:src/%.c=${DIRECTORY_OBJ}/%.o}
+
+YACC_HEADER=${YACC_SRC:%.c=%.h}
+HEADERS=$(widcard include/*.h) ${YACC_HEADER}
+
+#
+# executable
+#
+EXECUTABLE=${DIRECTORY_EXE}/${PROJECT_NAME}
+
+#
+# engine data
+#
 ENGINE_PATH=engines/cengine
 ENGINE_OUT=${ENGINE_PATH}/build/libavdl-cengine.a
 
+
 INSTALL_LOCATION=@INSTALL_LOCATION@
-
-# Files for compilation
-SRC=$(wildcard src/*.c)
-
-YACC_SRC=yacc.tab.c
-YACC_HEADER=yacc.tab.h
-LEX_SRC=lex.yy.c
 
 # android
 DIRECTORIES=engines/android/app/src/main/cpp/engine/
@@ -26,18 +54,19 @@ CENGINE_FILES_ANDROID_HEADER=$(CENGINE_FILES_HEADER:engines/cengine/include/%.h=
 CENGINE_FILES_ANDROID_SRC=$(CENGINE_FILES_SRC:engines/cengine/src/%.c=engines/android/app/src/main/cpp/engine/%.c)
 CENGINE_FILES_LOCAL=$(CENGINE_FILES_SRC:engines/cengine/src/%.c=engine\/%.c)
 
+all: ${EXECUTABLE}
+
 # build the executable, depends on source, lex, yacc and all engines
-${EXECUTABLE}: ${DIRECTORIES} ${SRC} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC} ${CENGINE_FILES_ANDROID_HEADER} ${CENGINE_FILES_ANDROID_SRC} engines/android/app/src/main/cpp/CMakeLists.txt
-	gcc -Wall -Wpedantic -Wextra -DINSTALL_LOCATION=\"${INSTALL_LOCATION}/usr\" \
-		-DPROJECT_NAME=\"${PROJECT_NAME}\" -Iinclude -I. ${SRC} ${YACC_SRC} ${LEX_SRC} -o ${EXECUTABLE}
+${EXECUTABLE}: ${DIRECTORY_ALL} ${DIRECTORIES} ${OBJ} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC} ${CENGINE_FILES_ANDROID_HEADER} ${CENGINE_FILES_ANDROID_SRC} engines/android/app/src/main/cpp/CMakeLists.txt
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${OBJ} ${YACC_SRC} ${LEX_SRC} -o $@
 
 # how to build lex
 ${LEX_SRC}: src/lex.l
-	flex src/lex.l
+	flex -o $@ src/lex.l
 
 # how to build yacc
 ${YACC_SRC} ${YACC_HEADER}: src/yacc.y
-	bison -d src/yacc.y
+	bison -o ${YACC_SRC} -d src/yacc.y
 
 # how to build the c engine
 engine:
@@ -83,8 +112,11 @@ engines/android/app/src/main/cpp/engine/%.c: engines/cengine/src/%.c
 engines/android/app/src/main/cpp/CMakeLists.txt: engines/android/app/src/main/cpp/CMakeLists.txt.in
 	sed 's/%AVDL_ENGINE_FILES%/${CENGINE_FILES_LOCAL}/' $< > $@
 
-${DIRECTORIES}:
+${DIRECTORIES} ${DIRECTORY_ALL}:
 	mkdir -p $@
+
+${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS}
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -c $< -o $@
 
 
 .PHONY: clean destclean install engine
