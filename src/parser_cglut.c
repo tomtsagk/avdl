@@ -209,7 +209,7 @@ void print_definition(FILE *fd, struct ast_node *command) {
 	}
 	*/
 
-	print_node(fd, varname);
+	print_identifier(fd, varname);
 	if (arrayElements > 0) {
 		fprintf(fd, "[%d]", arrayElements);
 	}
@@ -780,19 +780,16 @@ static void print_class_definition(FILE *fd, struct ast_node *command) {
 
 	fprintf(fd, "struct %s {\n", name);
 
-	int cchild = 1;
-
 	// subclass
 	struct ast_node *subclass = dd_da_get(&command->children, 1);
 	struct entry *subentry = 0;
 	if (subclass->node_type == AST_IDENTIFIER) {
 		subentry = symtable_entryat(subclass->value);
 		fprintf(fd, "struct %s parent;\n", subentry->lexptr);
-		cchild++;
 	}
 
 	// definitions in struct
-	struct ast_node *cmn = dd_da_get(&command->children, cchild);
+	struct ast_node *cmn = dd_da_get(&command->children, 2);
 	for (unsigned int i = 0; i < cmn->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&cmn->children, i);
 		if (child->node_type == AST_COMMAND_NATIVE) {
@@ -902,6 +899,12 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 			}
 
 			current_child++;
+		}
+	}
+	else {
+		// single variable passed around is always referenced
+		if (e->varType == DD_VARIABLE_TYPE_STRUCT) {
+			fprintf(fd, "&");
 		}
 	}
 	print_identifier(fd, command);

@@ -191,6 +191,8 @@ static struct ast_node *parse_def(struct ast_node *cmd_name, struct ast_node *op
 	struct ast_node *vartype = dd_da_get(&opt_args->children, 0);
 	struct entry *evartype = symtable_entryat(vartype->value);
 
+	evarname->varType = dd_variable_type_convert(evartype->lexptr);
+
 	int isValid = 0;
 
 	// check if primitive type

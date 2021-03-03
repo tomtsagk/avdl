@@ -9,6 +9,9 @@ enum dd_variable_type {
 	DD_VARIABLE_TYPE_STRING,
 	DD_VARIABLE_TYPE_CHAR,
 	DD_VARIABLE_TYPE_FUNCTION,
+	DD_VARIABLE_TYPE_UNKNOWN,
 };
+
+enum dd_variable_type dd_variable_type_convert(const char *type);
 
 #endif

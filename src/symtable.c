@@ -121,6 +121,7 @@ symtable_index symtable_insert(const char s[], int tok) {
 	symentry->token = tok;
 	symentry->isRef = 0;
 	symentry->scope = 0;
+	symentry->varType = DD_VARIABLE_TYPE_UNKNOWN;
 	strncpy(symentry->lexptr, s, ENTRY_LEXPTR_SIZE -1);
 	symentry->lexptr[ENTRY_LEXPTR_SIZE-1] = '\0';
 	symentry->value = 0;

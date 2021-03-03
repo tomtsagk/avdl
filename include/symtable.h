@@ -1,6 +1,8 @@
 #ifndef _SYMTABLE_H_
 #define _SYMTABLE_H_
 
+#include "dd_variable_type.h"
+
 // type for index on the system table
 typedef int symtable_index;
 
@@ -15,6 +17,7 @@ struct entry {
 	int value;
 	int isRef;
 	char *scope;
+	enum dd_variable_type varType;
 };
 
 // init
