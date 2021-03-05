@@ -17,9 +17,14 @@ extern int included_files_num;
 
 %}
 
-symbol [-=+<>*/%&|a-zA-Z][-=+<>*/&|a-zA-Z0-9_]*
-float  -?[0-9]+\.[0-9]+
+/*
+ * how do tokens look like
+ */
 number -?[0-9]+
+float  -?[0-9]+\.[0-9]+
+symbol [-=+<>*/%&|a-zA-Z][-=+<>*/&|a-zA-Z0-9_]*
+char   \'.\'
+string \"[^"]*\"
 
 %option noyywrap
 
@@ -94,16 +99,17 @@ number -?[0-9]+
 	}
 }
 
- /* ignore comments */
+ /* ignore comments and whitespace*/
 #.*		;
+[ \t]		;
 
  /* constants and variables */
-{symbol}	{ yylval = symtable_insert(yytext, DD_ZERO); return DD_CONSTANT_SYMBOL; }
-{float} 	{ yylval = 0; parsing_float = atof(yytext); return DD_CONSTANT_FLOAT; }
-{number}	{ yylval = atoi(yytext); return DD_CONSTANT_NUMBER; }
-\'.\'		{ yylval = yytext[1]; return DD_CONSTANT_NUMBER; }
+{number} { yylval = atoi(yytext); return DD_CONSTANT_NUMBER; }
+{float}  { yylval = 0; parsing_float = atof(yytext); return DD_CONSTANT_FLOAT; }
+{symbol} { yylval = symtable_insert(yytext, DD_ZERO); return DD_CONSTANT_SYMBOL; }
+{char}   { yylval = yytext[1]; return DD_CONSTANT_NUMBER; }
 
-\"[^"]*\"	{
+{string} {
 	/* chop of the quotes from strings
 	 * add it to symbol table
 	 */
@@ -112,9 +118,6 @@ number -?[0-9]+
 	yylval = symtable_insert(temp, DD_CONSTANT_STRING);
 	return DD_CONSTANT_STRING;
 }
-
- /* ignore whitespace */
-[ \t]		;
 
  /* count lines */
 \n		linenum++;

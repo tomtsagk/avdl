@@ -17,6 +17,7 @@
 #include "dd_meshRising.h"
 #include "avdl_shaders.h"
 #include "dd_log.h"
+#include "avdl_data.h"
 
 #if DD_PLATFORM_NATIVE
 /* files temporarily not available in android */

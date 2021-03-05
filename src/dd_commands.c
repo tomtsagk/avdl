@@ -193,6 +193,11 @@ static struct ast_node *parse_def(struct ast_node *cmd_name, struct ast_node *op
 
 	evarname->varType = dd_variable_type_convert(evartype->lexptr);
 
+	if (evarname->varType == DD_VARIABLE_TYPE_UNKNOWN) {
+		printf("avdl: unrecognized type '%s'\n", evartype->lexptr);
+		exit(-1);
+	}
+
 	int isValid = 0;
 
 	// check if primitive type

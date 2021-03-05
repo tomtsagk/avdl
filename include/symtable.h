@@ -5,7 +5,6 @@
 
 // type for index on the system table
 typedef int symtable_index;
-
 extern int symtable_current;
 
 /* entry in the symbol table and its data

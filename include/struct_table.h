@@ -69,4 +69,7 @@ int struct_table_get_parent(int structIndex);
 unsigned int struct_table_get_member_total(int structIndex);
 char *struct_table_get_member_nametype(int structIndex, int memberIndex);
 
+// getters
+int struct_table_count();
+
 #endif
