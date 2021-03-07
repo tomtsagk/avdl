@@ -511,7 +511,7 @@ static void print_function_arguments(FILE *fd, struct ast_node *command) {
 		if (!isPrimitive) {
 			fprintf(fd, "*");
 		}
-		print_node(fd, varname);
+		print_identifier(fd, varname);
 	}
 }
 

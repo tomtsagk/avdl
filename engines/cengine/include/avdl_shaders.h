@@ -13,4 +13,10 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname);
 extern const char *avdl_shaderDefault_vertex;
 extern const char *avdl_shaderDefault_fragment;
 
+/*
+ * the font shader, used only for text
+ */
+extern const char *avdl_shaderFont_vertex;
+extern const char *avdl_shaderFont_fragment;
+
 #endif

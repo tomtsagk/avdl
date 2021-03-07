@@ -82,7 +82,6 @@ pthread_mutex_t asyncCallMutex;
 
 pthread_mutex_t newWorldMutex;
 pthread_mutex_t updateDrawMutex;
-pthread_mutex_t updateThreadMutex;
 
 int dd_main(int argc, char *argv[]) {
 
@@ -106,12 +105,6 @@ int dd_main(int argc, char *argv[]) {
 	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
 	{
 		dd_log("avdl: mutex for update/draw init failed");
-		return -1;
-	}
-
-	if (pthread_mutex_init(&updateThreadMutex, NULL) != 0)
-	{
-		dd_log("avdl: mutex for update thread init failed");
 		return -1;
 	}
 
@@ -183,7 +176,9 @@ int dd_main(int argc, char *argv[]) {
 	// initialise world
 	nworld_size = 0;
 	nworld_constructor = 0;
-	dd_world_change(dd_default_world_size, dd_default_world_constructor);
+	if (!cworld) {
+		dd_world_change(dd_default_world_size, dd_default_world_constructor);
+	}
 
 	/* commented out - for now
 	dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));

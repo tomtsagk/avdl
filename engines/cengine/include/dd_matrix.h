@@ -75,5 +75,4 @@ float dd_matrix_x(struct dd_matrix *m);
 float dd_matrix_y(struct dd_matrix *m);
 float dd_matrix_z(struct dd_matrix *m);
 
-
 #endif

@@ -243,115 +243,56 @@ const char *avdl_shaderDefault_fragment =
 "}\n"
 ;
 
-/*
- * the rising shader was created for a specific game, so
- * it will eventually be removed from here and moved there.
- *
-const char *shader_rising_vertex =
-"#version 130\n"
-"in vec4 position;\n"
-"in vec3 colour;\n"
-"in vec2 texCoord;\n"
+const char *avdl_shaderFont_vertex =
+"#if __VERSION__ > 120\n"
+"#define AVDL_IN in\n"
+"#define AVDL_OUT out\n"
+"#else\n"
+"#define AVDL_IN attribute\n"
+"#define AVDL_OUT varying\n"
+"#endif\n"
+
+"AVDL_IN vec4 position;\n"
+
+"uniform vec3 colorFront;\n"
+"uniform vec3 colorBack;\n"
 "uniform mat4 matrix;\n"
-"out vec2 outTexCoord;\n"
-"uniform float animationMax;\n"
-"uniform float animationCurrent;\n"
+
+"AVDL_OUT vec4 outColour;\n"
+
 "void main() {\n"
 "	gl_Position = matrix *position;\n"
-
-"	if (-position.z > animationCurrent) {\n"
-"		if (-position.z -animationCurrent > 5) {\n"
-"			gl_Position.y -= 50;\n"
-"		}\n"
-"		else {\n"
-"			float ratio = (-position.z -animationCurrent) /5;\n"
-"			gl_Position.y -= ((ratio *ratio) -0.3) *ratio *1.43 *50;\n"
-"		}\n"
+//"	outColour = vec4(colorBack +(colorFront -colorBack) *position.z, 1);\n"
+"	if (position.z >= 0.0) {\n"
+"		outColour = vec4(colorFront, 1);\n"
 "	}\n"
-
-"	gl_FrontColor = vec4(colour.rgb, 1);\n"
-"	outTexCoord  = texCoord;\n"
+"	else {\n"
+"		outColour = vec4(colorBack, 1);\n"
+"	}\n"
 "}\n"
 ;
-const char *shader_rising_vertex110 =
-"#version 110\n"
-"attribute vec4 position;\n"
-"attribute vec3 colour;\n"
-"attribute vec2 texCoord;\n"
-"uniform mat4 matrix;\n"
-"varying vec2 outTexCoord;\n"
-"uniform float animationMax;\n"
-"uniform float animationCurrent;\n"
+
+const char *avdl_shaderFont_fragment =
+"#if __VERSION__ > 120 || __VERSION__ == 100\n"
+"precision mediump float;\n"
+"#endif\n"
+
+"#if __VERSION__ > 120\n"
+"#define AVDL_IN in\n"
+"#else\n"
+"#define AVDL_IN varying\n"
+"#endif\n"
+
+"#if __VERSION__ > 150\n"
+"layout(location = 0) out mediump vec4 frag_color;\n"
+"#define avdl_frag_color frag_color\n"
+"#else\n"
+"#define avdl_frag_color gl_FragColor\n"
+"#endif\n"
+
+"AVDL_IN vec4 outColour;\n"
+
 "void main() {\n"
-"	gl_Position = matrix *position;\n"
-
-"	if (-position.z > animationCurrent) {\n"
-"		if (-position.z -animationCurrent > 5.0) {\n"
-"			gl_Position.y -= 50.0;\n"
-"		}\n"
-"		else {\n"
-"			float ratio = (-position.z -animationCurrent) /5.0;\n"
-"			gl_Position.y -= ((ratio *ratio) -0.3) *ratio *1.43 *50.0;\n"
-"		}\n"
-"	}\n"
-
-"	gl_FrontColor = vec4(colour.rgb, 1);\n"
-"	outTexCoord  = texCoord;\n"
+"	avdl_frag_color = outColour;\n"
 "}\n"
 ;
-const char *shader_rising_vertexES =
-"#version 310 es\n"
-"in vec4 position;\n"
-"in vec3 colour;\n"
-"in vec2 texCoord;\n"
-"uniform float animationCurrent;\n"
-"uniform mat4 matrix;\n"
-"out vec2 outTexCoord;\n"
-"out vec4 outColour;\n"
-"void main() {\n"
-"	vec4 pos = matrix *position;\n"
-
-"	if (-position.z > animationCurrent) {\n"
-"		if (-position.z -animationCurrent > 5.0) {\n"
-"			pos.y -= 50.0;\n"
-"		}\n"
-"		else {\n"
-"			float ratio = (-position.z -animationCurrent) /5.0;\n"
-"			pos.y -= ((ratio *ratio) -0.3) *ratio *1.43 *50.0;\n"
-"		}\n"
-"	}\n"
-"	gl_Position = pos;\n"
-
-"	outColour = vec4(colour.rgb, 1.0);\n"
-"	outTexCoord  = texCoord;\n"
-"}\n"
-;
-
-const char *shader_rising_vertexES101 =
-"#version 101\n"
-"attribute vec4 position;\n"
-"attribute vec3 colour;\n"
-"attribute vec2 texCoord;\n"
-"uniform float animationCurrent;\n"
-"uniform mat4 matrix;\n"
-"varying vec2 outTexCoord;\n"
-"varying vec4 outColour;\n"
-"void main() {\n"
-"	vec4 pos = matrix *position;\n"
-
-"	if (-position.z > animationCurrent) {\n"
-"		if (-position.z -animationCurrent > 5.0) {\n"
-"			pos.y -= 50.0;\n"
-"		}\n"
-"		else {\n"
-"			float ratio = (-position.z -animationCurrent) /5.0;\n"
-"			pos.y -= ((ratio *ratio) -0.3) *ratio *1.43 *50.0;\n"
-"		}\n"
-"	}\n"
-
-"	gl_Position = pos;\n"
-"	outColour = vec4(colour.rgb, 1.0);\n"
-"	outTexCoord  = texCoord;\n"
-"}\n"
-;
-*/
