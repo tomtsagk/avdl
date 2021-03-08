@@ -23,7 +23,7 @@ enum dd_variable_type dd_variable_type_convert(const char *type) {
 	/*
 	 * structs
 	 */
-	for (int i = 0; i < struct_table_current; i++) {
+	for (int i = 0; i <= struct_table_current; i++) {
 		if (strcmp(type, struct_table_get_name(i)) == 0) {
 			return DD_VARIABLE_TYPE_STRUCT;
 		}

@@ -1,6 +1,8 @@
 #ifndef AVDL_DATA_H
 #define AVDL_DATA_H
 
+extern char *avdl_data_saveDirectory;
+
 int avdl_data_save_internal(void *data, int data_size, const char *filename);
 int avdl_data_load_internal(void *data, int data_size, const char *filename);
 

@@ -2,6 +2,7 @@
 #include <time.h>
 #include <complex.h>
 #include <unistd.h>
+#include <string.h>
 
 // Threads
 #include <pthread.h>
@@ -84,6 +85,23 @@ pthread_mutex_t newWorldMutex;
 pthread_mutex_t updateDrawMutex;
 
 int dd_main(int argc, char *argv[]) {
+
+	/*
+	 * parse command line arguments
+	 */
+	for (int i = 0; i < argc; i++) {
+
+		// custom save directory (for specific platforms)
+		if (strcmp(argv[i], "--avdl-save-dir") == 0) {
+			i++;
+			if (i >= argc) {
+				dd_log("please provide a save directory after \"--avdl-save-dir\"");
+				exit(-1);
+			}
+			avdl_data_saveDirectory = argv[i];
+		}
+
+	}
 
 	dd_clearcolor_r = 0;
 	dd_clearcolor_g = 0;
