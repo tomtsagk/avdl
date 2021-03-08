@@ -1,3 +1,0 @@
-[submodule "engines/cglut"]
-	path = engines/cglut
-	url = https://notabug.org/tomtsagk/cglut-game-engine
