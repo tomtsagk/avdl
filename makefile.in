@@ -54,7 +54,7 @@ CENGINE_FILES_ANDROID_HEADER=$(CENGINE_FILES_HEADER:engines/cengine/include/%.h=
 CENGINE_FILES_ANDROID_SRC=$(CENGINE_FILES_SRC:engines/cengine/src/%.c=engines/android/app/src/main/cpp/engine/%.c)
 CENGINE_FILES_LOCAL=$(CENGINE_FILES_SRC:engines/cengine/src/%.c=engine\/%.c)
 
-all: ${EXECUTABLE}
+all: ${EXECUTABLE} ${ENGINE_OUT}
 
 # build the executable, depends on source, lex, yacc and all engines
 ${EXECUTABLE}: ${DIRECTORY_ALL} ${DIRECTORIES} ${OBJ} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC} ${CENGINE_FILES_ANDROID_HEADER} ${CENGINE_FILES_ANDROID_SRC} engines/android/app/src/main/cpp/CMakeLists.txt
@@ -69,10 +69,12 @@ ${YACC_SRC} ${YACC_HEADER}: src/yacc.y
 	bison -o ${YACC_SRC} -d src/yacc.y
 
 # how to build the c engine
-engine:
+engine: ${ENGINE_OUT}
+
+${ENGINE_OUT}:
 	${MAKE} -C ${ENGINE_PATH}
 
-install: ${EXECUTABLE}# ${ENGINE_PATH}/${ENGINE}
+install: ${EXECUTABLE} ${ENGINE_OUT}
 	${MAKE} -C ${ENGINE_PATH} PREFIX=${INSTALL_LOCATION} install
 	mkdir -p ${INSTALL_LOCATION}/usr/bin
 	install ${EXECUTABLE} ${INSTALL_LOCATION}/usr/bin/
