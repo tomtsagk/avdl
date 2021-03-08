@@ -50,6 +50,7 @@ const struct keyword_function keywords[] = {
 	{"for", parse_through},
 	{"asset", parse_through},
 	{"extern", parse_through},
+	{"multistring", parse_through},
 };
 unsigned int keywords_total = sizeof(keywords) /sizeof(struct keyword_function);
 
@@ -191,8 +192,8 @@ static struct ast_node *parse_def(struct ast_node *cmd_name, struct ast_node *op
 	struct ast_node *vartype = dd_da_get(&opt_args->children, 0);
 	struct entry *evartype = symtable_entryat(vartype->value);
 
+	// check if type is recognized
 	evarname->varType = dd_variable_type_convert(evartype->lexptr);
-
 	if (evarname->varType == DD_VARIABLE_TYPE_UNKNOWN) {
 		printf("avdl: unrecognized type '%s'\n", evartype->lexptr);
 		exit(-1);

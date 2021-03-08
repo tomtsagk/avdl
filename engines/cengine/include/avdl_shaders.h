@@ -2,6 +2,11 @@
 #define AVDL_SHADERS_H
 
 /*
+ * function to change the current program
+ */
+#define avdl_useProgram(x) glUseProgram(x)
+
+/*
  * takes a string for the vertex and one for the fragment shader as parameters,
  * returns the number of the created program, or `0` if an error occured.
  */

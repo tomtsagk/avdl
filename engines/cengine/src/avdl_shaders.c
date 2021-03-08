@@ -3,6 +3,55 @@
 #include <string.h>
 #include "avdl_cengine.h"
 
+/*
+ * intro shaders
+ * these provide some macros depending
+ * on the GLSL version, to device a more abstract
+ * interface that works on multiple versions.
+ *
+ * the macros define a new language called
+ * "avsl" - abstract video-game shading language
+ */
+static char *avsl_shader_vertex =
+"#if __VERSION__ > 120\n"
+"#define AVDL_IN in\n"
+"#define AVDL_OUT out\n"
+"#else\n"
+"#define AVDL_IN attribute\n"
+"#define AVDL_OUT varying\n"
+"#endif\n"
+;
+
+static char *avsl_shader_fragment =
+"#if __VERSION__ > 120 || __VERSION__ == 100\n"
+"precision mediump float;\n"
+"#endif\n"
+
+"#if __VERSION__ > 120\n"
+"#define AVDL_IN in\n"
+"#else\n"
+"#define AVDL_IN varying\n"
+"#endif\n"
+
+"#if __VERSION__ > 150\n"
+"layout(location = 0) out mediump vec4 frag_color;\n"
+"#define avdl_frag_color frag_color\n"
+"#define avdl_texture(x, y) texture(x, y)\n"
+"#else\n"
+"#define avdl_frag_color gl_FragColor\n"
+"#define avdl_texture(x, y) texture2D(x, y)\n"
+"#endif\n"
+;
+
+/*
+ * supported GLSL versions
+ * these are versions that "avsl" supports and
+ * has been tested with.
+ *
+ * currently, the engine will try to compile
+ * a shader with each version, until one succeeds
+ * (or they all fail).
+ */
 const char *shader_glsl_versions[] = {
 	// GLSL
 	"110",
@@ -30,6 +79,11 @@ const char *shader_glsl_versions[] = {
 };
 const int shader_glsl_versions_count = sizeof(shader_glsl_versions) /sizeof(char *);
 
+/*
+ * all shaders start with this version string,
+ * where the version is assigned based on the values above
+ * and compiled.
+ */
 const char *versionSource = "#version XXX YY\n";
 
 unsigned int create_shader(int type, const char *src) {
@@ -41,15 +95,36 @@ unsigned int create_shader(int type, const char *src) {
 		dd_log("avdl: create_shader: no source given, or source smaller than 20");
 		return 0;
 	}
-	char *newSource = malloc(strlen(src) +strlen(versionSource) +1);
+
+	/*
+	 * find the right shader intro based on the shader
+	 */
+	char *shaderIntro;
+	if (type == GL_VERTEX_SHADER) {
+		shaderIntro = avsl_shader_vertex;
+	}
+	else
+	if (type == GL_FRAGMENT_SHADER) {
+		shaderIntro = avsl_shader_fragment;
+	}
+	else {
+		dd_log("avdl: create_shader: unsupported shader type: %d", type);
+		exit(-1);
+	}
+
+	/*
+	 * construct a glsl shader based on the version, shader intro, and the shader itself
+	 */
+	char *newSource = malloc(strlen(shaderIntro) +strlen(src) +strlen(versionSource) +1);
 	const char *newSource2 = newSource;
 	strcpy(newSource, versionSource);
+	strcat(newSource, shaderIntro);
 	strcat(newSource, src);
 
 	// potentially compile the actual glsl version first
 	//dd_log("glsl version: %s", glGetStringi(GL_SHADING_LANGUAGE_VERSION, 0));
 
-	// try all supported versions, until one works
+	// try all supported versions, until one works, or all fail
 	for (int i = 0; i < shader_glsl_versions_count; i++) {
 		newSource[ 9] = shader_glsl_versions[i][0];
 		newSource[10] = shader_glsl_versions[i][1];
@@ -189,14 +264,6 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 }
 
 const char *avdl_shaderDefault_vertex =
-"#if __VERSION__ > 120\n"
-"#define AVDL_IN in\n"
-"#define AVDL_OUT out\n"
-"#else\n"
-"#define AVDL_IN attribute\n"
-"#define AVDL_OUT varying\n"
-"#endif\n"
-
 "AVDL_IN vec4 position;\n"
 "AVDL_IN vec3 colour;\n"
 "AVDL_IN vec2 texCoord;\n"
@@ -214,25 +281,6 @@ const char *avdl_shaderDefault_vertex =
 ;
 
 const char *avdl_shaderDefault_fragment =
-"#if __VERSION__ > 120 || __VERSION__ == 100\n"
-"precision mediump float;\n"
-"#endif\n"
-
-"#if __VERSION__ > 120\n"
-"#define AVDL_IN in\n"
-"#else\n"
-"#define AVDL_IN varying\n"
-"#endif\n"
-
-"#if __VERSION__ > 150\n"
-"layout(location = 0) out mediump vec4 frag_color;\n"
-"#define avdl_frag_color frag_color\n"
-"#define avdl_texture(x, y) texture(x, y)\n"
-"#else\n"
-"#define avdl_frag_color gl_FragColor\n"
-"#define avdl_texture(x, y) texture2D(x, y)\n"
-"#endif\n"
-
 "AVDL_IN vec4 outColour;\n"
 "AVDL_IN vec2 outTexCoord;\n"
 
@@ -244,14 +292,6 @@ const char *avdl_shaderDefault_fragment =
 ;
 
 const char *avdl_shaderFont_vertex =
-"#if __VERSION__ > 120\n"
-"#define AVDL_IN in\n"
-"#define AVDL_OUT out\n"
-"#else\n"
-"#define AVDL_IN attribute\n"
-"#define AVDL_OUT varying\n"
-"#endif\n"
-
 "AVDL_IN vec4 position;\n"
 
 "uniform vec3 colorFront;\n"
@@ -262,7 +302,6 @@ const char *avdl_shaderFont_vertex =
 
 "void main() {\n"
 "	gl_Position = matrix *position;\n"
-//"	outColour = vec4(colorBack +(colorFront -colorBack) *position.z, 1);\n"
 "	if (position.z >= 0.0) {\n"
 "		outColour = vec4(colorFront, 1);\n"
 "	}\n"
@@ -273,23 +312,6 @@ const char *avdl_shaderFont_vertex =
 ;
 
 const char *avdl_shaderFont_fragment =
-"#if __VERSION__ > 120 || __VERSION__ == 100\n"
-"precision mediump float;\n"
-"#endif\n"
-
-"#if __VERSION__ > 120\n"
-"#define AVDL_IN in\n"
-"#else\n"
-"#define AVDL_IN varying\n"
-"#endif\n"
-
-"#if __VERSION__ > 150\n"
-"layout(location = 0) out mediump vec4 frag_color;\n"
-"#define avdl_frag_color frag_color\n"
-"#else\n"
-"#define avdl_frag_color gl_FragColor\n"
-"#endif\n"
-
 "AVDL_IN vec4 outColour;\n"
 
 "void main() {\n"

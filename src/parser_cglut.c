@@ -59,6 +59,7 @@ static void print_function_arguments(FILE *fd, struct ast_node *command);
 static void print_echo(FILE *fd, struct ast_node *command);
 static void print_function(FILE *fd, struct ast_node *command);
 static void print_extern(FILE *fd, struct ast_node *command);
+static void print_multistring(FILE *fd, struct ast_node *command);
 /*
 static void print_return(FILE *fd, struct ast_node *command);
 static void print_array(FILE *fd, struct ast_node *command);
@@ -212,6 +213,11 @@ void print_definition(FILE *fd, struct ast_node *command) {
 	print_identifier(fd, varname);
 	if (arrayElements > 0) {
 		fprintf(fd, "[%d]", arrayElements);
+	}
+	else
+	// settings `0` array elements, means initialise on declaration
+	if (arrayElements == 0) {
+		fprintf(fd, "[]");
 	}
 
 	if (command->children.elements >= 3) {
@@ -396,6 +402,10 @@ void print_command(FILE *fd, struct ast_node *command) {
 	if (strcmp(e->lexptr, "extern") == 0) {
 		print_extern(fd, command);
 	}
+	else
+	if (strcmp(e->lexptr, "multistring") == 0) {
+		print_multistring(fd, command);
+	}
 }
 
 void print_echo(FILE *fd, struct ast_node *command) {
@@ -522,6 +532,16 @@ static void print_extern(FILE *fd, struct ast_node *command) {
 		fprintf(fd, " ");
 	}
 	fprintf(fd, ";\n");
+}
+
+/*
+ * multi line strings
+ */
+static void print_multistring(FILE *fd, struct ast_node *command) {
+	for (unsigned int i = 0; i < command->children.elements; i++) {
+		print_node(fd, dd_da_get(&command->children, i));
+		fprintf(fd, " ");
+	}
 }
 
 /*
