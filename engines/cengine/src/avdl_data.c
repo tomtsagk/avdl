@@ -14,7 +14,7 @@
  * specific distribution apps that might not
  * support save locally.
  */
-char *avdl_data_saveDirectory = "saves";
+char avdl_data_saveDirectory[1000] = "saves";
 
 int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 

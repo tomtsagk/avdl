@@ -492,7 +492,7 @@ class AvdlRenderer implements GLSurfaceView.Renderer {
 	 * initialise the engine
 	 */
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		nativeInit();
+		nativeInit(AvdlActivity.activity);
 	}
 
 	/*
@@ -513,7 +513,7 @@ class AvdlRenderer implements GLSurfaceView.Renderer {
 	/*
 	 * native calls
 	 */
-	private static native void nativeInit();
+	private static native void nativeInit(AvdlActivity activity);
 	private static native void nativeResize(int w, int h);
 	private static native void nativeRender();
 	private static native int nativeUpdate();

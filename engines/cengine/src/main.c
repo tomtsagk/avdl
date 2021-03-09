@@ -98,7 +98,7 @@ int dd_main(int argc, char *argv[]) {
 				dd_log("please provide a save directory after \"--avdl-save-dir\"");
 				exit(-1);
 			}
-			avdl_data_saveDirectory = argv[i];
+			strcpy(avdl_data_saveDirectory, argv[i]);
 		}
 
 	}
@@ -702,13 +702,24 @@ void updateThread() {
 /*
  * nativeInit : Called when the app is first created
  */
-void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject thiz) {
+void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject thiz, jobject mainActivity) {
 
 	// Global variables to access Java virtual machine and environment
 	(*env)->GetJavaVM(env, &jvm);
 	(*jvm)->GetEnv(jvm, &jniEnv, JNI_VERSION_1_4);
 	jclass classLocal = (*(*jniEnv)->FindClass)(jniEnv, "org/darkdimension/avdl/AvdlActivity");
 	clazz = (*jniEnv)->NewGlobalRef(jniEnv, classLocal);
+
+	// grab internal save path, for save/load functionality
+	jmethodID getFilesDir = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "getFilesDir", "()Ljava/io/File;");
+	jobject dirobj = (*(*jniEnv)->CallObjectMethod)(jniEnv, mainActivity,getFilesDir);
+	jclass dir = (*(*jniEnv)->GetObjectClass)(jniEnv, dirobj);
+	jmethodID getStoragePath =
+		(*(*jniEnv)->GetMethodID)(jniEnv, dir, "getAbsolutePath", "()Ljava/lang/String;");
+	jstring path=(jstring)(*(*jniEnv)->CallObjectMethod)(jniEnv, dirobj, getStoragePath);
+	const char *pathstr=(*(*jniEnv)->GetStringUTFChars)(jniEnv, path, 0);
+	strcpy(avdl_data_saveDirectory, pathstr);
+	(*(*jniEnv)->ReleaseStringUTFChars)(jniEnv, path, pathstr);
 
 	// Initialises the engine and the first world
 	dd_main(0, 0);
