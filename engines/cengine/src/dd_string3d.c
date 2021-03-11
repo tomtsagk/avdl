@@ -5,7 +5,7 @@
 
 static struct dd_mesh letter[26];
 static struct dd_mesh number[26];
-static GLuint fontProgram;
+extern GLuint fontProgram;
 extern GLuint defaultProgram;
 
 static int isActive = 0;
@@ -81,12 +81,6 @@ void dd_string3d_init() {
 		special[0] = i;
 		dd_mesh_create(&number[i-'0']);
 		number[i-'0'].load(&number[i-'0'], buffer);
-	}
-
-	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex, avdl_shaderFont_fragment);
-	if (!fontProgram) {
-		dd_log("avdl: dd_string3d: error loading shaders");
-		exit(-1);
 	}
 
 } // string3d init

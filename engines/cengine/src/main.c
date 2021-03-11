@@ -46,6 +46,8 @@ void clean();
 void onResume();
 void onPause();
 
+int avdl_engine_init_opengl();
+
 /*
  * input handling functions
  */
@@ -70,19 +72,21 @@ JavaVM* jvm = 0;
 jobject activity = 0;
 #endif
 
-// Temporarily disabled for android
+// shaders
 GLuint defaultProgram;
-GLuint risingProgram;
-GLuint testProgram;
-#if DD_PLATFORM_NATIVE
-extern GLuint fontProgram;
+GLuint fontProgram;
+GLuint risingProgram = 0;
 
+#if DD_PLATFORM_NATIVE
 // threads
 pthread_mutex_t asyncCallMutex;
 #endif
 
 pthread_mutex_t newWorldMutex;
 pthread_mutex_t updateDrawMutex;
+
+int avdl_state_initialised = 0;
+int avdl_state_active = 0;
 
 int dd_main(int argc, char *argv[]) {
 
@@ -156,22 +160,11 @@ int dd_main(int argc, char *argv[]) {
 	// init opengl
 	glewInit();
 	#endif
-	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.8, 0.6, 1.0, 1);
+
+	avdl_engine_init_opengl();
 
 	/*
-	 * load shaders
-	 */
-	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
-	if (!defaultProgram) {
-		dd_log("avdl: error loading shaders");
-		exit(-1);
-	}
-	risingProgram = 0;
-	glUseProgram(defaultProgram);
-
-	/*
-	 * strin3d initialisation for displaying text
+	 * string3d initialisation for displaying text
 	 */
 	if (dd_string3d_isActive()) {
 		dd_string3d_init();
@@ -194,9 +187,7 @@ int dd_main(int argc, char *argv[]) {
 	// initialise world
 	nworld_size = 0;
 	nworld_constructor = 0;
-	if (!cworld) {
-		dd_world_change(dd_default_world_size, dd_default_world_constructor);
-	}
+	dd_world_change(dd_default_world_size, dd_default_world_constructor);
 
 	/* commented out - for now
 	dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
@@ -205,6 +196,7 @@ int dd_main(int argc, char *argv[]) {
 	dd_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 	*/
 
+	avdl_state_initialised = 1;
 	#if DD_PLATFORM_NATIVE
 	// give functions to glut
 	glutDisplayFunc(draw);
@@ -217,7 +209,6 @@ int dd_main(int argc, char *argv[]) {
 	//glutTimerFunc(33, update, 0);
 	//glutTimerFunc(25, update, 0);
 
-	dd_flag_initialised = 1;
 	onResume();
 
 	// start the loop
@@ -225,7 +216,6 @@ int dd_main(int argc, char *argv[]) {
 
 	clean();
 	#elif DD_PLATFORM_ANDROID
-	dd_flag_initialised = 1;
 	onResume();
 	#endif
 
@@ -235,7 +225,7 @@ int dd_main(int argc, char *argv[]) {
 
 // clean leftovers
 void clean() {
-	dd_flag_initialised = 0;
+	avdl_state_initialised = 0;
 
 	if (cworld) {
 		cworld->clean(cworld);
@@ -378,7 +368,7 @@ struct newWorld_thread_data newWorldData;
 void update() {
 
 	#if DD_PLATFORM_NATIVE
-	if (!dd_flag_updateThread) {
+	if (!avdl_state_active) {
 		return;
 	}
 	#endif
@@ -651,15 +641,15 @@ void updateThread();
 
 void onResume() {
 
-	if (!dd_flag_initialised) return;
+	if (!avdl_state_initialised) return;
 
 	pthread_mutex_lock(&updateDrawMutex);
 	dd_flag_exit = 0;
 	dd_flag_focused = 1;
 	pthread_mutex_unlock(&updateDrawMutex);
 
-	if (dd_flag_initialised && !dd_flag_updateThread) {
-		dd_flag_updateThread = 1;
+	if (!avdl_state_active) {
+		avdl_state_active = 1;
 		#if DD_PLATFORM_ANDROID
 		pthread_create(&updatePthread, NULL, &updateThread, NULL);
 		#elif DD_PLATFORM_NATIVE
@@ -670,18 +660,44 @@ void onResume() {
 
 void onPause() {
 
-	if (!dd_flag_initialised) return;
+	if (!avdl_state_initialised) return;
 
-	if (dd_flag_updateThread) {
-		dd_flag_updateThread = 0;
+	if (avdl_state_active) {
+		avdl_state_active = 0;
 		#if DD_PLATFORM_ANDROID
 		pthread_join(updatePthread, NULL);
 		#endif
 	}
 	pthread_mutex_lock(&updateDrawMutex);
 	dd_flag_focused = 0;
-	dd_flag_initialised = 0;
+	//dd_flag_initialised = 0;
 	pthread_mutex_unlock(&updateDrawMutex);
+}
+
+int avdl_engine_init_opengl() {
+
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.8, 0.6, 1.0, 1);
+
+	/*
+	 * load shaders
+	 */
+	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
+	if (!defaultProgram) {
+		dd_log("avdl: error loading shaders");
+		exit(-1);
+	}
+
+	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex, avdl_shaderFont_fragment);
+	if (!fontProgram) {
+		dd_log("avdl: error loading font shaders");
+		exit(-1);
+	}
+
+	glUseProgram(defaultProgram);
+
+	return 0;
+
 }
 
 /*
@@ -690,7 +706,7 @@ void onPause() {
 #if DD_PLATFORM_ANDROID
 
 void updateThread() {
-	while (!dd_flag_exit && dd_flag_updateThread) {
+	while (!dd_flag_exit && avdl_state_active) {
 		pthread_mutex_lock(&updateDrawMutex);
 		update();
 		pthread_mutex_unlock(&updateDrawMutex);
@@ -721,8 +737,14 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 	strcpy(avdl_data_saveDirectory, pathstr);
 	(*(*jniEnv)->ReleaseStringUTFChars)(jniEnv, path, pathstr);
 
-	// Initialises the engine and the first world
-	dd_main(0, 0);
+
+	if (!avdl_state_initialised) {
+		// Initialises the engine and the first world
+		dd_main(0, 0);
+	}
+	else {
+		avdl_engine_init_opengl();
+	}
 
 }
 
