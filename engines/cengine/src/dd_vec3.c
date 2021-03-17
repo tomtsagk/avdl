@@ -25,3 +25,6 @@ float dd_vec3_getY(struct dd_vec3 *o) {
 float dd_vec3_getZ(struct dd_vec3 *o) {
 	return o->z;
 }
+
+void dd_vec3_clean(struct dd_vec3 *o) {
+}

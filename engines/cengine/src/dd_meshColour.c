@@ -4,6 +4,7 @@
 #include "dd_filetomesh.h"
 #include <string.h>
 #include "dd_matrix.h"
+#include "avdl_asset_manager.h"
 
 extern GLuint defaultProgram;
 extern GLuint risingProgram;
@@ -98,68 +99,8 @@ void dd_meshColour_load(struct dd_meshColour *m, const char *asset) {
 	// clean the mesh, if was dirty
 	dd_meshColour_clean(m);
 
-	// get string from asset (in java)
-	jmethodID MethodID = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadPly", "(Ljava/lang/String;I)[Ljava/lang/Object;");
-	jstring *parameter = (*jniEnv)->NewStringUTF(jniEnv, asset);
-	jint parameterSettings = DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR;
-	jobjectArray result = (jstring)(*(*jniEnv)->CallStaticObjectMethod)(jniEnv, clazz, MethodID, parameter, &parameterSettings);
-	/*
-	if ((*jniEnv)->ExceptionCheck(jniEnv) == JNI_TRUE) {
-		dd_log("EXCEPTION THROWN");
-		(*jniEnv)->ExceptionDescribe(jniEnv);
-		(*jniEnv)->ExceptionClear(jniEnv);
-	}
-	*/
-
-	/*
-	 * Reading the asset was successfull,
-	 * load the asset with it.
-	 */
-	if (result) {
-
-		// the first object describes the size of the texture
-		const jintArray pos  = (*(*jniEnv)->GetObjectArrayElement)(jniEnv, result, 0);
-		const jfloat *posValues = (*(*jniEnv)->GetFloatArrayElements)(jniEnv, pos, 0);
-
-		const jintArray col  = (*(*jniEnv)->GetObjectArrayElement)(jniEnv, result, 1);
-		const jint *colValues = (*(*jniEnv)->GetIntArrayElements)(jniEnv, col, 0);
-
-		jsize len = (*jniEnv)->GetArrayLength(jniEnv, pos) /3;
-		m->parent.vcount = len;
-		m->parent.v = malloc(sizeof(float) *len *3);
-		m->c = malloc(sizeof(float) *len *4);
-		for (int i = 0; i < len; i++) {
-			m->parent.v[i*3+0] = posValues[i*3+0];
-			m->parent.v[i*3+1] = posValues[i*3+1];
-			m->parent.v[i*3+2] = posValues[i*3+2];
-			m->c[i*4+0] = (float) (colValues[i*3+0] /255.0);
-			m->c[i*4+1] = (float) (colValues[i*3+1] /255.0);
-			m->c[i*4+2] = (float) (colValues[i*3+2] /255.0);
-			m->c[i*4+3] = 1;
-		}
-		m->parent.dirtyVertices = 1;
-		m->dirtyColours = 1;
-
-		(*jniEnv)->ReleaseFloatArrayElements(jniEnv, pos, posValues, JNI_ABORT);
-		(*jniEnv)->ReleaseIntArrayElements(jniEnv, col, colValues, JNI_ABORT);
-
-		/*
-		// get asset string
-		const char *returnedValue = (*(*jniEnv)->GetStringUTFChars)(jniEnv, result, 0);
-
-		// load from string to mesh
-		struct dd_loaded_mesh lm;
-		dd_filetomesh(&lm, returnedValue, DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
-		m->parent.vcount = lm.vcount;
-		m->parent.v = lm.v;
-		m->parent.dirtyVertices = 1;
-		m->c = lm.c;
-		m->dirtyColours = 1;
-
-		// release gotten string
-		(*jniEnv)->ReleaseStringUTFChars(jniEnv, result, returnedValue);
-		*/
-	}
+	// mark to be loaded
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHCOLOUR, asset);
 }
 #else
 /* load vertex positions and colours from file

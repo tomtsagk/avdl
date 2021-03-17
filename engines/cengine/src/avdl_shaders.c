@@ -162,6 +162,7 @@ unsigned int create_shader(int type, const char *src) {
 		int logsz;
 		glGetShaderiv(sdr, GL_INFO_LOG_LENGTH, &logsz);
 		if (logsz > 1) {
+			/*
 			char *buf = malloc(sizeof(char) *(logsz +1));
 			glGetShaderInfoLog(sdr, logsz, 0, buf);
 			buf[logsz] = 0;
@@ -170,6 +171,7 @@ unsigned int create_shader(int type, const char *src) {
 				type == GL_FRAGMENT_SHADER ? "fragment" :
 				"<unknown>", buf);
 			free(buf);
+			*/
 		}
 
 		//Check compilation status

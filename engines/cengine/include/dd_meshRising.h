@@ -23,4 +23,6 @@ void dd_meshRising_draw(struct dd_meshRising *m);
 void dd_meshRising_set_animation_max(struct dd_meshRising *m, float);
 void dd_meshRising_set_animation_current(struct dd_meshRising *m, float);
 
+void dd_meshRising_clean(struct dd_meshRising *m);
+
 #endif /* MESHCOLOUR_H */

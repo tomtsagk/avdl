@@ -82,13 +82,15 @@ GLuint risingProgram = 0;
 pthread_mutex_t asyncCallMutex;
 #endif
 
-pthread_mutex_t newWorldMutex;
+pthread_mutex_t jniMutex;
 pthread_mutex_t updateDrawMutex;
 
 int avdl_state_initialised = 0;
 int avdl_state_active = 0;
 
 int dd_main(int argc, char *argv[]) {
+
+	avdl_assetManager_init();
 
 	/*
 	 * parse command line arguments
@@ -117,10 +119,10 @@ int dd_main(int argc, char *argv[]) {
 	input_key = 0;
 	input_mouse = 0;
 
-	// initialise pthread mutex for new worlds
-	if (pthread_mutex_init(&newWorldMutex, NULL) != 0)
+	// initialise pthread mutex for jni
+	if (pthread_mutex_init(&jniMutex, NULL) != 0)
 	{
-		dd_log("avdl: mutex for new worlds init failed");
+		dd_log("avdl: mutex for jni init failed");
 		return -1;
 	}
 
@@ -185,9 +187,10 @@ int dd_main(int argc, char *argv[]) {
 	#endif
 
 	// initialise world
-	nworld_size = 0;
-	nworld_constructor = 0;
-	dd_world_change(dd_default_world_size, dd_default_world_constructor);
+	cworld = 0;
+	nworld_size = dd_default_world_size;
+	nworld_constructor = dd_default_world_constructor;
+	nworld_ready = 1;
 
 	/* commented out - for now
 	dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
@@ -206,9 +209,6 @@ int dd_main(int argc, char *argv[]) {
 	glutPassiveMotionFunc(handlePassiveMotion);
 	glutMotionFunc(handlePassiveMotion);
 
-	//glutTimerFunc(33, update, 0);
-	//glutTimerFunc(25, update, 0);
-
 	onResume();
 
 	// start the loop
@@ -225,6 +225,7 @@ int dd_main(int argc, char *argv[]) {
 
 // clean leftovers
 void clean() {
+	if (!avdl_state_initialised) return;
 	avdl_state_initialised = 0;
 
 	if (cworld) {
@@ -232,7 +233,7 @@ void clean() {
 		cworld = 0;
 	}
 
-	pthread_mutex_destroy(&newWorldMutex);
+	pthread_mutex_destroy(&jniMutex);
 	pthread_mutex_destroy(&updateDrawMutex);
 
 	#if DD_PLATFORM_NATIVE
@@ -304,65 +305,15 @@ void handleResize(int w, int h) {
 	// perspective projection matrix
 	dd_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0);
 
-	if (cworld->resize) {
+	if (cworld && cworld->resize) {
 		cworld->resize(cworld);
 	}
-}
-
-// data passed to the new world thread
-struct newWorld_thread_data {
-	int size;
-	void (*constructor)(struct dd_world*);
-};
-
-void *newWorld_loading_thread_function(void *srcdata) {
-
-	#if DD_PLATFORM_ANDROID
-	JNIEnv *env;
-	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
-
-	if (getEnvStat == JNI_EDETACHED) {
-		if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
-			dd_log("avdl: failed to attach thread for new world");
-		}
-	} else if (getEnvStat == JNI_OK) {
-	} else if (getEnvStat == JNI_EVERSION) {
-		dd_log("avdl: GetEnv: version not supported");
-	}
-	jniEnv = env;
-	#endif
-
-	// parse data
-	struct newWorld_thread_data *data;
-	data = srcdata;
-
-	// initialise the new world locally
-	struct dd_world *newWorld = 0;
-
-	// allocate new world and construct it
-	newWorld = malloc(data->size);
-	data->constructor(newWorld);
-
-	#if DD_PLATFORM_ANDROID
-	if (getEnvStat == JNI_EDETACHED) {
-		(*jvm)->DetachCurrentThread(jvm);
-	}
-	#endif
-
-	pthread_mutex_lock(&newWorldMutex);
-	nworld = newWorld;
-	pthread_mutex_unlock(&newWorldMutex);
-
-	pthread_exit(NULL);
 }
 
 #if DD_PLATFORM_NATIVE
 struct dd_async_call dd_asyncCall = {0};
 int dd_isAsyncCallActive = 0;
 #endif
-
-// loading new world variables
-struct newWorld_thread_data newWorldData;
 
 // constant update - this runs a specific number of times per second
 void update() {
@@ -377,29 +328,21 @@ void update() {
 	// a new world is signaled to be loaded
 	if (nworld_constructor) {
 
-		/* `nworld` is the only variable that has to be
-		 * accessed from one thread at a time
-		 */
-		pthread_mutex_lock(&newWorldMutex);
-
 		// the new world has not started loading, so start loading it
 		if (!nworld_loading) {
 
 			// set flag that world is loading
 			nworld_loading = 1;
 
-			// prepare data to pass to the thread
-			newWorldData.size = nworld_size;
-			newWorldData.constructor = nworld_constructor;
+			// allocate new world and construct it
+			nworld = malloc(nworld_size);
+			nworld_constructor(nworld);
+			avdl_assetManager_loadAssetsAsync();
 
-			// start a thread to load new world
-			pthread_t thread;
-			pthread_create(&thread, NULL, newWorld_loading_thread_function, &newWorldData);
-			pthread_detach(thread);
 		}
 		else
 		// The world has finished loading
-		if (nworld && nworld_ready) {
+		if (nworld && nworld_ready && !avdl_assetManager_isLoading()) {
 
 			/*
 			// Cancel async calls
@@ -431,8 +374,6 @@ void update() {
 			}
 		}
 
-		// unlock mutex for `nworld`
-		pthread_mutex_unlock(&newWorldMutex);
 	}
 	#elif DD_PLATFORM_NATIVE
 	// A new world has been flagged to be loaded
@@ -444,7 +385,6 @@ void update() {
 		}
 
 		/*
-		pthread_mutex_lock(&newWorldMutex);
 		// The world has finished loading
 		if (nworld && nworld_ready) {
 
@@ -487,7 +427,6 @@ void update() {
 			pthread_detach(thread);
 
 		}
-		pthread_mutex_unlock(&newWorldMutex);
 		*/
 	}
 	#endif
@@ -660,6 +599,15 @@ void onResume() {
 
 void onPause() {
 
+	/*
+	if (nworld_constructor) {
+		dd_log("cancel new world thread");
+		pthread_cancel(newWorldPthread);
+		nworld_constructor = 0;
+		dd_log("canceled new world thread");
+	}
+	*/
+
 	if (!avdl_state_initialised) return;
 
 	if (avdl_state_active) {
@@ -720,6 +668,7 @@ void updateThread() {
  */
 void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject thiz, jobject mainActivity) {
 
+	pthread_mutex_lock(&jniMutex);
 	// Global variables to access Java virtual machine and environment
 	(*env)->GetJavaVM(env, &jvm);
 	(*jvm)->GetEnv(jvm, &jniEnv, JNI_VERSION_1_4);
@@ -736,6 +685,7 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 	const char *pathstr=(*(*jniEnv)->GetStringUTFChars)(jniEnv, path, 0);
 	strcpy(avdl_data_saveDirectory, pathstr);
 	(*(*jniEnv)->ReleaseStringUTFChars)(jniEnv, path, pathstr);
+	pthread_mutex_unlock(&jniMutex);
 
 
 	if (!avdl_state_initialised) {
@@ -752,8 +702,14 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
  * nativeDone : Called when closing the app
  */
 void Java_org_darkdimension_avdl_AvdlActivity_nativeDone(JNIEnv*  env) {
+	pthread_mutex_lock(&jniMutex);
+	jniEnv = 0;
+	jvm = 0;
+	pthread_mutex_unlock(&jniMutex);
+	/*
 	dd_flag_exit = 1;
 	clean();
+	*/
 }
 
 /*

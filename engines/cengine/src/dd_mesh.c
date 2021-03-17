@@ -3,6 +3,7 @@
 #include "dd_mesh.h"
 #include "dd_filetomesh.h"
 #include <string.h>
+#include "avdl_asset_manager.h"
 
 extern GLuint defaultProgram;
 extern GLuint risingProgram;
@@ -117,42 +118,8 @@ void dd_mesh_load(struct dd_mesh *m, const char *asset) {
 	// clean the mesh, if was dirty
 	dd_mesh_clean(m);
 
-	// get string from asset (in java)
-	jmethodID MethodID = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadPly", "(Ljava/lang/String;I)[Ljava/lang/Object;");
-	jstring *parameter = (*jniEnv)->NewStringUTF(jniEnv, asset);
-	jint parameterSettings = DD_FILETOMESH_SETTINGS_POSITION;
-	jobjectArray result = (jstring)(*(*jniEnv)->CallStaticObjectMethod)(jniEnv, clazz, MethodID, parameter, &parameterSettings);
-	/*
-	if ((*jniEnv)->ExceptionCheck(jniEnv) == JNI_TRUE) {
-		dd_log("EXCEPTION THROWN");
-		(*jniEnv)->ExceptionDescribe(jniEnv);
-		(*jniEnv)->ExceptionClear(jniEnv);
-	}
-	*/
-
-	/*
-	 * Reading the asset was successfull,
-	 * load the asset with it.
-	 */
-	if (result) {
-
-		// the first object describes the size of the texture
-		const jintArray pos  = (*(*jniEnv)->GetObjectArrayElement)(jniEnv, result, 0);
-		const jfloat *posValues = (*(*jniEnv)->GetFloatArrayElements)(jniEnv, pos, 0);
-
-		jsize len = (*jniEnv)->GetArrayLength(jniEnv, pos) /3;
-		m->vcount = len;
-		m->v = malloc(sizeof(float) *len *3);
-		for (int i = 0; i < len; i++) {
-			m->v[i*3+0] = posValues[i*3+0];
-			m->v[i*3+1] = posValues[i*3+1];
-			m->v[i*3+2] = posValues[i*3+2];
-		}
-		m->dirtyVertices = 1;
-
-		(*jniEnv)->ReleaseFloatArrayElements(jniEnv, pos, posValues, JNI_ABORT);
-
-	}
+	// mark to be loaded
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH, asset);
 
 }
 #else

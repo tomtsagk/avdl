@@ -12,6 +12,7 @@ enum dd_primitives {
 
 #if DD_PLATFORM_ANDROID
 #include <jni.h>
+extern JavaVM* jvm;
 extern JNIEnv *jniEnv;
 extern jclass *clazz;
 #endif

@@ -44,3 +44,6 @@ void dd_meshRising_set_animation_max(struct dd_meshRising *m, float val) {
 void dd_meshRising_set_animation_current(struct dd_meshRising *m, float val) {
 	m->animationCurrent = val;
 }
+
+void dd_meshRising_clean(struct dd_meshRising *m) {
+}

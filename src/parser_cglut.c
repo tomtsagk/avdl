@@ -298,35 +298,6 @@ void print_asset(FILE *fd, struct ast_node *command) {
 		strcat(buffer, ".asset");
 	}
 	fprintf(fd, "\"%s\"", buffer);
-
-	// print the final asset path (relative to the out_dir)
-	//print_node(fd, assetName);
-
-	/*
-	// stat source and destination asset, if source is newer, copy to destination
-	struct stat stat_src_asset;
-	if (stat(eassetName->lexptr, &stat_src_asset) == -1) {
-		printf("avdl error: Unable to stat '%s': %s\n", eassetName->lexptr, strerror(errno));
-		exit(-1);
-	}
-
-	struct stat stat_dst_asset;
-	strcpy(buffer, dirname);
-	strcat(buffer, "/");
-	strcat(buffer, eassetName->lexptr);
-	if (stat(buffer, &stat_dst_asset) == -1) {
-		//printf("error stat-ing destination: %s\n", buffer);
-		file_copy_at(0, eassetName->lexptr, out_dir, eassetName->lexptr, 0);
-	}
-
-	// check last modification time
-	time_t time_src = mktime(gmtime(&stat_src_asset.st_mtime));
-	time_t time_dst = mktime(gmtime(&stat_dst_asset.st_mtime));
-
-	if (time_src > time_dst) {
-		file_copy_at(0, eassetName->lexptr, out_dir, eassetName->lexptr, 0);
-	}
-	*/
 }
 
 /* find out which command it is, and call the right function
