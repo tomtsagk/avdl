@@ -69,7 +69,7 @@ public class AvdlActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		//nativeDone();
+		nativeDone();
 	}
 
 	/*
@@ -78,10 +78,8 @@ public class AvdlActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		/*
 		surfaceView.onPause();
 		nativePause();
-		*/
 
 		for (int i = 0; i < 5; i++) {
 			if (mediaPlayer[i] == null) continue;
