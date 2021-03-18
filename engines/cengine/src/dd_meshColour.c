@@ -4,7 +4,7 @@
 #include "dd_filetomesh.h"
 #include <string.h>
 #include "dd_matrix.h"
-#include "avdl_asset_manager.h"
+#include "avdl_assetManager.h"
 
 extern GLuint defaultProgram;
 extern GLuint risingProgram;

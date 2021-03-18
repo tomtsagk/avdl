@@ -1,4 +1,4 @@
-#include "avdl_asset_manager.h"
+#include "avdl_assetManager.h"
 #include "dd_dynamic_array.h"
 #include "dd_filetomesh.h"
 #include <pthread.h>
@@ -19,9 +19,14 @@ extern pthread_mutex_t jniMutex;
 
 int assetManagerLoading;
 
+static float desiredLoadedPercentage;
+static int totalAssets;
+static int totalAssetsLoaded;
+
 void avdl_assetManager_init() {
 	dd_da_init(&meshesToLoad, sizeof(struct dd_meshToLoad));
 	assetManagerLoading = 0;
+	desiredLoadedPercentage = 1.0;
 }
 
 void avdl_assetManager_add(void *object, int meshType, const char *assetname) {
@@ -44,10 +49,10 @@ void avdl_assetManager_loadAssets() {
 
 	#if DD_PLATFORM_ANDROID
 	// load assets here
-	//dd_log("meshes to load: %d", meshesToLoad.elements);
+	dd_log("meshes to load: %d", meshesToLoad.elements);
 	for (int i = 0; i < meshesToLoad.elements; i++) {
 		struct dd_meshToLoad *m = dd_da_get(&meshesToLoad, i);
-		//dd_log("loading asset: %s", m->filename);
+		dd_log("loading asset: %s", m->filename);
 
 		/*
 		 * attempt to get hold of a valid jni
@@ -152,6 +157,11 @@ void avdl_assetManager_loadAssets() {
 	
 		}
 
+		pthread_mutex_lock(&updateDrawMutex);
+		totalAssetsLoaded++;
+		//dd_log("assets loaded: %d / %d", totalAssetsLoaded, totalAssets);
+		pthread_mutex_unlock(&updateDrawMutex);
+
 		#if DD_PLATFORM_ANDROID
 		if (jvm && getEnvStat == JNI_EDETACHED) {
 			//dd_log("detach thread");
@@ -187,6 +197,8 @@ void *load_assets_thread_function(void *data) {
 }
 
 void avdl_assetManager_loadAssetsAsync() {
+	totalAssets = meshesToLoad.elements;
+	totalAssetsLoaded = 0;
 	assetManagerLoading = 1;
 	pthread_create(&loadAssetsThread, NULL, load_assets_thread_function, 0);
 	pthread_detach(loadAssetsThread);
@@ -194,4 +206,16 @@ void avdl_assetManager_loadAssetsAsync() {
 
 int avdl_assetManager_isLoading() {
 	return assetManagerLoading;
+}
+
+int avdl_assetManager_isReady() {
+	if (totalAssetsLoaded == totalAssets) {
+		return 1;
+	}
+
+	return (float) totalAssetsLoaded / (float) totalAssets >= desiredLoadedPercentage;
+}
+
+void avdl_assetManager_setPercentage(float percentage) {
+	desiredLoadedPercentage = percentage;
 }

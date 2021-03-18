@@ -20,6 +20,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname);
 void avdl_assetManager_loadAssets();
 void avdl_assetManager_loadAssetsAsync();
 void avdl_assetManager_clean();
+void avdl_assetManager_setPercentage(float percentage);
 
 int avdl_assetManager_isLoading();
 

@@ -3,7 +3,7 @@
 #include "dd_mesh.h"
 #include "dd_filetomesh.h"
 #include <string.h>
-#include "avdl_asset_manager.h"
+#include "avdl_assetManager.h"
 
 extern GLuint defaultProgram;
 extern GLuint risingProgram;

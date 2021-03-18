@@ -33,9 +33,9 @@ void dd_world_clean();
  * handy function to change between worlds
  *
  */
-#define dd_world_prepare(WORLD) nworld_constructor = WORLD ## _create; nworld_size = sizeof(struct WORLD); nworld_ready = 0;
+#define dd_world_prepare(WORLD, PERCENT) nworld_constructor = WORLD ## _create; nworld_size = sizeof(struct WORLD); nworld_ready = 0; avdl_assetManager_setPercentage(PERCENT);
 #define dd_world_ready() nworld_ready = 1;
-#define dd_world_prepareReady(WORLD) dd_world_prepare(WORLD); dd_world_ready();
+#define dd_world_prepareReady(WORLD, PERCENT) dd_world_prepare(WORLD, PERCENT); dd_world_ready();
 void dd_world_change(int size, void (*constructor)(struct dd_world *));
 
 void dd_world_create(struct dd_world *);

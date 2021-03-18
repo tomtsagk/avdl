@@ -342,7 +342,7 @@ void update() {
 		}
 		else
 		// The world has finished loading
-		if (nworld && nworld_ready && !avdl_assetManager_isLoading()) {
+		if (nworld && nworld_ready && avdl_assetManager_isReady()) {
 
 			/*
 			// Cancel async calls
