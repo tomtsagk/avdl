@@ -5,7 +5,6 @@
 #if DD_PLATFORM_ANDROID
 #include <jni.h>
 extern jclass *clazz;
-extern JNIEnv *jniEnv;
 extern JavaVM *jvm;
 #else
 #include <SDL2/SDL_mixer.h>
@@ -69,12 +68,11 @@ void dd_sound_play(struct dd_sound *o) {
 	} else if (getEnvStat == JNI_EVERSION) {
 		dd_log("avdl: GetEnv: version not supported");
 	}
-	jniEnv = env;
 
 	// get string from asset (in java)
-	jmethodID MethodID = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
-	jstring *parameter = (*jniEnv)->NewStringUTF(jniEnv, o->filename);
-	jint result = (jint)(*(*jniEnv)->CallStaticIntMethod)(jniEnv, clazz, MethodID, parameter, 0);
+	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
+	jstring *parameter = (*env)->NewStringUTF(env, o->filename);
+	jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, MethodID, parameter, 0);
 	o->index = result;
 
 	if (getEnvStat == JNI_EDETACHED) {
@@ -99,12 +97,11 @@ void dd_sound_playLoop(struct dd_sound *o, int loops) {
 	} else if (getEnvStat == JNI_EVERSION) {
 		dd_log("avdl: GetEnv: version not supported");
 	}
-	jniEnv = env;
 
 	// get string from asset (in java)
-	jmethodID MethodID = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
-	jstring *parameter = (*jniEnv)->NewStringUTF(jniEnv, o->filename);
-	jint result = (jint)(*(*jniEnv)->CallStaticIntMethod)(jniEnv, clazz, MethodID, parameter, 1);
+	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
+	jstring *parameter = (*env)->NewStringUTF(env, o->filename);
+	jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, MethodID, parameter, 1);
 	o->index = result;
 
 	if (getEnvStat == JNI_EDETACHED) {
@@ -130,12 +127,11 @@ void dd_sound_stop(struct dd_sound *o) {
 	} else if (getEnvStat == JNI_EVERSION) {
 		dd_log("avdl: GetEnv: version not supported");
 	}
-	jniEnv = env;
 
 	// get string from asset (in java)
-	jmethodID MethodID = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "StopAudio", "(I)V");
+	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "StopAudio", "(I)V");
 	jint *parameter = o->index;
-	(*(*jniEnv)->CallStaticVoidMethod)(jniEnv, clazz, MethodID, parameter);
+	(*(*env)->CallStaticVoidMethod)(env, clazz, MethodID, parameter);
 
 	o->index = -1;
 

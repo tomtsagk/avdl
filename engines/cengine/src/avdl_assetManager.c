@@ -8,7 +8,6 @@
 #if DD_PLATFORM_ANDROID
 #include <jni.h>
 extern JavaVM* jvm;
-extern JNIEnv *jniEnv;
 extern jclass *clazz;
 #endif
 
@@ -60,7 +59,7 @@ void avdl_assetManager_loadAssets() {
 		 * screen orientation
 		 */
 		pthread_mutex_lock(&jniMutex);
-		while (!jvm || !jniEnv) {
+		while (!jvm) {
 			pthread_mutex_unlock(&jniMutex);
 			//dd_log("sleeping");
 			sleep(1);
@@ -80,12 +79,11 @@ void avdl_assetManager_loadAssets() {
 		} else if (getEnvStat == JNI_EVERSION) {
 			dd_log("avdl: GetEnv: version not supported");
 		}
-		jniEnv = env;
 		#endif
 
 		// get string from asset (in java)
-		jmethodID MethodID = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadPly", "(Ljava/lang/String;I)[Ljava/lang/Object;");
-		jstring *parameter = (*jniEnv)->NewStringUTF(jniEnv, m->filename);
+		jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "ReadPly", "(Ljava/lang/String;I)[Ljava/lang/Object;");
+		jstring *parameter = (*env)->NewStringUTF(env, m->filename);
 		jint parameterSettings = DD_FILETOMESH_SETTINGS_POSITION;
 		if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
 			parameterSettings |= DD_FILETOMESH_SETTINGS_COLOUR;
@@ -93,7 +91,7 @@ void avdl_assetManager_loadAssets() {
 				parameterSettings |= DD_FILETOMESH_SETTINGS_TEX_COORD;
 			}
 		}
-		jobjectArray result = (jstring)(*(*jniEnv)->CallStaticObjectMethod)(jniEnv, clazz, MethodID, parameter, &parameterSettings);
+		jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, MethodID, parameter, &parameterSettings);
 
 		/*
 		 * Reading the asset was successfull,
@@ -104,13 +102,13 @@ void avdl_assetManager_loadAssets() {
 			struct dd_meshColour *mesh = m->mesh;
 	
 			// the first object describes the size of the texture
-			const jintArray pos  = (*(*jniEnv)->GetObjectArrayElement)(jniEnv, result, 0);
-			const jfloat *posValues = (*(*jniEnv)->GetFloatArrayElements)(jniEnv, pos, 0);
+			const jintArray pos  = (*(*env)->GetObjectArrayElement)(env, result, 0);
+			const jfloat *posValues = (*(*env)->GetFloatArrayElements)(env, pos, 0);
 	
-			const jintArray col  = (*(*jniEnv)->GetObjectArrayElement)(jniEnv, result, 1);
-			const jint *colValues = (*(*jniEnv)->GetIntArrayElements)(jniEnv, col, 0);
+			const jintArray col  = (*(*env)->GetObjectArrayElement)(env, result, 1);
+			const jint *colValues = (*(*env)->GetIntArrayElements)(env, col, 0);
 	
-			jsize len = (*jniEnv)->GetArrayLength(jniEnv, pos) /3;
+			jsize len = (*env)->GetArrayLength(env, pos) /3;
 			pthread_mutex_lock(&updateDrawMutex);
 			mesh->parent.vcount = len;
 			mesh->parent.v = malloc(sizeof(float) *len *3);
@@ -128,8 +126,8 @@ void avdl_assetManager_loadAssets() {
 			mesh->dirtyColours = 1;
 			pthread_mutex_unlock(&updateDrawMutex);
 	
-			(*jniEnv)->ReleaseFloatArrayElements(jniEnv, pos, posValues, JNI_ABORT);
-			(*jniEnv)->ReleaseIntArrayElements(jniEnv, col, colValues, JNI_ABORT);
+			(*env)->ReleaseFloatArrayElements(env, pos, posValues, JNI_ABORT);
+			(*env)->ReleaseIntArrayElements(env, col, colValues, JNI_ABORT);
 	
 		}
 		else
@@ -138,10 +136,10 @@ void avdl_assetManager_loadAssets() {
 			struct dd_mesh *mesh = m->mesh;
 	
 			// the first object describes the size of the texture
-			const jintArray pos  = (*(*jniEnv)->GetObjectArrayElement)(jniEnv, result, 0);
-			const jfloat *posValues = (*(*jniEnv)->GetFloatArrayElements)(jniEnv, pos, 0);
+			const jintArray pos  = (*(*env)->GetObjectArrayElement)(env, result, 0);
+			const jfloat *posValues = (*(*env)->GetFloatArrayElements)(env, pos, 0);
 	
-			jsize len = (*jniEnv)->GetArrayLength(jniEnv, pos) /3;
+			jsize len = (*env)->GetArrayLength(env, pos) /3;
 			pthread_mutex_lock(&updateDrawMutex);
 			mesh->vcount = len;
 			mesh->v = malloc(sizeof(float) *len *3);
@@ -153,7 +151,7 @@ void avdl_assetManager_loadAssets() {
 			mesh->dirtyVertices = 1;
 			pthread_mutex_unlock(&updateDrawMutex);
 	
-			(*jniEnv)->ReleaseFloatArrayElements(jniEnv, pos, posValues, JNI_ABORT);
+			(*env)->ReleaseFloatArrayElements(env, pos, posValues, JNI_ABORT);
 	
 		}
 
