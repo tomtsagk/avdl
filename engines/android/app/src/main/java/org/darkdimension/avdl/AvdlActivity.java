@@ -83,7 +83,7 @@ public class AvdlActivity extends Activity {
 
 		for (int i = 0; i < 5; i++) {
 			if (mediaPlayer[i] == null) continue;
-			StopAudio(i);
+			mediaPlayer[i].pause();
 		}
 	}
 
@@ -96,6 +96,11 @@ public class AvdlActivity extends Activity {
 		AvdlActivity.context = getApplicationContext();
 		surfaceView.onResume();
 		nativeResume();
+
+		for (int i = 0; i < 5; i++) {
+			if (mediaPlayer[i] == null) continue;
+			mediaPlayer[i].start();
+		}
 	}
 
 	// ???
@@ -383,6 +388,18 @@ public class AvdlActivity extends Activity {
 		}
 		mediaPlayer[desiredIndex] = mp;
 		mp.start();
+
+		// on complete, remove media player
+		mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+			public void onCompletion(MediaPlayer mp) {
+				for (int i = 0; i < 5; i++) {
+					mp.release();
+					if (mediaPlayer[i] == mp) {
+						mediaPlayer[i] = null;
+					}
+				}
+			}
+		});
 
 		return desiredIndex;
 
