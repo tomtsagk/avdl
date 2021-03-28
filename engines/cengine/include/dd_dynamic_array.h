@@ -44,5 +44,7 @@ void dd_da_free(struct dd_dynamic_array *da);
 /* Get element of the array */
 void *dd_da_get(struct dd_dynamic_array *da, unsigned int element);
 
+void dd_da_empty(struct dd_dynamic_array *da);
+void dd_da_copy(struct dd_dynamic_array *dest, struct dd_dynamic_array *src);
 
 #endif

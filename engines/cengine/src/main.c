@@ -334,10 +334,15 @@ void update() {
 			// set flag that world is loading
 			nworld_loading = 1;
 
+			// clear everything loading on asset manager
+			avdl_assetManager_clear();
+
 			// allocate new world and construct it
 			nworld = malloc(nworld_size);
 			nworld_constructor(nworld);
-			avdl_assetManager_loadAssetsAsync();
+
+			// from now on, loading new assets is not allowed
+			avdl_assetManager_lockLoading();
 
 		}
 		else
@@ -354,6 +359,9 @@ void update() {
 				cworld->clean(cworld);
 				cworld = 0;
 			}
+
+			// from now on, new assets can be loaded again
+			avdl_assetManager_unlockLoading();
 
 			// Apply the new world
 			cworld = nworld;
@@ -490,6 +498,11 @@ void update() {
 		exit(0);
 	}
 
+	// asset loader will load any new assets
+	if (avdl_assetManager_hasAssets() && !avdl_assetManager_isLoading()) {
+		avdl_assetManager_loadAssetsAsync();
+	}
+
 	// prepare next frame
 	#if DD_PLATFORM_NATIVE
 	glutPostRedisplay();
@@ -623,6 +636,8 @@ void onPause() {
 }
 
 int avdl_engine_init_opengl() {
+
+	avdl_opengl_generateContextId();
 
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.8, 0.6, 1.0, 1);

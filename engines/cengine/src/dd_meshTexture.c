@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "dd_log.h"
+#include "avdl_assetManager.h"
+#include "dd_opengl.h"
 
 #include "dd_opengl.h"
 
@@ -16,6 +18,7 @@ void dd_meshTexture_create(struct dd_meshTexture *m) {
 	m->img.tex = 0;
 	m->img.pixels = 0;
 	m->dirtyImage = 0;
+	m->assetName = 0;
 	m->parent.parent.load = (void (*)(struct dd_mesh *, const char *filename)) dd_meshTexture_load;
 	m->preloadTexture = (void (*)(struct dd_mesh *, const char *filename)) dd_meshTexture_preloadTexture;
 	m->applyTexture = (int (*)(struct dd_mesh *)) dd_meshTexture_applyTexture;
@@ -86,46 +89,14 @@ void dd_meshTexture_set_primitive_texcoords(struct dd_meshTexture *m, float offs
 	}
 }
 
-void dd_meshTexture_preloadTexture(struct dd_meshTexture *m, const char *filename) {
+void dd_meshTexture_preloadTexture(struct dd_meshTexture *m, char *filename) {
+
 	#if DD_PLATFORM_ANDROID
-	jmethodID MethodID = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
-	jstring *parameter = (*jniEnv)->NewStringUTF(jniEnv, filename);
-	jobjectArray result = (jstring)(*(*jniEnv)->CallStaticObjectMethod)(jniEnv, clazz, MethodID, parameter);
-
-	if (result) {
-
-		// the first object describes the size of the texture
-		const jintArray size  = (*(*jniEnv)->GetObjectArrayElement)(jniEnv, result, 0);
-		const jint *sizeValues = (*(*jniEnv)->GetIntArrayElements)(jniEnv, size, 0);
-
-		// the second object describes the pixels
-		const jintArray pixels  = (*(*jniEnv)->GetObjectArrayElement)(jniEnv, result, 1);
-		const jint *pixelValues = (*(*jniEnv)->GetIntArrayElements)(jniEnv, pixels, 0);
-
-		m->img.width = sizeValues[0];
-		m->img.height = sizeValues[1];
-		m->img.pixelsb = malloc(sizeof(GLubyte) *m->img.width *m->img.height *3);
-
-		/*
-		 * read pixels into a new array
-		 * for some reason the texture returned is flipped on the y axis
-		 * so it can be parsed in reverse, until it's more clear why this
-		 * happens
-		 */
-		jsize len = (*jniEnv)->GetArrayLength(jniEnv, pixels);
-		for (int x = 0; x < m->img.width; x++) {
-		for (int y = 0; y < m->img.height; y++) {
-			int index = ((y *m->img.width) +x);
-			int indexReverse = (((m->img.height -(y+1)) *m->img.width) +x);
-			m->img.pixelsb[indexReverse*3 +0] = (pixelValues[index] & 0x00FF0000) >> 16;
-			m->img.pixelsb[indexReverse*3 +1] = (pixelValues[index] & 0x0000FF00) >>  8;
-			m->img.pixelsb[indexReverse*3 +2] = (pixelValues[index] & 0x000000FF);
-		}
-		}
-
-		(*jniEnv)->ReleaseIntArrayElements(jniEnv, size, sizeValues, JNI_ABORT);
-		(*jniEnv)->ReleaseIntArrayElements(jniEnv, pixels, pixelValues, JNI_ABORT);
-	}
+	//dd_log("add texture for loading: %s\n", filename);
+	m->openglContextId = avdl_opengl_getContextId();
+	m->assetName = filename;
+	// mark to be loaded
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_TEXTURE, filename);
 	#else
 	dd_image_load_bmp(&m->img, filename);
 	#endif
@@ -168,9 +139,29 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, m->t);
 	}
 
+	// texture not yet in opengl, pass it
+	if (m->img.pixelsb) {
+		dd_meshTexture_applyTexture(m);
+	}
+
+	dd_meshTexture_applyTexture(m);
+
+	// there is a texture to draw
 	if (m->img.tex) {
+
+		// texture is valid in this opengl context, bind it
+		if (m->openglContextId == avdl_opengl_getContextId()) {
+			glBindTexture(GL_TEXTURE_2D, m->img.tex);
+		}
+		// texture was in a previous opengl context, reload it
+		else
+		if (m->assetName) {
+			m->img.tex = 0;
+			dd_meshTexture_preloadTexture(m, m->assetName);
+		}
+
+		// if opengl ID matches, bind, otherwise mark to be loaded
 		//glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m->img.tex);
 		//glUniformi("image", 0);
 	}
 
@@ -198,5 +189,6 @@ void dd_meshTexture_copyTexture(struct dd_meshTexture *dest, struct dd_meshTextu
 	if (src->img.tex) {
 		dest->img.tex = src->img.tex;
 		dest->dirtyImage = 1;
+		dest->openglContextId = src->openglContextId;
 	}
 }

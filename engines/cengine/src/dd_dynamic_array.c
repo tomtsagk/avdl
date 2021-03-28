@@ -154,3 +154,11 @@ void *dd_da_get(struct dd_dynamic_array *da, unsigned int element) {
 	}
 	return ((char*)da->array) +(element *da->element_size);
 }
+
+void dd_da_empty(struct dd_dynamic_array *da) {
+	while (da->elements > 0) dd_da_pop(da);
+}
+
+void dd_da_copy(struct dd_dynamic_array *dest, struct dd_dynamic_array *src) {
+	dd_da_adda(dest, src->array, src->elements);
+}

@@ -56,9 +56,6 @@ public class AvdlActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		for (int i = 0; i < 5; i++) {
-			mediaPlayer[i] = null;
-		}
 		AvdlActivity.activity = this;
 		AvdlActivity.context = getApplicationContext();
 

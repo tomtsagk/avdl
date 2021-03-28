@@ -1,6 +1,10 @@
 #ifndef DD_OPENGL_H
 #define DD_OPENGL_H
 
+// opengl id, used in case the context is lost and re-gained
+void avdl_opengl_generateContextId();
+int  avdl_opengl_getContextId();
+
 // import opengl on android
 #if DD_PLATFORM_ANDROID
 #include <EGL/egl.h>

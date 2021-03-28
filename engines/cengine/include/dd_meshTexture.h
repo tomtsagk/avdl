@@ -3,6 +3,7 @@
 
 #include "dd_meshColour.h"
 #include "dd_image.h"
+#include "dd_opengl.h"
 
 struct dd_meshTexture {
 	struct dd_meshColour parent;
@@ -10,6 +11,8 @@ struct dd_meshTexture {
 	struct dd_image img;
 	int dirtyTextures;
 	float *t;
+	int openglContextId;
+	char *assetName;
 	void (*load)(struct dd_mesh *m, const char *filename);
 	void (*preloadTexture)(struct dd_mesh *m, const char *filename);
 	int (*applyTexture)(struct dd_mesh *m);
@@ -21,7 +24,7 @@ struct dd_meshTexture {
 // constructor
 void dd_meshTexture_create(struct dd_meshTexture *);
 void dd_meshTexture_load(struct dd_meshTexture *m, const char *filename);
-void dd_meshTexture_preloadTexture(struct dd_meshTexture *m, const char *filename);
+void dd_meshTexture_preloadTexture(struct dd_meshTexture *m, char *filename);
 int dd_meshTexture_applyTexture(struct dd_meshTexture *m);
 void dd_meshTexture_loadTexture(struct dd_meshTexture *m, const char *filename);
 void dd_meshTexture_set_primitive(struct dd_meshTexture *m, enum dd_primitives shape);
