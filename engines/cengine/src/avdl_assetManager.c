@@ -256,7 +256,7 @@ void avdl_assetManager_clean() {
 /*
  * load assets async
  */
-static pthread_t loadAssetsThread = NULL;
+static pthread_t loadAssetsThread = 0;
 
 void *load_assets_thread_function(void *data) {
 	avdl_assetManager_loadAssets();

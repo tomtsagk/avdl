@@ -20,9 +20,9 @@ void dd_meshTexture_create(struct dd_meshTexture *m) {
 	m->dirtyImage = 0;
 	m->assetName = 0;
 	m->parent.parent.load = (void (*)(struct dd_mesh *, const char *filename)) dd_meshTexture_load;
-	m->preloadTexture = (void (*)(struct dd_mesh *, const char *filename)) dd_meshTexture_preloadTexture;
+	m->preloadTexture = (void (*)(struct dd_mesh *, char *filename)) dd_meshTexture_preloadTexture;
 	m->applyTexture = (int (*)(struct dd_mesh *)) dd_meshTexture_applyTexture;
-	m->loadTexture = (void (*)(struct dd_mesh *, const char *filename)) dd_meshTexture_loadTexture;
+	m->loadTexture = (void (*)(struct dd_mesh *, char *filename)) dd_meshTexture_loadTexture;
 	m->parent.parent.draw = (void (*)(struct dd_mesh *)) dd_meshTexture_draw;
 	m->parent.parent.clean = (void (*)(struct dd_mesh *)) dd_meshTexture_clean;
 	m->parent.parent.set_primitive = (void (*)(struct dd_mesh *, enum dd_primitives shape)) dd_meshTexture_set_primitive;
@@ -91,13 +91,14 @@ void dd_meshTexture_set_primitive_texcoords(struct dd_meshTexture *m, float offs
 
 void dd_meshTexture_preloadTexture(struct dd_meshTexture *m, char *filename) {
 
+	m->openglContextId = avdl_opengl_getContextId();
 	#if DD_PLATFORM_ANDROID
 	//dd_log("add texture for loading: %s\n", filename);
-	m->openglContextId = avdl_opengl_getContextId();
 	m->assetName = filename;
 	// mark to be loaded
 	avdl_assetManager_add(m, AVDL_ASSETMANAGER_TEXTURE, filename);
 	#else
+	m->assetName = filename;
 	dd_image_load_bmp(&m->img, filename);
 	#endif
 }
@@ -115,7 +116,7 @@ int dd_meshTexture_applyTexture(struct dd_meshTexture *m) {
 	return 0;
 }
 
-void dd_meshTexture_loadTexture(struct dd_meshTexture *m, const char *filename) {
+void dd_meshTexture_loadTexture(struct dd_meshTexture *m, char *filename) {
 	dd_meshTexture_preloadTexture(m, filename);
 	dd_meshTexture_applyTexture(m);
 }

@@ -6,7 +6,7 @@
 /*
  * function to change the current program
  */
-#define avdl_useProgram(x) glUseProgram(x)
+void avdl_useProgram(unsigned int programId);
 
 /*
  * get/edit uniforms

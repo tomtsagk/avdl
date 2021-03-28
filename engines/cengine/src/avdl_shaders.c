@@ -239,6 +239,16 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
 	return prog;
 }
 
+extern GLuint defaultProgram;
+void avdl_useProgram(unsigned int programId) {
+	if (!programId) {
+		glUseProgram(defaultProgram);
+	}
+	else {
+		glUseProgram(programId);
+	}
+}
+
 /*
  * load each shader, and link them into a program
  */
