@@ -61,10 +61,10 @@ void avdl_assetManager_loadAssets() {
 
 	#if DD_PLATFORM_ANDROID
 	// load assets here
-	dd_log("meshes to load: %d", meshesLoading.elements);
+	//dd_log("meshes to load: %d", meshesLoading.elements);
 	for (int i = 0; i < meshesLoading.elements; i++) {
 		struct dd_meshToLoad *m = dd_da_get(&meshesLoading, i);
-		dd_log("loading asset: %s", m->filename);
+		//dd_log("loading asset: %s", m->filename);
 		//dd_log("loading asset type: %d", m->meshType);
 
 		/*
