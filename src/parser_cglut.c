@@ -875,6 +875,14 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 			struct ast_node *n = dd_da_get(&command->children, current_child);
 			struct entry *e = symtable_entryat(n->value);
 
+			// confirm if member is part of struct
+			if (!struct_table_has_member(current_scope, e->lexptr)) {
+				printf("avdl error: class '%s' does not have member '%s'\n",
+					struct_table_get_name(current_scope), e->lexptr
+				);
+				exit(-1);
+			}
+
 			//int memberId = struct_table_get_member(current_scope, e->lexptr);
 			// not last child, update scope
 			if (current_child < target-1) {

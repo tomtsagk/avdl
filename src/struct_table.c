@@ -201,7 +201,7 @@ int struct_table_is_member_primitive_string(int structIndex, const char *membern
 		return m->type != DD_VARIABLE_TYPE_STRUCT;
 	}
 	else
-	if (struct_table[structIndex].parent) {
+	if (struct_table[structIndex].parent >= 0) {
 		return struct_table_is_member_primitive_string(struct_table[structIndex].parent, membername);
 	}
 	return 0;
@@ -209,7 +209,7 @@ int struct_table_is_member_primitive_string(int structIndex, const char *membern
 
 int struct_table_has_member(int structIndex, const char *membername) {
 	if (structIndex < 0 || structIndex > struct_table_current) {
-		printf("error: struct_table_has_member: index out of bounds: %d\n", structIndex);
+		printf("error: struct_table_has_member: index out of bounds: %d for member '%s'\n", structIndex, membername);
 		exit(-1);
 	}
 

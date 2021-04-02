@@ -12,11 +12,8 @@
 	(def int delay)
 
 	(function create (group))
-	(function onload (group))
-	(function resize (group))
 	(function update (group))
 	(function draw (group))
-	(function key_input (group char key))
 	(function clean (group))
 
 	)
@@ -77,16 +74,13 @@
 	)
 ) # update
 
-(class_function dd_world_main onload (group) (group))
-(class_function dd_world_main resize (group) (group))
 (class_function dd_world_main draw (group) (group))
-(class_function dd_world_main key_input (group char key) (group))
 (class_function dd_world_main clean (group) (group))
 
 (function dd_gameInit (group)
 	(group
 
-	(dd_setGameTitle "Shuffled Nightmares")
+	(dd_setGameTitle "fade - avdl")
 	(dd_world_set_default dd_world_main)
 
 	)

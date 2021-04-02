@@ -1,0 +1,74 @@
+#
+# save/load program in avdl
+#
+# it demonstrates how to save and load data
+# locally
+#
+
+#
+# this class contains all data to be saved/loaded.
+#
+(class TestSaveClass 0
+        (group
+	(def int integerToSave)
+	)
+)
+
+#
+# default world
+#
+(class SaveLoadWorld dd_world
+	(group
+
+	(function create (group))
+	(function clean (group))
+
+	)
+)
+
+#
+# attempt to load the data, if it fails, save data instead
+#
+(class_function SaveLoadWorld create (group)
+	(group
+
+	# class to hold the data we want to either save or load
+	(def TestSaveClass myClass)
+
+	# success load
+	(if (== (avdl_data_load myClass TestSaveClass "mysavefile") 0)
+		(group
+		(def int myInt)
+		(= myInt myClass.integerToSave)
+		(echo "loaded the integer: " myInt)
+		)
+	# fail load - save the value instead
+		(group
+		(= myClass.integerToSave -123456)
+		(if (< (avdl_data_save myClass TestSaveClass "mysavefile") 0)
+			(group
+			(echo "error saving")
+			)
+			(group
+			(echo "failed to load, so saved the integer -123456")
+			)
+		)
+		)
+	) # save/load attempt
+
+	)
+) # create
+
+(class_function SaveLoadWorld clean (group) (group))
+
+#
+# init function
+#
+(function dd_gameInit (group)
+	(group
+
+	(dd_setGameTitle "Save Load - avdl")
+	(dd_world_set_default SaveLoadWorld)
+
+	)
+)
