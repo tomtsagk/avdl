@@ -224,6 +224,26 @@ int struct_table_has_member(int structIndex, const char *membername) {
 	return 0;
 }
 
+int struct_table_has_member_parent(int structIndex, const char *membername) {
+	if (structIndex < 0 || structIndex > struct_table_current) {
+		printf("error: struct_table_has_member: index out of bounds: %d for member '%s'\n", structIndex, membername);
+		exit(-1);
+	}
+
+	// has member
+	if (struct_table_has_member(structIndex, membername)) {
+		return 1;
+	}
+
+	// maybe parent has member ?
+	if (struct_table[structIndex].parent >= 0) {
+		return struct_table_has_member_parent(struct_table[structIndex].parent, membername);
+	}
+
+	// doesn't have member
+	return 0;
+}
+
 static int parent_level;
 static int parent_level_current;
 static int struct_table_is_member_parent_search(int structIndex, const char *membername) {

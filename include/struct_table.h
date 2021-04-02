@@ -60,6 +60,7 @@ int struct_table_get_member(int structIndex, const char *membername);
 
 // check if the given member is a member of one of the parents
 int struct_table_has_member(int structIndex, const char *membername);
+int struct_table_has_member_parent(int structIndex, const char *membername);
 int struct_table_is_member_parent(int structIndex, const char *membername);
 
 int struct_table_get_member_scope(int structIndex, int memberIndex);

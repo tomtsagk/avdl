@@ -876,7 +876,7 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 			struct entry *e = symtable_entryat(n->value);
 
 			// confirm if member is part of struct
-			if (!struct_table_has_member(current_scope, e->lexptr)) {
+			if (!struct_table_has_member_parent(current_scope, e->lexptr)) {
 				printf("avdl error: class '%s' does not have member '%s'\n",
 					struct_table_get_name(current_scope), e->lexptr
 				);
