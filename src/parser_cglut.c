@@ -1,7 +1,6 @@
 #include "parser.h"
 #include "stdlib.h"
 #include "stdio.h"
-#include "yacc.tab.h"
 #include "symtable.h"
 #include <string.h>
 #include "file_op.h"

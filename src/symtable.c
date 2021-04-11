@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "symtable.h"
-#include "yacc.tab.h"
 
 int symtable_current = -1;
 

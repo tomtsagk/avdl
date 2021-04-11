@@ -1,7 +1,5 @@
-%{
 #include <stdio.h>
 #include <string.h>
-#include "yacc.tab.h"
 #include "symtable.h"
 #include "ast_node.h"
 #include "parser.h"
@@ -15,15 +13,17 @@
 #include "file_op.h"
 #include "lexer.h"
 
+/*
 extern FILE *yyin;
 extern YYSTYPE yylex(void);
+*/
 
 // line number (got from lex.l)
-extern int linenum;
+//extern int linenum;
 
 extern float parsing_float;
 
-extern int include_stack_ptr;
+//extern int include_stack_ptr;
 
 char included_files[10][100];
 int included_files_num = 0;
@@ -32,12 +32,14 @@ int included_files_num = 0;
 #define DD_BUFFER_SIZE 1000
 char buffer[DD_BUFFER_SIZE];
 
+/*
 // error
 void yyerror(const char *str)
 {
         fprintf(stderr,"error: line %d: %s\n", linenum, str);
 	_exit(-1);
 }
+*/
 
 // game node, parent of all nodes
 struct ast_node *game_node;
@@ -190,7 +192,7 @@ int main(int argc, char *argv[])
 		}
 
 		included_files_num = 0;
-		include_stack_ptr = 0;
+		//include_stack_ptr = 0;
 
 		/*
 		FILE *input_file = 0;
@@ -204,7 +206,7 @@ int main(int argc, char *argv[])
 		//yyin = input_file;
 
 		// init data
-		linenum = 1;
+		//linenum = 1;
 
 		// initial symbols
 		//symtable_init();
@@ -414,196 +416,3 @@ int main(int argc, char *argv[])
 	// success!
 	return 0;
 }
-
-%}
-
-// nothingness
-%token DD_ZERO
-
-// used for the languages keywords
-%token DD_KEYWORD DD_FUNCTION
-
-/* constants */
-%token DD_CONSTANT_SYMBOL DD_CONSTANT_STRING DD_CONSTANT_NUMBER DD_CONSTANT_FLOAT DD_CONSTANT_INCLUDE
-
-%%
-
-/* each rule creates a node,
- * possibly with children nodes,
- * all non-terminals are nodes that can be obtained with ast_pop() (left to right)
- */
-
-/* the game itself, contains commands
- */
-game:
-	commands {
-		ast_child_add(game_node, ast_pop());
-	}
-	;
-
-/* commands,
- * at least one, but can be more
- * returns AST_GROUP
- */
-commands:
-	/* single command, creates a group of itself
-	 */
-	command {
-		struct ast_node *n = ast_create(AST_GROUP, 0);
-		ast_child_add(n, ast_pop());
-		ast_push(n);
-	}
-	|
-	/* single command but more are following,
-	 * add the command to the group
-	 */
-	command commands {
-		struct ast_node *n = ast_pop();
-		ast_child_add_first(n, ast_pop());
-		ast_push(n);
-	};
-
-/* single command
- * has a keyword and optional arguments
- */
-command:
-	'(' cmd_name optional_args ')' {
-
-		// get nodes
-		struct ast_node *opt_args = ast_pop();
-		struct ast_node *cmd_name = ast_pop();
-
-		/*
-		 * Attempt to parse native command
-		 * if no ast_node is returned, it must be a custom command
-		 * Custom commands are currently "Pass-Through"
-		 *
-		 */
-		struct ast_node *cmd = parse_command(cmd_name, opt_args);
-
-		// Known (native) command
-		if (cmd) {
-			ast_push(cmd);
-		}
-		// Not a known command, must be a custom one
-		else {
-			struct entry *e = symtable_entryat(cmd_name->value);
-			if (e->token == DD_FUNCTION) {
-				//printf("function: %s\n", e->lexptr);
-			}
-			else {
-				//printf("error symbol not keyword: %s\n", e->lexptr);
-			}
-			sprintf(buffer, "not a keyword: '%s'", e->lexptr);
-			//yyerror(buffer);
-
-			/* command node
-			 * construct it in such a way that the parent ast node is the command
-			 * if a custom command, then first child is its name
-			 */
-			opt_args->node_type = AST_COMMAND_CUSTOM;
-			opt_args->value = $2;
-			ast_child_add_first(opt_args, cmd_name);
-			opt_args->isIncluded = include_stack_ptr != 0;
-			ast_push(opt_args);
-		}
-	}
-	|
-	DD_CONSTANT_INCLUDE {
-		//struct ast_node *group = ast_pop();
-		//printf("cmd include\n");
-		ast_push(ast_create(AST_INCLUDE, $1));
-		//ast_push(group);
-	};
-
-/* optional args
- */
-optional_args:
-	arg optional_args {
-		struct ast_node *n = ast_pop();
-		struct ast_node *arg = ast_pop();
-		ast_child_add_first(n, arg);
-		ast_push(n);
-	}
-	|
-	{
-		ast_push(ast_create(AST_GROUP, 0));
-	}
-	;
-
-/* argument
- */
-arg:
-	DD_CONSTANT_FLOAT {
-		struct ast_node *n = ast_create(AST_FLOAT, 0);
-		n->fvalue = parsing_float;
-		ast_push(n);
-	}
-	|
-   	DD_CONSTANT_NUMBER {
-		struct ast_node *n = ast_create(AST_NUMBER, $1);
-		ast_push(n);
-	}
-	|
-   	DD_CONSTANT_STRING {
-		struct ast_node *n = ast_create(AST_STRING, $1);
-		ast_push(n);
-	}
-	|
-	identifier {
-		struct ast_node *n = ast_pop();
-		ast_push(n);
-	}
-	|
-	command
-	;
-
-/* command name
- * can be either one character or an identifier (chain of symbols)
- */
-cmd_name:
-	identifier
-	;
-
-/* identifier
- * can be a chain of symbols (chains with '.')
- * example: this.my_obj.x
- */
-identifier:
-	DD_CONSTANT_SYMBOL optional_array_index {
-		struct ast_node *n = ast_create(AST_IDENTIFIER, $1);
-
-		// check if an array, and add as a child
-		if ($2) {
-			struct ast_node *opt_index = ast_pop();
-			ast_child_add(n, opt_index);
-		}
-
-		ast_push(n);
-	}
-	|
-	identifier '.' DD_CONSTANT_SYMBOL optional_array_index {
-		struct ast_node *new = ast_create(AST_IDENTIFIER, $3);
-
-		// check if an array, and add as a child
-		if ($4) {
-			struct ast_node *opt_index = ast_pop();
-			ast_child_add(new, opt_index);
-		}
-
-		struct ast_node *group = ast_pop();
-		ast_child_add(group, new);
-		ast_push(group);
-	}
-	;
-
-optional_array_index: {
-		$$ = 0;
-	}
-	|
-	'[' optional_args ']' {
-		$$ = 1;
-		struct ast_node *n = ast_pop();
-		ast_push(n);
-	}
-	;

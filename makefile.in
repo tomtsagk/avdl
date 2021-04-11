@@ -24,13 +24,10 @@ DIRECTORY_ALL=${DIRECTORY_BUILD} ${DIRECTORY_EXE} ${DIRECTORY_OBJ}
 #
 # source files
 #
-YACC_SRC=${DIRECTORY_OBJ}/yacc.tab.c
-LEX_SRC=${DIRECTORY_OBJ}/lex.yy.c
-SRC=$(wildcard src/*.c)# ${YACC_SRC} ${LEX_SRC}
+SRC=$(wildcard src/*.c)
 OBJ=${SRC:src/%.c=${DIRECTORY_OBJ}/%.o}
 
-YACC_HEADER=${YACC_SRC:%.c=%.h}
-HEADERS=$(widcard include/*.h) ${YACC_HEADER}
+HEADERS=$(widcard include/*.h)
 
 #
 # executable
@@ -57,16 +54,8 @@ CENGINE_FILES_LOCAL=$(CENGINE_FILES_SRC:engines/cengine/src/%.c=engine\/%.c)
 all: ${EXECUTABLE} ${ENGINE_OUT}
 
 # build the executable, depends on source, lex, yacc and all engines
-${EXECUTABLE}: ${DIRECTORY_ALL} ${DIRECTORIES} ${OBJ} ${YACC_SRC} ${YACC_HEADER} ${LEX_SRC} ${CENGINE_FILES_ANDROID_HEADER} ${CENGINE_FILES_ANDROID_SRC} engines/android/app/src/main/cpp/CMakeLists.txt
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${OBJ} ${YACC_SRC} ${LEX_SRC} -o $@
-
-# how to build lex
-${LEX_SRC}: src/lex.l
-	flex -o $@ src/lex.l
-
-# how to build yacc
-${YACC_SRC} ${YACC_HEADER}: src/yacc.y
-	bison -o ${YACC_SRC} -d src/yacc.y
+${EXECUTABLE}: ${DIRECTORY_ALL} ${DIRECTORIES} ${OBJ} ${CENGINE_FILES_ANDROID_HEADER} ${CENGINE_FILES_ANDROID_SRC} engines/android/app/src/main/cpp/CMakeLists.txt
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${OBJ} -o $@
 
 # how to build the c engine
 engine: ${ENGINE_OUT}
@@ -99,7 +88,7 @@ ${PROJECT_NAME}.tar:
 	tar cf $@ src makefile engines include
 
 clean:
-	rm -f ${EXECUTABLE} ${LEX_SRC} ${YACC_SRC} ${YACC_HEADER}
+	rm -f ${EXECUTABLE}
 
 destclean: clean
 	rm -f avdl.info.gz makefile
