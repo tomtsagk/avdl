@@ -73,4 +73,6 @@ char *struct_table_get_member_nametype(int structIndex, int memberIndex);
 // getters
 int struct_table_count();
 
+int struct_table_exists(const char *structname);
+
 #endif

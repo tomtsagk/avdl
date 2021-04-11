@@ -68,10 +68,10 @@ static void print_new(FILE *fd, struct ast_node *command);
 
 static void print_if(FILE *fd, struct ast_node *command) {
 
-	unsigned int cchild = 0;
+	unsigned int cchild = 1;
 	while (cchild < command->children.elements) {
 
-		if (cchild != 0) {
+		if (cchild != 1) {
 			fprintf(fd, "else ");
 		}
 
@@ -113,6 +113,7 @@ void print_function_call(FILE *fd, struct ast_node *command) {
 	print_identifier_chain(fd, funcname, 0);
 	fprintf(fd, "(");
 
+	// print itself as first argument
 	int has_arg = 0;
 	if (funcname->children.elements > 0) {
 		print_identifier_chain(fd, funcname, 1);
@@ -146,36 +147,40 @@ void print_float(FILE *fd, struct ast_node *command) {
 }
 
 void print_operator_binary(FILE *fd, struct ast_node *command) {
-	struct entry *e = symtable_entryat(command->value);
-	struct ast_node *child1 = dd_da_get(&command->children, 0);
+	struct ast_node *cmdname = dd_da_get(&command->children, 0);
+	struct ast_node *child1 = dd_da_get(&command->children, 1);
+	//struct ast_node *child2 = dd_da_get(&command->children, 2);
 
-	if (strcmp(e->lexptr, "=") != 0) {
+	//struct entry *e = symtable_entryat(command->value);
+	//struct ast_node *child1 = dd_da_get(&command->children, 0);
+
+	if (strcmp(cmdname->lex, "=") != 0) {
 		fprintf(fd, "(");
 	}
 	print_node(fd, child1);
 
 	int temp_semicolon = has_semicolon;
 	has_semicolon = 0;
-	for (unsigned int i = 1; i < command->children.elements; i++) {
-		fprintf(fd, " %s ", e->lexptr);
+	for (unsigned int i = 2; i < command->children.elements; i++) {
+		fprintf(fd, " %s ", cmdname->lex);
 		struct ast_node *child2 = dd_da_get(&command->children, i);
 		print_node(fd, child2);
 	}
 	has_semicolon = temp_semicolon;
-	if (strcmp(e->lexptr, "=") != 0) {
+	if (strcmp(cmdname->lex, "=") != 0) {
 		fprintf(fd, ")");
 	}
 }
 
 void print_definition(FILE *fd, struct ast_node *command) {
-	struct ast_node *vartype = dd_da_get(&command->children, 0);
-	struct entry *type_entry = symtable_entryat(vartype->value);
+	struct ast_node *vartype = dd_da_get(&command->children, 1);
+	//struct entry *type_entry = symtable_entryat(vartype->value);
 	char *type;
 	int arrayElements = vartype->arraySize;
 	if (vartype->node_type == AST_IDENTIFIER) {
 		int isPrimitive = 0;
 		for (unsigned int i = 0; i < primitive_keywords_count; i++) {
-			if (strcmp(primitive_keywords[i], type_entry->lexptr) == 0) {
+			if (strcmp(primitive_keywords[i], vartype->lex) == 0) {
 				isPrimitive = 1;
 				break;
 			}
@@ -183,11 +188,11 @@ void print_definition(FILE *fd, struct ast_node *command) {
 		if (!isPrimitive) {
 			fprintf(fd, "struct ");
 		}
-		type = type_entry->lexptr;
+		type = vartype->lex;
 	}
 	fprintf(fd, "%s ", type);
 
-	struct ast_node *varname = dd_da_get(&command->children, 1);
+	struct ast_node *varname = dd_da_get(&command->children, 2);
 	struct entry *evarname = symtable_entryat(varname->value);
 
 	if (vartype->isRef) {
@@ -220,9 +225,9 @@ void print_definition(FILE *fd, struct ast_node *command) {
 		fprintf(fd, "[]");
 	}
 
-	if (command->children.elements >= 3) {
+	if (command->children.elements >= 4) {
 		fprintf(fd, " = ");
-		print_node(fd, dd_da_get(&command->children, 2));
+		print_node(fd, dd_da_get(&command->children, 3));
 	}
 	if (has_semicolon) {
 		fprintf(fd, ";\n");
@@ -303,79 +308,85 @@ void print_asset(FILE *fd, struct ast_node *command) {
 /* find out which command it is, and call the right function
  */
 void print_command(FILE *fd, struct ast_node *command) {
-	struct entry *e = symtable_entryat(command->value);
-	if (strcmp(e->lexptr, "echo") == 0) {
+	struct ast_node *cmdname = dd_da_get(&command->children, 0);
+	if (strcmp(cmdname->lex, "echo") == 0) {
 		print_echo(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "def") == 0) {
+	if (strcmp(cmdname->lex, "def") == 0) {
 		print_definition(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "new") == 0) {
-		//print_new(fd, command);
+	if (strcmp(cmdname->lex, "new") == 0) {
+		//print_new(fd, cmdname);
 	}
 	else
-	if (strcmp(e->lexptr, "=") == 0) {
+	if (strcmp(cmdname->lex, "=") == 0) {
 		print_operator_binary(fd, command);
 		if (has_semicolon) {
 			fprintf(fd, ";\n");
 		}
 	}
 	else
-	if (strcmp(e->lexptr, "+") == 0
-	||  strcmp(e->lexptr, "-") == 0
-	||  strcmp(e->lexptr, "*") == 0
-	||  strcmp(e->lexptr, "/") == 0
-	||  strcmp(e->lexptr, "%") == 0
-	||  strcmp(e->lexptr, ">=") == 0
-	||  strcmp(e->lexptr, "==") == 0
-	||  strcmp(e->lexptr, "<=") == 0
-	||  strcmp(e->lexptr, "&&") == 0
-	||  strcmp(e->lexptr, "||") == 0
-	||  strcmp(e->lexptr, "<") == 0
-	||  strcmp(e->lexptr, ">") == 0) {
+	if (strcmp(cmdname->lex, "+") == 0
+	||  strcmp(cmdname->lex, "-") == 0
+	||  strcmp(cmdname->lex, "*") == 0
+	||  strcmp(cmdname->lex, "/") == 0
+	||  strcmp(cmdname->lex, "%") == 0
+	||  strcmp(cmdname->lex, ">=") == 0
+	||  strcmp(cmdname->lex, "==") == 0
+	||  strcmp(cmdname->lex, "<=") == 0
+	||  strcmp(cmdname->lex, "&&") == 0
+	||  strcmp(cmdname->lex, "||") == 0
+	||  strcmp(cmdname->lex, "<") == 0
+	||  strcmp(cmdname->lex, ">") == 0) {
 		print_operator_binary(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "function") == 0) {
+	if (strcmp(cmdname->lex, "function") == 0) {
 		print_function(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "class") == 0) {
+	if (strcmp(cmdname->lex, "class") == 0) {
 		print_class_definition(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "class_function") == 0) {
+	if (strcmp(cmdname->lex, "class_function") == 0) {
 		print_class_function(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "return") == 0) {
+	if (strcmp(cmdname->lex, "return") == 0) {
 		//print_return(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "array") == 0) {
+	if (strcmp(cmdname->lex, "array") == 0) {
 		//print_array(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "if") == 0) {
+	if (strcmp(cmdname->lex, "if") == 0) {
 		print_if(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "for") == 0) {
+	if (strcmp(cmdname->lex, "for") == 0) {
 		print_for(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "asset") == 0) {
+	if (strcmp(cmdname->lex, "asset") == 0) {
 		print_asset(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "extern") == 0) {
+	if (strcmp(cmdname->lex, "extern") == 0) {
 		print_extern(fd, command);
 	}
 	else
-	if (strcmp(e->lexptr, "multistring") == 0) {
+	if (strcmp(cmdname->lex, "multistring") == 0) {
 		print_multistring(fd, command);
+	}
+	else
+	if (strcmp(cmdname->lex, "group") == 0) {
+		for (unsigned int i = 1; i < command->children.elements; i++) {
+			print_node(fd, dd_da_get(&command->children, i));
+		}
 	}
 }
 
@@ -383,9 +394,10 @@ void print_echo(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "dd_log(\"");
 
 	// print the format depending on the children's types
-	for (unsigned int i = 0; i < command->children.elements; i++) {
+	for (unsigned int i = 1; i < command->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&command->children, i);
 
+		/*
 		// Primitive types
 		if (child->node_type == AST_NUMBER) {
 			fprintf(fd, "%%d");
@@ -395,9 +407,11 @@ void print_echo(FILE *fd, struct ast_node *command) {
 			fprintf(fd, "%%f");
 		}
 		else
+		*/
 		if (child->node_type == AST_STRING) {
 			fprintf(fd, "%%s");
 		}
+		/*
 		else
 		// Identifier - check its type
 		if (child->node_type == AST_IDENTIFIER) {
@@ -414,17 +428,20 @@ void print_echo(FILE *fd, struct ast_node *command) {
 				fprintf(fd, "%%s");
 			}
 		}
+		*/
 	}
 	fprintf(fd, "\", ");
 
 	// give the children to printf's format
 	int temp_semicolon = has_semicolon;
 	has_semicolon = 0;
-	for (unsigned int i = 0; i < command->children.elements; i++) {
-		if (i > 0) {
+	for (unsigned int i = 1; i < command->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&command->children, i);
+		if (i > 1) {
 			fprintf(fd, ", ");
 		}
 		print_node(fd, dd_da_get(&command->children, i));
+
 	}
 	has_semicolon = temp_semicolon;
 	fprintf(fd, ");\n");
@@ -433,17 +450,17 @@ void print_echo(FILE *fd, struct ast_node *command) {
 static void print_function(FILE *fd, struct ast_node *command) {
 
 	//name
-	struct ast_node *name = dd_da_get(&command->children, 0);
-	struct entry *ename = symtable_entryat(name->value);
+	struct ast_node *name = dd_da_get(&command->children, 1);
+	//struct entry *ename = symtable_entryat(name->value);
 
 	fprintf(fd, "void ");
-	print_node(fd, name);
+	print_identifier(fd, name);
 	fprintf(fd, "(");
 
 	//arguments
 	/*
 	has_semicolon = 0;
-	struct ast_node *arg = dd_da_get(&command->children, 1);
+	struct ast_node *arg = dd_da_get(&command->children, 2);
 	print_node(fd, arg);
 	has_semicolon = 1;
 	*/
@@ -451,13 +468,13 @@ static void print_function(FILE *fd, struct ast_node *command) {
 	fprintf(fd, ") {\n");
 
 	//commands
-	struct ast_node *cmd = dd_da_get(&command->children, 2);
+	struct ast_node *cmd = dd_da_get(&command->children, 3);
 	print_node(fd, cmd);
 
 	fprintf(fd, "};\n");
 
 	// `dd_gameInit` is the "main" function, where everything begins
-	if (strcmp(ename->lexptr, "dd_gameInit") == 0) {
+	if (strcmp(name->lex, "dd_gameInit") == 0) {
 		fprintf(fd_global, "int main(int argc, char *argv[]) {dd_main(argc, argv);}\n");
 	}
 }
@@ -628,18 +645,18 @@ void print_class(FILE *fd, struct ast_node *command) {
 void print_class_function(FILE *fd, struct ast_node *command) {
 
 	// get name
-	struct ast_node *classname = dd_da_get(&command->children, 0);
-	struct entry *eclassname = symtable_entryat(classname->value);
+	struct ast_node *classname = dd_da_get(&command->children, 1);
+	//struct entry *eclassname = symtable_entryat(classname->value);
 
 	int previous_scope = scope;
-	scope = struct_table_get_index(eclassname->lexptr);
+	scope = 0;//struct_table_get_index(classname->lex);
 
 	// get function name
-	struct ast_node *funcname = dd_da_get(&command->children, 1);
-	struct entry *efuncname = symtable_entryat(funcname->value);
+	struct ast_node *funcname = dd_da_get(&command->children, 2);
+	//struct entry *efuncname = symtable_entryat(funcname->value);
 
 	// get struct
-	int structIndex = struct_table_get_index(eclassname->lexptr);
+	int structIndex = struct_table_get_index(classname->lex);
 	//const char *name = struct_table_get_name(structIndex);
 
 	// subclass
@@ -652,20 +669,19 @@ void print_class_function(FILE *fd, struct ast_node *command) {
 	}
 	*/
 
-	struct ast_node *statements = dd_da_get(&command->children, 3);
+	struct ast_node *statements = dd_da_get(&command->children, 4);
 
-	fprintf(fd, "void %s_%s(struct %s *this", eclassname->lexptr, efuncname->lexptr, eclassname->lexptr);
+	fprintf(fd, "void %s_%s(struct %s *this", classname->lex, funcname->lex, classname->lex);
 	// function arguments go here
-	struct ast_node *funcargs = dd_da_get(&command->children, 2);
+	struct ast_node *funcargs = dd_da_get(&command->children, 3);
 	if (funcargs->children.elements >= 2) {
 		fprintf(fd, ", ");
 	}
 	print_function_arguments(fd, funcargs);
-	//print_node(fd, dd_da_get(&command->children, 2));
 	fprintf(fd, ") {\n");
 
 	// function to create objects
-	if (strcmp(efuncname->lexptr, "create") == 0) {
+	if (strcmp(funcname->lex, "create") == 0) {
 
 		// subclass
 		if (subclassIndex >= 0) {
@@ -714,7 +730,7 @@ void print_class_function(FILE *fd, struct ast_node *command) {
 		}
 	}
 	// function to clean objects in class
-	else if (strcmp(efuncname->lexptr, "clean") == 0) {
+	else if (strcmp(funcname->lex, "clean") == 0) {
 
 		// subclass
 		if (subclassIndex >= 0) {
@@ -759,43 +775,45 @@ void print_class_function(FILE *fd, struct ast_node *command) {
 static void print_class_definition(FILE *fd, struct ast_node *command) {
 
 	// get name
-	struct ast_node *classname = dd_da_get(&command->children, 0);
-	struct entry *eclassname = symtable_entryat(classname->value);
+	struct ast_node *classname = dd_da_get(&command->children, 1);
 
 	// get struct
-	int structIndex = struct_table_get_index(eclassname->lexptr);
-	const char *name = struct_table_get_name(structIndex);
+	int structIndex = struct_table_get_index(classname->lex);
+	//const char *name = struct_table_get_name(structIndex);
+	const char *name = classname->lex;
 
 	//int previous_scope = scope;
-	scope = structIndex;
+	//scope = structIndex;
 
 	fprintf(fd, "struct %s {\n", name);
 
 	// subclass
-	struct ast_node *subclass = dd_da_get(&command->children, 1);
-	struct entry *subentry = 0;
+	struct ast_node *subclass = dd_da_get(&command->children, 2);
+	//struct entry *subentry = 0;
 	if (subclass->node_type == AST_IDENTIFIER) {
-		subentry = symtable_entryat(subclass->value);
-		fprintf(fd, "struct %s parent;\n", subentry->lexptr);
+		//subentry = symtable_entryat(subclass->value);
+		//fprintf(fd, "struct %s parent;\n", subentry->lexptr);
+		fprintf(fd, "struct %s parent;\n", subclass->lex);
 	}
 
 	// definitions in struct
-	struct ast_node *cmn = dd_da_get(&command->children, 2);
-	for (unsigned int i = 0; i < cmn->children.elements; i++) {
+	struct ast_node *cmn = dd_da_get(&command->children, 3);
+	for (unsigned int i = 1; i < cmn->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&cmn->children, i);
+		struct ast_node *childname = dd_da_get(&child->children, 0);
 		if (child->node_type == AST_COMMAND_NATIVE) {
-			struct entry *e = symtable_entryat(child->value);
-			if (strcmp(e->lexptr, "def") == 0) {
+			//struct entry *e = symtable_entryat(child->value);
+			if (strcmp(childname->lex, "def") == 0) {
 				print_definition(fd, child);
 			}
 			else
-			if (strcmp(e->lexptr, "function") == 0) {
-				struct ast_node *funcname = dd_da_get(&child->children, 0);
-				struct entry *efuncname = symtable_entryat(funcname->value);
+			if (strcmp(childname->lex, "function") == 0) {
+				struct ast_node *funcname = dd_da_get(&child->children, 1);
+				//struct entry *efuncname = symtable_entryat(funcname->value);
 
 				// only include functions that are not overriding parent functions
-				if (struct_table_is_member_parent(structIndex, efuncname->lexptr) == 0) {
-					fprintf(fd, "void (*%s)(struct %s *", efuncname->lexptr, name);
+				if (struct_table_is_member_parent(structIndex, funcname->lex) == 0) {
+					fprintf(fd, "void (*%s)(struct %s *", funcname->lex, name);
 					// function arguments
 					struct ast_node *funcargs = dd_da_get(&child->children, 1);
 					if (funcargs->children.elements >= 2) {
@@ -811,20 +829,20 @@ static void print_class_definition(FILE *fd, struct ast_node *command) {
 	fprintf(fd, "};\n");
 
 	// pre-define functions, so they are visible to all functions regardless of order
-	for (unsigned int i = 0; i < cmn->children.elements; i++) {
+	for (unsigned int i = 1; i < cmn->children.elements; i++) {
 
 		// grab ast node and symbol table entry, ensure this is a function
 		struct ast_node *child = dd_da_get(&cmn->children, i);
 		if (child->node_type != AST_COMMAND_NATIVE) continue;
-		struct entry *echild = symtable_entryat(child->value);
-		if (strcmp(echild->lexptr, "function") != 0) continue;
 
-		// get function details
-		struct ast_node *funcname = dd_da_get(&child->children, 0);
-		struct entry *efuncname = symtable_entryat(funcname->value);
+		struct ast_node *childcmdtype = dd_da_get(&child->children, 0);
+		if (strcmp(childcmdtype->lex, "function") != 0) continue;
+
+		// function name
+		struct ast_node *funcname = dd_da_get(&child->children, 1);
 
 		// print the function signature
-		fprintf(fd, "void %s_%s(struct %s *this", name, efuncname->lexptr, name);
+		fprintf(fd, "void %s_%s(struct %s *this", name, funcname->lex, name);
 		// function arguments
 		struct ast_node *funcargs = dd_da_get(&child->children, 1);
 		if (funcargs->children.elements >= 2) {
@@ -857,73 +875,77 @@ void print_array(FILE *fd, struct ast_node *command) {
 
 */
 void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last) {
-	struct entry *e = symtable_entryat(command->value);
+	//struct entry *e = symtable_entryat(command->value);
 
-	// decide if identifier chain is for a primitive or a structure
-	if (command->children.elements > 0) {
-		int current_scope;
-		if (strcmp(e->lexptr, "this") == 0) {
-			current_scope = scope;
-		}
-		else {
-			current_scope = struct_table_get_index(e->scope);
-		}
-		int current_child = 0;
-
-		int target = command->children.elements -(ignore_last ? 1 : 0);
-		while (current_child < target && current_scope >= 0) {
-			struct ast_node *n = dd_da_get(&command->children, current_child);
-			struct entry *e = symtable_entryat(n->value);
-
-			// confirm if member is part of struct
-			if (!struct_table_has_member_parent(current_scope, e->lexptr)) {
-				printf("avdl error: class '%s' does not have member '%s'\n",
-					struct_table_get_name(current_scope), e->lexptr
-				);
-				exit(-1);
-			}
-
-			//int memberId = struct_table_get_member(current_scope, e->lexptr);
-			// not last child, update scope
-			if (current_child < target-1) {
-				if (!struct_table_is_member_primitive_string(current_scope, e->lexptr)) {
-					current_scope = struct_table_get_member_scope_string(current_scope, e->lexptr);
-				}
-			}
-			// last child, decide if it pointer or not
-			else {
-				if (!struct_table_is_member_primitive_string(current_scope, e->lexptr) && !e->isRef) {
-					fprintf(fd, "&");
-				}
-			}
-
-			current_child++;
-		}
-	}
-	else {
-		// single variable passed around is always referenced
-		if (e->varType == DD_VARIABLE_TYPE_STRUCT) {
-			fprintf(fd, "&");
-		}
-	}
+//	// decide if identifier chain is for a primitive or a structure
+//	if (command->children.elements > 0) {
+//		int current_scope;
+//		if (strcmp(command->lex, "this") == 0) {
+//			current_scope = scope;
+//		}
+//		else {
+//			current_scope = 0;//struct_table_get_index(command->scope);
+//		}
+//		int current_child = 0;
+//
+//		int target = command->children.elements -(ignore_last ? 1 : 0);
+//		while (current_child < target && current_scope >= 0) {
+//			struct ast_node *n = dd_da_get(&command->children, current_child);
+//			//struct entry *e = symtable_entryat(n->value);
+//
+//			/*
+//			// confirm if member is part of struct
+//			if (!struct_table_has_member_parent(current_scope, n->lex)) {
+//				printf("avdl error: class '%s' does not have member '%s'\n",
+//					struct_table_get_name(current_scope), n->lex
+//				);
+//				exit(-1);
+//			}
+//			*/
+//
+////			//int memberId = struct_table_get_member(current_scope, e->lexptr);
+////			// not last child, update scope
+////			if (current_child < target-1) {
+////				if (!struct_table_is_member_primitive_string(current_scope, n->lex)) {
+////					current_scope = struct_table_get_member_scope_string(current_scope, n->lex);
+////				}
+////			}
+////			// last child, decide if it pointer or not
+////			else {
+////				if (!struct_table_is_member_primitive_string(current_scope, n->lex)/* && !e->isRef*/) {
+////					fprintf(fd, "&");
+////				}
+////			}
+//
+//			current_child++;
+//		}
+//	}
+//	else {
+//		/*
+//		// single variable passed around is always referenced
+//		if (e->varType == DD_VARIABLE_TYPE_STRUCT) {
+//			fprintf(fd, "&");
+//		}
+//		*/
+//	}
 	print_identifier(fd, command);
 
 	int lscope = -1;
-	int nextRef = e->isRef;
+	int nextRef = 0;//e->isRef;
 	// print children
 	for (unsigned int i = 0; i < command->children.elements -(ignore_last ? 1 : 0); i++) {
 		struct ast_node *child = dd_da_get(&command->children, i);
 		if (child->node_type == AST_GROUP && i == 0) continue;
-		struct entry *echild = symtable_entryat(child->value);
+		//struct entry *echild = symtable_entryat(child->value);
 
-		if ((i == 0 && strcmp(e->lexptr, "this") == 0) || nextRef) {
+		if ((i == 0 && strcmp(command->lex, "this") == 0) || nextRef) {
 			fprintf(fd, "->");
 			if (!nextRef) {
 				lscope = scope;
 			}
 			else
 			{
-				lscope = struct_table_get_index(e->scope);
+				lscope = 0;//struct_table_get_index(e->scope);
 			}
 			nextRef = 0;
 		}
@@ -934,6 +956,7 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 			fprintf(fd, ".");
 		}
 
+		/*
 		// if scope exists, check if the following identifier is part of a parent class
 		if (lscope >= 0) {
 			int parent_level = struct_table_is_member_parent(lscope, echild->lexptr);
@@ -943,29 +966,33 @@ void print_identifier_chain(FILE *fd, struct ast_node *command, int ignore_last)
 				}
 			}
 		}
+		*/
 
 		print_identifier(fd, child);
+		/*
 		if (echild->isRef) {
 			nextRef = 1;
 		}
+		*/
 
+		/*
 		// update scope
 		if (lscope >= 0 && !struct_table_is_member_primitive(lscope, struct_table_get_member(lscope, echild->lexptr))) {
 			lscope = struct_table_get_member_scope(lscope, struct_table_get_member(lscope, echild->lexptr));
 		}
+		*/
 	}
+
 }
 
 void print_identifier(FILE *fd, struct ast_node *command) {
-	struct entry *e = symtable_entryat(command->value);
-	fprintf(fd, "%s", e->lexptr);
+	//struct entry *e = symtable_entryat(command->value);
+	fprintf(fd, "%s", command->lex);
 
 	// check if member of array
-	int cchild = 0;
 	if (command->children.elements > 0) {
-		struct ast_node *c = dd_da_get(&command->children, cchild);
+		struct ast_node *c = dd_da_get(&command->children, 0);
 		if (c->node_type == AST_GROUP) {
-			cchild++;
 			fprintf(fd, "[");
 			print_node(fd, c);
 			fprintf(fd, "]");
@@ -989,9 +1016,11 @@ static void print_for(FILE *fd, struct ast_node *command) {
 }
 
 void print_node(FILE *fd, struct ast_node *n) {
+	/*
 	if (n->isIncluded) {
 		return;
 	}
+	*/
 
 	switch (n->node_type) {
 		case AST_GAME:
@@ -1017,8 +1046,8 @@ void print_node(FILE *fd, struct ast_node *n) {
 			break;
 		}
 		case AST_STRING: {
-			struct entry *e = symtable_entryat(n->value);
-			fprintf(fd, "\"%s\"", e->lexptr);
+			//struct entry *e = symtable_entryat(n->value);
+			fprintf(fd, "\"%s\"", n->lex);
 			break;
 		}
 		case AST_INCLUDE: {
@@ -1069,6 +1098,7 @@ int transpile_cglut(const char *filename, struct ast_node *n, int isIncluded) {
 		return -1;
 	}
 
+	/*
 	// on header files, create header guards
 	if (isIncluded) {
 		strcpy(buffer, filename);
@@ -1082,15 +1112,18 @@ int transpile_cglut(const char *filename, struct ast_node *n, int isIncluded) {
 		fprintf(fd_global, "#ifndef DD_%s_H\n", buffer);
 		fprintf(fd_global, "#define DD_%s_H\n", buffer);
 	}
+	*/
 
 	// print node to file
 	fprintf(fd_global, "#include \"avdl_cengine.h\"\n");
 	print_node(fd_global, n);
 
+	/*
 	// on header files, end header guard
 	if (isIncluded) {
 		fprintf(fd_global, "#endif\n");
 	}
+	*/
 
 	// clean up
 	if (fclose(fd_global) != 0) {

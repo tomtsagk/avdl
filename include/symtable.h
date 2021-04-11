@@ -3,6 +3,9 @@
 
 #include "dd_variable_type.h"
 
+#define DD_SYMTABLE_STRUCT 0
+#define DD_SYMTABLE_NATIVE 1
+
 // type for index on the system table
 typedef int symtable_index;
 extern int symtable_current;

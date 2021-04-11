@@ -343,3 +343,19 @@ char *struct_table_get_member_nametype(int structIndex, int memberIndex) {
 int struct_table_count() {
 	return struct_table_current+1;
 }
+
+int struct_table_exists(const char *structname) {
+
+	if (!structname) {
+		printf("struct_table_exists: no struct given\n");
+		exit(-1);
+	}
+
+	for (int i = 0; i <= struct_table_current; i++) {
+		if (strcmp(struct_table[i].name, structname) == 0) {
+			return 1;
+		}
+	}
+
+	return 0;
+}

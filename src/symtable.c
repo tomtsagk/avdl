@@ -58,7 +58,7 @@ void symtable_init() {
 
 	// init language's native functions
 	for (unsigned int i = 0; i < native_functions_count; i++) {
-		symtable_insert(native_functions[i], DD_FUNCTION);
+		symtable_insert(native_functions[i], DD_SYMTABLE_NATIVE);
 	}
 
 }
@@ -145,8 +145,8 @@ void symtable_clean() {
 void symtable_print() {
 	for (int j = 0; j <= symtable_current; j++) {
 		printf("symtable %d:\n", j);
-		for (int i = 0; i <= symtable->lastentry; i++) {
-			printf("\t%s | token: %d\n", symtable->entry[i].lexptr, symtable->entry[i].token);
+		for (int i = 0; i <= symtable_array[j].lastentry; i++) {
+			printf("\t%s | token: %d\n", symtable_array[j].entry[i].lexptr, symtable_array[j].entry[i].token);
 		}
 		printf("end symtable %d:\n", j);
 	}

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "yacc.tab.h"
 #include "symtable.h"
+#include <string.h>
 
 // Create node with given token and value - no children
 struct ast_node *ast_create(enum AST_NODE_TYPE node_type, int value) {
@@ -13,6 +14,7 @@ struct ast_node *ast_create(enum AST_NODE_TYPE node_type, int value) {
 	new_node->arraySize = -1;
 	new_node->isRef = 0;
 	new_node->isIncluded = 0;
+	new_node->lex[0] = '\0';
 	dd_da_init(&new_node->children, sizeof(struct ast_node));
 	new_node->parent = 0;
 	return new_node;
@@ -63,22 +65,21 @@ void ast_print(struct ast_node *node) {
 	}
 
 	// Print actual node
-	struct entry *e = symtable_entryat(node->value);
 	switch (node->node_type) {
 
 		case AST_GAME: printf("GAME"); break;
 		case AST_NUMBER: printf("NUMBER: %d", node->value); break;
+		case AST_FLOAT: printf("FLOAT: %f", node->fvalue); break;
 		case AST_STRING:
-			printf("STRING: %s", e->lexptr);
+			printf("STRING: \"%s\"", node->lex);
 			break;
 		case AST_GROUP: printf("GROUP"); break;
-		case AST_COMMAND_NATIVE: printf("COMMAND NATIVE: %s", e->lexptr); break;
-		case AST_COMMAND_CUSTOM: printf("COMMAND CUSTOM:"); break;
+		case AST_COMMAND_NATIVE: printf("COMMAND NATIVE: %s", node->lex); break;
+		case AST_COMMAND_CUSTOM: printf("COMMAND CUSTOM: %s", node->lex); break;
 		case AST_INCLUDE: printf("INCLUDE:"); break;
 
 		case AST_IDENTIFIER:
-			e = symtable_entryat(node->value);
-			printf("IDENTIFIER: %s", e->lexptr);
+			printf("IDENTIFIER: %s", node->lex);
 			break;
 
 		default:
@@ -86,7 +87,9 @@ void ast_print(struct ast_node *node) {
 			break;
 	}
 
-	printf(" included: %d", node->isIncluded);
+	if (node->isIncluded) {
+		printf(" included: %d", node->isIncluded);
+	}
 
 	printf("\n");
 
@@ -122,4 +125,14 @@ struct ast_node *ast_pop() {
 	}
 	ast_table_lastentry--;
 	return ast_table[ast_table_lastentry+1];
+}
+
+void ast_addLex(struct ast_node *n, const char *newLex) {
+	if (strlen(newLex) > 499) {
+		printf("lex is too long: %s\n", newLex);
+		exit(-1);
+	}
+
+	strcpy(n->lex, newLex);
+	n->lex[499] = '\0';
 }

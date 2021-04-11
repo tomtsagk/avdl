@@ -15,6 +15,9 @@ float parsing_float = 0;
 extern char included_files[10][100];
 extern int included_files_num;
 
+extern char buffer[];
+extern char *includePath;
+
 %}
 
 /*
@@ -48,21 +51,35 @@ string \"[^"]*\"
 		exit(1);
 	}
 
+	printf("found include: %d\n", include_stack_ptr);
+
 	// save current buffer and advance pointer
-        include_stack[include_stack_ptr++] =
-            YY_CURRENT_BUFFER;
+	include_stack[include_stack_ptr++] =
+		YY_CURRENT_BUFFER;
+
+	// custom include path
+	if (includePath) {
+		strcpy(buffer, includePath);
+		strcat(buffer, "/");
+		strcat(buffer, yytext);
+	}
+	// by default, current directory
+	else {
+		strcpy(buffer, yytext);
+	}
+	printf("input header: %s\n", buffer);
 
 	// open new file
-	yyin = fopen( yytext, "r" );
+	yyin = fopen( buffer, "r" );
 	if (!yyin) {
-		fprintf( stderr, "failed to open included file: %s: %s\n", yytext, strerror(errno) );
+		fprintf( stderr, "avdl: failed to open included file: %s: %s\n", buffer, strerror(errno) );
 		exit(1);
 	}
 
 	// ignore duplicates
 	int isAlreadyIncluded = 0;
 	for (int i = 0; i < included_files_num; i++) {
-		if (strcmp(included_files[i], yytext) == 0) {
+		if (strcmp(included_files[i], buffer) == 0) {
 			isAlreadyIncluded = 1;
 			break;
 		}
@@ -74,7 +91,7 @@ string \"[^"]*\"
 			printf("max number of included files reached\n");
 			exit(-1);
 		}
-		strcpy(included_files[included_files_num], yytext);
+		strcpy(included_files[included_files_num], buffer);
 		included_files_num++;
 	}
 
@@ -94,6 +111,7 @@ string \"[^"]*\"
 	}
 	// ending included file, resume previous file
 	else {
+		printf("finished included file\n");
 		yy_delete_buffer( YY_CURRENT_BUFFER );
 		yy_switch_to_buffer( include_stack[include_stack_ptr] );
 	}

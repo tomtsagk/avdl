@@ -13,6 +13,7 @@
 #include "dd_commands.h"
 #include <errno.h>
 #include "file_op.h"
+#include "lexer.h"
 
 extern FILE *yyin;
 extern YYSTYPE yylex(void);
@@ -54,6 +55,8 @@ const char *dependencies[] = {
 };
 unsigned int dependencies_count = sizeof(dependencies) /sizeof(char *);
 
+char *includePath = 0;
+
 // init data, parse, exit
 int main(int argc, char *argv[])
 {
@@ -64,7 +67,6 @@ int main(int argc, char *argv[])
 	char filename[MAX_INPUT_FILES][100];
 	int input_file_total = 0;
 	char *outname = 0;
-	char *includePath = 0;
 	int getDependencies = 0;
 
 	/*
@@ -165,6 +167,7 @@ int main(int argc, char *argv[])
 			strcat(buffer, " | grep 'lib");
 			strcat(buffer, dependencies[i]);
 			strcat(buffer, "\\.' | sed 's/^.*=> \\(.*\\) .*$/\\1/'");
+			//printf("command: %s\n", buffer);
 			system(buffer);
 		}
 		return 0;
@@ -189,35 +192,35 @@ int main(int argc, char *argv[])
 		included_files_num = 0;
 		include_stack_ptr = 0;
 
+		/*
 		FILE *input_file = 0;
 		input_file = fopen(filename[i], "r");
 		if (!input_file) {
 			printf("avdl error: Unable to open '%s': %s\n", filename[i], strerror(errno));
 			return -1;
 		}
+		*/
 
-		yyin = input_file;
+		//yyin = input_file;
 
 		// init data
 		linenum = 1;
 
 		// initial symbols
-		symtable_init();
-
-		/* keywords
-		 */
-		for (unsigned int i = 0; i < keywords_total; i++) {
-			symtable_insert(keywords[i].keyword, DD_KEYWORD);
-		}
+		//symtable_init();
 
 		// initialise the parent node
-		game_node = ast_create(AST_GAME, 0);
 
 		// init structs
 		struct_table_init();
 
-		yyparse();
-		fclose(input_file);
+		game_node = ast_create(AST_GAME, 0);
+		lexer_convertToAst(game_node, filename[i]);
+		//ast_print(game_node);
+		dd_commands_validate(game_node);
+
+		//yyparse();
+		//fclose(input_file);
 
 		/*
 		 * if only transpiling, check output file
@@ -250,67 +253,75 @@ int main(int argc, char *argv[])
 		//symtable_print();
 
 		// clean symtable and ast tree
-		symtable_clean();
-		ast_delete(game_node);
+		//symtable_clean();
+		//ast_delete(game_node);
 
-		for (int i = 0; i < included_files_num; i++) {
-			//printf("transpiling included file: %s\n", included_files[i]);
-			include_stack_ptr = 0;
-			symtable_clean();
-			input_file = fopen(included_files[i], "r");
-			if (!input_file) {
-				printf("avdl error: Unable to open included file '%s': %s\n", included_files[i], strerror(errno));
-				return -1;
-			}
-
-			strcpy(buffer, included_files[i]);
-			buffer[strlen(buffer)-3] = 'h';
-			buffer[strlen(buffer)-2] = '\0';
-			//printf("transpiling to: %s\n", buffer);
-			//sprintf(buffer, "build-cglut/%s.h", included_files[i]);
-
-			// stat source and destination asset, if source is newer, copy to destination
-			struct stat stat_src_asset;
-			if (stat(included_files[i], &stat_src_asset) == -1) {
-				printf("avdl error: Unable to stat '%s': %s\n", included_files[i], strerror(errno));
-				exit(-1);
-			}
-
-			struct stat stat_dst_asset;
-			if (stat(buffer, &stat_dst_asset) == -1) {
-				yyin = input_file;
-				game_node = ast_create(AST_GAME, 0);
-				yyparse();
-				fclose(input_file);
-				if (transpile_cglut(buffer, game_node, 1) != 0) {
-					printf("avdl: transpilation failed to file: %s\n", buffer);
-					return -1;
-				}
-				if (show_ast) {
-					ast_print(game_node);
-				}
-				continue;
-			}
-
-			// check last modification time
-			time_t time_src = mktime(gmtime(&stat_src_asset.st_mtime));
-			time_t time_dst = mktime(gmtime(&stat_dst_asset.st_mtime));
-
-			if (time_src > time_dst) {
-				yyin = input_file;
-				game_node = ast_create(AST_GAME, 0);
-				yyparse();
-				fclose(input_file);
-				if (transpile_cglut(buffer, game_node, 1) != 0) {
-					printf("avdl: transpilation failed to file: %s\n", buffer);
-					return -1;
-				}
-				if (show_ast) {
-					ast_print(game_node);
-				}
-				continue;
-			}
-		}
+//		for (int i = 0; i < included_files_num; i++) {
+//			//printf("transpiling included file: %s\n", included_files[i]);
+//			include_stack_ptr = 0;
+//			symtable_clean();
+//			/*
+//			//input_file = fopen(included_files[i], "r");
+//			if (!input_file) {
+//				printf("avdl error: Unable to open included file '%s': %s\n", included_files[i], strerror(errno));
+//				return -1;
+//			}
+//			*/
+//
+//			strcpy(buffer, included_files[i]);
+//			buffer[strlen(buffer)-3] = 'h';
+//			buffer[strlen(buffer)-2] = '\0';
+//			//printf("transpiling to: %s\n", buffer);
+//			//sprintf(buffer, "build-cglut/%s.h", included_files[i]);
+//
+//			/*
+//			// stat source and destination asset, if source is newer, copy to destination
+//			struct stat stat_src_asset;
+//			if (stat(included_files[i], &stat_src_asset) == -1) {
+//				printf("avdl error: Unable to stat '%s': %s\n", included_files[i], strerror(errno));
+//				exit(-1);
+//			}
+//			*/
+//
+//			//struct stat stat_dst_asset;
+//			//if (stat(buffer, &stat_dst_asset) == -1) {
+//			if (1) {
+//				//yyin = input_file;
+//				game_node = ast_create(AST_GAME, 0);
+//				yyparse();
+//				//fclose(input_file);
+//				if (transpile_cglut(buffer, game_node, 1) != 0) {
+//					printf("avdl: transpilation failed to file: %s\n", buffer);
+//					return -1;
+//				}
+//				if (show_ast) {
+//					ast_print(game_node);
+//				}
+//				continue;
+//			}
+//
+//			/*
+//			// check last modification time
+//			time_t time_src = mktime(gmtime(&stat_src_asset.st_mtime));
+//			time_t time_dst = mktime(gmtime(&stat_dst_asset.st_mtime));
+//			*/
+//
+//			//if (time_src > time_dst) {
+//			if (1) {
+//				//yyin = input_file;
+//				game_node = ast_create(AST_GAME, 0);
+//				yyparse();
+//				//fclose(input_file);
+//				if (transpile_cglut(buffer, game_node, 1) != 0) {
+//					printf("avdl: transpilation failed to file: %s\n", buffer);
+//					return -1;
+//				}
+//				if (show_ast) {
+//					ast_print(game_node);
+//				}
+//				continue;
+//			}
+//		}
 	}
 
 	if (compile) {

@@ -14,16 +14,9 @@
 #include "dd_vec4.h"
 #include "dd_mouse.h"
 #include "dd_string3d.h"
-#include "dd_meshRising.h"
 #include "avdl_shaders.h"
 #include "dd_log.h"
 #include "avdl_data.h"
 #include "avdl_assetManager.h"
-
-#if DD_PLATFORM_NATIVE
-/* files temporarily not available in android */
-#include "dd_object.h"
-//#include "dd_gamejolt.h"
-#endif
 
 int dd_main(int argc, char *argv[]);

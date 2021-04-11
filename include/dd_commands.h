@@ -5,7 +5,8 @@
 
 struct keyword_function {
 	char *keyword;
-	struct ast_node *(*function)(struct ast_node *name, struct ast_node *args);
+	//struct ast_node *(*function)(struct ast_node *name, struct ast_node *args);
+	struct ast_node *(*function)(struct ast_node *cmd);
 };
 
 // keywords available in the language
@@ -14,6 +15,11 @@ extern unsigned int keywords_total;
 
 // parse a single command and return a node
 struct ast_node *parse_command(struct ast_node *cmd_name, struct ast_node *opt_args);
+struct ast_node *parse_command2(struct ast_node *cmd);
+
+void dd_commands_validate(struct ast_node *node);
+
+int dd_commands_isNative(const char *cmdname);
 
 /*
  * compiling platform

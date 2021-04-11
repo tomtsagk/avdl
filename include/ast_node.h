@@ -49,6 +49,7 @@ struct ast_node {
 	int isIncluded;
 	struct dd_dynamic_array children;
 	struct ast_node *parent;
+	char lex[500];
 };
 
 // Actions
@@ -56,6 +57,8 @@ struct ast_node *ast_create(enum AST_NODE_TYPE node_type, int value);
 void ast_child_add(struct ast_node *parent, struct ast_node *child);
 void ast_child_add_first(struct ast_node *parent, struct ast_node *child);
 void ast_delete(struct ast_node *node);
+
+void ast_addLex(struct ast_node *node, const char *newLex);
 
 // Debug - Print node tree
 void ast_print(struct ast_node *node);
