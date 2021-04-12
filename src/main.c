@@ -12,6 +12,7 @@
 #include <errno.h>
 #include "file_op.h"
 #include "lexer.h"
+#include "semantic_analyser.h"
 
 /*
 extern FILE *yyin;
@@ -217,9 +218,11 @@ int main(int argc, char *argv[])
 		struct_table_init();
 
 		game_node = ast_create(AST_GAME, 0);
-		lexer_convertToAst(game_node, filename[i]);
-		//ast_print(game_node);
-		dd_commands_validate(game_node);
+		semanticAnalyser_convertToAst(game_node, filename[i]);
+		//lexer_convertToAst(game_node, filename[i]);
+		ast_print(game_node);
+		return 0;
+		//dd_commands_validate(game_node);
 
 		//yyparse();
 		//fclose(input_file);

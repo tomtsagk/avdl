@@ -9,279 +9,206 @@
 
 extern char buffer[];
 
-static void lexer_parse_command(FILE *f, struct ast_node *node, int lineNumber, int hasStarted) {
-	int startedCommand = 0;
-	int finishedCommand = 0;
-	int result = 0;
-	struct ast_node *cmd = 0;
-	struct ast_node *arrayNode = 0;
-	struct ast_node *lastIdentifier = 0;
-
-	if (hasStarted) {
-		cmd = ast_create(0, 0);
-	}
-	//printf("new command\n");
-	while (!finishedCommand && !feof(f)) {
-
-		// ignore whitespace
-		fscanf(f, "%100[ \t]*", buffer);
-
-		// read a character
-		fscanf(f, "%1c", buffer);
-		buffer[1] = '\0';
-
-		// ignore comments
-		if (buffer[0] == '#') {
-			fscanf(f, "%*[^\n]*");
-		}
-		else
-		// new lines
-		if (buffer[0] == '\n') {
-			lineNumber++;
-		}
-		else
-		// start of command
-		if (buffer[0] == '(') {
-
-			if (arrayNode) {
-				lexer_parse_command(f, arrayNode, lineNumber, 1);
-			}
-			else
-			// a command within a command
-			if (cmd) {
-				lexer_parse_command(f, cmd, lineNumber, 1);
-			}
-			else {
-				cmd = ast_create(0, 0);
-			}
-		}
-		else
-		// string
-		if (buffer[0] == '\"') {
-
-			fscanf(f, "%499[^\"]", buffer);
-			buffer[499] = '\0';
-			//printf("string: %s\n", buffer);
-			struct ast_node *identifier = ast_create(AST_STRING, 0);
-			ast_addLex(identifier, buffer);
-			ast_child_add(cmd, identifier);
-
-			fscanf(f, "%1c", buffer);
-		}
-		else
-		// period (.)
-		if (buffer[0] == '.') {
-			lastIdentifier = dd_da_get(&cmd->children, cmd->children.elements-1);
-		}
-		else
-		// array start
-		if (buffer[0] == '[') {
-			arrayNode = ast_create(AST_GROUP, 0);
-		}
-		else
-		// array end
-		if (buffer[0] == ']') {
-			struct ast_node *lastNode = dd_da_get(&cmd->children, cmd->children.elements-1);
-
-			// on an identifier chain, apply it to the last parsed element
-			if (lastNode->children.elements > 0) {
-				struct ast_node *lastIdentifier = dd_da_get(&lastNode->children, lastNode->children.elements-1);
-				ast_child_add(lastIdentifier, arrayNode);
-			}
-			// no identifier chain, just apply it on the identifier
-			else {
-				ast_child_add(lastNode, arrayNode);
-			}
-			arrayNode = 0;
-		}
-		else
-		// special characters only meant for native commands
-		if (buffer[0] == '-'
-		||  buffer[0] == '+'
-		||  buffer[0] == '/'
-		||  buffer[0] == '*'
-		||  buffer[0] == '%'
-		||  buffer[0] == '='
-		||  buffer[0] == '<'
-		||  buffer[0] == '>'
-		||  buffer[0] == '!'
-		||  buffer[0] == '&'
-		||  buffer[0] == '|') {
-			struct ast_node *identifier = 0;
-			identifier = ast_create(AST_IDENTIFIER, 0);
-
-			// check if some symbols come with "="
-			if (buffer[0] == '='
-			||  buffer[0] == '<'
-			||  buffer[0] == '>'
-			||  buffer[0] == '!') {
-				long pos = ftell(f);
-				char restId;
-				fscanf(f, "%1c", &restId);
-				if (restId != '=') {
-					fseek(f, pos, SEEK_SET);
-				}
-				else {
-					buffer[1] = restId;
-				}
-			}
-			else
-			if (buffer[0] == '&'
-			||  buffer[0] == '|') {
-				long pos = ftell(f);
-				char restId;
-				fscanf(f, "%1c", &restId);
-				if (restId != buffer[0]) {
-					fseek(f, pos, SEEK_SET);
-				}
-				else {
-					buffer[1] = restId;
-				}
-			}
-			ast_addLex(identifier, buffer);
-
-			// command's name
-			if (cmd->children.elements == 0) {
-
-				// native command
-				if (dd_commands_isNative(identifier->lex)
-				&& identifier->children.elements == 0) {
-					cmd->node_type = AST_COMMAND_NATIVE;
-				}
-				// custom command
-				else {
-					cmd->node_type = AST_COMMAND_CUSTOM;
-				}
-			}
-
-			// signal to attach new identifier to the last one found (in a chain)
-			if (lastIdentifier) {
-				ast_child_add(lastIdentifier, identifier);
-				lastIdentifier = 0;
-			}
-			else
-			if (arrayNode) {
-				ast_child_add(arrayNode, identifier);
-			}
-			else {
-				ast_child_add(cmd, identifier);
-			}
-		}
-		else
-		// number
-		if ((buffer[0] >= '0' && buffer[0] <= '9')) {
-
-			char restNumber[500];
-			restNumber[0] = '\0';
-			if (fscanf(f, "%500[0-9.]", restNumber)) {
-				strcat(buffer, restNumber);
-			}
-
-			int isFloat = 0;
-			char *ptr = buffer;
-			while (ptr[0] != '\0') {
-				if (ptr[0] == '.') {
-					isFloat = 1;
-					break;
-				}
-				ptr++;
-			}
-
-			struct ast_node *identifier = 0;
-
-			// parsing float
-			if (isFloat) {
-				identifier = ast_create(AST_FLOAT, 0);
-				identifier->fvalue = atof(buffer);
-			}
-			// parsing int
-			else {
-				identifier = ast_create(AST_NUMBER, atoi(buffer));
-			}
-			if (arrayNode) {
-				ast_child_add(arrayNode, identifier);
-			}
-			else {
-				ast_child_add(cmd, identifier);
-			}
-		}
-		else
-		// identifier?
-		if ((buffer[0] >= 'a' && buffer[0] <= 'z')
-		||  (buffer[0] >= 'A' && buffer[0] <= 'Z')
-		||   buffer[0] == '_') {
-			char restNumber[500];
-			fscanf(f, "%500[a-zA-Z0-9_]", restNumber);
-			strcat(buffer, restNumber);
-			//printf("symbol?: %s line: %d\n", buffer, lineNumber);
-
-			struct ast_node *identifier = 0;
-			identifier = ast_create(AST_IDENTIFIER, 0);
-			ast_addLex(identifier, buffer);
-
-			// command's name
-			if (cmd->children.elements == 0) {
-
-				// native command
-				if (dd_commands_isNative(identifier->lex)
-				&& identifier->children.elements == 0) {
-					cmd->node_type = AST_COMMAND_NATIVE;
-				}
-				// custom command
-				else {
-					cmd->node_type = AST_COMMAND_CUSTOM;
-				}
-			}
-
-			// signal to attach new identifier to the last one found (in a chain)
-			if (lastIdentifier) {
-				ast_child_add(lastIdentifier, identifier);
-				lastIdentifier = 0;
-			}
-			else
-			if (arrayNode) {
-				ast_child_add(arrayNode, identifier);
-			}
-			else {
-				ast_child_add(cmd, identifier);
-			}
-		}
-		else
-		if (buffer[0] == ')') {
-			finishedCommand = 1;
-			ast_child_add(node, cmd);
-		}
-		else {
-			//fscanf(f, "%*s");
-			//fscanf(f, "%1[^\n]", buffer);
-			printf("ignored symbol: >%c<\n", buffer[0]);
-			//printf("result: %d\n", result);
-		}
-	}
-
-	if (cmd && !finishedCommand) {
-		printf("lexer: error while parsing command\n");
-		exit(-1);
-	}
-}
-
-void lexer_convertToAst(struct ast_node *node, const char *filename) {
+static FILE *lex_file;
+void lexer_prepare(const char *filename) {
 
 	printf("lexing: %s\n", filename);
 
 	int lineNumber = 1;
 
-	FILE *input_file = 0;
-	input_file = fopen(filename, "r");
-	if (!input_file) {
+	lex_file = 0;
+	lex_file = fopen(filename, "r");
+	if (!lex_file) {
 		printf("avdl error: Unable to open '%s': %s\n", filename, strerror(errno));
 		exit(-1);
 	}
+}
 
-	while (!feof(input_file)) {
-		lexer_parse_command(input_file, node, lineNumber, 0);
+void lexer_clean() {
+	if (lex_file) {
+		fclose(lex_file);
+		lex_file = 0;
+	}
+}
+
+static long lex_rewind_pos;
+int lexer_getNextToken() {
+
+	// clear characters that are not tokens (whitespace / comments)
+	int allClear;
+	do {
+		allClear = 0;
+
+		// new line
+		allClear += fscanf(lex_file, "%1[\n]", buffer);
+		if (allClear) {
+			//printf("ignored new line\n");
+			//lineNumber++;
+		}
+
+		// ignore whitespace
+		allClear += fscanf(lex_file, "%100[ \t]*", buffer);
+		//printf("ignored whitespace: %s\n", buffer);
+
+		// ignore comments
+		allClear += fscanf(lex_file, "%1[#]%*[^\n]*", buffer);
+		//printf("ignored comment: %s\n", buffer);
+
+		//printf("clear: %d\n", allClear);
+
+	} while (allClear > 0);
+
+	lex_rewind_pos = ftell(lex_file);
+
+	// read a character and find out what token it is
+	buffer[0] = '\0';
+	fscanf(lex_file, "%1c", buffer);
+	//printf("read character: %c\n", buffer[0]);
+	buffer[1] = '\0';
+
+	// start of command
+	if (buffer[0] == '(') {
+		//printf("command start: %s\n", buffer);
+		return LEXER_TOKEN_COMMANDSTART;
+	}
+	else
+	// end of command
+	if (buffer[0] == ')') {
+		//printf("command end: %s\n", buffer);
+		return LEXER_TOKEN_COMMANDEND;
+	}
+	else
+	// string
+	if (buffer[0] == '\"') {
+		fscanf(lex_file, "%499[^\"]", buffer);
+		buffer[499] = '\0';
+		fscanf(lex_file, "%*1c");
+		//printf("found string: %s\n", buffer);
+		return LEXER_TOKEN_STRING;
+	}
+	else
+	// start of array
+	if (buffer[0] == '[') {
+		//printf("arrat start: %s\n", buffer);
+		return LEXER_TOKEN_ARRAYSTART;
+	}
+	else
+	// end of array
+	if (buffer[0] == ']') {
+		//printf("array end: %s\n", buffer);
+		return LEXER_TOKEN_ARRAYEND;
+	}
+	else
+	// period
+	if (buffer[0] == '.') {
+		//printf("period: %s\n", buffer);
+		return LEXER_TOKEN_PERIOD;
+	}
+	else
+	// identifier
+	if ((buffer[0] >= 'a' && buffer[0] <= 'z')
+	||  (buffer[0] >= 'A' && buffer[0] <= 'Z')
+	||   buffer[0] == '_') {
+		char restNumber[500];
+		fscanf(lex_file, "%500[a-zA-Z0-9_]", restNumber);
+		strcat(buffer, restNumber);
+		//printf("identifier: %s\n", buffer);
+		return LEXER_TOKEN_IDENTIFIER;
+	}
+	else
+	// number
+	if ((buffer[0] >= '0' && buffer[0] <= '9')) {
+
+		// get the whole number
+		char restNumber[500];
+		restNumber[0] = '\0';
+		if (fscanf(lex_file, "%499[0-9.]", restNumber)) {
+			strcat(buffer, restNumber);
+		}
+
+		// decide if it's a floating number
+		int isFloat = 0;
+		char *ptr = buffer;
+		while (ptr[0] != '\0') {
+			if (ptr[0] == '.') {
+				isFloat = 1;
+				break;
+			}
+			ptr++;
+		}
+
+		// parsing float
+		if (isFloat) {
+			//printf("float: %s\n", buffer);
+			return LEXER_TOKEN_FLOAT;
+		}
+		// parsing int
+		else {
+			//printf("int: %s\n", buffer);
+			return LEXER_TOKEN_INT;
+		}
+	}
+	else
+	// special characters only meant for native commands
+	if (buffer[0] == '-'
+	||  buffer[0] == '+'
+	||  buffer[0] == '/'
+	||  buffer[0] == '*'
+	||  buffer[0] == '%'
+	||  buffer[0] == '='
+	||  buffer[0] == '<'
+	||  buffer[0] == '>'
+	||  buffer[0] == '!'
+	||  buffer[0] == '&'
+	||  buffer[0] == '|') {
+
+		// check if some symbols come with "="
+		if (buffer[0] == '='
+		||  buffer[0] == '<'
+		||  buffer[0] == '>'
+		||  buffer[0] == '!') {
+			long pos = ftell(lex_file);
+			char restId;
+			fscanf(lex_file, "%1c", &restId);
+			if (restId != '=') {
+				fseek(lex_file, pos, SEEK_SET);
+			}
+			else {
+				buffer[1] = restId;
+			}
+		}
+		else
+		if (buffer[0] == '&'
+		||  buffer[0] == '|') {
+			long pos = ftell(lex_file);
+			char restId;
+			fscanf(lex_file, "%1c", &restId);
+			if (restId != buffer[0]) {
+				fseek(lex_file, pos, SEEK_SET);
+			}
+			else {
+				buffer[1] = restId;
+			}
+		}
+
+		//printf("identifier special: %s\n", buffer);
+		return LEXER_TOKEN_IDENTIFIER;
+	}
+	else
+	// end of file -- nothing left to parse
+	if (feof(lex_file)) {
+		//printf("token done\n");
+		return LEXER_TOKEN_DONE;
 	}
 
-	fclose(input_file);
+	printf("unknown token: %s\n", buffer);
+	return LEXER_TOKEN_UNKNOWN;
+}
 
+const char *lexer_getLexToken() {
+	return buffer;
+}
+
+void lexer_rewind() {
+	fseek(lex_file, lex_rewind_pos, SEEK_SET);
 }
