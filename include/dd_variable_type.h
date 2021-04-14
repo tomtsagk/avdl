@@ -13,5 +13,7 @@ enum dd_variable_type {
 };
 
 enum dd_variable_type dd_variable_type_convert(const char *type);
+int dd_variable_type_isPrimitiveType(const char *type);
+const char *dd_variable_type_getString(enum dd_variable_type type);
 
 #endif

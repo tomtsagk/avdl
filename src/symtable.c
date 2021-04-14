@@ -55,10 +55,12 @@ void symtable_init() {
 	symtable_current = -1;
 	symtable_push();
 
+	/*
 	// init language's native functions
 	for (unsigned int i = 0; i < native_functions_count; i++) {
 		symtable_insert(native_functions[i], DD_SYMTABLE_NATIVE);
 	}
+	*/
 
 }
 
@@ -145,7 +147,14 @@ void symtable_print() {
 	for (int j = 0; j <= symtable_current; j++) {
 		printf("symtable %d:\n", j);
 		for (int i = 0; i <= symtable_array[j].lastentry; i++) {
-			printf("\t%s | token: %d\n", symtable_array[j].entry[i].lexptr, symtable_array[j].entry[i].token);
+			if (symtable_array[j].entry[i].token == SYMTABLE_VARIABLE) {
+				printf("\t%s | variable of type: %s\n", symtable_array[j].entry[i].lexptr,
+					dd_variable_type_getString(symtable_array[j].entry[i].value)
+				);
+			}
+			else {
+				printf("\t%s | token: %d\n", symtable_array[j].entry[i].lexptr, symtable_array[j].entry[i].token);
+			}
 		}
 		printf("end symtable %d:\n", j);
 	}

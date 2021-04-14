@@ -6,6 +6,11 @@
 #define DD_SYMTABLE_STRUCT 0
 #define DD_SYMTABLE_NATIVE 1
 
+// all symtable types
+enum symtable_tokens {
+	SYMTABLE_VARIABLE,
+};
+
 // type for index on the system table
 typedef int symtable_index;
 extern int symtable_current;

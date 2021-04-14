@@ -10,6 +10,7 @@ int struct_table_current = 0;
 void struct_table_init() {
 	struct_table_current = -1;
 
+	/*
 	// Engine's initial structs and their members
 	struct_table_push("dd_world", 0);
 	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION, 0);
@@ -58,6 +59,7 @@ void struct_table_init() {
 	struct_table_push_member("drawInt", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_gamejolt_response_struct", 0);
+	*/
 }
 
 // push a new struct to the table
@@ -143,6 +145,7 @@ void struct_table_pop() {
  * this is meant for debug only
  */
 void struct_table_print() {
+	printf("struct table start\n");
 	for (int i = 0; i <= struct_table_current; i++) {
 		struct struct_table_entry *s = &struct_table[i];
 		printf("struct: %s", s->name);
@@ -156,6 +159,7 @@ void struct_table_print() {
 			printf("	member: %s\n", m->name);
 		}
 	}
+	printf("struct table end\n");
 }
 
 // return the name of the struct on index, make sure index is in bounds

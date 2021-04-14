@@ -43,4 +43,9 @@ int lexer_getNextToken();
 void lexer_rewind();
 const char *lexer_getLexToken();
 
+const char *lexer_getCurrentFilename();
+int lexer_getCurrentLinenumber();
+
+void lexer_printCurrentLine();
+
 #endif // lexer
