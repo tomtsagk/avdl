@@ -9,9 +9,83 @@
 #include <stdarg.h>
 
 static struct ast_node *expect_command_definition();
+static struct ast_node *expect_command_classDefinition();
+static struct ast_node *expect_command_group();
+static struct ast_node *expect_command_function();
 static struct ast_node *expect_identifier();
+static struct ast_node *expect_int();
 static struct ast_node *expect_command();
 static void semantic_error(const char *msg, ...);
+
+static struct ast_node *expect_command_function() {
+
+	struct ast_node *function = ast_create(AST_COMMAND_NATIVE, 0);
+	ast_addLex(function, "function");
+
+	struct ast_node *returnType = expect_identifier();
+	struct ast_node *functionName = expect_identifier();
+	struct ast_node *args = expect_command();
+
+	ast_child_add(function, returnType);
+	ast_child_add(function, functionName);
+	ast_child_add(function, args);
+
+	return function;
+}
+
+static struct ast_node *expect_command_group() {
+
+	struct ast_node *group = ast_create(AST_COMMAND_NATIVE, 0);
+	ast_addLex(group, "group");
+	struct ast_node *cmd;
+
+	int token = lexer_getNextToken();
+	if (token == LEXER_TOKEN_COMMANDSTART
+	||  token == LEXER_TOKEN_IDENTIFIER) {
+		while (token == LEXER_TOKEN_COMMANDSTART
+		||     token == LEXER_TOKEN_IDENTIFIER) {
+			lexer_rewind();
+	
+			// command
+			if (token == LEXER_TOKEN_COMMANDSTART) {
+				cmd = expect_command();
+			}
+			// identifier
+			else {
+				cmd = expect_identifier();
+			}
+	
+			ast_child_add(group, cmd);
+
+			token = lexer_getNextToken();
+		}
+	}
+	lexer_rewind();
+
+	return group;
+}
+
+static struct ast_node *expect_command_classDefinition() {
+
+	struct ast_node *classname = expect_identifier();
+	struct ast_node *subclassname = expect_identifier();
+
+	symtable_push();
+	struct ast_node *definitions = expect_command();
+	symtable_pop();
+
+	/* scan definitions
+	 * if a function was defined in any of the subclasses, mark is
+	 * 	as an override
+	 */
+
+	struct ast_node *classDefinition = ast_create(AST_COMMAND_NATIVE, 0);
+	ast_addLex(classDefinition, "class");
+	ast_child_add(classDefinition, classname);
+	ast_child_add(classDefinition, subclassname);
+	ast_child_add(classDefinition, definitions);
+	return classDefinition;
+}
 
 static struct ast_node *expect_command_definition() {
 
@@ -21,10 +95,12 @@ static struct ast_node *expect_command_definition() {
 	// get type
 	struct ast_node *type = expect_identifier();
 
+	/*
 	// check if primitive or struct
 	if (!dd_variable_type_isPrimitiveType(type->lex)) {
 		semantic_error("unrecognized type '%s'", type->lex);
 	}
+	*/
 
 	// get variable name
 	struct ast_node *varname = expect_identifier();
@@ -36,6 +112,17 @@ static struct ast_node *expect_command_definition() {
 	ast_child_add(definition, type);
 	ast_child_add(definition, varname);
 	return definition;
+}
+
+static struct ast_node *expect_int() {
+
+	// confirm it's an integer
+	if (lexer_getNextToken() != LEXER_TOKEN_INT) {
+		semantic_error("expected integer instead of '%s'", lexer_getLexToken());
+	}
+
+	struct ast_node *integer = ast_create(AST_NUMBER, atoi(lexer_getLexToken()));
+	return integer;
 }
 
 static struct ast_node *expect_identifier() {
@@ -52,8 +139,34 @@ static struct ast_node *expect_identifier() {
 	// does it have an array modifier?
 	if (lexer_getNextToken() == LEXER_TOKEN_ARRAYSTART) {
 		struct ast_node *array = ast_create(AST_GROUP, 0);
-		while (lexer_getNextToken() != LEXER_TOKEN_ARRAYEND);
+		int token = lexer_getNextToken();
+		// integer as array modifier
+		if (token == LEXER_TOKEN_INT) {
+			lexer_rewind();
+			ast_child_add(array, expect_int());
+		}
+		else
+		// identifier as array modifier
+		if (token == LEXER_TOKEN_IDENTIFIER) {
+			lexer_rewind();
+			ast_child_add(array, expect_identifier());
+		}
+		else
+		// calculation as array modifier
+		if (token == LEXER_TOKEN_COMMANDSTART) {
+			lexer_rewind();
+			while ((token = lexer_getNextToken()) == LEXER_TOKEN_COMMANDSTART) {
+				lexer_rewind();
+				ast_child_add(array, expect_command());
+			}
+			lexer_rewind();
+		}
 		ast_child_add(identifier, array);
+
+		// end of array
+		if (lexer_getNextToken() != LEXER_TOKEN_ARRAYEND) {
+			semantic_error("expected end of array");
+		}
 	}
 	else {
 		lexer_rewind();
@@ -77,7 +190,7 @@ static struct ast_node *expect_command() {
 
 	// confirm that a command is expected
 	if (lexer_getNextToken() != LEXER_TOKEN_COMMANDSTART) {
-		semantic_error("expected the start of a command '('");
+		semantic_error("expected the start of a command '(', instead of '%s'", lexer_getLexToken());
 	}
 
 	// get the command's name
@@ -96,6 +209,18 @@ static struct ast_node *expect_command() {
 		if (strcmp(cmdname->lex, "def") == 0) {
 			cmd = expect_command_definition();
 		}
+		else
+		if (strcmp(cmdname->lex, "class") == 0) {
+			cmd = expect_command_classDefinition();
+		}
+		else
+		if (strcmp(cmdname->lex, "group") == 0) {
+			cmd = expect_command_group();
+		}
+		else
+		if (strcmp(cmdname->lex, "function") == 0) {
+			cmd = expect_command_function();
+		}
 		else {
 			semantic_error("no rule to parse command '%s'", cmdname->lex);
 		}
@@ -112,11 +237,9 @@ static struct ast_node *expect_command() {
 	}
 
 	// get the command's children
-	struct ast_node *child = 0;
 	int token = 0;
 	if ((token = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
-		printf("was expected command end\n");
-		exit(-1);
+		semantic_error("expected command end ')'");
 	}
 
 	return cmd;

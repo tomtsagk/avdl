@@ -1134,3 +1134,213 @@ int transpile_cglut(const char *filename, struct ast_node *n, int isIncluded) {
 	return 0;
 
 } // transpile_cglut
+
+/*
+ * new implementation
+ */
+static void print_command_definition2(FILE *fd, struct ast_node *n);
+static void print_command_definitionClassFunction2(FILE *fd, struct ast_node *n, const char *classname);
+static void print_command_functionArguments(FILE *fd, struct ast_node *n, int beginWithSemicolon);
+static void print_command_class2(FILE *fd, struct ast_node *n);
+static void print_command_native2(FILE *fd, struct ast_node *n);
+static void print_number2(FILE *fd, struct ast_node *n);
+static void print_node2(FILE *fd, struct ast_node *n);
+
+static void print_command_functionArguments(FILE *fd, struct ast_node *n, int beginWithSemicolon) {
+	for (int i = 1; i < n->children.elements; i += 2) {
+		struct ast_node *argtype = dd_da_get(&n->children, i-1);
+		struct ast_node *argname = dd_da_get(&n->children, i  );
+
+		if (i > 1 || beginWithSemicolon) {
+			fprintf(fd, ", ");
+		}
+		fprintf(fd, "%s %s", argtype->lex, argname->lex);
+	}
+}
+
+static void print_command_definitionClassFunction2(FILE *fd, struct ast_node *n, const char *classname) {
+	struct ast_node *type = dd_da_get(&n->children, 0);
+	struct ast_node *name = dd_da_get(&n->children, 1);
+	struct ast_node *args = dd_da_get(&n->children, 2);
+	fprintf(fd, "%s (*%s)(struct %s *", type->lex, name->lex, classname);
+	print_command_functionArguments(fd, args, 1);
+	fprintf(fd, ");\n");
+}
+
+static void print_command_definition2(FILE *fd, struct ast_node *n) {
+	struct ast_node *type = dd_da_get(&n->children, 0);
+	struct ast_node *defname = dd_da_get(&n->children, 1);
+
+	if (!dd_variable_type_isPrimitiveType(type->lex)) {
+		fprintf(fd, "struct ");
+	}
+	fprintf(fd, "%s %s;\n", type->lex, defname->lex);
+}
+
+static void print_command_class2(FILE *fd, struct ast_node *n) {
+	struct ast_node *classname = dd_da_get(&n->children, 0);
+	struct ast_node *subclassname = dd_da_get(&n->children, 1);
+	struct ast_node *definitions = dd_da_get(&n->children, 2);
+
+	fprintf(fd, "struct %s {\n", classname->lex);
+
+	// subclass
+	if (subclassname->node_type == AST_IDENTIFIER) {
+		fprintf(fd, "struct %s parent;\n", subclassname->lex);
+	}
+
+	// definitions in struct
+	for (unsigned int i = 0; i < definitions->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&definitions->children, i);
+
+		// definition of variable
+		if (strcmp(child->lex, "def") == 0) {
+			print_command_definition2(fd, child);
+		}
+		// definition of function
+		else {
+			print_command_definitionClassFunction2(fd, child, classname->lex);
+		}
+	}
+
+	fprintf(fd, "};\n");
+
+	// pre-define functions, so they are visible to all functions regardless of order
+	for (unsigned int i = 1; i < definitions->children.elements; i++) {
+
+		// grab ast node and symbol table entry, ensure this is a function
+		struct ast_node *child = dd_da_get(&definitions->children, i);
+		if (child->node_type != AST_COMMAND_NATIVE
+		||  strcmp(child->lex, "function") != 0) continue;
+
+		// function name
+		struct ast_node *funcname = dd_da_get(&child->children, 1);
+
+		// print the function signature
+		fprintf(fd, "void %s_%s(struct %s *this", classname->lex, funcname->lex, classname->lex);
+		struct ast_node *args = dd_da_get(&child->children, 2);
+		print_command_functionArguments(fd, args, 1);
+		fprintf(fd, ");\n");
+	}
+
+} // print class definition
+
+static void print_command_native2(FILE *fd, struct ast_node *n) {
+	if (strcmp(n->lex, "class") == 0) {
+		print_command_class2(fd, n);
+	}
+}
+
+static void print_number2(FILE *fd, struct ast_node *n) {
+	fprintf(fd, "%d", n->value);
+}
+
+static void print_node2(FILE *fd, struct ast_node *n) {
+	switch (n->node_type) {
+		case AST_GAME:
+			for (unsigned int i = 0; i < n->children.elements; i++) {
+				print_node2(fd, dd_da_get(&n->children, i));
+			}
+			break;
+		case AST_COMMAND_NATIVE: {
+			print_command_native2(fd, n);
+			break;
+		}
+			/*
+		case AST_COMMAND_CUSTOM: {
+			print_function_call(fd, n);
+			break;
+		}
+		*/
+		case AST_NUMBER: {
+			print_number2(fd, n);
+			break;
+		}
+		/*
+		case AST_FLOAT: {
+			print_float(fd, n);
+			break;
+		}
+		case AST_STRING: {
+			//struct entry *e = symtable_entryat(n->value);
+			fprintf(fd, "\"%s\"", n->lex);
+			break;
+		}
+		case AST_INCLUDE: {
+			struct entry *e = symtable_entryat(n->value);
+			strcpy(buffer, e->lexptr);
+			buffer[strlen(buffer)-3] = 'h';
+			buffer[strlen(buffer)-2] = '\0';
+			fprintf(fd, "#include \"%s\"\n", buffer);
+			break;
+		}
+		case AST_IDENTIFIER: {
+			print_identifier_chain(fd, n, 0);
+			break;
+		}
+		case AST_EMPTY: break;
+		*/
+	}
+}
+
+// responsible for creating a file and translating ast to target language
+int transpile_cglut2(const char *filename, struct ast_node *n) {
+
+	/*
+	 * make sure given filename and node
+	 * have a value
+	 */
+	if (!filename) {
+		printf("avdl: transpile_cglut: no filename given to transpile to\n");
+		return -1;
+	}
+
+	if (!n) {
+		printf("avdl: transpile_cglut: no node given to transpile\n");
+		return -1;
+	}
+
+	// open given file to write to
+	fd_global = fopen(filename, "w");
+	if (!fd_global) {
+		printf("avdl: transpile_cglut: unable to open '%s': %s\n", filename, strerror(errno));
+		return -1;
+	}
+
+	/*
+	// on header files, create header guards
+	if (isIncluded) {
+		strcpy(buffer, filename);
+		for (int i = 0; buffer[i] != '\0'; i++) {
+			if (!(buffer[i] >= 'a' && buffer[i] <= 'z')
+			&&  !(buffer[i] >= 'A' && buffer[i] <= 'Z')
+			&& buffer[i] != '_') {
+				buffer[i] = '_';
+			}
+		}
+		fprintf(fd_global, "#ifndef DD_%s_H\n", buffer);
+		fprintf(fd_global, "#define DD_%s_H\n", buffer);
+	}
+	*/
+
+	// print node to file
+	fprintf(fd_global, "#include \"avdl_cengine.h\"\n");
+	print_node2(fd_global, n);
+
+	/*
+	// on header files, end header guard
+	if (isIncluded) {
+		fprintf(fd_global, "#endif\n");
+	}
+	*/
+
+	// clean up
+	if (fclose(fd_global) != 0) {
+		printf("avdl: transpile_cglut: unable to close '%s': %s\n", filename, strerror(errno));
+		return -1;
+	}
+
+	// everything OK
+	return 0;
+
+} // transpile_cglut

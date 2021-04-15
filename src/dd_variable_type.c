@@ -19,20 +19,27 @@ enum dd_variable_type dd_variable_type_convert(const char *type) {
 	if (strcmp(type, "char") == 0) {
 		return DD_VARIABLE_TYPE_CHAR;
 	}
+	else
+	if (strcmp(type, "void") == 0) {
+		return DD_VARIABLE_TYPE_VOID;
+	}
 
 	/*
 	 * structs
-	 */
 	for (int i = 0; i <= struct_table_current; i++) {
 		if (strcmp(type, struct_table_get_name(i)) == 0) {
 			return DD_VARIABLE_TYPE_STRUCT;
 		}
 	}
+	 */
+
+	// temporarily return struct for anything unknown
+	return DD_VARIABLE_TYPE_STRUCT;
 
 	/*
 	 * unrecognized type
-	 */
 	return DD_VARIABLE_TYPE_UNKNOWN;
+	 */
 
 }
 

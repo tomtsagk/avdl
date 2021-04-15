@@ -3,6 +3,7 @@
 
 // struct types
 enum dd_variable_type {
+	DD_VARIABLE_TYPE_VOID,
 	DD_VARIABLE_TYPE_INT,
 	DD_VARIABLE_TYPE_FLOAT,
 	DD_VARIABLE_TYPE_STRUCT,

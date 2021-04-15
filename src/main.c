@@ -220,8 +220,7 @@ int main(int argc, char *argv[])
 		game_node = ast_create(AST_GAME, 0);
 		semanticAnalyser_convertToAst(game_node, filename[i]);
 		//lexer_convertToAst(game_node, filename[i]);
-		ast_print(game_node);
-		return 0;
+		//ast_print(game_node);
 		//dd_commands_validate(game_node);
 
 		//yyparse();
@@ -241,7 +240,8 @@ int main(int argc, char *argv[])
 			strcpy(buffer, filename[i]);
 		}
 		//printf(" to %s\n", buffer);
-		if (transpile_cglut(buffer, game_node, 0) != 0) {
+		//if (transpile_cglut(buffer, game_node, 0) != 0) {
+		if (transpile_cglut2(buffer, game_node) != 0) {
 			printf("avdl: transpilation failed to file: %s\n", buffer);
 			return -1;
 		}
