@@ -1143,8 +1143,61 @@ static void print_command_definitionClassFunction2(FILE *fd, struct ast_node *n,
 static void print_command_functionArguments(FILE *fd, struct ast_node *n, int beginWithSemicolon);
 static void print_command_class2(FILE *fd, struct ast_node *n);
 static void print_command_native2(FILE *fd, struct ast_node *n);
+static void print_command_classFunction2(FILE *fd, struct ast_node *n);
+static void print_identifier2(FILE *fd, struct ast_node *n);
 static void print_number2(FILE *fd, struct ast_node *n);
 static void print_node2(FILE *fd, struct ast_node *n);
+
+static void print_command_classFunction2(FILE *fd, struct ast_node *n) {
+	struct ast_node *classname = dd_da_get(&n->children, 0);
+	struct ast_node *function = dd_da_get(&n->children, 1);
+
+	struct ast_node *functype = dd_da_get(&function->children, 0);
+	struct ast_node *funcname = dd_da_get(&function->children, 1);
+	struct ast_node *funcargs = dd_da_get(&function->children, 2);
+	struct ast_node *funcstatements = dd_da_get(&function->children, 3);
+
+	int structIndex = struct_table_get_index(classname->lex);
+
+	// print function signature and args
+	fprintf(fd, "%s %s_%s(struct %s *this", functype->lex, classname->lex,
+		funcname->lex, classname->lex);
+	print_command_functionArguments(fd, funcargs, 1);
+	fprintf(fd, ") {\n");
+
+
+	int subclassIndex = struct_table_get_parent(structIndex);
+	if (subclassIndex >= 0) {
+		fprintf(fd, "%s_%s(this);\n", struct_table_get_name(subclassIndex),
+			funcname->lex);
+	}
+
+	// print function statements
+	print_node2(fd, funcstatements);
+
+	fprintf(fd, "}\n");
+}
+
+static void print_identifier2(FILE *fd, struct ast_node *n) {
+
+	fprintf(fd, "%s", n->lex);
+
+	for (int i = 0; i < n->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&n->children, i);
+
+		// has array
+		if (child->node_type == AST_GROUP) {
+			fprintf(fd, "[");
+			print_node2(fd, child);
+			fprintf(fd, "]");
+		}
+
+		if (child->node_type == AST_IDENTIFIER) {
+			fprintf(fd, ".");
+			print_identifier2(fd, child);
+		}
+	}
+}
 
 static void print_command_functionArguments(FILE *fd, struct ast_node *n, int beginWithSemicolon) {
 	for (int i = 1; i < n->children.elements; i += 2) {
@@ -1174,7 +1227,9 @@ static void print_command_definition2(FILE *fd, struct ast_node *n) {
 	if (!dd_variable_type_isPrimitiveType(type->lex)) {
 		fprintf(fd, "struct ");
 	}
-	fprintf(fd, "%s %s;\n", type->lex, defname->lex);
+	fprintf(fd, "%s ", type->lex, defname->lex);
+	print_identifier2(fd, defname);
+	fprintf(fd, ";\n");
 }
 
 static void print_command_class2(FILE *fd, struct ast_node *n) {
@@ -1199,7 +1254,10 @@ static void print_command_class2(FILE *fd, struct ast_node *n) {
 		}
 		// definition of function
 		else {
-			print_command_definitionClassFunction2(fd, child, classname->lex);
+			// function does not override another
+			if (child->value == 0) {
+				print_command_definitionClassFunction2(fd, child, classname->lex);
+			}
 		}
 	}
 
@@ -1229,6 +1287,20 @@ static void print_command_native2(FILE *fd, struct ast_node *n) {
 	if (strcmp(n->lex, "class") == 0) {
 		print_command_class2(fd, n);
 	}
+	else
+	if (strcmp(n->lex, "class_function") == 0) {
+		print_command_classFunction2(fd, n);
+	}
+	else
+	if (strcmp(n->lex, "group") == 0) {
+		for (unsigned int i = 0; i < n->children.elements; i++) {
+			print_node2(fd, dd_da_get(&n->children, i));
+		}
+	}
+	else
+	if (strcmp(n->lex, "def") == 0) {
+		print_command_definition2(fd, n);
+	}
 }
 
 static void print_number2(FILE *fd, struct ast_node *n) {
@@ -1238,6 +1310,7 @@ static void print_number2(FILE *fd, struct ast_node *n) {
 static void print_node2(FILE *fd, struct ast_node *n) {
 	switch (n->node_type) {
 		case AST_GAME:
+		case AST_GROUP:
 			for (unsigned int i = 0; i < n->children.elements; i++) {
 				print_node2(fd, dd_da_get(&n->children, i));
 			}

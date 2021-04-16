@@ -155,7 +155,7 @@ int lexer_getNextToken() {
 		// get the whole number
 		char restNumber[500];
 		restNumber[0] = '\0';
-		if (fscanf(lex_file, "%499[0-9.]", restNumber)) {
+		if (fscanf(lex_file, "%499[0-9.]", restNumber) > 0) {
 			strcat(buffer, restNumber);
 		}
 

@@ -10,7 +10,6 @@ int struct_table_current = 0;
 void struct_table_init() {
 	struct_table_current = -1;
 
-	/*
 	// Engine's initial structs and their members
 	struct_table_push("dd_world", 0);
 	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION, 0);
@@ -59,7 +58,6 @@ void struct_table_init() {
 	struct_table_push_member("drawInt", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
 	struct_table_push("dd_gamejolt_response_struct", 0);
-	*/
 }
 
 // push a new struct to the table
@@ -273,6 +271,7 @@ static int struct_table_is_member_parent_search(int structIndex, const char *mem
 }
 
 int struct_table_is_member_parent(int structIndex, const char *membername) {
+	parent_level_current = -1;
 	parent_level = -1;
 	return struct_table_is_member_parent_search(structIndex, membername);
 }

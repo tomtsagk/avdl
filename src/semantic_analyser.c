@@ -11,13 +11,33 @@
 static struct ast_node *expect_command_definition();
 static struct ast_node *expect_command_classDefinition();
 static struct ast_node *expect_command_group();
-static struct ast_node *expect_command_function();
+static struct ast_node *expect_command_functionDefinition();
+static struct ast_node *expect_command_classFunction();
 static struct ast_node *expect_identifier();
 static struct ast_node *expect_int();
 static struct ast_node *expect_command();
 static void semantic_error(const char *msg, ...);
 
-static struct ast_node *expect_command_function() {
+static struct ast_node *expect_command_classFunction() {
+
+	struct ast_node *classFunc = ast_create(AST_COMMAND_NATIVE, 0);
+	ast_addLex(classFunc, "class_function");
+
+	struct ast_node *classname = expect_identifier();
+	struct ast_node *function = expect_command_functionDefinition();
+
+	symtable_push();
+	struct ast_node *functionStatements = expect_command();
+	symtable_pop();
+
+	ast_child_add(classFunc, classname);
+	ast_child_add(function, functionStatements);
+	ast_child_add(classFunc, function);
+
+	return classFunc;
+}
+
+static struct ast_node *expect_command_functionDefinition() {
 
 	struct ast_node *function = ast_create(AST_COMMAND_NATIVE, 0);
 	ast_addLex(function, "function");
@@ -73,6 +93,35 @@ static struct ast_node *expect_command_classDefinition() {
 	symtable_push();
 	struct ast_node *definitions = expect_command();
 	symtable_pop();
+
+	int structIndex = struct_table_push(classname->lex, subclassname->lex);
+
+	for (int i = 0; i < definitions->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&definitions->children, i);
+		struct ast_node *type = dd_da_get(&child->children, 0);
+		struct ast_node *name = dd_da_get(&child->children, 1);
+
+		if (strcmp(child->lex, "def") == 0) {
+			//printf("variable: %s %s\n", type->lex, name->lex);
+			struct_table_push_member(name->lex, 0, 0);
+		}
+		else {
+			//printf("function: %s %s\n", type->lex, name->lex);
+
+			int parentDepth = struct_table_is_member_parent(structIndex, name->lex);
+			//printf("var: %s %s\n", type->lex, name->lex);
+			//printf("parent depth: %d\n", parentDepth);
+
+			// override function
+			if (parentDepth >= 0) {
+				child->value = 1;
+			}
+			// new function
+			else {
+			}
+			struct_table_push_member(name->lex, 0, 0);
+		}
+	}
 
 	/* scan definitions
 	 * if a function was defined in any of the subclasses, mark is
@@ -219,7 +268,11 @@ static struct ast_node *expect_command() {
 		}
 		else
 		if (strcmp(cmdname->lex, "function") == 0) {
-			cmd = expect_command_function();
+			cmd = expect_command_functionDefinition();
+		}
+		else
+		if (strcmp(cmdname->lex, "class_function") == 0) {
+			cmd = expect_command_classFunction();
 		}
 		else {
 			semantic_error("no rule to parse command '%s'", cmdname->lex);
@@ -227,13 +280,40 @@ static struct ast_node *expect_command() {
 	}
 	// custom command, make sure it exists
 	else {
+		/*
 		if (symtable_lookup(cmdname->lex) == -1) {
 			printf("unrecognized identifier: %s\n", cmdname->lex);
 			exit(-1);
 		}
+		*/
 		cmd = ast_create(0, 0);
 		cmd->node_type = AST_COMMAND_CUSTOM;
 		ast_child_add(cmd, cmdname);
+
+		int customToken;
+		while ((customToken = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
+			if (customToken == LEXER_TOKEN_INT) {
+				lexer_rewind();
+				ast_child_add(cmd, expect_int());
+			}
+			else
+			if (customToken == LEXER_TOKEN_IDENTIFIER) {
+				lexer_rewind();
+				ast_child_add(cmd, expect_identifier());
+			}
+			/*
+			else
+			if (customToken == LEXER_TOKEN_FLOAT) {
+				ast_child_add(cmd, expect_float());
+			}
+			*/
+			else
+			if (customToken == LEXER_TOKEN_COMMANDSTART) {
+				lexer_rewind();
+				ast_child_add(cmd, expect_command());
+			}
+		}
+		lexer_rewind();
 	}
 
 	// get the command's children
@@ -259,7 +339,6 @@ void semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) 
 	}
 
 	symtable_print();
-	struct_table_print();
 	/*
 	int result;
 	do {
