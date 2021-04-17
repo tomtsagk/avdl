@@ -48,4 +48,6 @@ int lexer_getCurrentLinenumber();
 
 void lexer_printCurrentLine();
 
+void lexer_addIncludedFile(const char *includeFilename);
+
 #endif // lexer

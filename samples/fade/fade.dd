@@ -3,7 +3,7 @@
 #
 # it fades from black to a colour, then back to black
 #
-(class dd_world_main dd_world
+(class worldMain dd_world
 	(group
 
 	# tracking timing
@@ -11,16 +11,16 @@
 	(def int positive)
 	(def int delay)
 
-	(function create (group))
-	(function update (group))
-	(function draw (group))
-	(function clean (group))
+	(function void create (group))
+	(function void update (group))
+	(function void draw (group))
+	(function void clean (group))
 
 	)
 )
 
 # initialise data
-(class_function dd_world_main create (group)
+(class_function worldMain void create (group)
 	(group
 
 	(dd_clearColour 0 0 0 1)
@@ -32,7 +32,7 @@
 )
 
 # update each frame
-(class_function dd_world_main update (group)
+(class_function worldMain void update (group)
 	(group
 
 	# on delay do nothing
@@ -74,14 +74,14 @@
 	)
 ) # update
 
-(class_function dd_world_main draw (group) (group))
-(class_function dd_world_main clean (group) (group))
+(class_function worldMain void draw (group) (group))
+(class_function worldMain void clean (group) (group))
 
-(function dd_gameInit (group)
+(function void dd_gameInit (group)
 	(group
 
 	(dd_setGameTitle "fade - avdl")
-	(dd_world_set_default dd_world_main)
+	(dd_world_set_default worldMain)
 
 	)
 )

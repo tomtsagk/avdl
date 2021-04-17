@@ -65,6 +65,7 @@ const struct keyword_function keywords[] = {
 
 	{"extern", parse_through},
 	{"multistring", parse_through},
+	{"include", parse_through},
 };
 unsigned int keywords_total = sizeof(keywords) /sizeof(struct keyword_function);
 

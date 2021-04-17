@@ -15,8 +15,37 @@ static struct ast_node *expect_command_functionDefinition();
 static struct ast_node *expect_command_classFunction();
 static struct ast_node *expect_identifier();
 static struct ast_node *expect_int();
+static struct ast_node *expect_float();
+static struct ast_node *expect_string();
+static struct ast_node *expect_command_binaryOperation();
 static struct ast_node *expect_command();
+static struct ast_node *expect_command_arg();
+static struct ast_node *expect_command_if();
+static struct ast_node *expect_command_include();
 static void semantic_error(const char *msg, ...);
+
+static struct ast_node *expect_command_include() {
+	struct ast_node *include = ast_create(AST_INCLUDE, 0);
+	struct ast_node *filename = expect_string();
+	ast_delete(filename);
+	ast_addLex(include, filename->lex);
+	return include;
+}
+
+static struct ast_node *expect_command_if() {
+
+	struct ast_node *ifcmd = ast_create(AST_COMMAND_NATIVE, 0);
+	ast_addLex(ifcmd, "if");
+
+	int token = 0;
+	while ((token = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
+		lexer_rewind();
+		ast_child_add(ifcmd, expect_command_arg());
+	}
+	lexer_rewind();
+
+	return ifcmd;
+}
 
 static struct ast_node *expect_command_classFunction() {
 
@@ -27,6 +56,8 @@ static struct ast_node *expect_command_classFunction() {
 	struct ast_node *function = expect_command_functionDefinition();
 
 	symtable_push();
+	struct entry *e = symtable_entryat(symtable_insert("this", DD_VARIABLE_TYPE_STRUCT));
+	e->isRef = 1;
 	struct ast_node *functionStatements = expect_command();
 	symtable_pop();
 
@@ -59,26 +90,10 @@ static struct ast_node *expect_command_group() {
 	ast_addLex(group, "group");
 	struct ast_node *cmd;
 
-	int token = lexer_getNextToken();
-	if (token == LEXER_TOKEN_COMMANDSTART
-	||  token == LEXER_TOKEN_IDENTIFIER) {
-		while (token == LEXER_TOKEN_COMMANDSTART
-		||     token == LEXER_TOKEN_IDENTIFIER) {
-			lexer_rewind();
-	
-			// command
-			if (token == LEXER_TOKEN_COMMANDSTART) {
-				cmd = expect_command();
-			}
-			// identifier
-			else {
-				cmd = expect_identifier();
-			}
-	
-			ast_child_add(group, cmd);
-
-			token = lexer_getNextToken();
-		}
+	int token = 0;
+	while ((token = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
+		lexer_rewind();
+		ast_child_add(group, expect_command_arg());
 	}
 	lexer_rewind();
 
@@ -103,7 +118,7 @@ static struct ast_node *expect_command_classDefinition() {
 
 		if (strcmp(child->lex, "def") == 0) {
 			//printf("variable: %s %s\n", type->lex, name->lex);
-			struct_table_push_member(name->lex, 0, 0);
+			struct_table_push_member(name->lex, dd_variable_type_convert(type->lex), type->lex);
 		}
 		else {
 			//printf("function: %s %s\n", type->lex, name->lex);
@@ -119,7 +134,7 @@ static struct ast_node *expect_command_classDefinition() {
 			// new function
 			else {
 			}
-			struct_table_push_member(name->lex, 0, 0);
+			struct_table_push_member(name->lex, DD_VARIABLE_TYPE_FUNCTION, 0);
 		}
 	}
 
@@ -174,6 +189,45 @@ static struct ast_node *expect_int() {
 	return integer;
 }
 
+static struct ast_node *expect_float() {
+
+	// confirm it's a float
+	if (lexer_getNextToken() != LEXER_TOKEN_FLOAT) {
+		semantic_error("expected float instead of '%s'", lexer_getLexToken());
+	}
+
+	struct ast_node *f = ast_create(AST_FLOAT, 0);
+	f->fvalue = atof(lexer_getLexToken());
+	return f;
+}
+
+static struct ast_node *expect_string() {
+
+	// confirm it's a string
+	if (lexer_getNextToken() != LEXER_TOKEN_STRING) {
+		semantic_error("expected string instead of '%s'", lexer_getLexToken());
+	}
+
+	struct ast_node *str = ast_create(AST_STRING, 0);
+	ast_addLex(str, lexer_getLexToken());
+	return str;
+}
+
+static struct ast_node *expect_command_binaryOperation(const char *binaryOperationLex) {
+
+	struct ast_node *binaryOperation = ast_create(AST_COMMAND_NATIVE, 0);
+	ast_addLex(binaryOperation, binaryOperationLex);
+
+	int token;
+	while ((token = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
+		lexer_rewind();
+		ast_child_add(binaryOperation, expect_command_arg());
+	}
+	lexer_rewind();
+
+	return binaryOperation;
+}
+
 static struct ast_node *expect_identifier() {
 
 	// confirm it's an identifier
@@ -184,6 +238,12 @@ static struct ast_node *expect_identifier() {
 	// generate ast node for it
 	struct ast_node *identifier = ast_create(AST_IDENTIFIER, 0);
 	ast_addLex(identifier, lexer_getLexToken());
+
+	int symId = symtable_lookup(identifier->lex);
+	if (symId >= 0) {
+		struct entry *e = symtable_entryat(symId);
+		identifier->isRef = e->isRef;
+	}
 
 	// does it have an array modifier?
 	if (lexer_getNextToken() == LEXER_TOKEN_ARRAYSTART) {
@@ -234,6 +294,36 @@ static struct ast_node *expect_identifier() {
 	return identifier;
 }
 
+static struct ast_node *expect_command_arg() {
+
+	int token = lexer_getNextToken();
+	lexer_rewind();
+	if (token == LEXER_TOKEN_INT) {
+		return expect_int();
+	}
+	else
+	if (token == LEXER_TOKEN_FLOAT) {
+		return expect_float();
+	}
+	else
+	if (token == LEXER_TOKEN_STRING) {
+		return expect_string();
+	}
+	else
+	if (token == LEXER_TOKEN_COMMANDSTART) {
+		return expect_command();
+	}
+	else
+	if (token == LEXER_TOKEN_IDENTIFIER) {
+		return expect_identifier();
+	}
+	else {
+		semantic_error("expected command argument instead of '%s'", lexer_getLexToken());
+	}
+
+	return 0;
+}
+
 // looks for the structure of a command: (cmdname arg1 arg2 .. argN)
 static struct ast_node *expect_command() {
 
@@ -269,10 +359,49 @@ static struct ast_node *expect_command() {
 		else
 		if (strcmp(cmdname->lex, "function") == 0) {
 			cmd = expect_command_functionDefinition();
+
+			if (lexer_getNextToken() == LEXER_TOKEN_COMMANDSTART) {
+				lexer_rewind();
+				// function statements
+				ast_child_add(cmd, expect_command());
+			}
+			else {
+				lexer_rewind();
+			}
+
 		}
 		else
 		if (strcmp(cmdname->lex, "class_function") == 0) {
 			cmd = expect_command_classFunction();
+		}
+		else
+		if (strcmp(cmdname->lex, "=") == 0
+		||  strcmp(cmdname->lex, "+") == 0
+		||  strcmp(cmdname->lex, "-") == 0
+		||  strcmp(cmdname->lex, "*") == 0
+		||  strcmp(cmdname->lex, "/") == 0
+		||  strcmp(cmdname->lex, "%") == 0
+		||  strcmp(cmdname->lex, "&&") == 0
+		||  strcmp(cmdname->lex, "||") == 0
+		||  strcmp(cmdname->lex, "==") == 0
+		||  strcmp(cmdname->lex, ">=") == 0
+		||  strcmp(cmdname->lex, "<=") == 0
+		||  strcmp(cmdname->lex, ">") == 0
+		||  strcmp(cmdname->lex, "<") == 0) {
+			cmd = expect_command_binaryOperation(cmdname->lex);
+		}
+		else
+		if (strcmp(cmdname->lex, "echo") == 0) {
+			cmd = expect_command_group();
+			ast_addLex(cmd, "echo");
+		}
+		else
+		if (strcmp(cmdname->lex, "if") == 0) {
+			cmd = expect_command_if();
+		}
+		else
+		if (strcmp(cmdname->lex, "include") == 0) {
+			cmd = expect_command_include();
 		}
 		else {
 			semantic_error("no rule to parse command '%s'", cmdname->lex);
@@ -292,26 +421,8 @@ static struct ast_node *expect_command() {
 
 		int customToken;
 		while ((customToken = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
-			if (customToken == LEXER_TOKEN_INT) {
-				lexer_rewind();
-				ast_child_add(cmd, expect_int());
-			}
-			else
-			if (customToken == LEXER_TOKEN_IDENTIFIER) {
-				lexer_rewind();
-				ast_child_add(cmd, expect_identifier());
-			}
-			/*
-			else
-			if (customToken == LEXER_TOKEN_FLOAT) {
-				ast_child_add(cmd, expect_float());
-			}
-			*/
-			else
-			if (customToken == LEXER_TOKEN_COMMANDSTART) {
-				lexer_rewind();
-				ast_child_add(cmd, expect_command());
-			}
+			lexer_rewind();
+			ast_child_add(cmd, expect_command_arg());
 		}
 		lexer_rewind();
 	}
@@ -335,7 +446,13 @@ void semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) 
 	while (lexer_getNextToken() == LEXER_TOKEN_COMMANDSTART) {
 		lexer_rewind();
 		cmd = expect_command();
-		ast_child_add(node, cmd);
+
+		if (cmd->node_type == AST_INCLUDE) {
+			lexer_addIncludedFile(cmd->lex);
+		}
+		else {
+			ast_child_add(node, cmd);
+		}
 	}
 
 	symtable_print();

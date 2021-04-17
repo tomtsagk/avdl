@@ -1144,9 +1144,156 @@ static void print_command_functionArguments(FILE *fd, struct ast_node *n, int be
 static void print_command_class2(FILE *fd, struct ast_node *n);
 static void print_command_native2(FILE *fd, struct ast_node *n);
 static void print_command_classFunction2(FILE *fd, struct ast_node *n);
-static void print_identifier2(FILE *fd, struct ast_node *n);
+static void print_command_function2(FILE *fd, struct ast_node *n);
+static void print_command_custom(FILE *fd, struct ast_node *n);
+static void print_command_echo(FILE *fd, struct ast_node *n);
+static void print_command_if(FILE *fd, struct ast_node *n);
+static void print_binaryOperation(FILE *fd, struct ast_node *n);
+static void print_identifier2(FILE *fd, struct ast_node *n, int skipLast);
 static void print_number2(FILE *fd, struct ast_node *n);
+static void print_float2(FILE *fd, struct ast_node *n);
 static void print_node2(FILE *fd, struct ast_node *n);
+static int getIdentifierChainCount(struct ast_node *n);
+
+static void print_command_if(FILE *fd, struct ast_node *n) {
+	for (int i = 0; i < n->children.elements; i += 2) {
+		struct ast_node *child1 = dd_da_get(&n->children, i);
+		struct ast_node *child2 = 0;
+
+		if (i+1 < n->children.elements) {
+			child2 = dd_da_get(&n->children, i+1);
+		}
+
+		if (i != 0) {
+			fprintf(fd, "else\n");
+		}
+
+		if (child2) {
+			fprintf(fd, "if (");
+			print_node2(fd, child1);
+			fprintf(fd, ") {\n");
+			print_node2(fd, child2);
+			fprintf(fd, "}\n");
+		}
+		else {
+			fprintf(fd, "{\n");
+			print_node2(fd, child1);
+			fprintf(fd, "}\n");
+		}
+	}
+}
+
+static void print_command_echo(FILE *fd, struct ast_node *n) {
+
+	fprintf(fd, "printf(\"");
+	for (int i = 0; i < n->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&n->children, i);
+
+		if (child->node_type == AST_STRING) {
+			fprintf(fd, "%%s");
+		}
+		else {
+			printf("unable to parse argument in echo '%s(%d)', no rule to parse it (1)\n",
+				child->lex, child->value);
+			exit(-1);
+		}
+	}
+	fprintf(fd, "\\n\"");
+	for (int i = 0; i < n->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&n->children, i);
+
+		fprintf(fd, ", ");
+		if (child->node_type == AST_STRING) {
+			fprintf(fd, "\"%s\"", child->lex);
+		}
+		else {
+			printf("unable to parse argument in echo '%s(%d)', no rule to parse it (2)\n",
+				child->lex, child->value);
+			exit(-1);
+		}
+	}
+	fprintf(fd, ");\n");
+}
+
+static void print_binaryOperation(FILE *fd, struct ast_node *n) {
+	struct ast_node *child1 = dd_da_get(&n->children, 0);
+
+	if (strcmp(n->lex, "=") != 0) {
+		fprintf(fd, "(");
+	}
+
+	print_node2(fd, child1);
+	fprintf(fd, " ");
+
+	for (int i = 1; i < n->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&n->children, i);
+		fprintf(fd, "%s ", n->lex);
+		print_node2(fd, child);
+	}
+
+	if (strcmp(n->lex, "=") == 0) {
+		fprintf(fd, ";\n");
+	}
+	else {
+		fprintf(fd, ")");
+	}
+}
+
+static void print_command_custom(FILE *fd, struct ast_node *n) {
+	struct ast_node *cmdname = dd_da_get(&n->children, 0);
+
+	print_identifier2(fd, cmdname, 0);
+	fprintf(fd, "(");
+	int hasArgs = 0;
+	if (strcmp(cmdname->lex, "this") == 0) {
+
+		// not dereferencing "this" hack
+		if (getIdentifierChainCount(cmdname)-1 > 0) {
+			fprintf(fd, "&");
+		}
+
+		print_identifier2(fd, cmdname, 1);
+		hasArgs = 1;
+	}
+	for (int i = 1; i < n->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&n->children, i);
+
+		if (hasArgs) {
+			fprintf(fd, ", ");
+		}
+		hasArgs = 1;
+
+		print_node2(fd, child);
+	}
+	fprintf(fd, ");\n");
+}
+
+static void print_command_function2(FILE *fd, struct ast_node *n) {
+	struct ast_node *functype = dd_da_get(&n->children, 0);
+	struct ast_node *funcname = dd_da_get(&n->children, 1);
+	struct ast_node *funcargs = dd_da_get(&n->children, 2);
+	struct ast_node *funcstatements = 0;
+
+	if (n->children.elements == 4) {
+		funcstatements = dd_da_get(&n->children, 3);
+	}
+
+	// print function signature and args
+	fprintf(fd, "%s %s(", functype->lex, funcname->lex);
+	print_command_functionArguments(fd, funcargs, 1);
+	fprintf(fd, ") {\n");
+
+	if (funcstatements) {
+		print_node2(fd, funcstatements);
+	}
+
+	fprintf(fd, "}\n");
+
+	// `dd_gameInit` is the "main" function, where everything begins
+	if (strcmp(funcname->lex, "dd_gameInit") == 0) {
+		fprintf(fd_global, "int main(int argc, char *argv[]) {dd_main(argc, argv);}\n");
+	}
+}
 
 static void print_command_classFunction2(FILE *fd, struct ast_node *n) {
 	struct ast_node *classname = dd_da_get(&n->children, 0);
@@ -1165,11 +1312,51 @@ static void print_command_classFunction2(FILE *fd, struct ast_node *n) {
 	print_command_functionArguments(fd, funcargs, 1);
 	fprintf(fd, ") {\n");
 
+	// create functions are special
+	if (strcmp(funcname->lex, "create") == 0) {
 
-	int subclassIndex = struct_table_get_parent(structIndex);
-	if (subclassIndex >= 0) {
-		fprintf(fd, "%s_%s(this);\n", struct_table_get_name(subclassIndex),
-			funcname->lex);
+		// subclass init
+		int subclassIndex = struct_table_get_parent(structIndex);
+		if (subclassIndex >= 0) {
+			fprintf(fd, "%s_%s(this);\n", struct_table_get_name(subclassIndex),
+				funcname->lex);
+		}
+
+		// prepare functions
+		for (int i = 0; i < struct_table_get_member_total(structIndex); i++) {
+			if (struct_table_get_member_type(structIndex, i) == DD_VARIABLE_TYPE_FUNCTION) {
+				char *memberFuncname = struct_table_get_member_name(structIndex, i);
+				int parentDepth = struct_table_is_member_parent(structIndex, memberFuncname);
+				fprintf(fd, "this->");
+				for (int j = 0; j < parentDepth; j++) {
+					fprintf(fd, "parent.");
+				}
+				fprintf(fd, "%s = %s_%s;\n", memberFuncname, classname->lex, memberFuncname);
+			}
+		}
+
+		// initialise structs
+		for (int i = 0; i < struct_table_get_member_total(structIndex); i++) {
+			if (struct_table_get_member_type(structIndex, i) == DD_VARIABLE_TYPE_STRUCT) {
+				char *memberName = struct_table_get_member_name(structIndex, i);
+				char *memberType = struct_table_get_member_nametype(structIndex, i);
+				int parentDepth = struct_table_is_member_parent(structIndex, memberName);
+				fprintf(fd, "%s_create(&this->%s);\n", memberType, memberName);
+			}
+		}
+	}
+	else
+	// `clean` function cleans all structs
+	if (strcmp(funcname->lex, "clean") == 0) {
+		// initialise structs
+		for (int i = 0; i < struct_table_get_member_total(structIndex); i++) {
+			if (struct_table_get_member_type(structIndex, i) == DD_VARIABLE_TYPE_STRUCT) {
+				char *memberName = struct_table_get_member_name(structIndex, i);
+				char *memberType = struct_table_get_member_nametype(structIndex, i);
+				int parentDepth = struct_table_is_member_parent(structIndex, memberName);
+				fprintf(fd, "%s_clean(&this->%s);\n", memberType, memberName);
+			}
+		}
 	}
 
 	// print function statements
@@ -1178,7 +1365,18 @@ static void print_command_classFunction2(FILE *fd, struct ast_node *n) {
 	fprintf(fd, "}\n");
 }
 
-static void print_identifier2(FILE *fd, struct ast_node *n) {
+static int getIdentifierChainCount(struct ast_node *n) {
+	for (int i = 0; i < n->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&n->children, i);
+		if (child->node_type == AST_IDENTIFIER) {
+			return getIdentifierChainCount(child) +1;
+		}
+	}
+
+	return 0;
+}
+
+static void print_identifier2(FILE *fd, struct ast_node *n, int skipLast) {
 
 	fprintf(fd, "%s", n->lex);
 
@@ -1192,9 +1390,19 @@ static void print_identifier2(FILE *fd, struct ast_node *n) {
 			fprintf(fd, "]");
 		}
 
+		if (getIdentifierChainCount(n) == 1 && skipLast) {
+			break;
+		}
+
 		if (child->node_type == AST_IDENTIFIER) {
-			fprintf(fd, ".");
-			print_identifier2(fd, child);
+
+			if (n->isRef) {
+				fprintf(fd, "->");
+			}
+			else {
+				fprintf(fd, ".");
+			}
+			print_identifier2(fd, child, skipLast);
 		}
 	}
 }
@@ -1228,7 +1436,7 @@ static void print_command_definition2(FILE *fd, struct ast_node *n) {
 		fprintf(fd, "struct ");
 	}
 	fprintf(fd, "%s ", type->lex, defname->lex);
-	print_identifier2(fd, defname);
+	print_identifier2(fd, defname, 0);
 	fprintf(fd, ";\n");
 }
 
@@ -1292,6 +1500,10 @@ static void print_command_native2(FILE *fd, struct ast_node *n) {
 		print_command_classFunction2(fd, n);
 	}
 	else
+	if (strcmp(n->lex, "function") == 0) {
+		print_command_function2(fd, n);
+	}
+	else
 	if (strcmp(n->lex, "group") == 0) {
 		for (unsigned int i = 0; i < n->children.elements; i++) {
 			print_node2(fd, dd_da_get(&n->children, i));
@@ -1301,10 +1513,42 @@ static void print_command_native2(FILE *fd, struct ast_node *n) {
 	if (strcmp(n->lex, "def") == 0) {
 		print_command_definition2(fd, n);
 	}
+	else
+	if (strcmp(n->lex, "=") == 0
+	||  strcmp(n->lex, "+") == 0
+	||  strcmp(n->lex, "-") == 0
+	||  strcmp(n->lex, "*") == 0
+	||  strcmp(n->lex, "/") == 0
+	||  strcmp(n->lex, "%") == 0
+	||  strcmp(n->lex, "&&") == 0
+	||  strcmp(n->lex, "||") == 0
+	||  strcmp(n->lex, "==") == 0
+	||  strcmp(n->lex, ">=") == 0
+	||  strcmp(n->lex, "<=") == 0
+	||  strcmp(n->lex, ">") == 0
+	||  strcmp(n->lex, "<") == 0) {
+		print_binaryOperation(fd, n);
+	}
+	else
+	if (strcmp(n->lex, "echo") == 0) {
+		print_command_echo(fd, n);
+	}
+	else
+	if (strcmp(n->lex, "if") == 0) {
+		print_command_if(fd, n);
+	}
+	else {
+		printf("unable to parse command '%s': no parsing rule\n", n->lex);
+		exit(-1);
+	}
 }
 
 static void print_number2(FILE *fd, struct ast_node *n) {
 	fprintf(fd, "%d", n->value);
+}
+
+static void print_float2(FILE *fd, struct ast_node *n) {
+	fprintf(fd, "%f", n->fvalue);
 }
 
 static void print_node2(FILE *fd, struct ast_node *n) {
@@ -1319,36 +1563,33 @@ static void print_node2(FILE *fd, struct ast_node *n) {
 			print_command_native2(fd, n);
 			break;
 		}
-			/*
 		case AST_COMMAND_CUSTOM: {
-			print_function_call(fd, n);
+			print_command_custom(fd, n);
 			break;
 		}
-		*/
 		case AST_NUMBER: {
 			print_number2(fd, n);
 			break;
 		}
-		/*
+		case AST_IDENTIFIER: {
+			print_identifier2(fd, n, 0);
+			break;
+		}
 		case AST_FLOAT: {
-			print_float(fd, n);
+			print_float2(fd, n);
 			break;
 		}
 		case AST_STRING: {
-			//struct entry *e = symtable_entryat(n->value);
 			fprintf(fd, "\"%s\"", n->lex);
 			break;
 		}
+		/*
 		case AST_INCLUDE: {
 			struct entry *e = symtable_entryat(n->value);
 			strcpy(buffer, e->lexptr);
 			buffer[strlen(buffer)-3] = 'h';
 			buffer[strlen(buffer)-2] = '\0';
 			fprintf(fd, "#include \"%s\"\n", buffer);
-			break;
-		}
-		case AST_IDENTIFIER: {
-			print_identifier_chain(fd, n, 0);
 			break;
 		}
 		case AST_EMPTY: break;
