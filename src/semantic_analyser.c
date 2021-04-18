@@ -455,20 +455,6 @@ void semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) 
 		}
 	}
 
-	symtable_print();
-	/*
-	int result;
-	do {
-		result = lexer_getNextToken();
-		//printf("avdl error: known token: %s %d\n", lexer_getLexToken(), result);
-	} while (result != LEXER_TOKEN_UNKNOWN && result != LEXER_TOKEN_DONE);
-
-	if (result == LEXER_TOKEN_UNKNOWN) {
-		printf("avdl error: unknown token: %s\n", lexer_getLexToken());
-		exit(-1);
-	}
-	*/
-
 	lexer_clean();
 }
 

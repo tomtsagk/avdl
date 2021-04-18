@@ -64,7 +64,7 @@ For the last line `make install`, the default location is `/usr` which can be ch
 
 You can then go to the `samples/` and try to compile any using the following:
 
-    avdl src.dd
+    avdl file.ags
 
 Which should produce an executable `game` file, which when run will display the sample project.
 

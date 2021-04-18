@@ -14,17 +14,7 @@
 #include "lexer.h"
 #include "semantic_analyser.h"
 
-/*
-extern FILE *yyin;
-extern YYSTYPE yylex(void);
-*/
-
-// line number (got from lex.l)
-//extern int linenum;
-
 extern float parsing_float;
-
-//extern int include_stack_ptr;
 
 char included_files[10][100];
 int included_files_num = 0;
@@ -32,15 +22,6 @@ int included_files_num = 0;
 // buffer for general use
 #define DD_BUFFER_SIZE 1000
 char buffer[DD_BUFFER_SIZE];
-
-/*
-// error
-void yyerror(const char *str)
-{
-        fprintf(stderr,"error: line %d: %s\n", linenum, str);
-	_exit(-1);
-}
-*/
 
 // game node, parent of all nodes
 struct ast_node *game_node;
@@ -193,38 +174,11 @@ int main(int argc, char *argv[])
 		}
 
 		included_files_num = 0;
-		//include_stack_ptr = 0;
-
-		/*
-		FILE *input_file = 0;
-		input_file = fopen(filename[i], "r");
-		if (!input_file) {
-			printf("avdl error: Unable to open '%s': %s\n", filename[i], strerror(errno));
-			return -1;
-		}
-		*/
-
-		//yyin = input_file;
-
-		// init data
-		//linenum = 1;
-
-		// initial symbols
-		//symtable_init();
 
 		// initialise the parent node
 
-		// init structs
-		struct_table_init();
-
 		game_node = ast_create(AST_GAME, 0);
 		semanticAnalyser_convertToAst(game_node, filename[i]);
-		//lexer_convertToAst(game_node, filename[i]);
-		//ast_print(game_node);
-		//dd_commands_validate(game_node);
-
-		//yyparse();
-		//fclose(input_file);
 
 		/*
 		 * if only transpiling, check output file
@@ -254,79 +208,6 @@ int main(int argc, char *argv[])
 		if (show_struct_table) {
 			struct_table_print();
 		}
-
-		//symtable_print();
-
-		// clean symtable and ast tree
-		//symtable_clean();
-		//ast_delete(game_node);
-
-//		for (int i = 0; i < included_files_num; i++) {
-//			//printf("transpiling included file: %s\n", included_files[i]);
-//			include_stack_ptr = 0;
-//			symtable_clean();
-//			/*
-//			//input_file = fopen(included_files[i], "r");
-//			if (!input_file) {
-//				printf("avdl error: Unable to open included file '%s': %s\n", included_files[i], strerror(errno));
-//				return -1;
-//			}
-//			*/
-//
-//			strcpy(buffer, included_files[i]);
-//			buffer[strlen(buffer)-3] = 'h';
-//			buffer[strlen(buffer)-2] = '\0';
-//			//printf("transpiling to: %s\n", buffer);
-//			//sprintf(buffer, "build-cglut/%s.h", included_files[i]);
-//
-//			/*
-//			// stat source and destination asset, if source is newer, copy to destination
-//			struct stat stat_src_asset;
-//			if (stat(included_files[i], &stat_src_asset) == -1) {
-//				printf("avdl error: Unable to stat '%s': %s\n", included_files[i], strerror(errno));
-//				exit(-1);
-//			}
-//			*/
-//
-//			//struct stat stat_dst_asset;
-//			//if (stat(buffer, &stat_dst_asset) == -1) {
-//			if (1) {
-//				//yyin = input_file;
-//				game_node = ast_create(AST_GAME, 0);
-//				yyparse();
-//				//fclose(input_file);
-//				if (transpile_cglut(buffer, game_node, 1) != 0) {
-//					printf("avdl: transpilation failed to file: %s\n", buffer);
-//					return -1;
-//				}
-//				if (show_ast) {
-//					ast_print(game_node);
-//				}
-//				continue;
-//			}
-//
-//			/*
-//			// check last modification time
-//			time_t time_src = mktime(gmtime(&stat_src_asset.st_mtime));
-//			time_t time_dst = mktime(gmtime(&stat_dst_asset.st_mtime));
-//			*/
-//
-//			//if (time_src > time_dst) {
-//			if (1) {
-//				//yyin = input_file;
-//				game_node = ast_create(AST_GAME, 0);
-//				yyparse();
-//				//fclose(input_file);
-//				if (transpile_cglut(buffer, game_node, 1) != 0) {
-//					printf("avdl: transpilation failed to file: %s\n", buffer);
-//					return -1;
-//				}
-//				if (show_ast) {
-//					ast_print(game_node);
-//				}
-//				continue;
-//			}
-//		}
 	}
 
 	if (compile) {

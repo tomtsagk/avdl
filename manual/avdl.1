@@ -18,7 +18,7 @@ in an abstract way, and then compile it for different platforms.
 \fB-c\fR
 Only compile the given file to an object file.
 Each given file will be compiled to a file with the same name
-but with a \fB.o\fR suffix.
+but with a \fB.ago\fR suffix.
 If \fB-o\fR is active, only one input file can be given.
 
 .TP
@@ -46,17 +46,13 @@ of a project that have changed, instead of the whole project:
 .PP
 .nf
 .RS
-avdl -c file1 -o file1.avo
-avdl -c file2 -o file2.avo
-avdl file1.avo file2.avo -o my_game
+avdl -c file1 -o file1.ago
+avdl -c file2 -o file2.ago
+avdl file1.ago file2.ago -o my_game
 .RE
 .fi
 .PP
 Take a look at \fBsamples/\fR for examples of actual projects.
-
-.SH BUGS
-The compiler is still new, sometimes when a syntax error occurs, a sane
-error message might not be generated.
 
 .SH AUTHOR
 Tom Tsagk (tomtsagk@darkdimension.org)
