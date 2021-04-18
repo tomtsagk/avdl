@@ -1583,17 +1583,7 @@ static void print_node2(FILE *fd, struct ast_node *n) {
 			fprintf(fd, "\"%s\"", n->lex);
 			break;
 		}
-		/*
-		case AST_INCLUDE: {
-			struct entry *e = symtable_entryat(n->value);
-			strcpy(buffer, e->lexptr);
-			buffer[strlen(buffer)-3] = 'h';
-			buffer[strlen(buffer)-2] = '\0';
-			fprintf(fd, "#include \"%s\"\n", buffer);
-			break;
-		}
 		case AST_EMPTY: break;
-		*/
 	}
 }
 
@@ -1621,32 +1611,9 @@ int transpile_cglut2(const char *filename, struct ast_node *n) {
 		return -1;
 	}
 
-	/*
-	// on header files, create header guards
-	if (isIncluded) {
-		strcpy(buffer, filename);
-		for (int i = 0; buffer[i] != '\0'; i++) {
-			if (!(buffer[i] >= 'a' && buffer[i] <= 'z')
-			&&  !(buffer[i] >= 'A' && buffer[i] <= 'Z')
-			&& buffer[i] != '_') {
-				buffer[i] = '_';
-			}
-		}
-		fprintf(fd_global, "#ifndef DD_%s_H\n", buffer);
-		fprintf(fd_global, "#define DD_%s_H\n", buffer);
-	}
-	*/
-
 	// print node to file
 	fprintf(fd_global, "#include \"avdl_cengine.h\"\n");
 	print_node2(fd_global, n);
-
-	/*
-	// on header files, end header guard
-	if (isIncluded) {
-		fprintf(fd_global, "#endif\n");
-	}
-	*/
 
 	// clean up
 	if (fclose(fd_global) != 0) {

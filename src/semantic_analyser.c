@@ -96,7 +96,19 @@ static struct ast_node *expect_command_group() {
 static struct ast_node *expect_command_classDefinition() {
 
 	struct ast_node *classname = expect_identifier();
-	struct ast_node *subclassname = expect_identifier();
+
+	// subclass can be an identifier (name of the class) or `0` (no parent class)
+	struct ast_node *subclassname;
+	if (lexer_peek() == LEXER_TOKEN_IDENTIFIER) {
+		subclassname = expect_identifier();
+	}
+	else {
+		struct ast_node *n = expect_int();
+		if (n->value != 0) {
+			semantic_error("subclass can either be an identifier or '0'");
+		}
+		subclassname = 0;
+	}
 
 	symtable_push();
 	struct ast_node *definitions = expect_command();

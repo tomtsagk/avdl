@@ -7,13 +7,15 @@
 #include "dd_commands.h"
 #include <ctype.h>
 
+extern char *includePath;
+
 static char buffer[500];
 static char lastTokenRead[200];
 static int lastToken;
 
 struct file_properties {
 	FILE *f;
-	const char *filename;
+	char filename[200];
 	int currentLineNumber;
 	int currentCharacterNumber;
 
@@ -44,7 +46,7 @@ void lexer_prepare(const char *filename) {
 	lastTokenRead[0] = '\0';
 	lastToken = LEXER_TOKEN_UNKNOWN;
 	currentFile = 0;
-	files[0].filename = filename;
+	strcpy(files[0].filename, filename);
 	files[0].currentLineNumber = 1;
 	files[0].currentCharacterNumber = 0;
 
@@ -221,6 +223,48 @@ static int getNextToken(int peek) {
 	||  buffer[0] == '&'
 	||  buffer[0] == '|') {
 
+		// check if negative number
+		if (buffer[0] == '-') {
+			long pos = ftell(files[currentFile].f);
+			char restId;
+			fscanf(files[currentFile].f, "%1c", &restId);
+			if (restId >= '0' && restId <= '9') {
+				buffer[1] = restId;
+				buffer[2] = '\0';
+				// get the whole number
+				char restNumber[500];
+				restNumber[0] = '\0';
+				if (fscanf(files[currentFile].f, "%499[0-9.]", restNumber) > 0) {
+					strcat(buffer, restNumber);
+				}
+
+				// decide if it's a floating number
+				int isFloat = 0;
+				char *ptr = buffer;
+				while (ptr[0] != '\0') {
+					if (ptr[0] == '.') {
+						isFloat = 1;
+						break;
+					}
+					ptr++;
+				}
+
+				// parsing float
+				if (isFloat) {
+					//printf("float: %s\n", buffer);
+					returnToken = LEXER_TOKEN_FLOAT;
+				}
+				// parsing int
+				else {
+					//printf("int: %s\n", buffer);
+					returnToken = LEXER_TOKEN_INT;
+				}
+			}
+			else {
+				fseek(files[currentFile].f, pos, SEEK_SET);
+			}
+		}
+		else
 		// check if some symbols come with "="
 		if (buffer[0] == '='
 		||  buffer[0] == '<'
@@ -234,6 +278,7 @@ static int getNextToken(int peek) {
 			}
 			else {
 				buffer[1] = restId;
+				buffer[2] = '\0';
 			}
 		}
 		else
@@ -247,11 +292,14 @@ static int getNextToken(int peek) {
 			}
 			else {
 				buffer[1] = restId;
+				buffer[2] = '\0';
 			}
 		}
 
 		//printf("identifier special: %s\n", buffer);
-		returnToken = LEXER_TOKEN_IDENTIFIER;
+		if (returnToken == LEXER_TOKEN_UNKNOWN) {
+			returnToken = LEXER_TOKEN_IDENTIFIER;
+		}
 	}
 	else
 	// end of file -- nothing left to parse
@@ -345,19 +393,27 @@ void lexer_printCurrentLine() {
 
 void lexer_addIncludedFile(const char *includeFilename) {
 
+	if (includePath) {
+		strcpy(buffer, includePath);
+		strcat(buffer, includeFilename);
+	}
+	else {
+		strcpy(buffer, includeFilename);
+	}
+
 	if (currentFile+1 >= 10) {
-		printf("lexer: reached limit of included files with: '%s'\n", includeFilename);
+		printf("lexer: reached limit of included files with: '%s'\n", buffer);
 		exit(-1);
 	}
 
 	currentFile++;
-	files[currentFile].filename = includeFilename;
+	strcpy(files[currentFile].filename, buffer);
 	files[currentFile].currentLineNumber = 1;
 	files[currentFile].currentCharacterNumber = 0;
 
-	files[currentFile].f = fopen(includeFilename, "r");
+	files[currentFile].f = fopen(buffer, "r");
 	if (!files[currentFile].f) {
-		printf("avdl error: Unable to open '%s': %s\n", includeFilename, strerror(errno));
+		printf("avdl error: Unable to open '%s': %s\n", buffer, strerror(errno));
 		exit(-1);
 	}
 
