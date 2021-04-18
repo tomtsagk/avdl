@@ -37,12 +37,9 @@ static struct ast_node *expect_command_if() {
 	struct ast_node *ifcmd = ast_create(AST_COMMAND_NATIVE, 0);
 	ast_addLex(ifcmd, "if");
 
-	int token = 0;
-	while ((token = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
-		lexer_rewind();
+	while (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
 		ast_child_add(ifcmd, expect_command_arg());
 	}
-	lexer_rewind();
 
 	return ifcmd;
 }
@@ -88,14 +85,10 @@ static struct ast_node *expect_command_group() {
 
 	struct ast_node *group = ast_create(AST_COMMAND_NATIVE, 0);
 	ast_addLex(group, "group");
-	struct ast_node *cmd;
 
-	int token = 0;
-	while ((token = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
-		lexer_rewind();
+	while (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
 		ast_child_add(group, expect_command_arg());
 	}
-	lexer_rewind();
 
 	return group;
 }
@@ -218,12 +211,9 @@ static struct ast_node *expect_command_binaryOperation(const char *binaryOperati
 	struct ast_node *binaryOperation = ast_create(AST_COMMAND_NATIVE, 0);
 	ast_addLex(binaryOperation, binaryOperationLex);
 
-	int token;
-	while ((token = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
-		lexer_rewind();
+	while (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
 		ast_child_add(binaryOperation, expect_command_arg());
 	}
-	lexer_rewind();
 
 	return binaryOperation;
 }
@@ -246,29 +236,26 @@ static struct ast_node *expect_identifier() {
 	}
 
 	// does it have an array modifier?
-	if (lexer_getNextToken() == LEXER_TOKEN_ARRAYSTART) {
+	if (lexer_peek() == LEXER_TOKEN_ARRAYSTART) {
+		lexer_getNextToken();
 		struct ast_node *array = ast_create(AST_GROUP, 0);
-		int token = lexer_getNextToken();
+		int token = lexer_peek();
 		// integer as array modifier
 		if (token == LEXER_TOKEN_INT) {
-			lexer_rewind();
 			ast_child_add(array, expect_int());
 		}
 		else
 		// identifier as array modifier
 		if (token == LEXER_TOKEN_IDENTIFIER) {
-			lexer_rewind();
 			ast_child_add(array, expect_identifier());
 		}
 		else
 		// calculation as array modifier
 		if (token == LEXER_TOKEN_COMMANDSTART) {
-			lexer_rewind();
-			while ((token = lexer_getNextToken()) == LEXER_TOKEN_COMMANDSTART) {
-				lexer_rewind();
+			lexer_getNextToken();
+			while (lexer_peek() == LEXER_TOKEN_COMMANDSTART) {
 				ast_child_add(array, expect_command());
 			}
-			lexer_rewind();
 		}
 		ast_child_add(identifier, array);
 
@@ -277,18 +264,12 @@ static struct ast_node *expect_identifier() {
 			semantic_error("expected end of array");
 		}
 	}
-	else {
-		lexer_rewind();
-	}
 
 	// it has a period (myclass.myvar)
-	if (lexer_getNextToken() == LEXER_TOKEN_PERIOD) {
+	if (lexer_peek() == LEXER_TOKEN_PERIOD) {
+		lexer_getNextToken();
 		struct ast_node *child = expect_identifier();
 		ast_child_add(identifier, child);
-	}
-	// it does not have a period
-	else {
-		lexer_rewind();
 	}
 
 	return identifier;
@@ -296,8 +277,7 @@ static struct ast_node *expect_identifier() {
 
 static struct ast_node *expect_command_arg() {
 
-	int token = lexer_getNextToken();
-	lexer_rewind();
+	int token = lexer_peek();
 	if (token == LEXER_TOKEN_INT) {
 		return expect_int();
 	}
@@ -318,6 +298,7 @@ static struct ast_node *expect_command_arg() {
 		return expect_identifier();
 	}
 	else {
+		lexer_getNextToken();
 		semantic_error("expected command argument instead of '%s'", lexer_getLexToken());
 	}
 
@@ -360,13 +341,9 @@ static struct ast_node *expect_command() {
 		if (strcmp(cmdname->lex, "function") == 0) {
 			cmd = expect_command_functionDefinition();
 
-			if (lexer_getNextToken() == LEXER_TOKEN_COMMANDSTART) {
-				lexer_rewind();
+			if (lexer_peek() == LEXER_TOKEN_COMMANDSTART) {
 				// function statements
 				ast_child_add(cmd, expect_command());
-			}
-			else {
-				lexer_rewind();
 			}
 
 		}
@@ -419,17 +396,13 @@ static struct ast_node *expect_command() {
 		cmd->node_type = AST_COMMAND_CUSTOM;
 		ast_child_add(cmd, cmdname);
 
-		int customToken;
-		while ((customToken = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
-			lexer_rewind();
+		while (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
 			ast_child_add(cmd, expect_command_arg());
 		}
-		lexer_rewind();
 	}
 
 	// get the command's children
-	int token = 0;
-	if ((token = lexer_getNextToken()) != LEXER_TOKEN_COMMANDEND) {
+	if (lexer_getNextToken() != LEXER_TOKEN_COMMANDEND) {
 		semantic_error("expected command end ')'");
 	}
 
@@ -443,8 +416,7 @@ void semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) 
 	lexer_prepare(filename);
 
 	struct ast_node *cmd;
-	while (lexer_getNextToken() == LEXER_TOKEN_COMMANDSTART) {
-		lexer_rewind();
+	while (lexer_peek() == LEXER_TOKEN_COMMANDSTART) {
 		cmd = expect_command();
 
 		if (cmd->node_type == AST_INCLUDE) {

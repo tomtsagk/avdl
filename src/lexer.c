@@ -8,6 +8,8 @@
 #include <ctype.h>
 
 static char buffer[500];
+static char lastTokenRead[200];
+static int lastToken;
 
 struct file_properties {
 	FILE *f;
@@ -15,26 +17,22 @@ struct file_properties {
 	int currentLineNumber;
 	int currentCharacterNumber;
 
-	long lex_pos_rewind;
 	long lex_pos_previousLine;
 	long lex_pos_currentLine;
 	long lex_pos_current;
-
-	int current_token;
-	int rewind_token;
 };
 
 static struct file_properties files[10];
 static int currentFile = -1;
 
-static void lexer_includePop() {
+static void lexer_includePop(int peek) {
 
 	if (currentFile == 0) {
 		printf("lexer: attempted to pop base file\n");
 		exit(-1);
 	}
 
-	if (files[currentFile].f) {
+	if (files[currentFile].f && !peek) {
 		fclose(files[currentFile].f);
 		files[currentFile].f = 0;
 	}
@@ -43,12 +41,12 @@ static void lexer_includePop() {
 }
 
 void lexer_prepare(const char *filename) {
+	lastTokenRead[0] = '\0';
+	lastToken = LEXER_TOKEN_UNKNOWN;
 	currentFile = 0;
 	files[0].filename = filename;
 	files[0].currentLineNumber = 1;
 	files[0].currentCharacterNumber = 0;
-	files[0].current_token = -1;
-	files[0].rewind_token = -1;
 
 	files[0].f = fopen(filename, "r");
 	if (!files[0].f) {
@@ -56,11 +54,10 @@ void lexer_prepare(const char *filename) {
 		exit(-1);
 	}
 
-	files[0].lex_pos_rewind =
-		files[0].lex_pos_previousLine =
-			files[0].lex_pos_currentLine =
-				files[0].lex_pos_current =
-					ftell(files[0].f);
+	files[0].lex_pos_previousLine =
+		files[0].lex_pos_currentLine =
+			files[0].lex_pos_current =
+				ftell(files[0].f);
 }
 
 void lexer_clean() {
@@ -73,15 +70,13 @@ void lexer_clean() {
 	currentFile = -1;
 }
 
-int lexer_getNextToken() {
+static int getNextToken(int peek) {
 
-	if (files[currentFile].rewind_token >= 0) {
-		files[currentFile].rewind_token = -1;
-		return files[currentFile].current_token;
+	files[currentFile].currentCharacterNumber += strlen(lastTokenRead);
+	if (lastToken == LEXER_TOKEN_STRING) {
+		files[currentFile].currentCharacterNumber += 2;
 	}
-
-	files[currentFile].currentCharacterNumber += strlen(buffer);
-	//printf("current char number += %d, %s\n", strlen(buffer), buffer);
+	//printf("current char number += %d, %s = %d\n", strlen(buffer), buffer, files[currentFile].currentCharacterNumber);
 
 	// clear characters that are not tokens (whitespace / comments)
 	int allClear;
@@ -99,24 +94,26 @@ int lexer_getNextToken() {
 		}
 
 		// ignore whitespace
+		buffer[0] = '\0';
 		allClear += fscanf(files[currentFile].f, "%100[ \t]*", buffer);
+		files[currentFile].currentCharacterNumber += strlen(buffer);
 		//printf("ignored whitespace: %s\n", buffer);
 
 		// ignore comments
+		buffer[0] = '\0';
 		allClear += fscanf(files[currentFile].f, "%1[#]%*[^\n]*", buffer);
+		files[currentFile].currentCharacterNumber += strlen(buffer);
 		//printf("ignored comment: %s\n", buffer);
 
 		//printf("clear: %d\n", allClear);
 
 		// reached EOF in included file
 		if (feof(files[currentFile].f) && currentFile > 0) {
-			lexer_includePop();
+			lexer_includePop(peek);
 			return lexer_getNextToken();
 		}
 
 	} while (allClear > 0);
-
-	files[currentFile].lex_pos_rewind = ftell(files[currentFile].f);
 
 	// read a character and find out what token it is
 	buffer[0] = '\0';
@@ -270,31 +267,47 @@ int lexer_getNextToken() {
 
 	files[currentFile].lex_pos_current = ftell(files[currentFile].f);
 
-	files[currentFile].current_token = returnToken;
+	if (!peek) {
+		strncpy(lastTokenRead, buffer, 199);
+		lastTokenRead[199] = '\0';
+		lastToken = returnToken;
+	}
+
 	return returnToken;
 }
 
-const char *lexer_getLexToken() {
-	return buffer;
+int lexer_getNextToken() {
+	return getNextToken(0);
 }
 
-void lexer_rewind() {
-	files[currentFile].rewind_token = files[currentFile].current_token;
-	//rewind_token = current_token;
-	/*
-	lex_pos_current	= lex_pos_rewind;
-	fseek(lex_file, lex_pos_rewind, SEEK_SET);
-	*/
+int lexer_peek() {
+
+	struct file_properties files_backup[10];
+	memcpy(files_backup, files, sizeof(files_backup));
+	int currentFile_backup = currentFile;
+
+	int token = getNextToken(1);
+
+	memcpy(files, files_backup, sizeof(files_backup));
+	currentFile = currentFile_backup;
+
+	for (int i = 0; i <= currentFile; i++) {
+		fseek(files[i].f, files[i].lex_pos_current, SEEK_SET);
+	}
+
+	return token;
+}
+
+const char *lexer_getLexToken() {
+	return lastTokenRead;
 }
 
 const char *lexer_getCurrentFilename() {
 	return files[currentFile].filename;
-	//return currentFilename;
 }
 
 int lexer_getCurrentLinenumber() {
 	return files[currentFile].currentLineNumber;
-	//return currentLineNumber;
 }
 
 /*
@@ -341,8 +354,6 @@ void lexer_addIncludedFile(const char *includeFilename) {
 	files[currentFile].filename = includeFilename;
 	files[currentFile].currentLineNumber = 1;
 	files[currentFile].currentCharacterNumber = 0;
-	files[currentFile].current_token = -1;
-	files[currentFile].rewind_token = -1;
 
 	files[currentFile].f = fopen(includeFilename, "r");
 	if (!files[currentFile].f) {
@@ -350,9 +361,8 @@ void lexer_addIncludedFile(const char *includeFilename) {
 		exit(-1);
 	}
 
-	files[currentFile].lex_pos_rewind =
-		files[currentFile].lex_pos_previousLine =
-			files[currentFile].lex_pos_currentLine =
-				files[currentFile].lex_pos_current =
-					ftell(files[currentFile].f);
+	files[currentFile].lex_pos_previousLine =
+		files[currentFile].lex_pos_currentLine =
+			files[currentFile].lex_pos_current =
+				ftell(files[currentFile].f);
 }

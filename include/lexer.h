@@ -1,25 +1,28 @@
 #ifndef AVDL_LEXER_H
 #define AVDL_LEXER_H
 
-#include "ast_node.h"
-
 /*
  * Lexer
- * Responsible for reading source code
- * and tokenizing it, so it's more straightforward
- * to do semantic analysis on it
+ * responsible for reading source code
+ * and tokenizing it
+ *
+ * it also supports push new (included) files
  */
 
-// all available tokens `avdl` understands
+/*
+ * all available tokens the lexer understands
+ */
 enum lexer_tokens {
-	LEXER_TOKEN_DONE,
 	LEXER_TOKEN_UNKNOWN,
+	LEXER_TOKEN_DONE,
+
 	LEXER_TOKEN_COMMANDSTART,
 	LEXER_TOKEN_COMMANDEND,
-	LEXER_TOKEN_STRING,
 	LEXER_TOKEN_ARRAYSTART,
 	LEXER_TOKEN_ARRAYEND,
 	LEXER_TOKEN_PERIOD,
+
+	LEXER_TOKEN_STRING,
 	LEXER_TOKEN_IDENTIFIER,
 	LEXER_TOKEN_INT,
 	LEXER_TOKEN_FLOAT,
@@ -38,9 +41,12 @@ void lexer_clean();
  * In case it's not needed, `rewind` will go back one step, so
  * `getNextToken` will return the same token when called again.
  * `getLexToken` is to get the string that the token represents.
+ *
+ * peek is used to take a look at the next token, without
+ * updating parsing position.
  */
 int lexer_getNextToken();
-void lexer_rewind();
+int lexer_peek();
 const char *lexer_getLexToken();
 
 const char *lexer_getCurrentFilename();
