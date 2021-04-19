@@ -5,7 +5,7 @@
 #include <string.h>
 #include "symtable.h"
 #include "struct_table.h"
-#include "dd_commands.h"
+#include "agc_commands.h"
 #include <stdarg.h>
 
 static struct ast_node *expect_command_definition();
@@ -22,7 +22,17 @@ static struct ast_node *expect_command();
 static struct ast_node *expect_command_arg();
 static struct ast_node *expect_command_if();
 static struct ast_node *expect_command_include();
+static struct ast_node *expect_command_asset();
 static void semantic_error(const char *msg, ...);
+
+static struct ast_node *expect_command_asset() {
+	struct ast_node *asset = expect_string();
+
+	// waste the type for now
+	expect_identifier();
+
+	return asset;
+}
 
 static struct ast_node *expect_command_include() {
 	struct ast_node *include = ast_create(AST_INCLUDE, 0);
@@ -55,6 +65,7 @@ static struct ast_node *expect_command_classFunction() {
 	symtable_push();
 	struct entry *e = symtable_entryat(symtable_insert("this", DD_VARIABLE_TYPE_STRUCT));
 	e->isRef = 1;
+	e->value = struct_table_get_index(classname->lex);
 	struct ast_node *functionStatements = expect_command();
 	symtable_pop();
 
@@ -280,8 +291,81 @@ static struct ast_node *expect_identifier() {
 	// it has a period (myclass.myvar)
 	if (lexer_peek() == LEXER_TOKEN_PERIOD) {
 		lexer_getNextToken();
+
+		// identifiers that own objects have to be in the symbol table
+		if (symId < 0) {
+			semantic_error("identifier '%s' not a known symbol", identifier->lex);
+		}
+
+		struct entry *e = symtable_entryat(symId);
+
+		// identifiers that own objects have to be structs
+		if (e->token != DD_VARIABLE_TYPE_STRUCT) {
+			semantic_error("identifier '%s' not a struct, so it can't own objects");
+		}
+
+		//printf("name of struct: %s\n", struct_table_get_name(e->value));
+
+		// add struct's members to new symbol table
+		symtable_push();
+		for (unsigned int j = 0; j < struct_table_get_member_total(e->value); j++) {
+			/*
+			printf("	member: %s %d %s\n",
+				struct_table_get_member_name(e->value, j),
+				struct_table_get_member_type(e->value, j),
+				struct_table_get_member_nametype(e->value, j)
+			);
+			*/
+
+			struct entry *e2 = symtable_entryat(symtable_insert(
+				struct_table_get_member_name(e->value, j),
+				struct_table_get_member_type(e->value, j))
+			);
+			if (struct_table_get_member_type(e->value, j) == DD_VARIABLE_TYPE_STRUCT) {
+				e2->value = struct_table_get_index(struct_table_get_member_nametype(e->value, j));
+			}
+		}
+
+		// get the owned object's name
 		struct ast_node *child = expect_identifier();
-		ast_child_add(identifier, child);
+
+		// child not inside symbol table - possibly belongs to a parent class
+		int childSymId = symtable_lookup(child->lex);
+		if (childSymId < 0) {
+			int parentDepth = struct_table_is_member_parent(e->value, child->lex);
+
+			// child not part of that struct, or any of its parent classes
+			if (parentDepth < 0) {
+				semantic_error("variable '%s' of class '%s' does not own object '%s'",
+					identifier->lex, struct_table_get_name(e->value), child->lex
+				);
+			}
+			else
+			// child direct child of that class, but not in symbol table, this should never happen
+			if (parentDepth == 0) {
+				semantic_error("variable '%s' of class '%s' owns object '%s', but couldn't be found in the symbol table",
+					identifier->lex, struct_table_get_name(e->value), child->lex
+				);
+			}
+
+			// add "parent" children in ast, for each parent class depth level
+			struct ast_node *lastChild = identifier;
+			for (int i = 0; i < parentDepth; i++) {
+				struct ast_node *parentChild = ast_create(AST_IDENTIFIER, 0);
+				ast_addLex(parentChild, "parent");
+				int childIndex = ast_child_add(lastChild, parentChild);
+				lastChild = dd_da_get(&lastChild->children, childIndex);
+			}
+
+			// finally add the found child on the last "parent" node added
+			ast_child_add(lastChild, child);
+		}
+		// child is directly owned by this struct, just add it as child
+		else {
+			ast_child_add(identifier, child);
+		}
+
+		symtable_pop();
 	}
 
 	return identifier;
@@ -330,7 +414,7 @@ static struct ast_node *expect_command() {
 	struct ast_node *cmdname = expect_identifier();
 
 	// native command, special rules
-	if (dd_commands_isNative(cmdname->lex)) {
+	if (agc_commands_isNative(cmdname->lex)) {
 
 		// native command can only be a name, no array modifiers or owning data
 		if (cmdname->children.elements > 0) {
@@ -391,6 +475,10 @@ static struct ast_node *expect_command() {
 		else
 		if (strcmp(cmdname->lex, "include") == 0) {
 			cmd = expect_command_include();
+		}
+		else
+		if (strcmp(cmdname->lex, "asset") == 0) {
+			cmd = expect_command_asset();
 		}
 		else {
 			semantic_error("no rule to parse command '%s'", cmdname->lex);

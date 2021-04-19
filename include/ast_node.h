@@ -54,7 +54,7 @@ struct ast_node {
 
 // Actions
 struct ast_node *ast_create(enum AST_NODE_TYPE node_type, int value);
-void ast_child_add(struct ast_node *parent, struct ast_node *child);
+int ast_child_add(struct ast_node *parent, struct ast_node *child);
 void ast_child_add_first(struct ast_node *parent, struct ast_node *child);
 void ast_delete(struct ast_node *node);
 

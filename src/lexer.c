@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "symtable.h"
-#include "dd_commands.h"
 #include <ctype.h>
 
 extern char *includePath;

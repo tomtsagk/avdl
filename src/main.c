@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include "struct_table.h"
-#include "dd_commands.h"
+#include "agc_commands.h"
 #include <errno.h>
 #include "file_op.h"
 #include "lexer.h"

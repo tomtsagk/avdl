@@ -12,7 +12,7 @@
 #include "struct_table.h"
 #include <time.h>
 #include <errno.h>
-#include "dd_commands.h"
+#include "agc_commands.h"
 
 #define DD_BUFFER_SIZE 1000
 static char buffer[DD_BUFFER_SIZE];
