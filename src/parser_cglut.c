@@ -1148,12 +1148,27 @@ static void print_command_function2(FILE *fd, struct ast_node *n);
 static void print_command_custom(FILE *fd, struct ast_node *n);
 static void print_command_echo(FILE *fd, struct ast_node *n);
 static void print_command_if(FILE *fd, struct ast_node *n);
+static void print_command_groupStatements(FILE *fd, struct ast_node *n);
 static void print_binaryOperation(FILE *fd, struct ast_node *n);
 static void print_identifier2(FILE *fd, struct ast_node *n, int skipLast);
 static void print_number2(FILE *fd, struct ast_node *n);
 static void print_float2(FILE *fd, struct ast_node *n);
 static void print_node2(FILE *fd, struct ast_node *n);
 static int getIdentifierChainCount(struct ast_node *n);
+
+static void print_command_groupStatements(FILE *fd, struct ast_node *n) {
+
+	if (n->node_type == AST_COMMAND_NATIVE && strcmp(n->lex, "group") == 0) {
+		for (unsigned int i = 0; i < n->children.elements; i++) {
+			print_node2(fd, dd_da_get(&n->children, i));
+			fprintf(fd, ";\n");
+		}
+	}
+	else {
+		print_node2(fd, n);
+		fprintf(fd, ";\n");
+	}
+}
 
 static void print_command_if(FILE *fd, struct ast_node *n) {
 	for (int i = 0; i < n->children.elements; i += 2) {
@@ -1172,12 +1187,12 @@ static void print_command_if(FILE *fd, struct ast_node *n) {
 			fprintf(fd, "if (");
 			print_node2(fd, child1);
 			fprintf(fd, ") {\n");
-			print_node2(fd, child2);
+			print_command_groupStatements(fd, child2);
 			fprintf(fd, "}\n");
 		}
 		else {
 			fprintf(fd, "{\n");
-			print_node2(fd, child1);
+			print_command_groupStatements(fd, child1);
 			fprintf(fd, "}\n");
 		}
 	}
@@ -1265,7 +1280,7 @@ static void print_command_custom(FILE *fd, struct ast_node *n) {
 
 		print_node2(fd, child);
 	}
-	fprintf(fd, ");\n");
+	fprintf(fd, ")");
 }
 
 static void print_command_function2(FILE *fd, struct ast_node *n) {
@@ -1360,7 +1375,7 @@ static void print_command_classFunction2(FILE *fd, struct ast_node *n) {
 	}
 
 	// print function statements
-	print_node2(fd, funcstatements);
+	print_command_groupStatements(fd, funcstatements);
 
 	fprintf(fd, "}\n");
 }
