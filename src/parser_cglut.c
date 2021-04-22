@@ -1299,7 +1299,7 @@ static void print_command_function2(FILE *fd, struct ast_node *n) {
 	fprintf(fd, ") {\n");
 
 	if (funcstatements) {
-		print_node2(fd, funcstatements);
+		print_command_groupStatements(fd, funcstatements);
 	}
 
 	fprintf(fd, "}\n");
