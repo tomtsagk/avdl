@@ -23,7 +23,25 @@ static struct ast_node *expect_command_arg();
 static struct ast_node *expect_command_if();
 static struct ast_node *expect_command_include();
 static struct ast_node *expect_command_asset();
+static struct ast_node *expect_command_for();
 static void semantic_error(const char *msg, ...);
+
+static struct ast_node *expect_command_for() {
+	struct ast_node *definition = expect_command();
+	struct ast_node *condition = expect_command();
+	struct ast_node *step = expect_command();
+	struct ast_node *statements = expect_command();
+
+	struct ast_node *forcmd = ast_create(AST_COMMAND_NATIVE, 0);
+	ast_addLex(forcmd, "for");
+
+	ast_child_add(forcmd, definition);
+	ast_child_add(forcmd, condition);
+	ast_child_add(forcmd, step);
+	ast_child_add(forcmd, statements);
+
+	return forcmd;
+}
 
 static struct ast_node *expect_command_asset() {
 	struct ast_node *asset = expect_string();
@@ -191,6 +209,12 @@ static struct ast_node *expect_command_definition() {
 
 	ast_child_add(definition, type);
 	ast_child_add(definition, varname);
+
+	if (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
+		struct ast_node *initialValue = expect_command_arg();
+		ast_child_add(definition, initialValue);
+	}
+
 	return definition;
 }
 
@@ -362,6 +386,9 @@ static struct ast_node *expect_identifier() {
 		}
 		// child is directly owned by this struct, just add it as child
 		else {
+			if (struct_table_get_member_type(e->value, struct_table_get_member(e->value, child->lex)) == DD_VARIABLE_TYPE_STRUCT) {
+				child->value = DD_VARIABLE_TYPE_STRUCT;
+			}
 			ast_child_add(identifier, child);
 		}
 
@@ -479,6 +506,10 @@ static struct ast_node *expect_command() {
 		else
 		if (strcmp(cmdname->lex, "asset") == 0) {
 			cmd = expect_command_asset();
+		}
+		else
+		if (strcmp(cmdname->lex, "for") == 0) {
+			cmd = expect_command_for();
 		}
 		else {
 			semantic_error("no rule to parse command '%s'", cmdname->lex);

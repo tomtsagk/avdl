@@ -194,8 +194,7 @@ int main(int argc, char *argv[])
 			strcpy(buffer, filename[i]);
 		}
 		//printf(" to %s\n", buffer);
-		//if (transpile_cglut(buffer, game_node, 0) != 0) {
-		if (transpile_cglut2(buffer, game_node) != 0) {
+		if (transpile_cglut(buffer, game_node) != 0) {
 			printf("avdl: transpilation failed to file: %s\n", buffer);
 			return -1;
 		}

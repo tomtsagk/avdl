@@ -4,7 +4,6 @@
 #include "ast_node.h"
 
 // transpile ast_node tree to file
-int transpile_cglut(const char *filename, struct ast_node *n, int isIncluded);
-int transpile_cglut2(const char *filename, struct ast_node *n);
+int transpile_cglut(const char *filename, struct ast_node *n);
 
 #endif
