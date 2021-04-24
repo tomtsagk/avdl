@@ -122,6 +122,18 @@ static struct ast_node *expect_command_group() {
 	return group;
 }
 
+static struct ast_node *getIdentifierArrayNode(struct ast_node *n) {
+	for (int i = 0; i < n->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&n->children, i);
+
+		if (child->node_type == AST_GROUP) {
+			return child;
+		}
+	}
+
+	return 0;
+}
+
 static struct ast_node *expect_command_classDefinition() {
 
 	struct ast_node *classname = expect_identifier();
@@ -151,8 +163,25 @@ static struct ast_node *expect_command_classDefinition() {
 		struct ast_node *name = dd_da_get(&child->children, 1);
 
 		if (strcmp(child->lex, "def") == 0) {
+
+			struct ast_node *arrayNode = getIdentifierArrayNode(name);
 			//printf("variable: %s %s\n", type->lex, name->lex);
-			struct_table_push_member(name->lex, dd_variable_type_convert(type->lex), type->lex);
+			if (arrayNode) {
+
+				if (arrayNode->children.elements == 0) {
+					semantic_error("array definition should have a value");
+				}
+
+				struct ast_node *arrayNum = dd_da_get(&arrayNode->children, 0);
+
+				if (arrayNum->node_type != AST_NUMBER) {
+					semantic_error("array definition should only be a number");
+				}
+				struct_table_push_member_array(name->lex, dd_variable_type_convert(type->lex), type->lex, arrayNum->value);
+			}
+			else {
+				struct_table_push_member(name->lex, dd_variable_type_convert(type->lex), type->lex);
+			}
 		}
 		else {
 			//printf("function: %s %s\n", type->lex, name->lex);

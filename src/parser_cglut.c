@@ -245,8 +245,16 @@ static void print_command_classFunction(FILE *fd, struct ast_node *n) {
 			if (struct_table_get_member_type(structIndex, i) == DD_VARIABLE_TYPE_STRUCT) {
 				const char *memberName = struct_table_get_member_name(structIndex, i);
 				char *memberType = struct_table_get_member_nametype(structIndex, i);
+				int arrayCount = struct_table_getMemberArrayCount(structIndex, i);
+				if (arrayCount > 1) {
+					fprintf(fd, "for (int i = 0; i < %d; i++) {\n", arrayCount);
+					fprintf(fd, "%s_create(&this->%s[i]);\n", memberType, memberName);
+					fprintf(fd, "}\n");
+				}
+				else {
+					fprintf(fd, "%s_create(&this->%s);\n", memberType, memberName);
+				}
 				//int parentDepth = struct_table_is_member_parent(structIndex, memberName);
-				fprintf(fd, "%s_create(&this->%s);\n", memberType, memberName);
 			}
 		}
 	}
