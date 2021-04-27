@@ -87,10 +87,6 @@ void ast_print(struct ast_node *node) {
 			break;
 	}
 
-	if (node->isIncluded) {
-		printf(" included: %d", node->isIncluded);
-	}
-
 	printf("\n");
 
 	// Print children

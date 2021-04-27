@@ -12,52 +12,52 @@ void struct_table_init() {
 
 	// Engine's initial structs and their members
 	struct_table_push("dd_world", 0);
-	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("onload", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("resize", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("key_input", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("mouse_input", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("create", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("onload", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("resize", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("key_input", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("mouse_input", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_matrix", 0);
 	struct_table_push("dd_mesh", 0);
-	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("set_primitive", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("copy", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("set_primitive", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("copy", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_meshColour", "dd_mesh");
-	struct_table_push_member("set_colour", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("set_colour", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_meshRising", "dd_meshColour");
-	struct_table_push_member("set_animation_max", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("set_animation_current", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("set_animation_max", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("set_animation_current", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_meshTexture", "dd_meshColour");
-	struct_table_push_member("preloadTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("applyTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("loadTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("set_primitive_texcoords", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("copyTexture", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("preloadTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("applyTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("loadTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("set_primitive_texcoords", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("copyTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_sound", 0);
-	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("play", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("playLoop", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("stop", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("setVolume", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("play", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("playLoop", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("stop", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setVolume", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_vec3", 0);
-	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("getX", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("getY", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("getZ", DD_VARIABLE_TYPE_FUNCTION, 0);
+	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("getX", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("getY", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("getZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_string3d", 0);
-	struct_table_push_member("setAlign", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("setColorFront", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("setColorBack", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("drawInt", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0);
-	struct_table_push("dd_gamejolt_response_struct", 0);
+	struct_table_push_member("setAlign", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setColorFront", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setColorBack", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("drawInt", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 
 // push a new struct to the table
@@ -104,7 +104,7 @@ int struct_table_push(const char *structname, const char *parentname) {
  * check if there is space in the struct
  * add a new member to it
  */
-struct struct_table_entry_member *struct_table_push_member(const char *name, enum dd_variable_type type, const char *nametype) {
+struct struct_table_entry_member *struct_table_push_member(const char *name, enum dd_variable_type type, const char *nametype, int isRef) {
 	struct struct_table_entry *currentStruct = &struct_table[struct_table_current];
 	if (currentStruct->member_total+1 >= DD_STRUCT_TABLE_MEMBER_TOTAL) {
 		printf("struct_table_push_member: struct '%s': maximum number of members reached\n", currentStruct->name);
@@ -115,6 +115,7 @@ struct struct_table_entry_member *struct_table_push_member(const char *name, enu
 	strncpy(newMember->name, name, DD_STRUCT_TABLE_NAME_SIZE -1);
 	newMember->name[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
 	newMember->arrayCount = 1;
+	newMember->isRef = isRef;
 	if (nametype) {
 		strncpy(newMember->nametype, nametype, DD_STRUCT_TABLE_NAME_SIZE -1);
 		newMember->nametype[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
@@ -127,8 +128,8 @@ struct struct_table_entry_member *struct_table_push_member(const char *name, enu
 	return &currentStruct->members[currentStruct->member_total -1];
 }
 
-void struct_table_push_member_array(const char *name, enum dd_variable_type type, const char *nametype, int arrayCount) {
-	struct struct_table_entry_member *newMember = struct_table_push_member(name, type, nametype);
+void struct_table_push_member_array(const char *name, enum dd_variable_type type, const char *nametype, int arrayCount, int isRef) {
+	struct struct_table_entry_member *newMember = struct_table_push_member(name, type, nametype, isRef);
 	newMember->arrayCount = arrayCount;
 }
 
@@ -175,6 +176,10 @@ const char *struct_table_get_member_name(int structIndex, int memberIndex) {
 
 int struct_table_getMemberArrayCount(int structIndex, int memberIndex) {
 	return struct_table[structIndex].members[memberIndex].arrayCount;
+}
+
+int struct_table_getMemberIsRef(int structIndex, int memberIndex) {
+	return struct_table[structIndex].members[memberIndex].isRef;
 }
 
 enum dd_variable_type struct_table_get_member_type(int structIndex, int memberIndex) {

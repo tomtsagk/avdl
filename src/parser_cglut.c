@@ -246,9 +246,11 @@ static void print_command_classFunction(FILE *fd, struct ast_node *n) {
 				const char *memberName = struct_table_get_member_name(structIndex, i);
 				char *memberType = struct_table_get_member_nametype(structIndex, i);
 				int arrayCount = struct_table_getMemberArrayCount(structIndex, i);
+				int isRef = struct_table_getMemberIsRef(structIndex, i);
+				if (isRef) continue;
 				if (arrayCount > 1) {
 					fprintf(fd, "for (int i = 0; i < %d; i++) {\n", arrayCount);
-					fprintf(fd, "%s_create(&this->%s[i]);\n", memberType, memberName);
+					fprintf(fd, "	%s_create(&this->%s[i]);\n", memberType, memberName);
 					fprintf(fd, "}\n");
 				}
 				else {
@@ -267,6 +269,8 @@ static void print_command_classFunction(FILE *fd, struct ast_node *n) {
 				const char *memberName = struct_table_get_member_name(structIndex, i);
 				char *memberType = struct_table_get_member_nametype(structIndex, i);
 				//int parentDepth = struct_table_is_member_parent(structIndex, memberName);
+				int isRef = struct_table_getMemberIsRef(structIndex, i);
+				if (isRef) continue;
 				fprintf(fd, "%s_clean(&this->%s);\n", memberType, memberName);
 			}
 		}
@@ -370,6 +374,9 @@ static void print_command_definition(FILE *fd, struct ast_node *n) {
 		fprintf(fd, "struct ");
 	}
 	fprintf(fd, "%s ", type->lex);
+	if (n->isRef) {
+		fprintf(fd, "*");
+	}
 	print_identifier(fd, defname, 0);
 
 	if (n->children.elements >= 3) {

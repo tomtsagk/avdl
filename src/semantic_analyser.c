@@ -153,7 +153,6 @@ static struct ast_node *expect_command_classDefinition() {
 
 	symtable_push();
 	struct ast_node *definitions = expect_command();
-	symtable_pop();
 
 	int structIndex = struct_table_push(classname->lex, subclassname->lex);
 
@@ -163,6 +162,8 @@ static struct ast_node *expect_command_classDefinition() {
 		struct ast_node *name = dd_da_get(&child->children, 1);
 
 		if (strcmp(child->lex, "def") == 0) {
+
+			struct entry *e = symtable_entryat(symtable_lookup(name->lex));
 
 			struct ast_node *arrayNode = getIdentifierArrayNode(name);
 			//printf("variable: %s %s\n", type->lex, name->lex);
@@ -177,10 +178,10 @@ static struct ast_node *expect_command_classDefinition() {
 				if (arrayNum->node_type != AST_NUMBER) {
 					semantic_error("array definition should only be a number");
 				}
-				struct_table_push_member_array(name->lex, dd_variable_type_convert(type->lex), type->lex, arrayNum->value);
+				struct_table_push_member_array(name->lex, dd_variable_type_convert(type->lex), type->lex, arrayNum->value, e->isRef);
 			}
 			else {
-				struct_table_push_member(name->lex, dd_variable_type_convert(type->lex), type->lex);
+				struct_table_push_member(name->lex, dd_variable_type_convert(type->lex), type->lex, e->isRef);
 			}
 		}
 		else {
@@ -197,9 +198,10 @@ static struct ast_node *expect_command_classDefinition() {
 			// new function
 			else {
 			}
-			struct_table_push_member(name->lex, DD_VARIABLE_TYPE_FUNCTION, 0);
+			struct_table_push_member(name->lex, DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 		}
 	}
+	symtable_pop();
 
 	/* scan definitions
 	 * if a function was defined in any of the subclasses, mark is
@@ -219,15 +221,27 @@ static struct ast_node *expect_command_definition() {
 	struct ast_node *definition = ast_create(AST_COMMAND_NATIVE, 0);
 	ast_addLex(definition, "def");
 
-	// get type
-	struct ast_node *type = expect_identifier();
+	int isRef = 0;
 
-	/*
+	// optional modifiers
+	struct ast_node *optionalModifier = expect_identifier();
+	if (strcmp(optionalModifier->lex, "ref") == 0) {
+		// apply modifier
+		isRef = 1;
+
+		// get new optional modifier
+		ast_delete(optionalModifier);
+		optionalModifier = expect_identifier();
+	}
+
+	// get type
+	struct ast_node *type = optionalModifier;
+
 	// check if primitive or struct
-	if (!dd_variable_type_isPrimitiveType(type->lex)) {
+	if (!dd_variable_type_isPrimitiveType(type->lex)
+	&&  !struct_table_exists(type->lex)) {
 		semantic_error("unrecognized type '%s'", type->lex);
 	}
-	*/
 
 	// get variable name
 	struct ast_node *varname = expect_identifier();
@@ -235,6 +249,8 @@ static struct ast_node *expect_command_definition() {
 	// add newly defined variable to symbol table
 	struct entry *e = symtable_entryat(symtable_insert(varname->lex, SYMTABLE_VARIABLE));
 	e->value = dd_variable_type_convert(type->lex);
+	e->isRef = isRef;
+	definition->isRef = isRef;
 
 	ast_child_add(definition, type);
 	ast_child_add(definition, varname);
@@ -377,6 +393,7 @@ static struct ast_node *expect_identifier() {
 			if (struct_table_get_member_type(e->value, j) == DD_VARIABLE_TYPE_STRUCT) {
 				e2->value = struct_table_get_index(struct_table_get_member_nametype(e->value, j));
 			}
+			e2->isRef = struct_table_getMemberIsRef(e->value, j);
 		}
 
 		// get the owned object's name
