@@ -59,6 +59,8 @@ const char *dd_variable_type_getString(enum dd_variable_type type) {
 	case DD_VARIABLE_TYPE_CHAR: return "char";
 	case DD_VARIABLE_TYPE_STRUCT: return "struct";
 	case DD_VARIABLE_TYPE_STRING: return "string";
-	case DD_VARIABLE_TYPE_UNKNOWN: default: return "unknown";
+	case DD_VARIABLE_TYPE_VOID: return "void";
+	case DD_VARIABLE_TYPE_UNKNOWN: return "unknown";
+	default: return "unrecognized";
 	}
 }

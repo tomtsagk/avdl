@@ -27,6 +27,24 @@ static void print_number(FILE *fd, struct ast_node *n);
 static void print_float(FILE *fd, struct ast_node *n);
 static void print_node(FILE *fd, struct ast_node *n);
 static int getIdentifierChainCount(struct ast_node *n);
+static struct ast_node *getIdentifierLast(struct ast_node *n);
+static struct ast_node *getIdentifierInChain(struct ast_node *n, int position);
+
+static struct ast_node *getIdentifierInChain(struct ast_node *n, int position) {
+
+	if (position == 0) {
+		return n;
+	}
+
+	for (int i = 0; i < n->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&n->children, i);
+		if (child->node_type == AST_IDENTIFIER) {
+			return getIdentifierInChain(child, position-1);
+		}
+	}
+
+	return n;
+}
 
 static void print_command_groupStatements(FILE *fd, struct ast_node *n) {
 
@@ -53,7 +71,7 @@ static void print_command_for(FILE *fd, struct ast_node *n) {
 	print_node(fd, condition);
 	fprintf(fd, ";");
 	print_node(fd, step);
-	fprintf(fd, ") {");
+	fprintf(fd, ") {\n");
 	print_command_groupStatements(fd, statements);
 	fprintf(fd, "}");
 }
@@ -95,6 +113,15 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 		if (child->node_type == AST_STRING) {
 			fprintf(fd, "%%s");
 		}
+		else
+		if (child->node_type == AST_NUMBER) {
+			fprintf(fd, "%%d");
+		}
+		else
+		if (child->node_type == AST_IDENTIFIER
+		&&  child->value == DD_VARIABLE_TYPE_INT) {
+			fprintf(fd, "%%d");
+		}
 		else {
 			printf("unable to parse argument in echo '%s(%d)', no rule to parse it (1)\n",
 				child->lex, child->value);
@@ -108,6 +135,15 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 		fprintf(fd, ", ");
 		if (child->node_type == AST_STRING) {
 			fprintf(fd, "\"%s\"", child->lex);
+		}
+		else
+		if (child->node_type == AST_NUMBER) {
+			fprintf(fd, "%d", child->value);
+		}
+		else
+		if (child->node_type == AST_IDENTIFIER
+		&&  child->value == DD_VARIABLE_TYPE_INT) {
+			fprintf(fd, child->lex);
 		}
 		else {
 			printf("unable to parse argument in echo '%s(%d)', no rule to parse it (2)\n",
@@ -152,8 +188,11 @@ static void print_command_custom(FILE *fd, struct ast_node *n) {
 	int hasArgs = 0;
 	if (strcmp(cmdname->lex, "this") == 0) {
 
+		int chainCount = getIdentifierChainCount(cmdname);
+		struct ast_node *semilast = getIdentifierInChain(cmdname, chainCount-1);
+
 		// not dereferencing "this" hack
-		if (getIdentifierChainCount(cmdname)-1 > 0) {
+		if (chainCount-1 > 0 && !semilast->isRef) {
 			fprintf(fd, "&");
 		}
 
@@ -293,20 +332,23 @@ static int getIdentifierChainCount(struct ast_node *n) {
 	return 0;
 }
 
-static int getIdentifierType(struct ast_node *n) {
+static struct ast_node *getIdentifierLast(struct ast_node *n) {
 	for (int i = 0; i < n->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&n->children, i);
 		if (child->node_type == AST_IDENTIFIER) {
-			return getIdentifierType(child);
+			return getIdentifierLast(child);
 		}
 	}
 
-	return n->value;
+	return n;
 }
 
 static void print_identifierReference(FILE *fd, struct ast_node *n, int skipLast) {
+
 	// check if reference is needed
-	if (getIdentifierType(n) == DD_VARIABLE_TYPE_STRUCT) {
+	struct ast_node *last = getIdentifierLast(n);
+	if (last->value == DD_VARIABLE_TYPE_STRUCT
+	&&  !last->isRef) {
 		fprintf(fd, "&");
 	}
 
@@ -353,7 +395,15 @@ static void print_command_functionArguments(FILE *fd, struct ast_node *n, int be
 		if (i > 1 || beginWithSemicolon) {
 			fprintf(fd, ", ");
 		}
-		fprintf(fd, "%s %s", argtype->lex, argname->lex);
+
+		if (!dd_variable_type_isPrimitiveType(argtype->lex)) {
+			fprintf(fd, "struct ");
+		}
+		fprintf(fd, "%s ", argtype->lex);
+		if (!dd_variable_type_isPrimitiveType(argtype->lex)) {
+			fprintf(fd, "*");
+		}
+		fprintf(fd, "%s", argname->lex);
 	}
 }
 
@@ -369,6 +419,10 @@ static void print_command_definitionClassFunction(FILE *fd, struct ast_node *n, 
 static void print_command_definition(FILE *fd, struct ast_node *n) {
 	struct ast_node *type = dd_da_get(&n->children, 0);
 	struct ast_node *defname = dd_da_get(&n->children, 1);
+
+	if (n->isExtern) {
+		fprintf(fd, "extern ");
+	}
 
 	if (!dd_variable_type_isPrimitiveType(type->lex)) {
 		fprintf(fd, "struct ");

@@ -33,6 +33,7 @@ void symtable_init();
 // lookup and insert functions
 symtable_index symtable_lookup(const char s[]);
 symtable_index symtable_insert(const char s[], int tok);
+struct entry *symtable_lookupEntry(const char s[]);
 
 /* scope functions
  * push: create a new (empty) symtable as a child of the current one

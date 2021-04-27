@@ -94,6 +94,20 @@ symtable_index symtable_lookup(const char s[]) {
 	return -1;
 }
 
+// find symbol, and return its entry
+struct entry *symtable_lookupEntry(const char s[]) {
+	for (int i = symtable_current; i >= 0; i--) {
+		struct symtable *st = &symtable_array[i];
+		int p;
+		for (p = 0; p <= st->lastentry; p++) {
+			if (strcmp(st->entry[p].lexptr, s) == 0) {
+				return &st->entry[p];
+			}
+		}
+	}
+	return 0;
+}
+
 // insert new symbol
 symtable_index symtable_insert(const char s[], int tok) {
 

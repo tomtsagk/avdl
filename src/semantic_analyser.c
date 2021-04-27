@@ -84,6 +84,21 @@ static struct ast_node *expect_command_classFunction() {
 	struct entry *e = symtable_entryat(symtable_insert("this", DD_VARIABLE_TYPE_STRUCT));
 	e->isRef = 1;
 	e->value = struct_table_get_index(classname->lex);
+
+	// function arguments
+	struct ast_node *funcargs = dd_da_get(&function->children, 2);
+	for (int i = 1; i < funcargs->children.elements; i += 2) {
+		struct ast_node *type = dd_da_get(&funcargs->children, i-1);
+		struct ast_node *name = dd_da_get(&funcargs->children, i);
+
+		struct entry *symEntry = symtable_entryat(symtable_insert(name->lex, dd_variable_type_convert(type->lex)));
+		if (!dd_variable_type_isPrimitiveType(type->lex)) {
+			symEntry->isRef = 1;
+			symEntry->value = struct_table_get_index(type->lex);
+		}
+	}
+	//symtable_print();
+
 	struct ast_node *functionStatements = expect_command();
 	symtable_pop();
 
@@ -222,17 +237,34 @@ static struct ast_node *expect_command_definition() {
 	ast_addLex(definition, "def");
 
 	int isRef = 0;
+	int isExtern = 0;
 
 	// optional modifiers
 	struct ast_node *optionalModifier = expect_identifier();
-	if (strcmp(optionalModifier->lex, "ref") == 0) {
-		// apply modifier
-		isRef = 1;
+	do {
+		if (strcmp(optionalModifier->lex, "ref") == 0) {
+			// apply modifier
+			isRef = 1;
 
-		// get new optional modifier
-		ast_delete(optionalModifier);
-		optionalModifier = expect_identifier();
-	}
+			// get new optional modifier
+			ast_delete(optionalModifier);
+			optionalModifier = expect_identifier();
+		}
+		else
+		if (strcmp(optionalModifier->lex, "extern") == 0) {
+			// apply modifier
+			isExtern = 1;
+
+			// get new optional modifier
+			ast_delete(optionalModifier);
+			optionalModifier = expect_identifier();
+		}
+		else {
+			break;
+		}
+	} while (1);
+
+	definition->isExtern = isExtern;
 
 	// get type
 	struct ast_node *type = optionalModifier;
@@ -321,10 +353,10 @@ static struct ast_node *expect_identifier() {
 	struct ast_node *identifier = ast_create(AST_IDENTIFIER, 0);
 	ast_addLex(identifier, lexer_getLexToken());
 
-	int symId = symtable_lookup(identifier->lex);
-	if (symId >= 0) {
-		struct entry *e = symtable_entryat(symId);
-		identifier->isRef = e->isRef;
+	struct entry *symEntry = symtable_lookupEntry(identifier->lex);
+	if (symEntry) {
+		identifier->isRef = symEntry->isRef;
+		identifier->value = symEntry->value;
 	}
 
 	// does it have an array modifier?
@@ -361,15 +393,14 @@ static struct ast_node *expect_identifier() {
 	if (lexer_peek() == LEXER_TOKEN_PERIOD) {
 		lexer_getNextToken();
 
+		//symtable_print();
 		// identifiers that own objects have to be in the symbol table
-		if (symId < 0) {
+		if (!symEntry) {
 			semantic_error("identifier '%s' not a known symbol", identifier->lex);
 		}
 
-		struct entry *e = symtable_entryat(symId);
-
 		// identifiers that own objects have to be structs
-		if (e->token != DD_VARIABLE_TYPE_STRUCT) {
+		if (symEntry->token != DD_VARIABLE_TYPE_STRUCT) {
 			semantic_error("identifier '%s' not a struct, so it can't own objects");
 		}
 
@@ -377,7 +408,7 @@ static struct ast_node *expect_identifier() {
 
 		// add struct's members to new symbol table
 		symtable_push();
-		for (unsigned int j = 0; j < struct_table_get_member_total(e->value); j++) {
+		for (unsigned int j = 0; j < struct_table_get_member_total(symEntry->value); j++) {
 			/*
 			printf("	member: %s %d %s\n",
 				struct_table_get_member_name(e->value, j),
@@ -387,34 +418,34 @@ static struct ast_node *expect_identifier() {
 			*/
 
 			struct entry *e2 = symtable_entryat(symtable_insert(
-				struct_table_get_member_name(e->value, j),
-				struct_table_get_member_type(e->value, j))
+				struct_table_get_member_name(symEntry->value, j),
+				struct_table_get_member_type(symEntry->value, j))
 			);
-			if (struct_table_get_member_type(e->value, j) == DD_VARIABLE_TYPE_STRUCT) {
-				e2->value = struct_table_get_index(struct_table_get_member_nametype(e->value, j));
+			if (struct_table_get_member_type(symEntry->value, j) == DD_VARIABLE_TYPE_STRUCT) {
+				e2->value = struct_table_get_index(struct_table_get_member_nametype(symEntry->value, j));
 			}
-			e2->isRef = struct_table_getMemberIsRef(e->value, j);
+			e2->isRef = struct_table_getMemberIsRef(symEntry->value, j);
 		}
 
 		// get the owned object's name
 		struct ast_node *child = expect_identifier();
 
-		// child not inside symbol table - possibly belongs to a parent class
+		// child not inside current symbol table - possibly belongs to a parent class
 		int childSymId = symtable_lookup(child->lex);
 		if (childSymId < 0) {
-			int parentDepth = struct_table_is_member_parent(e->value, child->lex);
+			int parentDepth = struct_table_is_member_parent(symEntry->value, child->lex);
 
 			// child not part of that struct, or any of its parent classes
 			if (parentDepth < 0) {
 				semantic_error("variable '%s' of class '%s' does not own object '%s'",
-					identifier->lex, struct_table_get_name(e->value), child->lex
+					identifier->lex, struct_table_get_name(symEntry->value), child->lex
 				);
 			}
 			else
 			// child direct child of that class, but not in symbol table, this should never happen
 			if (parentDepth == 0) {
 				semantic_error("variable '%s' of class '%s' owns object '%s', but couldn't be found in the symbol table",
-					identifier->lex, struct_table_get_name(e->value), child->lex
+					identifier->lex, struct_table_get_name(symEntry->value), child->lex
 				);
 			}
 
@@ -432,7 +463,7 @@ static struct ast_node *expect_identifier() {
 		}
 		// child is directly owned by this struct, just add it as child
 		else {
-			if (struct_table_get_member_type(e->value, struct_table_get_member(e->value, child->lex)) == DD_VARIABLE_TYPE_STRUCT) {
+			if (struct_table_get_member_type(symEntry->value, struct_table_get_member(symEntry->value, child->lex)) == DD_VARIABLE_TYPE_STRUCT) {
 				child->value = DD_VARIABLE_TYPE_STRUCT;
 			}
 			ast_child_add(identifier, child);

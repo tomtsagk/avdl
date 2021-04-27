@@ -46,6 +46,7 @@ struct ast_node {
 	};
 	int arraySize;
 	int isRef;
+	int isExtern;
 	int isIncluded;
 	struct dd_dynamic_array children;
 	struct ast_node *parent;
