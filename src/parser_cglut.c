@@ -118,9 +118,18 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 			fprintf(fd, "%%d");
 		}
 		else
+		if (child->node_type == AST_FLOAT) {
+			fprintf(fd, "%%f");
+		}
+		else
 		if (child->node_type == AST_IDENTIFIER
 		&&  child->value == DD_VARIABLE_TYPE_INT) {
 			fprintf(fd, "%%d");
+		}
+		else
+		if (child->node_type == AST_IDENTIFIER
+		&&  child->value == DD_VARIABLE_TYPE_FLOAT) {
+			fprintf(fd, "%%f");
 		}
 		else {
 			printf("unable to parse argument in echo '%s(%d)', no rule to parse it (1)\n",
@@ -141,8 +150,17 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 			fprintf(fd, "%d", child->value);
 		}
 		else
+		if (child->node_type == AST_FLOAT) {
+			fprintf(fd, "%f", child->fvalue);
+		}
+		else
 		if (child->node_type == AST_IDENTIFIER
 		&&  child->value == DD_VARIABLE_TYPE_INT) {
+			fprintf(fd, child->lex);
+		}
+		else
+		if (child->node_type == AST_IDENTIFIER
+		&&  child->value == DD_VARIABLE_TYPE_FLOAT) {
 			fprintf(fd, child->lex);
 		}
 		else {
