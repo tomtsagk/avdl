@@ -8,6 +8,8 @@
 #include "agc_commands.h"
 #include <stdarg.h>
 
+extern enum AVDL_PLATFORM avdl_platform;
+
 static struct ast_node *expect_command_definition();
 static struct ast_node *expect_command_classDefinition();
 static struct ast_node *expect_command_group();
@@ -45,6 +47,38 @@ static struct ast_node *expect_command_for() {
 
 static struct ast_node *expect_command_asset() {
 	struct ast_node *asset = expect_string();
+
+	/*
+	 * on android, a path to a file is truncated to the filename
+	 * minus the ending.
+	 *
+	 * temporary solution
+	 */
+	if (avdl_platform == AVDL_PLATFORM_ANDROID) {
+		char buffer[500];
+		strcpy(buffer, asset->lex);
+
+		char *lastSlash = buffer;
+		char *p = buffer;
+		while (p[0] != '\0') {
+			if (p[0] == '/') {
+				lastSlash = p+1;
+			}
+			p++;
+		}
+
+		char *lastDot = buffer;
+		p = buffer;
+		while (p[0] != '\0') {
+			if (p[0] == '.') {
+				lastDot = p;
+			}
+			p++;
+		}
+		lastDot[0] = '\0';
+
+		strcpy(asset->lex, lastSlash);
+	}
 
 	// waste the type for now
 	expect_identifier();
