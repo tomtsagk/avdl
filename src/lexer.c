@@ -23,6 +23,8 @@ struct file_properties {
 	long lex_pos_current;
 };
 
+static char pastFiles[100][100];
+static int currentPastFile = -1;
 static struct file_properties files[10];
 static int currentFile = -1;
 
@@ -391,6 +393,23 @@ void lexer_printCurrentLine() {
 }
 
 void lexer_addIncludedFile(const char *includeFilename) {
+
+	// skip files that have been included before
+	for (int i = 0; i <= currentPastFile; i++) {
+		if (strcmp(pastFiles[i], includeFilename) == 0) {
+			return;
+		}
+	}
+
+	// temp limit of 100 characters per filename
+	if (strlen(includeFilename) >= 100) {
+		printf("cannot include %s: too long name\n", includeFilename);
+		exit(-1);
+	}
+
+	// save included file so it's not included again
+	currentPastFile++;
+	strcpy(pastFiles[currentFile], includeFilename);
 
 	if (includePath) {
 		strcpy(buffer, includePath);
