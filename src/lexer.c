@@ -409,7 +409,7 @@ void lexer_addIncludedFile(const char *includeFilename) {
 
 	// save included file so it's not included again
 	currentPastFile++;
-	strcpy(pastFiles[currentFile], includeFilename);
+	strcpy(pastFiles[currentPastFile], includeFilename);
 
 	if (includePath) {
 		strcpy(buffer, includePath);
