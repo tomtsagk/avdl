@@ -20,6 +20,7 @@ static void print_command_echo(FILE *fd, struct ast_node *n);
 static void print_command_if(FILE *fd, struct ast_node *n);
 static void print_command_for(FILE *fd, struct ast_node *n);
 static void print_command_multistring(FILE *fd, struct ast_node *n);
+static void print_command_return(FILE *fd, struct ast_node *n);
 static void print_command_groupStatements(FILE *fd, struct ast_node *n);
 static void print_binaryOperation(FILE *fd, struct ast_node *n);
 static void print_identifierReference(FILE *fd, struct ast_node *n, int skipLast);
@@ -58,6 +59,14 @@ static void print_command_groupStatements(FILE *fd, struct ast_node *n) {
 	else {
 		print_node(fd, n);
 		fprintf(fd, ";\n");
+	}
+}
+
+static void print_command_return(FILE *fd, struct ast_node *n) {
+	fprintf(fd, "return ");
+	for (int i = 0; i < n->children.elements; i++) {
+		struct ast_node *child = dd_da_get(&n->children, i);
+		print_node(fd, child);
 	}
 }
 
@@ -507,10 +516,11 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 		||  strcmp(child->lex, "function") != 0) continue;
 
 		// function name
+		struct ast_node *functype = dd_da_get(&child->children, 0);
 		struct ast_node *funcname = dd_da_get(&child->children, 1);
 
 		// print the function signature
-		fprintf(fd, "void %s_%s(struct %s *this", classname->lex, funcname->lex, classname->lex);
+		fprintf(fd, "%s %s_%s(struct %s *this", functype->lex, classname->lex, funcname->lex, classname->lex);
 		struct ast_node *args = dd_da_get(&child->children, 2);
 		print_command_functionArguments(fd, args, 1);
 		fprintf(fd, ");\n");
@@ -571,6 +581,10 @@ static void print_command_native(FILE *fd, struct ast_node *n) {
 	else
 	if (strcmp(n->lex, "multistring") == 0) {
 		print_command_multistring(fd, n);
+	}
+	else
+	if (strcmp(n->lex, "return") == 0) {
+		print_command_return(fd, n);
 	}
 	else {
 		printf("unable to parse command '%s': no parsing rule\n", n->lex);

@@ -27,7 +27,19 @@ static struct ast_node *expect_command_include();
 static struct ast_node *expect_command_asset();
 static struct ast_node *expect_command_for();
 static struct ast_node *expect_command_multistring();
+static struct ast_node *expect_command_return();
 static void semantic_error(const char *msg, ...);
+
+static struct ast_node *expect_command_return() {
+	struct ast_node *returncmd = ast_create(AST_COMMAND_NATIVE, 0);
+	ast_addLex(returncmd, "return");
+
+	if (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
+		ast_child_add(returncmd, expect_command_arg());
+	}
+
+	return returncmd;
+}
 
 static struct ast_node *expect_command_multistring() {
 	struct ast_node *multistringcmd = ast_create(AST_COMMAND_NATIVE, 0);
@@ -637,6 +649,10 @@ static struct ast_node *expect_command() {
 		else
 		if (strcmp(cmdname->lex, "multistring") == 0) {
 			cmd = expect_command_multistring();
+		}
+		else
+		if (strcmp(cmdname->lex, "return") == 0) {
+			cmd = expect_command_return();
 		}
 		else {
 			semantic_error("no rule to parse command '%s'", cmdname->lex);
