@@ -24,6 +24,7 @@ struct dd_string3d {
 	void (*setColorBack)(struct dd_string3d *, float r, float g, float b);
 	void (*draw)(struct dd_string3d *, const char *text);
 	void (*drawInt)(struct dd_string3d *, int num);
+	void (*drawLimit)(struct dd_string3d *, const char *text, int limit);
 
 	void (*clean)(struct dd_string3d *);
 };
@@ -36,6 +37,7 @@ void dd_string3d_setColorBack(struct dd_string3d *, float r, float g, float b);
 
 void dd_string3d_draw(struct dd_string3d *o, const char* text);
 void dd_string3d_drawInt(struct dd_string3d *o, int num);
+void dd_string3d_drawLimit(struct dd_string3d *o, const char* text, int limit);
 
 void dd_string3d_clean(struct dd_string3d *o);
 

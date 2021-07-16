@@ -100,6 +100,7 @@ void dd_string3d_create(struct dd_string3d *o) {
 	o->clean = dd_string3d_clean;
 	o->draw = dd_string3d_draw;
 	o->drawInt = dd_string3d_drawInt;
+	o->drawLimit = dd_string3d_drawLimit;
 
 }
 
@@ -108,45 +109,68 @@ void dd_string3d_setAlign(struct dd_string3d *o, enum dd_string3d_align al) {
 }
 
 void dd_string3d_draw(struct dd_string3d *o, const char* text) {
-	dd_matrix_push();
-
-	switch (o->align) {
-	case DD_STRING3D_ALIGN_LEFT:
-		break;
-	case DD_STRING3D_ALIGN_CENTER:
-		dd_translatef(-(strlen(text) *0.5)/2 +0.25, 0, 0);
-		break;
-	case DD_STRING3D_ALIGN_RIGHT:
-		dd_translatef(-(strlen(text) *0.5), 0, 0);
-		break;
-	}
-
-	const char *currentLetter = text;
-	while (currentLetter[0] != '\0') {
-
-		if (currentLetter[0] >= 'A' && currentLetter[0] <= 'Z') {
-			dd_string3d_drawLetter(o, &letter[currentLetter[0]-'A']);
-		}
-		else
-		// Draw letter
-		if (currentLetter[0] >= 'a' && currentLetter[0] <= 'z') {
-			dd_string3d_drawLetter(o, &letter[currentLetter[0]-'a']);
-		}
-		else
-		// Draw number
-		if (currentLetter[0] >= '0' && currentLetter[0] <= '9') {
-			dd_string3d_drawLetter(o, &number[currentLetter[0]-'0']);
-		}
-		dd_translatef(0.5, 0, 0);
-		currentLetter++;
-	}
-	dd_matrix_pop();
+	dd_string3d_drawLimit(o, text, 0);
 }
 
 void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 	char numberString[11];
 	snprintf(numberString, 11, "%d", num);
 	dd_string3d_draw(o, numberString);
+}
+
+void dd_string3d_drawLimit(struct dd_string3d *o, const char* text, int limit) {
+
+	if (limit <= 0) {
+		limit = strlen(text);
+	}
+
+	int lines;
+	lines = 1 +(strlen(text) /limit);
+	if (strlen(text) %limit == 0) {
+		lines--;
+	}
+
+	//const char *currentText = text;
+	for (int i = 0; i < lines; i++) {
+		dd_matrix_push();
+
+		int lineWidth = dd_math_min(strlen(text), limit);
+		dd_translatef(0, -1 *i, 0);
+
+		switch (o->align) {
+		case DD_STRING3D_ALIGN_LEFT:
+			break;
+		case DD_STRING3D_ALIGN_CENTER:
+			dd_translatef(-(lineWidth *0.5)/2 +0.25, 0, 0);
+			break;
+		case DD_STRING3D_ALIGN_RIGHT:
+			dd_translatef(-(lineWidth *0.5), 0, 0);
+			break;
+		}
+
+		int j = 0;
+		const char *currentLetter = text +(i*limit);
+		while (currentLetter[0] != '\0' && j < limit) {
+
+			if (currentLetter[0] >= 'A' && currentLetter[0] <= 'Z') {
+				dd_string3d_drawLetter(o, &letter[currentLetter[0]-'A']);
+			}
+			else
+			// Draw letter
+			if (currentLetter[0] >= 'a' && currentLetter[0] <= 'z') {
+				dd_string3d_drawLetter(o, &letter[currentLetter[0]-'a']);
+			}
+			else
+			// Draw number
+			if (currentLetter[0] >= '0' && currentLetter[0] <= '9') {
+				dd_string3d_drawLetter(o, &number[currentLetter[0]-'0']);
+			}
+			dd_translatef(0.5, 0, 0);
+			currentLetter++;
+			j++;
+		}
+		dd_matrix_pop();
+	}
 }
 
 void dd_string3d_clean(struct dd_string3d *o) {
@@ -163,4 +187,3 @@ void dd_string3d_setColorBack(struct dd_string3d *o, float r, float g, float b) 
 	o->colorBack[1] = g;
 	o->colorBack[2] = b;
 }
-
