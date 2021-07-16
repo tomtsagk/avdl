@@ -240,12 +240,12 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
 }
 
 extern GLuint defaultProgram;
-void avdl_useProgram(unsigned int programId) {
-	if (!programId) {
+void avdl_useProgram(struct avdl_program *o) {
+	if (!o || !o->program) {
 		glUseProgram(defaultProgram);
 	}
 	else {
-		glUseProgram(programId);
+		glUseProgram(o->program);
 	}
 }
 
@@ -330,3 +330,39 @@ const char *avdl_shaderFont_fragment =
 "	avdl_frag_color = outColour;\n"
 "}\n"
 ;
+
+void avdl_program_create(struct avdl_program *o) {
+	o->sdrVertexSrc = 0;
+	o->sdrFragmentSrc = 0;
+	o->openglContext = 0;
+	o->program = 0;
+
+	o->clean = avdl_program_clean;
+	o->setVertexShader = avdl_program_setVertexShader;
+	o->setFragmentShader = avdl_program_setFragmentShader;
+	o->useProgram = avdl_program_useProgram;
+}
+
+void avdl_program_clean(struct avdl_program *o) {
+}
+
+void avdl_program_setVertexShader(struct avdl_program *o, char *source) {
+	o->sdrVertexSrc = source;
+}
+
+void avdl_program_setFragmentShader(struct avdl_program *o, char *source) {
+	o->sdrFragmentSrc = source;
+}
+
+void avdl_program_useProgram(struct avdl_program *o) {
+	if (o->program == 0
+	||  o->openglContext != avdl_opengl_getContextId()) {
+		o->openglContext = avdl_opengl_getContextId();
+		o->program = avdl_loadProgram(o->sdrVertexSrc, o->sdrFragmentSrc);
+	}
+	avdl_useProgram(o);
+}
+
+int avdl_getUniformLocation(struct avdl_program *o, char *varname) {
+	return glGetUniformLocation(o->program, varname);
+}

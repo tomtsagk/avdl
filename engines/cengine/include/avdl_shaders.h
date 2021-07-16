@@ -3,15 +3,33 @@
 
 #include <dd_opengl.h>
 
+struct avdl_program {
+	char *sdrVertexSrc;
+	char *sdrFragmentSrc;
+	int openglContext;
+	int program;
+
+	void (*clean)(struct avdl_program *);
+	void (*setVertexShader)(struct avdl_program *, char *source);
+	void (*setFragmentShader)(struct avdl_program *, char *source);
+	void (*useProgram)(struct avdl_program *);
+};
+
+void avdl_program_create(struct avdl_program *);
+void avdl_program_clean(struct avdl_program *);
+void avdl_program_setVertexShader(struct avdl_program *, char *source);
+void avdl_program_setFragmentShader(struct avdl_program *, char *source);
+void avdl_program_useProgram(struct avdl_program *);
+
 /*
  * function to change the current program
  */
-void avdl_useProgram(unsigned int programId);
+void avdl_useProgram(struct avdl_program *o);
 
 /*
  * get/edit uniforms
  */
-#define avdl_getUniformLocation(program, variable) glGetUniformLocation(program, variable)
+int avdl_getUniformLocation(struct avdl_program *o, char *varname);
 #define avdl_setUniformMatrix4f(uniform, matrix) glUniformMatrix4fv(unfirom, 1, GL_FALSE, matrix)
 
 #define avdl_setUniform1f(uniform, f1)             glUniform1f(uniform, f1)

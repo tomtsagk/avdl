@@ -58,6 +58,11 @@ void struct_table_init() {
 	struct_table_push_member("drawInt", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("drawLimit", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("avdl_program", 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setVertexShader", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setFragmentShader", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("useProgram", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

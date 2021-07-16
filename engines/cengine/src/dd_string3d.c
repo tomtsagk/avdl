@@ -22,6 +22,8 @@ int dd_string3d_isActive() {
 extern struct dd_matrix matPerspective;
 
 static void dd_string3d_drawLetter(struct dd_string3d *font, struct dd_mesh *o) {
+	int previousProgram;
+	glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
 	glUseProgram(fontProgram);
 	GLuint MatrixID = glGetUniformLocation(fontProgram, "matrix");
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
@@ -44,7 +46,7 @@ static void dd_string3d_drawLetter(struct dd_string3d *font, struct dd_mesh *o) 
 	glDrawArrays(GL_TRIANGLES, 0, o->vcount);
 
 	glDisableVertexAttribArray(0);
-	glUseProgram(defaultProgram);
+	glUseProgram(previousProgram);
 }
 
 void dd_string3d_init() {
