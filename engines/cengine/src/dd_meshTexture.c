@@ -123,7 +123,6 @@ int dd_meshTexture_applyTexture(struct dd_meshTexture *m) {
 
 void dd_meshTexture_loadTexture(struct dd_meshTexture *m, char *filename) {
 	dd_meshTexture_preloadTexture(m, filename);
-	dd_meshTexture_applyTexture(m);
 }
 
 void dd_meshTexture_draw(struct dd_meshTexture *m) {
@@ -149,8 +148,6 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 	if (m->img.pixelsb) {
 		dd_meshTexture_applyTexture(m);
 	}
-
-	dd_meshTexture_applyTexture(m);
 
 	// there is a texture to draw
 	if (m->img.tex) {
