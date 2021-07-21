@@ -82,7 +82,9 @@ GLuint risingProgram = 0;
 pthread_mutex_t asyncCallMutex;
 #endif
 
+#if DD_PLATFORM_ANDROID
 pthread_mutex_t jniMutex;
+#endif
 pthread_mutex_t updateDrawMutex;
 
 int avdl_state_initialised = 0;
@@ -119,12 +121,14 @@ int dd_main(int argc, char *argv[]) {
 	input_key = 0;
 	input_mouse = 0;
 
+	#if DD_PLATFORM_ANDROID
 	// initialise pthread mutex for jni
 	if (pthread_mutex_init(&jniMutex, NULL) != 0)
 	{
 		dd_log("avdl: mutex for jni init failed");
 		return -1;
 	}
+	#endif
 
 	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
 	{
@@ -233,7 +237,9 @@ void clean() {
 		cworld = 0;
 	}
 
+	#if DD_PLATFORM_ANDROID
 	pthread_mutex_destroy(&jniMutex);
+	#endif
 	pthread_mutex_destroy(&updateDrawMutex);
 
 	#if DD_PLATFORM_NATIVE
@@ -717,10 +723,12 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
  * nativeDone : Called when closing the app
  */
 void Java_org_darkdimension_avdl_AvdlActivity_nativeDone(JNIEnv*  env) {
-	pthread_mutex_lock(&jniMutex);
-	jniEnv = 0;
-	jvm = 0;
-	pthread_mutex_unlock(&jniMutex);
+	if (dd_flag_exit == 0) {
+		pthread_mutex_lock(&jniMutex);
+		jniEnv = 0;
+		jvm = 0;
+		pthread_mutex_unlock(&jniMutex);
+	}
 	/*
 	dd_flag_exit = 1;
 	clean();
@@ -766,16 +774,22 @@ void Java_org_darkdimension_avdl_AvdlGLSurfaceView_nativeTogglePauseResume(JNIEn
 }
 
 void Java_org_darkdimension_avdl_AvdlActivity_nativePause(JNIEnv* env) {
-	onPause();
+	if (dd_flag_exit == 0) {
+		onPause();
+	}
 }
 
 void Java_org_darkdimension_avdl_AvdlActivity_nativeResume(JNIEnv* env) {
-	onResume();
+	if (dd_flag_exit == 0) {
+		onResume();
+	}
 }
 
 void Java_org_darkdimension_avdl_AvdlActivity_nativeKeyDown(JNIEnv*  env, jobject obj, jint key) {
-	pthread_mutex_lock(&updateDrawMutex);
-	input_key = key;
-	pthread_mutex_unlock(&updateDrawMutex);
+	if (dd_flag_exit == 0) {
+		pthread_mutex_lock(&updateDrawMutex);
+		input_key = key;
+		pthread_mutex_unlock(&updateDrawMutex);
+	}
 }
 #endif
