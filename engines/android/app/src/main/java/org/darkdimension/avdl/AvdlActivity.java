@@ -222,10 +222,13 @@ public class AvdlActivity extends Activity {
 			vertexCol = new int[vertexPosCount *3];
 			vertexColFace = new int[vertexCountFace *3 *3];
 		}
-		/*
-		float[] vertexTex = new float[vertexPosCount *3];
-		float[] vertexTexFace = new float[vertexCountFace *3 *3];
-		*/
+
+		float[] vertexTex = null;
+		float[] vertexTexFace = null;
+		if ((settings | DD_FILETOMESH_SETTINGS_TEX_COORD) != 0) {
+			vertexTex = new float[vertexPosCount *2];
+			vertexTexFace = new float[vertexCountFace *2 *3];
+		}
 		// for each element
 		for (int i = 0; i < el.size(); i++) {
 
@@ -257,6 +260,7 @@ public class AvdlActivity extends Activity {
 							vertexPos[j*3+2] = Float.parseFloat(s2[z]);
 						}
 						else
+						// colours
 						if (vertexCol != null && property.name.compareTo("red") == 0) {
 							vertexCol[j*3+0] = Integer.parseInt(s2[z]);
 						}
@@ -267,6 +271,15 @@ public class AvdlActivity extends Activity {
 						else
 						if (vertexCol != null && property.name.compareTo("blue") == 0) {
 							vertexCol[j*3+2] = Integer.parseInt(s2[z]);
+						}
+						else
+						// textures
+						if (vertexTex != null && property.name.compareTo("s") == 0) {
+							vertexTex[j*2+0] = Float.parseFloat(s2[z]);
+						}
+						else
+						if (vertexTex != null && property.name.compareTo("t") == 0) {
+							vertexTex[j*2+1] = Float.parseFloat(s2[z]);
 						}
 					}
 					else
@@ -281,11 +294,11 @@ public class AvdlActivity extends Activity {
 								vertexPosFace[j*9+0] = vertexPos[v1i*3+0];
 								vertexPosFace[j*9+1] = vertexPos[v1i*3+1];
 								vertexPosFace[j*9+2] = vertexPos[v1i*3+2];
-	
+
 								vertexPosFace[j*9+3] = vertexPos[v2i*3+0];
 								vertexPosFace[j*9+4] = vertexPos[v2i*3+1];
 								vertexPosFace[j*9+5] = vertexPos[v2i*3+2];
-	
+
 								vertexPosFace[j*9+6] = vertexPos[v3i*3+0];
 								vertexPosFace[j*9+7] = vertexPos[v3i*3+1];
 								vertexPosFace[j*9+8] = vertexPos[v3i*3+2];
@@ -295,14 +308,25 @@ public class AvdlActivity extends Activity {
 								vertexColFace[j*9+0] = vertexCol[v1i*3+0];
 								vertexColFace[j*9+1] = vertexCol[v1i*3+1];
 								vertexColFace[j*9+2] = vertexCol[v1i*3+2];
-	
+
 								vertexColFace[j*9+3] = vertexCol[v2i*3+0];
 								vertexColFace[j*9+4] = vertexCol[v2i*3+1];
 								vertexColFace[j*9+5] = vertexCol[v2i*3+2];
-	
+
 								vertexColFace[j*9+6] = vertexCol[v3i*3+0];
 								vertexColFace[j*9+7] = vertexCol[v3i*3+1];
 								vertexColFace[j*9+8] = vertexCol[v3i*3+2];
+							}
+
+							if (vertexTex != null) {
+								vertexTexFace[j*6+0] = vertexTex[v1i*2+0];
+								vertexTexFace[j*6+1] = vertexTex[v1i*2+1];
+
+								vertexTexFace[j*6+2] = vertexTex[v2i*2+0];
+								vertexTexFace[j*6+3] = vertexTex[v2i*2+1];
+
+								vertexTexFace[j*6+4] = vertexTex[v3i*2+0];
+								vertexTexFace[j*6+5] = vertexTex[v3i*2+1];
 							}
 
 						}
@@ -321,7 +345,7 @@ public class AvdlActivity extends Activity {
 		return new Object[] {
 			vertexPosFace != null ? vertexPosFace : null,
 			vertexColFace != null ? vertexColFace : null,
-			null
+			vertexTexFace != null ? vertexTexFace : null,
 		};
 	}
 

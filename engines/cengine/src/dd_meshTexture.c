@@ -31,7 +31,13 @@ void dd_meshTexture_create(struct dd_meshTexture *m) {
 
 void dd_meshTexture_load(struct dd_meshTexture *m, const char *filename) {
 	#if DD_PLATFORM_ANDROID
-	dd_meshTexture_set_primitive(m, DD_PRIMITIVE_RECTANGLE);
+	//dd_meshTexture_set_primitive(m, DD_PRIMITIVE_RECTANGLE);
+
+	// clean the mesh, if was dirty
+	dd_meshTexture_clean(m);
+
+	// mark to be loaded
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHTEXTURE, filename);
 	#else
 	dd_meshTexture_clean(m);
 	struct dd_loaded_mesh lm;

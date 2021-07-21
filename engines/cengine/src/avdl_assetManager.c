@@ -154,9 +154,11 @@ void avdl_assetManager_loadAssets() {
 			jint parameterSettings = DD_FILETOMESH_SETTINGS_POSITION;
 			if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
 				parameterSettings |= DD_FILETOMESH_SETTINGS_COLOUR;
-				if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
-					parameterSettings |= DD_FILETOMESH_SETTINGS_TEX_COORD;
-				}
+			}
+			else
+			if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
+				parameterSettings |= DD_FILETOMESH_SETTINGS_COLOUR;
+				parameterSettings |= DD_FILETOMESH_SETTINGS_TEX_COORD;
 			}
 			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, MethodID, parameter, &parameterSettings);
 
@@ -164,6 +166,46 @@ void avdl_assetManager_loadAssets() {
 			 * Reading the asset was successfull,
 			 * load the asset with it.
 			 */
+			if (result && (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE)) {
+
+				struct dd_meshTexture *mesh = m->mesh;
+
+				// the first object describes the size of the texture
+				const jintArray pos  = (*(*env)->GetObjectArrayElement)(env, result, 0);
+				const jfloat *posValues = (*(*env)->GetFloatArrayElements)(env, pos, 0);
+
+				const jintArray col  = (*(*env)->GetObjectArrayElement)(env, result, 1);
+				const jint *colValues = (*(*env)->GetIntArrayElements)(env, col, 0);
+
+				const jintArray tex  = (*(*env)->GetObjectArrayElement)(env, result, 2);
+				const jfloat *texValues = (*(*env)->GetFloatArrayElements)(env, tex, 0);
+
+				jsize len = (*env)->GetArrayLength(env, pos) /3;
+				pthread_mutex_lock(&updateDrawMutex);
+				mesh->parent.parent.vcount = len;
+				mesh->parent.parent.v = malloc(sizeof(float) *len *3);
+				mesh->parent.c = malloc(sizeof(float) *len *4);
+				mesh->t = malloc(sizeof(float) *len *2);
+				for (int i = 0; i < len; i++) {
+					mesh->parent.parent.v[i*3+0] = posValues[i*3+0];
+					mesh->parent.parent.v[i*3+1] = posValues[i*3+1];
+					mesh->parent.parent.v[i*3+2] = posValues[i*3+2];
+					mesh->parent.c[i*4+0] = (float) (colValues[i*3+0] /255.0);
+					mesh->parent.c[i*4+1] = (float) (colValues[i*3+1] /255.0);
+					mesh->parent.c[i*4+2] = (float) (colValues[i*3+2] /255.0);
+					mesh->parent.c[i*4+3] = 1;
+					mesh->t[i*2+0] = texValues[i*2+0];
+					mesh->t[i*2+1] = texValues[i*2+1];
+				}
+				mesh->parent.parent.dirtyVertices = 1;
+				mesh->parent.dirtyColours = 1;
+				mesh->dirtyTextures = 1;
+				pthread_mutex_unlock(&updateDrawMutex);
+
+				(*env)->ReleaseFloatArrayElements(env, pos, posValues, JNI_ABORT);
+				(*env)->ReleaseIntArrayElements(env, col, colValues, JNI_ABORT);
+			}
+			else
 			if (result && (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR)) {
 
 				struct dd_meshColour *mesh = m->mesh;
