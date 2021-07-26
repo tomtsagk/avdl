@@ -69,6 +69,7 @@ static struct ast_node *expect_command_for() {
 	return forcmd;
 }
 
+extern char *installLocation;
 static struct ast_node *expect_command_asset() {
 	struct ast_node *asset = expect_string();
 
@@ -102,6 +103,14 @@ static struct ast_node *expect_command_asset() {
 		lastDot[0] = '\0';
 
 		strcpy(asset->lex, lastSlash);
+	}
+	else
+	// on native, attach the custom install location as the asset's prefix
+	if (avdl_platform == AVDL_PLATFORM_NATIVE) {
+		char buffer[500];
+		strcpy(buffer, installLocation);
+		strcat(buffer, asset->lex);
+		strcpy(asset->lex, buffer);
 	}
 
 	// waste the type for now

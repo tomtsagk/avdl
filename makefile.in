@@ -2,7 +2,7 @@
 # project data
 #
 PROJECT_NAME=avdl
-PROJECT_VERSION=0.0.0
+PROJECT_VERSION=0.0.1
 
 #
 # compiler data
@@ -67,20 +67,18 @@ install: ${EXECUTABLE} ${ENGINE_OUT}
 	${MAKE} -C ${ENGINE_PATH} PREFIX=${INSTALL_LOCATION} install
 	mkdir -p ${INSTALL_LOCATION}/usr/bin
 	install ${EXECUTABLE} ${INSTALL_LOCATION}/usr/bin/
-	#mkdir -p ${INSTALL_LOCATION}/share/${PROJECT_NAME}
-	#install ${ENGINE_PATH}/${ENGINE} ${INSTALL_LOCATION}/share/${PROJECT_NAME}/${ENGINE}
-	#install ${ENGINE_PATH}/index.html ${INSTALL_LOCATION}/share/${PROJECT_NAME}/index.html
 	mkdir -p ${INSTALL_LOCATION}/usr/share/man/man1/
 	install manual/avdl.1 ${INSTALL_LOCATION}/usr/share/man/man1/
-	#mkdir -p ${INSTALL_LOCATION}/share/info/
-	#install avdl.info.gz ${INSTALL_LOCATION}/share/info/
-	# vim files
-	#mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
-	#install vim/syntax/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
-	#mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
-	#install vim/ftdetect/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
 	mkdir -p ${INSTALL_LOCATION}/usr/share/avdl/android
 	cp -r engines/android/* ${INSTALL_LOCATION}/usr/share/avdl/android
+
+#mkdir -p ${INSTALL_LOCATION}/share/info/
+#install avdl.info.gz ${INSTALL_LOCATION}/share/info/
+# vim files
+#mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
+#install vim/syntax/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
+#mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
+#install vim/ftdetect/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
 
 tarball: ${PROJECT_NAME}.tar
 

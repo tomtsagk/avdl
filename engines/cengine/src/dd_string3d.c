@@ -52,13 +52,13 @@ static void dd_string3d_drawLetter(struct dd_string3d *font, struct dd_mesh *o) 
 void dd_string3d_init() {
 
 	// Make sure fontname is within the limits
-	if (strlen(fontname) >= 50) {
-		dd_log("avdl: string3d: font path should have less than 50 characters");
+	if (strlen(fontname) >= 500) {
+		dd_log("avdl: string3d: font path should have less than 500 characters");
 		return;
 	}
 
 	// Prepare buffer that will swap the characters to load the files
-	char buffer[50];
+	char buffer[500];
 	strcpy(buffer, fontname);
 	char *special = buffer;
 

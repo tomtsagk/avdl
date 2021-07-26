@@ -41,6 +41,8 @@ unsigned int dependencies_count = sizeof(dependencies) /sizeof(char *);
 
 char *includePath = 0;
 
+char *installLocation = "";
+
 // init data, parse, exit
 int main(int argc, char *argv[])
 {
@@ -68,73 +70,113 @@ int main(int argc, char *argv[])
 	// parse arguments
 	for (int i = 1; i < argc; i++) {
 
-		if (strcmp(argv[i], "--dependencies") == 0) {
-			getDependencies = 1;
-		}
-		else
-		// print abstract syntax tree
-		if (strcmp(argv[i], "--print-ast") == 0) {
-			show_ast = 1;
-		}
-		else
-		// print struct table
-		if (strcmp(argv[i], "--print-struct-table") == 0) {
-			show_struct_table = 1;
-		}
-		else
-		/* phase arguments
-		 * -t: translate only
-		 * -c: skip linking
-		 */
-		if (strcmp(argv[i], "-t") == 0) {
-			compile = 0;
-			link = 0;
-		}
-		else
-		if (strcmp(argv[i], "-c") == 0) {
-			link = 0;
-		}
-		else
-		// output filename
-		if (strcmp(argv[i], "-o") == 0) {
-			if (argc > i+1) {
-				outname = argv[i+1];
-				i++;
+		// dash argument
+		if (strlen(argv[i]) > 0 && argv[i][0] == '-') {
+
+			// double dash argument
+			if (strlen(argv[i]) > 1 && argv[i][1] == '-') {
+
+				// temp
+				if (strcmp(argv[i], "--dependencies") == 0) {
+					getDependencies = 1;
+				}
+				else
+				// print abstract syntax tree
+				if (strcmp(argv[i], "--print-ast") == 0) {
+					show_ast = 1;
+				}
+				else
+				// print struct table
+				if (strcmp(argv[i], "--print-struct-table") == 0) {
+					show_struct_table = 1;
+				}
+				else
+				// compiling for android
+				if (strcmp(argv[i], "--android") == 0) {
+					avdl_platform = AVDL_PLATFORM_ANDROID;
+					link = 0;
+				}
+				else
+				// show version number
+				if (strcmp(argv[i], "--version") == 0) {
+					printf("avdl v0.0.1\n");
+					return -1;
+				}
+				else
+				// custom install location
+				if (strcmp(argv[i], "--install-loc") == 0) {
+					if (argc > i+1) {
+						installLocation = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: --install-loc expects a path\n");
+						return -1;
+					}
+				}
+				// unknown double dash argument
+				else {
+					printf("avdl error: cannot understand double dash argument '%s'\n", argv[i]);
+					return -1;
+				}
+
 			}
+			else
+			/* phase arguments
+			 * -t: translate only
+			 * -c: skip linking
+			 */
+			if (strcmp(argv[i], "-t") == 0) {
+				compile = 0;
+				link = 0;
+			}
+			else
+			if (strcmp(argv[i], "-c") == 0) {
+				link = 0;
+			}
+			else
+			// output filename
+			if (strcmp(argv[i], "-o") == 0) {
+				if (argc > i+1) {
+					outname = argv[i+1];
+					i++;
+				}
+				else {
+					printf("avdl error: name is expected after `-o`\n");
+					return -1;
+				}
+			}
+			else
+			// add include path
+			if (strcmp(argv[i], "-I") == 0) {
+				if (argc > i+1) {
+					includePath = argv[i+1];
+					i++;
+				}
+				else {
+					printf("avdl error: include path is expected after `-I`\n");
+					return -1;
+				}
+			}
+			// unknown single dash argument
 			else {
-				printf("avdl error: name is expected after `-o`\n");
+				printf("avdl error: cannot understand dash argument '%s'\n", argv[i]);
 				return -1;
 			}
 		}
-		else
-		// add include path
-		if (strcmp(argv[i], "-I") == 0) {
-			if (argc > i+1) {
-				includePath = argv[i+1];
-				i++;
-			}
-			else {
-				printf("avdl error: include path is expected after `-I`\n");
-				return -1;
-			}
-		}
-		else
-		// compiling for android
-		if (strcmp(argv[i], "--android") == 0) {
-			avdl_platform = AVDL_PLATFORM_ANDROID;
-			link = 0;
-		}
-		else
-		// input file
-		if (input_file_total < MAX_INPUT_FILES) {
-			strncpy(filename[input_file_total], argv[i], 100);
-			filename[input_file_total][99] = '\0';
-			input_file_total++;
-		}
-		// error argument
+		// non-dash argument - input file?
 		else {
-			printf("avdl error: '%s': Only %d input files can be provided at a time\n", argv[i], MAX_INPUT_FILES);
-			return -1;
+			// input file
+			if (input_file_total < MAX_INPUT_FILES) {
+				strncpy(filename[input_file_total], argv[i], 100);
+				filename[input_file_total][99] = '\0';
+				input_file_total++;
+			}
+			// error argument
+			else {
+				printf("avdl error: '%s': Only %d input files can be provided at a time\n", argv[i], MAX_INPUT_FILES);
+				return -1;
+			}
 		}
 	}
 
