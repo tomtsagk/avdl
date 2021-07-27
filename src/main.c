@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
 		else {
 			strcat(buffer, "game");
 		}
-		strcat(buffer, " -O3 -lGL -lGLU -lGLEW -lglut -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread");
+		strcat(buffer, " -lGLU -O3 -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread -lglut -lGL -lGLEW");
 		//printf("command: %s\n", buffer);
 		if (system(buffer)) {
 			printf("avdl: error linking files\n");
