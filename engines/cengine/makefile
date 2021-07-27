@@ -30,7 +30,8 @@ HEADERS=$(wildcard include/*.h)
 #
 # compiler flags
 #
-COMPILER_FLAGS=-Wall -Werror -Wpedantic
+#COMPILER_FLAGS=-Wall -Werror -Wpedantic
+COMPILER_FLAGS=-Wall -Wpedantic
 
 #
 # output library

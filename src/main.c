@@ -324,13 +324,14 @@ int main(int argc, char *argv[])
 			strcat(buffer, filename[i]);
 			strcat(buffer, " ");
 		}
-		strcat(buffer, "-O3 -lGL -lGLU -lGLEW -lglut -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread -o ");
+		strcat(buffer, "-o ");
 		if (outname) {
 			strcat(buffer, outname);
 		}
 		else {
 			strcat(buffer, "game");
 		}
+		strcat(buffer, " -lGLU -O3 -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread -lglut -lGL -lGLEW");
 		//printf("command: %s\n", buffer);
 		if (system(buffer)) {
 			printf("avdl: error linking files\n");
