@@ -173,12 +173,12 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 		else
 		if (child->node_type == AST_IDENTIFIER
 		&&  child->value == DD_VARIABLE_TYPE_INT) {
-			fprintf(fd, child->lex);
+			fputs(child->lex, fd);
 		}
 		else
 		if (child->node_type == AST_IDENTIFIER
 		&&  child->value == DD_VARIABLE_TYPE_FLOAT) {
-			fprintf(fd, child->lex);
+			fputs(child->lex, fd);
 		}
 		else {
 			printf("unable to parse argument in echo '%s(%d)', no rule to parse it (2)\n",
@@ -632,7 +632,9 @@ static void print_node(FILE *fd, struct ast_node *n) {
 			fprintf(fd, "\"%s\"", n->lex);
 			break;
 		}
-		case AST_EMPTY: break;
+		case AST_INCLUDE:
+		case AST_EMPTY:
+			break;
 	}
 }
 

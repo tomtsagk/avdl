@@ -838,7 +838,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 					else {
 						strcpy(buff, "%*");
 						strcat(buff, format_description[property->format].parseSymbol);
-						fscanf(f, buff);
+						fputs(buff, f);
 					}
 				}
 			}

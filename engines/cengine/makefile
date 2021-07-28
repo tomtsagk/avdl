@@ -31,7 +31,7 @@ HEADERS=$(wildcard include/*.h)
 # compiler flags
 #
 #COMPILER_FLAGS=-Wall -Werror -Wpedantic
-COMPILER_FLAGS=-Wall -Wpedantic
+COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security
 
 #
 # output library
