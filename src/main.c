@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 				else
 				// show version number
 				if (strcmp(argv[i], "--version") == 0) {
-					printf("avdl v0.0.1\n");
+					printf("avdl v%s\n", PROJECT_VERSION);
 					return -1;
 				}
 				else

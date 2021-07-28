@@ -2,15 +2,16 @@
 # project data
 #
 PROJECT_NAME=avdl
-PROJECT_VERSION=0.0.1
+PROJECT_VERSION=0.0.2
 
 #
 # compiler data
 #
 #COMPILER_FLAGS=-Wall -Werror -Wpedantic
-COMPILER_FLAGS=-Wall -Wpedantic
-COMPILER_DEFINES=-DINSTALL_LOCATION=\"${INSTALL_LOCATION}/usr\" \
-	-DPROJECT_NAME=\"${PROJECT_NAME}\"
+COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security
+COMPILER_DEFINES=\
+	-DPROJECT_NAME=\"${PROJECT_NAME}\"\
+	-DPROJECT_VERSION=\"${PROJECT_VERSION}\"
 COMPILER_INCLUDES=-Iinclude -I${DIRECTORY_OBJ}
 
 #
@@ -60,7 +61,7 @@ ${EXECUTABLE}: ${DIRECTORY_ALL} ${DIRECTORIES} ${OBJ} ${CENGINE_FILES_ANDROID_HE
 # how to build the c engine
 engine: ${ENGINE_OUT}
 
-${ENGINE_OUT}:
+${ENGINE_OUT}: ${CENGINE_FILES_SRC}
 	${MAKE} -C ${ENGINE_PATH}
 
 install: ${EXECUTABLE} ${ENGINE_OUT}
@@ -86,7 +87,8 @@ ${PROJECT_NAME}.tar:
 	tar cf $@ src makefile engines include
 
 clean:
-	rm -f ${EXECUTABLE}
+	${MAKE} -C ${ENGINE_PATH} clean
+	rm -f ${EXECUTABLE} ${OBJ}
 
 destclean: clean
 	rm -f avdl.info.gz makefile
