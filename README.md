@@ -33,8 +33,13 @@ This is mostly for advanced users that know what they are doing.
 
 ## Games made with this language
 
-These are games made by me, using `avdl`.
-Their purpose were mainly to show what this language can do.
+These are games made by me, using `avdl`, to get an idea of what
+the language can do.
+
+* Rue -
+[Itch.io](https://darkdimension.itch.io/rue) |
+[GameJolt](https://gamejolt.com/games/rue/632453) |
+[Google Play](https://play.google.com/store/apps/details?id=org.darkdimension.rue)
 
 * The king is gone -
 [Steam](https://store.steampowered.com/app/1468820/) |
@@ -48,25 +53,52 @@ Their purpose were mainly to show what this language can do.
 [GameJolt](https://gamejolt.com/games/shuffled_nightmares/484001) |
 [Google Play](https://play.google.com/store/apps/details?id=org.darkdimension.shuffled_nightmares)
 
-## How to install
+## How to compile and install
+
+This project currently supports only compilation for Linux out of the box.
+I've managed to compile it manually for Windows, but the process is not
+automated yet.
+
+### Dependencies
+
+To compile this project, you will need the following dependencies:
+
+* `make` - to build the project
+* `gcc` - used to compile this project
+	and to aid the compilation process of `avdl` projects
+* `freeglut` - used for windowing
+* `sdl2` and `sdl2_mixer` - used for audio
+* `glew` - used for advanced opengl functionality
+
+There's a different process to get the dependencies, depending on your
+operating system. Here's some examples:
+
+#### Ubuntu 20.04
+
+On a clean install, you will need to install the following packages
+to get everything you need:
+
+    apt install git make gcc freeglut3-dev libglew-dev libsdl2-dev libsdl2-mixer-dev
+
+#### Arch Linux
+
+Use the following command to get the required packages:
+
+    pacman -S freeglut glew sdl2 sdl2_mixer make gcc
+
+### Compilation
 
 On a linux system, simply execute the following lines from the terminal,
 while you are at the project root directory:
 
-    ./configure
     make
     make install
 
-For the last line `make install`, the default location is `/usr` which can be changed during the
-`./configure` step by using the following:
+The default install location is `/usr/local`. To change that, apply a custom `prefix`
+value like below:
 
-    ./configure --install-loc ./mylocaldirectory
-
-You can then go to the `samples/` and try to compile any using the following:
-
-    avdl file.ags
-
-Which should produce an executable `game` file, which when run will display the sample project.
+    make prefix=/usr
+    make prefix=/usr install
 
 ## Documentation
 

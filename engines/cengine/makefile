@@ -41,7 +41,7 @@ STATIC_OUT=${DIRECTORY_BUILD}/lib${PROJECT_NAME}.a
 #
 # install data
 #
-PREFIX=
+prefix=/usr/local
 
 ### recipes ###
 
@@ -72,16 +72,16 @@ ${DIRECTORY_OBJ}/%.o: ${DIRECTORY_SRC}/%.c ${HEADERS}
 # install library
 #
 install: ${STATIC_OUT}
-	mkdir -p ${PREFIX}/usr/include
-	install -m644 ${HEADERS} ${PREFIX}/usr/include
-	mkdir -p ${PREFIX}/usr/lib
-	install -m755 ${STATIC_OUT} ${PREFIX}/usr/lib
+	mkdir -p ${prefix}/include
+	install -m644 ${HEADERS} ${prefix}/include
+	mkdir -p ${prefix}/lib
+	install -m755 ${STATIC_OUT} ${prefix}/lib
 
 #
 # clean working directory
 #
 clean:
-	rm -r ${DIRECTORY_BUILD}
+	rm -f ${OBJ} ${STATIC_OUT}
 
 #
 # phony recipes

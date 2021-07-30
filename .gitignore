@@ -3,14 +3,10 @@
 yacc.tab.c
 yacc.tab.h
 lex.yy.c
-makefile
 !engines/cengine/makefile
-engines/android/app/src/main/cpp/engine/
 
 # ignore builds
 build/
 
 # ignore generated docs
 avdl.info.gz
-
-engines/android/app/src/main/cpp/CMakeLists.txt
