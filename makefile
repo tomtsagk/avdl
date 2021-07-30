@@ -65,12 +65,12 @@ ${ENGINE_OUT}: ${CENGINE_FILES_SRC}
 	${MAKE} -C ${ENGINE_PATH}
 
 install: ${EXECUTABLE} ${ENGINE_OUT}
-	${MAKE} -C ${ENGINE_PATH} PREFIX="${prefix}" install
-	mkdir -p ${prefix}/bin
+	${MAKE} -C ${ENGINE_PATH} prefix="${prefix}" destdir="${DESTDIR}" install
+	mkdir -p ${DESTDIR}${prefix}/bin
 	install ${EXECUTABLE} ${DESTDIR}${prefix}/bin/
-	mkdir -p ${prefix}/share/man/man1/
+	mkdir -p ${DESTDIR}${prefix}/share/man/man1/
 	install manual/avdl.1 ${DESTDIR}${prefix}/share/man/man1/
-	mkdir -p ${prefix}/share/avdl/android
+	mkdir -p ${DESTDIR}${prefix}/share/avdl/android
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
 
 #mkdir -p ${INSTALL_LOCATION}/share/info/
