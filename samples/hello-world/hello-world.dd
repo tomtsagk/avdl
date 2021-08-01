@@ -1,0 +1,117 @@
+#
+# Hello World in `avdl`
+#
+# creates a default triangle that keeps rotating
+#
+
+#
+# Main world, that will host the triangle and draw it
+#
+(class HelloWorld dd_world
+	(group
+
+	#
+	# "dd_meshColour" is a mesh with a shape and a colour
+	# in this case, a triangle that has a pale violet colour
+	#
+	(def dd_meshColour triangle)
+
+	#
+	# This variable will track the constant rotation
+	#
+	(def float rotation)
+
+	#
+	# These functions are overriding the standard `avdl`
+	# functions, part of the `dd_world` class:
+	# 	* create : Fired once, once everything has been initialised
+	# 	* update : Fired once per frame
+	# 	* draw   : Fired every time a frame needs to be drawn.
+	#   		Typically once per frame, but could be less or more often.
+	# 	* clean  : This will automatically clean all resources
+	# 		used by the "HelloWorld" class, but temporarily it needs to
+	# 		be defined and declared as an empty function
+	#
+	(function void create (group))
+	(function void update (group))
+	(function void draw (group))
+	(function void clean (group))
+
+	)
+) # HelloWorld class
+
+#
+# create function - initialise data
+#
+(class_function HelloWorld void create (group)
+	(group
+
+	# set the clear color to a dark gray
+	(dd_clearColour 0.13 0.13 0.13 1)
+
+	# initialise rotation
+	(= this.rotation 0)
+
+	# initialise the triangle's shape and colour
+	(this.triangle.set_primitive DD_PRIMITIVE_TRIANGLE)
+	(this.triangle.set_colour 0.8 0.6 1)
+
+	)
+) # create
+
+#
+# update function - rotate the triangle infinitely
+#
+(class_function HelloWorld void update (group)
+	(group
+
+	(= this.rotation (+ this.rotation 1))
+	(if (>= this.rotation 360)
+		(= this.rotation (- this.rotation 360))
+	)
+
+	)
+) # update
+
+#
+# draw function - draw the rotating triangle
+#
+(class_function HelloWorld void draw (group)
+	(group
+
+	# move the triangle in front of the camera
+	(dd_translatef 0 0 -5)
+
+	# rotate the triangle on the Z axis
+	(dd_rotatef this.rotation 0 0 1)
+
+	# draw the triangle
+	(this.triangle.draw)
+
+	)
+) # draw
+
+#
+# clean function - just define it as empty, the compiler will
+# take care of the rest
+#
+(class_function HelloWorld void clean (group) (group))
+
+#
+# initial "main" function
+#
+# "dd_gameInit" will fire once when the game starts.
+# This function is responsible for setting up the game,
+# and defining the "HelloWorld" as the first world to show up.
+#
+(function void dd_gameInit (group)
+	(group
+
+	# game's title - appears on the game's window
+	(dd_setGameTitle "Hello World - avdl")
+
+	# the initial world - this makes "HelloWorld" appear on the screen
+	(dd_world_set_default HelloWorld)
+
+	)
+) # dd_gameInit
