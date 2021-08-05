@@ -231,9 +231,18 @@ int main(int argc, char *argv[])
 			strcpy(buffer, outname);
 		}
 		else {
-			filename[i][strlen(filename[i]) -2] = 'c';
-			filename[i][strlen(filename[i]) -1] = '\0';
-			strcpy(buffer, filename[i]);
+			// given an outname, compile the .c file in the same directory
+			if (outname) {
+				strcpy(buffer, outname);
+				buffer[strlen(buffer) -1] = 'c';
+				strcpy(filename[i], buffer);
+			}
+			// by default, put .c file in the same directory as source one
+			else {
+				filename[i][strlen(filename[i]) -2] = 'c';
+				filename[i][strlen(filename[i]) -1] = '\0';
+				strcpy(buffer, filename[i]);
+			}
 		}
 		//printf(" to %s\n", buffer);
 		if (transpile_cglut(buffer, game_node) != 0) {
