@@ -53,7 +53,39 @@ the language can do.
 [GameJolt](https://gamejolt.com/games/shuffled_nightmares/484001) |
 [Google Play](https://play.google.com/store/apps/details?id=org.darkdimension.shuffled_nightmares)
 
-## How to compile and install
+## Available on these Linux Distros
+
+You can find this project packaged for the following Linux distributions:
+
+### Ubuntu 20.04.2 LTS
+
+Add the Personal Package Archives (PPA) to your system,
+then update repositories and install:
+
+    add-apt-repository ppa:darkdimension/avdl
+    apt-get update
+    apt-get install avdl
+
+Note: These commands require `root` permissions, usually aquired with
+the `sudo` command.
+
+### Arch Linux
+
+You can find this project in the Arch User Repository (AUR). Make sure
+to install the dependencies listed here:
+
+[https://aur.archlinux.org/packages/avdl/](https://aur.archlinux.org/packages/avdl/)
+
+Using the command line, move to an empty directory and run:
+
+    git clone https://aur.archlinux.org/avdl.git
+    makepkg
+    pacman -U avdl-<version>-<arch>.pkg.tar.zst
+
+Note: The command `pacman -U` needs `root` permissions, as it is
+used to install packaged from a local file.
+
+## How to compile and install manually
 
 This project currently supports only compilation for Linux out of the box.
 I've managed to compile it manually for Windows, but the process is not
@@ -73,7 +105,7 @@ To compile this project, you will need the following dependencies:
 There's a different process to get the dependencies, depending on your
 operating system. Here's some examples:
 
-#### Ubuntu 20.04
+#### Ubuntu 20.04 LTS
 
 On a clean install, you will need to install the following packages
 to get everything you need:
@@ -101,6 +133,9 @@ value like below:
     make prefix=/usr install
 
 ## Documentation
+
+There is a new tutorial that explains the basics here:
+[https://darkdimension.org/avdl.html](https://darkdimension.org/avdl.html)
 
 For how to use `avdl` through the command line, together
 with arguments, see the man page at `manual/avdl.1`. You can do
