@@ -1,0 +1,6 @@
+avdl (0.0.5-1) focal; urgency=low
+
+  * Improved the compilation process to make it easier to build packages for
+    games made with `avdl`.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Thu, 05 Aug 2021 20:11:44 +0100
