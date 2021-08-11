@@ -1,5 +1,12 @@
+avdl (0.0.5-2) focal; urgency=low
+
+  * Update to make feature builds automatically.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Wed, 11 Aug 2021 22:46:39 +0100
+
 avdl (0.0.5-1) focal; urgency=low
 
+  * Initial Release.
   * Improved the compilation process to make it easier to build packages for
     games made with `avdl`.
 
