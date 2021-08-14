@@ -4,6 +4,7 @@
 
 #include "avdl_symtable.h"
 #include "avdl_ast_node.h"
+#include "avdl_dynamic_array.h"
 
 // Create node with given token and value - no children
 struct ast_node *ast_create(enum AST_NODE_TYPE node_type, int value) {

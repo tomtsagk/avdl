@@ -11,9 +11,9 @@
 #include "avdl_file_op.h"
 #include "avdl_lexer.h"
 #include "avdl_semantic_analyser.h"
-#include "avdl_symtable.h"
 #include "avdl_ast_node.h"
 #include "avdl_parser.h"
+#include "avdl_platform.h"
 
 extern float parsing_float;
 
@@ -28,8 +28,6 @@ char buffer[DD_BUFFER_SIZE];
 struct ast_node *game_node;
 
 #define MAX_INPUT_FILES 10
-
-enum AVDL_PLATFORM avdl_platform = AVDL_PLATFORM_NATIVE;
 
 const char *dependencies[] = {
 	"GLEW",
@@ -47,6 +45,8 @@ char *installLocation = "";
 // init data, parse, exit
 int main(int argc, char *argv[])
 {
+	avdl_platform_initialise();
+
 	/* tweakable data
 	 */
 	int show_ast = 0;
@@ -92,15 +92,25 @@ int main(int argc, char *argv[])
 					show_struct_table = 1;
 				}
 				else
+				// compiling for windows
+				if (strcmp(argv[i], "--windows") == 0) {
+					avdl_platform_set(AVDL_PLATFORM_WINDOWS);
+				}
+				else
+				// compiling for linux
+				if (strcmp(argv[i], "--linux") == 0) {
+					avdl_platform_set(AVDL_PLATFORM_LINUX);
+				}
+				else
 				// compiling for android
 				if (strcmp(argv[i], "--android") == 0) {
-					avdl_platform = AVDL_PLATFORM_ANDROID;
+					avdl_platform_set(AVDL_PLATFORM_ANDROID);
 					link = 0;
 				}
 				else
 				// show version number
 				if (strcmp(argv[i], "--version") == 0) {
-					printf(PACKAGE_NAME " v%s\n", PACKAGE_VERSION);
+					printf(PKG_NAME " v%s\n", PKG_VERSION);
 					return -1;
 				}
 				else
