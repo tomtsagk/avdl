@@ -1,3 +1,9 @@
+avdl (0.0.5-288) focal; urgency=low
+
+  * Testing builds for different versions of Ubuntu.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Wed, 14 Aug 2021 14:04:00 +0100
+
 avdl (0.0.5-2) focal; urgency=low
 
   * Update to make feature builds automatically.
