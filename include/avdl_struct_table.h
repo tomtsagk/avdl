@@ -2,7 +2,7 @@
 #define DD_STRUCT_TABLE_H
 
 // get variable types
-#include "dd_variable_type.h"
+#include "avdl_variable_type.h"
 
 // struct sizes
 #define DD_STRUCT_TABLE_NAME_SIZE 100

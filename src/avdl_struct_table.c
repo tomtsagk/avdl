@@ -1,7 +1,8 @@
-#include "struct_table.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "avdl_struct_table.h"
 
 struct struct_table_entry struct_table[DD_STRUCT_TABLE_TOTAL];
 int struct_table_current = 0;
@@ -63,6 +64,10 @@ void struct_table_init() {
 	struct_table_push_member("setVertexShader", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setFragmentShader", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("useProgram", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("avdl_particle_system", 0);
+	struct_table_push_member("assignAsset", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

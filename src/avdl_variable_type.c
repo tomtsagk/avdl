@@ -1,7 +1,8 @@
-#include "dd_variable_type.h"
 #include <string.h>
-#include "struct_table.h"
 #include <stdio.h>
+
+#include "avdl_variable_type.h"
+#include "avdl_struct_table.h"
 
 enum dd_variable_type dd_variable_type_convert(const char *type) {
 

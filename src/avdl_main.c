@@ -1,18 +1,19 @@
 #include <stdio.h>
 #include <string.h>
-#include "symtable.h"
-#include "ast_node.h"
-#include "parser.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <time.h>
-#include "struct_table.h"
-#include "agc_commands.h"
 #include <errno.h>
-#include "file_op.h"
-#include "lexer.h"
-#include "semantic_analyser.h"
+
+#include "avdl_struct_table.h"
+#include "avdl_commands.h"
+#include "avdl_file_op.h"
+#include "avdl_lexer.h"
+#include "avdl_semantic_analyser.h"
+#include "avdl_symtable.h"
+#include "avdl_ast_node.h"
+#include "avdl_parser.h"
 
 extern float parsing_float;
 
