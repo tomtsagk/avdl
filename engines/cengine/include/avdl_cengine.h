@@ -18,5 +18,6 @@
 #include "dd_log.h"
 #include "avdl_data.h"
 #include "avdl_assetManager.h"
+#include "avdl_particle_system.h"
 
 int dd_main(int argc, char *argv[]);

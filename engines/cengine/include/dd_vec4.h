@@ -18,4 +18,6 @@ float dd_vec4_getY(struct dd_vec4 *o);
 float dd_vec4_getZ(struct dd_vec4 *o);
 float dd_vec4_getW(struct dd_vec4 *o);
 
+void dd_vec4_add(struct dd_vec4 *o1, struct dd_vec4 *o2);
+
 #endif

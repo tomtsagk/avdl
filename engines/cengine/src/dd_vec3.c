@@ -28,3 +28,9 @@ float dd_vec3_getZ(struct dd_vec3 *o) {
 
 void dd_vec3_clean(struct dd_vec3 *o) {
 }
+
+void dd_vec3_add(struct dd_vec3 *o1, struct dd_vec3 *o2) {
+	o1->x += o2->x;
+	o1->y += o2->y;
+	o1->z += o2->z;
+}

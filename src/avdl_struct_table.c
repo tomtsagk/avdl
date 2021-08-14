@@ -68,6 +68,9 @@ void struct_table_init() {
 	struct_table_push_member("assignAsset", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setDelay", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticleLife", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticleSpeed", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

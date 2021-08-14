@@ -31,3 +31,10 @@ float dd_vec4_getZ(struct dd_vec4 *o) {
 float dd_vec4_getW(struct dd_vec4 *o) {
 	return o->w;
 }
+
+void dd_vec4_add(struct dd_vec4 *o1, struct dd_vec4 *o2) {
+	o1->x += o2->x;
+	o1->y += o2->y;
+	o1->z += o2->z;
+	o1->w += o2->w;
+}
