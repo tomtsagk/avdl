@@ -9,13 +9,14 @@ dist:
 
 # install dependencies
 addons:
-  packages:
-    - git
-    - make
-    - freeglut3-dev
-    - libglew-dev
-    - libsdl2-dev
-    - libsdl2-mixer-dev
+  apt:
+    packages:
+      - git
+      - make
+      - freeglut3-dev
+      - libglew-dev
+      - libsdl2-dev
+      - libsdl2-mixer-dev
 
 # compile project
 script: make
