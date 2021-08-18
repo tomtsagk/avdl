@@ -1,6 +1,21 @@
+# avdl is written in C
 language: c
+
+# make builds on `bionic` and `xenial` ubuntu images
 os: linux
-dist: bionic
+dist:
+  - bionic
+  - xenial
+
+# install dependencies
 addons:
-  apt_packages: git make freeglut3-dev libglew-dev libsdl2-dev libsdl2-mixer-dev
+  packages:
+    - git
+    - make
+    - freeglut3-dev
+    - libglew-dev
+    - libsdl2-dev
+    - libsdl2-mixer-dev
+
+# compile project
 script: make
