@@ -5,19 +5,19 @@ language: c
 # on both `amd64` and `arm64` architectures
 jobs:
   include:
-    - name: bionic build
+    - name: Bionic Build amd64
       os: linux
       dist: bionic
       arch: amd64
-    - name: bionic build
+    - name: Bionic Build arm64
       os: linux
       dist: bionic
       arch: arm64
-    - name: xenial build
+    - name: Xenial Build amd64
       os: linux
       dist: xenial
       arch: amd64
-    - name: xenial build
+    - name: Xenial Build arm64
       os: linux
       dist: xenial
       arch: arm64
