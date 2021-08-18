@@ -469,7 +469,7 @@ static struct ast_node *expect_identifier() {
 
 		// identifiers that own objects have to be structs
 		if (symEntry->token != DD_VARIABLE_TYPE_STRUCT) {
-			semantic_error("identifier '%s' not a struct, so it can't own objects");
+			semantic_error("identifier '%s' not a struct, so it can't own objects", identifier->lex);
 		}
 
 		//printf("name of struct: %s\n", struct_table_get_name(e->value));
