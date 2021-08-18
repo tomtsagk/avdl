@@ -1,0 +1,6 @@
+language: c
+os: linux
+dist: bionic
+addons:
+  apt_packages: git make freeglut3-dev libglew-dev libsdl2-dev libsdl2-mixer-dev
+script: make
