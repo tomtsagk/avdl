@@ -2,10 +2,19 @@
 language: c
 
 # make builds on `bionic` and `xenial` ubuntu images
-os: linux
-dist:
-  - bionic
-  - xenial
+jobs:
+  include:
+    - name: bionic build
+      os: linux
+      dist: bionic
+    - name: xenial build
+      os: linux
+      dist: xenial
+
+# build for both amd64 and arm64
+arch:
+  - amd64
+  - arm64
 
 # install dependencies
 addons:
