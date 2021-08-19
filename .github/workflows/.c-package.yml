@@ -24,7 +24,7 @@ jobs:
       run: make prefix="$(pwd)/avdl" install && tar cf avdl.tar avdl/
     - name: Version
       id: version
-      run: echo "::set-output name=version::$(./avdl/bin/avdl --version)"
+      run: echo "::set-output name=version::$(git describe --tags --abbrev=0)"
 #    - uses: actions/upload-artifact@v2
 #      with:
 #        path: avdl.tar
@@ -49,5 +49,5 @@ jobs:
       with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./avdl.tar
-          asset_name: avdl-binary.tar
+          asset_name: avdl-${{ steps.version.outputs.version }}-binary.tar
           asset_content_type: application/zip
