@@ -17,8 +17,8 @@ jobs:
     - name: Compile
       run: make prefix="$(pwd)/avdl"
     - name: Install
-      run: make prefix="$(pwd)/avdl" install && tar cf custom_build.tar avdl/
+      run: make prefix="$(pwd)/avdl" install && tar cf avdl.tar avdl/
     - uses: actions/upload-artifact@v2
       with:
-        path: avdl/custom_build.tar
+        path: avdl.tar
         name: avdl_${{ matrix.os }}_${{ matrix.configs }}.tar
