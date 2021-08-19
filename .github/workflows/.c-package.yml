@@ -17,8 +17,8 @@ jobs:
     - name: Compile
       run: make prefix="$(pwd)/out"
     - name: Install
-      run: make prefix="$(pwd)/out" install
+      run: make prefix="$(pwd)/out" install && tar cf custom_build.tar out/
     - uses: actions/upload-artifact@v2
       with:
-        path: out/
-        name: artifact_${{ matrix.os }}_${{ matrix.configs }}.tar.gz
+        path: custom_build.tar
+        name: artifact_${{ matrix.os }}_${{ matrix.configs }}.tar
