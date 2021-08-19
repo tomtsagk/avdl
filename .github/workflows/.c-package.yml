@@ -1,0 +1,26 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        configs: [Release]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Dependencies
+      run: sudo apt update && sudo apt install -y git make gcc freeglut3-dev libglew-dev libsdl2-dev libsdl2-mixer-dev
+    - name: Compile
+      run: make prefix="$(pwd)/out"
+    - name: Install
+      run:
+       - mkdir out
+       - make prefix="$(pwd)/out" install
+    - uses: actions/upload-artifact@v2
+      with:
+        path: out/
+        name: artifact_${{ matrix.os }}_${{ matrix.configs }}.tar.gz
