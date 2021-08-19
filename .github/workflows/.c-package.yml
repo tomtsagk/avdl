@@ -17,9 +17,7 @@ jobs:
     - name: Compile
       run: make prefix="$(pwd)/out"
     - name: Install
-      run:
-       - mkdir out
-       - make prefix="$(pwd)/out" install
+      run: make prefix="$(pwd)/out" install
     - uses: actions/upload-artifact@v2
       with:
         path: out/
