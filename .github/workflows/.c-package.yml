@@ -22,6 +22,9 @@ jobs:
       run: make prefix="$(pwd)/avdl"
     - name: Install
       run: make prefix="$(pwd)/avdl" install && tar cf avdl.tar avdl/
+    - name: Version
+      id: version
+      run: echo "::set-output name=version::$(./avdl/usr/bin/avdl --version)"
 #    - uses: actions/upload-artifact@v2
 #      with:
 #        path: avdl.tar
@@ -32,8 +35,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        release_name: Release ${{ steps.version.outputs.version }}
         body: |
           Test automated release.
         draft: true
-        prerelease: true
+        prerelease: false
