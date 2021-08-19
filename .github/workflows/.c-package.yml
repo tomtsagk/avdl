@@ -6,8 +6,6 @@ on:
     tags:
      - 'v*'
 
-name: Create Release
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
