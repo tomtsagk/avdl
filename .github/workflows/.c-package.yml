@@ -22,10 +22,10 @@ jobs:
       run: make prefix="$(pwd)/avdl"
     - name: Install
       run: make prefix="$(pwd)/avdl" install && tar cf avdl.tar avdl/
-    - uses: actions/upload-artifact@v2
-      with:
-        path: avdl.tar
-        name: avdl-${{ github.ref }}-${{ matrix.os }}-${{ matrix.configs }}.tar
+#    - uses: actions/upload-artifact@v2
+#      with:
+#        path: avdl.tar
+#        name: avdl-${{ matrix.os }}-${{ matrix.configs }}.tar
     - name: Create Release
       uses: actions/create-release@latest
       env:
