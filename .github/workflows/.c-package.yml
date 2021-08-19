@@ -30,6 +30,7 @@ jobs:
 #        path: avdl.tar
 #        name: avdl-${{ matrix.os }}-${{ matrix.configs }}.tar
     - name: Create Release
+      id: create_release
       uses: actions/create-release@latest
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -37,6 +38,16 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ steps.version.outputs.version }}
         body: |
-          Test automated release.
+          Automated release.
         draft: true
         prerelease: false
+    - name: Upload Release Asset
+          id: upload-release-asset 
+          uses: actions/upload-release-asset@v1
+          env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+              upload_url: ${{ steps.create_release.outputs.upload_url }}
+              asset_path: ./avdl.tar
+              asset_name: avdl-binary.tar
+              asset_content_type: application/zip
