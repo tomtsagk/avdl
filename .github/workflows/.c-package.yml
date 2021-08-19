@@ -15,10 +15,10 @@ jobs:
     - name: Dependencies
       run: sudo apt update && sudo apt install -y git make gcc freeglut3-dev libglew-dev libsdl2-dev libsdl2-mixer-dev
     - name: Compile
-      run: make prefix="$(pwd)/out"
+      run: make prefix="$(pwd)/avdl"
     - name: Install
-      run: make prefix="$(pwd)/out" install && cd out && tar cf custom_build.tar *
+      run: make prefix="$(pwd)/avdl" install && tar cf custom_build.tar avdl/
     - uses: actions/upload-artifact@v2
       with:
-        path: out/custom_build.tar
-        name: artifact_${{ matrix.os }}_${{ matrix.configs }}.tar
+        path: avdl/custom_build.tar
+        name: avdl_${{ matrix.os }}_${{ matrix.configs }}.tar
