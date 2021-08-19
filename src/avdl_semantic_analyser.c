@@ -1,14 +1,14 @@
-#include "semantic_analyser.h"
-#include "lexer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "symtable.h"
-#include "struct_table.h"
-#include "agc_commands.h"
 #include <stdarg.h>
 
-extern enum AVDL_PLATFORM avdl_platform;
+#include "avdl_symtable.h"
+#include "avdl_struct_table.h"
+#include "avdl_commands.h"
+#include "avdl_semantic_analyser.h"
+#include "avdl_lexer.h"
+#include "avdl_platform.h"
 
 static struct ast_node *expect_command_definition();
 static struct ast_node *expect_command_classDefinition();
@@ -79,7 +79,7 @@ static struct ast_node *expect_command_asset() {
 	 *
 	 * temporary solution
 	 */
-	if (avdl_platform == AVDL_PLATFORM_ANDROID) {
+	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
 		char buffer[500];
 		strcpy(buffer, asset->lex);
 
@@ -105,8 +105,9 @@ static struct ast_node *expect_command_asset() {
 		strcpy(asset->lex, lastSlash);
 	}
 	else
-	// on native, attach the custom install location as the asset's prefix
-	if (avdl_platform == AVDL_PLATFORM_NATIVE) {
+	// on linux and windows, attach the custom install location as the asset's prefix
+	if (avdl_platform_get() == AVDL_PLATFORM_LINUX
+	||  avdl_platform_get() == AVDL_PLATFORM_WINDOWS) {
 		char buffer[500];
 		strcpy(buffer, installLocation);
 		strcat(buffer, asset->lex);
@@ -468,7 +469,7 @@ static struct ast_node *expect_identifier() {
 
 		// identifiers that own objects have to be structs
 		if (symEntry->token != DD_VARIABLE_TYPE_STRUCT) {
-			semantic_error("identifier '%s' not a struct, so it can't own objects");
+			semantic_error("identifier '%s' not a struct, so it can't own objects", identifier->lex);
 		}
 
 		//printf("name of struct: %s\n", struct_table_get_name(e->value));

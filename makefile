@@ -7,11 +7,11 @@ PACKAGE_VERSION=0.0.5
 #
 # compiler data
 #
-COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security #-Werror
+COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security#-Werror
 COMPILER_DEFINES=\
-	-DPACKAGE_NAME=\"${PACKAGE_NAME}\"\
-	-DPACKAGE_VERSION=\"${PACKAGE_VERSION}\"
-COMPILER_INCLUDES=-Iinclude -I${DIRECTORY_OBJ}
+	-DPKG_NAME=\"${PACKAGE_NAME}\"\
+	-DPKG_VERSION=\"${PACKAGE_VERSION}\"
+COMPILER_INCLUDES=-Iinclude
 
 #
 # directories
@@ -34,44 +34,42 @@ HEADERS=$(widcard include/*.h)
 EXECUTABLE=${DIRECTORY_EXE}/${PACKAGE_NAME}
 
 #
-# engine data
+# c engine data
 #
-ENGINE_PATH=engines/cengine
-ENGINE_OUT=${ENGINE_PATH}/build/libavdl-cengine.a
+CENGINE_PATH=engines/cengine
 
 #
 # system data
 #
 prefix=/usr/local
 
-# android
-#DIRECTORIES=engines/android/app/src/main/cpp/engine/
-#CENGINE_FILES_HEADER=$(wildcard engines/cengine/include/*.h)
-#CENGINE_FILES_SRC=$(wildcard engines/cengine/src/*.c)
-#CENGINE_FILES_ANDROID_HEADER=$(CENGINE_FILES_HEADER:engines/cengine/include/%.h=engines/android/app/src/main/cpp/engine/%.h)
-#CENGINE_FILES_ANDROID_SRC=$(CENGINE_FILES_SRC:engines/cengine/src/%.c=engines/android/app/src/main/cpp/engine/%.c)
-#CENGINE_FILES_LOCAL=$(CENGINE_FILES_SRC:engines/cengine/src/%.c=engine\/%.c)
+#
+# compile the package, together with all engines
+#
+all: ${EXECUTABLE}
+	${MAKE} -C ${CENGINE_PATH} all
 
-all: ${EXECUTABLE} ${ENGINE_OUT}
-
-# build the executable, depends on source, lex, yacc and all engines
-${EXECUTABLE}: ${DIRECTORY_ALL} ${DIRECTORIES} ${OBJ} #${CENGINE_FILES_ANDROID_HEADER} ${CENGINE_FILES_ANDROID_SRC} engines/android/app/src/main/cpp/CMakeLists.txt
+#
+# build the executable, depends on source files
+#
+${EXECUTABLE}: ${DIRECTORY_ALL} ${OBJ}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${OBJ} -o $@
 
-# how to build the c engine
-engine: ${ENGINE_OUT}
-
-${ENGINE_OUT}: ${CENGINE_FILES_SRC}
-	${MAKE} -C ${ENGINE_PATH}
-
-install: ${EXECUTABLE} ${ENGINE_OUT}
-	${MAKE} -C ${ENGINE_PATH} prefix="${prefix}" destdir="${DESTDIR}" install
+#
+# install the program to the current system
+#
+install: ${EXECUTABLE}
+	@# executable
 	mkdir -p ${DESTDIR}${prefix}/bin
 	install ${EXECUTABLE} ${DESTDIR}${prefix}/bin/
+	@# manual
 	mkdir -p ${DESTDIR}${prefix}/share/man/man1/
 	install manual/avdl.1 ${DESTDIR}${prefix}/share/man/man1/
+	@# android engine
 	mkdir -p ${DESTDIR}${prefix}/share/avdl/android
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
+	@# c engine
+	${MAKE} -C ${CENGINE_PATH} prefix="${prefix}" destdir="${DESTDIR}" install
 
 #mkdir -p ${INSTALL_LOCATION}/share/info/
 #install avdl.info.gz ${INSTALL_LOCATION}/share/info/
@@ -81,30 +79,31 @@ install: ${EXECUTABLE} ${ENGINE_OUT}
 #mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
 #install vim/ftdetect/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
 
-tarball: ${PACKAGE_NAME}.tar
+#
+# create a tarball of all source files needed to compile this project
+#
+tarball: ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar
 
-${PACKAGE_NAME}.tar:
+${PACKAGE_NAME}-${PACKAGE_VERSION}.tar:
 	tar cf $@ src makefile engines include
 
+#
+# clean all automatically generated files
+#
 clean:
-	${MAKE} -C ${ENGINE_PATH} clean
+	${MAKE} -C ${CENGINE_PATH} clean
 	rm -f ${EXECUTABLE} ${OBJ}
 
-# android files
-#engines/android/app/src/main/cpp/engine/%.h: engines/cengine/include/%.h
-#	cp $< $@
-
-#engines/android/app/src/main/cpp/engine/%.c: engines/cengine/src/%.c
-#	cp $< $@
-
-#engines/android/app/src/main/cpp/CMakeLists.txt: engines/android/app/src/main/cpp/CMakeLists.txt.in
-#	sed 's/%AVDL_ENGINE_FILES%/${CENGINE_FILES_LOCAL}/' $< > $@
-
+#
+# create needed directories
+#
 ${DIRECTORIES} ${DIRECTORY_ALL}:
 	mkdir -p $@
 
+#
+# compile .c source files
+#
 ${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -c $< -o $@
 
-
-.PHONY: clean destclean install engine
+.PHONY: all tarball clean install

@@ -1,7 +1,7 @@
-#ifndef _PGMPREFIX_AST_NODE_H_
-#define _PGMPREFIX_AST_NODE_H_
+#ifndef AVDL_AST_NODE_H
+#define AVDL_AST_NODE_H
 
-#include "dd_dynamic_array.h"
+#include "avdl_dynamic_array.h"
 
 /* abstract syntax tree
  * contains nodes that represent logic inside the game

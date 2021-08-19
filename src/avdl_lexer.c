@@ -1,10 +1,11 @@
-#include "lexer.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "symtable.h"
 #include <ctype.h>
+
+#include "avdl_symtable.h"
+#include "avdl_lexer.h"
 
 extern char *includePath;
 

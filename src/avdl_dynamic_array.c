@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "dd_dynamic_array.h"
 #include <string.h>
+
+#include "avdl_dynamic_array.h"
 
 /* Init empty array */
 int dd_da_init(struct dd_dynamic_array *da, int el_size) {
