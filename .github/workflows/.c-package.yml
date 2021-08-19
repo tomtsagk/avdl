@@ -1,6 +1,9 @@
 name: C/C++ CI
 
-on: [push]
+on:
+  push:
+    tags:
+     - 'v*'
 
 jobs:
   build:
@@ -21,4 +24,4 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: avdl.tar
-        name: avdl_${{ matrix.os }}_${{ matrix.configs }}.tar
+        name: avdl-${{ github.ref }}-${{ matrix.os }}-${{ matrix.configs }}.tar
