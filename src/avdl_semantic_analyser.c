@@ -724,5 +724,7 @@ static void semantic_error(const char *msg, ...) {
 	vprintf(msg, args);
 	printf("\n");
 	lexer_printCurrentLine();
+
+	va_end(args);
 	exit(-1);
 }
