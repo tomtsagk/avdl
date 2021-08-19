@@ -1,9 +1,12 @@
 name: C/C++ CI
 
+# only execute on new version tags (ex. v0.0.0)
 on:
   push:
     tags:
      - 'v*'
+
+name: Create Release
 
 jobs:
   build:
@@ -25,3 +28,14 @@ jobs:
       with:
         path: avdl.tar
         name: avdl-${{ github.ref }}-${{ matrix.os }}-${{ matrix.configs }}.tar
+    - name: Create Release
+      uses: actions/create-release@latest
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+	release_name: Release ${{ github.ref }}
+	body: |
+	  Test automated release.
+	draft: true
+	prerelease: true
