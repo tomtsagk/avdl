@@ -24,7 +24,7 @@ jobs:
       run: make prefix="$(pwd)/avdl" install && tar cf avdl.tar avdl/
     - name: Version
       id: version
-      run: echo "::set-output name=version::$(./avdl/usr/bin/avdl --version)"
+      run: echo "::set-output name=version::$(./avdl/bin/avdl --version)"
 #    - uses: actions/upload-artifact@v2
 #      with:
 #        path: avdl.tar
