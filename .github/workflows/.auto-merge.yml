@@ -1,6 +1,6 @@
-name: Merge
+name: Auto-merge `stable`
 
-# only execute on new version tags (ex. v0.0.0)
+# only execute on updates on `development`
 on:
   push:
     branches:
