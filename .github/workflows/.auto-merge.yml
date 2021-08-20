@@ -7,5 +7,12 @@ on:
       github-test-stable
 
 jobs:
-  attempt-merge:
-    name: attempt to merge
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        configs: [Release]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
