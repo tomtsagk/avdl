@@ -1,6 +1,11 @@
 # avdl is written in C
 language: c
 
+# only build the default `github` branch
+branches:
+  only:
+  - github
+
 # make builds on `bionic` and `xenial` ubuntu images
 # on both `amd64` and `arm64` architectures
 jobs:
