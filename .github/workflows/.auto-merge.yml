@@ -7,7 +7,7 @@ on:
       github-test-stable
 
 jobs:
-  build:
+  merge:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -16,3 +16,5 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
+    - name: Merge
+      run: echo "merging" && git status -s
