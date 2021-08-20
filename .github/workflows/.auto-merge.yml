@@ -17,5 +17,7 @@ jobs:
     - name: Merge
       run: |
         echo "merging"
+	pwd
+	ls
         git merge origin/github-test-stable
         git push
