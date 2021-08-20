@@ -3,6 +3,8 @@
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tomtsagk/avdl)
 ![Travis (.com)](https://img.shields.io/travis/com/tomtsagk/avdl)
 
+Test text
+
 This is a high level programming language for making video games.
 
 The idea behind it, is that a game is described using the language in an abstract
