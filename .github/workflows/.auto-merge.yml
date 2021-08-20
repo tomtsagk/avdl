@@ -15,6 +15,6 @@ jobs:
     - name: Merge
       run: |
         echo "merging"
-	git checkout github-test
-	git merge github-test-stable
-	git push
+        git checkout github-test
+        git merge github-test-stable
+        git push
