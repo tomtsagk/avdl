@@ -5,6 +5,8 @@
 
 Test text
 
+Test text 2
+
 This is a high level programming language for making video games.
 
 The idea behind it, is that a game is described using the language in an abstract
