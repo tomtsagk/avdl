@@ -1,0 +1,11 @@
+name: C/C++ CI
+
+# only execute on new version tags (ex. v0.0.0)
+on:
+  push:
+    branches:
+      github-test-stable
+
+jobs:
+  attempt-merge:
+    name: attempt to merge
