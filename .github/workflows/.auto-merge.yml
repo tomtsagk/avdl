@@ -8,13 +8,13 @@ on:
 
 jobs:
   merge:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        configs: [Release]
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
     - name: Merge
-      run: echo "merging" && git status -s
+      run: |
+        echo "merging"
+	git checkout github-test
+	git merge github-test-stable
+	git push
