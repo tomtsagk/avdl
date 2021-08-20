@@ -17,5 +17,5 @@ jobs:
     - name: Merge
       run: |
         echo "merging"
-        git merge github-test-stable
+        git merge origin/github-test-stable
         git push
