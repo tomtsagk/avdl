@@ -226,24 +226,33 @@ static struct ast_node *expect_command_classDefinition() {
 	if (lexer_peek() == LEXER_TOKEN_IDENTIFIER) {
 		subclassname = expect_identifier();
 	}
+	// no subclass for this class
 	else {
 		struct ast_node *n = expect_int();
 		if (n->value != 0) {
 			semantic_error("subclass can either be an identifier or '0'");
 		}
-		subclassname = 0;
+		subclassname = ast_create(AST_EMPTY, 0);
 	}
 
 	symtable_push();
 	struct ast_node *definitions = expect_command();
 
-	int structIndex = struct_table_push(classname->lex, subclassname->lex);
+	// add new struct to the struct table
+	int structIndex;
+	if (subclassname->node_type == AST_IDENTIFIER) {
+		structIndex = struct_table_push(classname->lex, subclassname->lex);
+	}
+	else {
+		structIndex = struct_table_push(classname->lex, 0);
+	}
 
 	for (int i = 0; i < definitions->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&definitions->children, i);
 		struct ast_node *type = dd_da_get(&child->children, 0);
 		struct ast_node *name = dd_da_get(&child->children, 1);
 
+		// new variable
 		if (strcmp(child->lex, "def") == 0) {
 
 			struct entry *e = symtable_entryat(symtable_lookup(name->lex));
@@ -267,20 +276,22 @@ static struct ast_node *expect_command_classDefinition() {
 				struct_table_push_member(name->lex, dd_variable_type_convert(type->lex), type->lex, e->isRef);
 			}
 		}
+		// new function
 		else {
-			//printf("function: %s %s\n", type->lex, name->lex);
+			/*
+			 * there's a subclass, check if new function is
+			 * overriding another one
+			 */
+			if (subclassname->node_type == AST_IDENTIFIER) {
+				int parentDepth = struct_table_is_member_parent(structIndex, name->lex);
 
-			int parentDepth = struct_table_is_member_parent(structIndex, name->lex);
-			//printf("var: %s %s\n", type->lex, name->lex);
-			//printf("parent depth: %d\n", parentDepth);
+				// overriding subclass function
+				if (parentDepth >= 0) {
+					child->value = 1;
+				}
+			}
 
-			// override function
-			if (parentDepth >= 0) {
-				child->value = 1;
-			}
-			// new function
-			else {
-			}
+			// add function to struct table
 			struct_table_push_member(name->lex, DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 		}
 	}
