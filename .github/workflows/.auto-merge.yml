@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Merge
 
 # only execute on new version tags (ex. v0.0.0)
 on:
@@ -12,12 +12,12 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
-      with:
-        ref: github-test
-    - name: Merge
       run: |
-        echo "merging"
-        git branch
-        git remote
-        git merge origin/github-test-stable
+        git clone "https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/tomtsagk/avdl.git"
+        cd avdl
+        git checkout github-test-stable
+        git pull
+        git checkout github-test
+        git pull
+        git merge github-test-stable
         git push
