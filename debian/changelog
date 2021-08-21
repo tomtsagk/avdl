@@ -1,8 +1,14 @@
+avdl (0.0.6-1) focal; urgency=low
+
+  * Fix some small edge-case bugs.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Sat, 21 Aug 2021 12:04:00 +0100
+
 avdl (0.0.5-288) focal; urgency=low
 
   * Testing builds for different versions of Ubuntu.
 
- -- Tom Tsagk <tomtsagk@darkdimension.org>  Wed, 14 Aug 2021 14:04:00 +0100
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Sat, 14 Aug 2021 14:04:00 +0100
 
 avdl (0.0.5-2) focal; urgency=low
 
