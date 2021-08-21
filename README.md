@@ -11,7 +11,7 @@ actual executable game for specific platforms.
 
 Published under the GPL-3 license, this project can be used for free.
 Any game created with `avdl` fully belongs to the person that made it,
-and they can what they like with it.
+and they can do what they like with it.
 
 ## Games made with this language
 
@@ -69,6 +69,17 @@ Using the command line, move to an empty directory and run:
 Note: The command `pacman -U` needs `root` permissions, as it is
 used to install packaged from a local file.
 
+### Fedora 34, Fedora 35, Fedora rawhide
+
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/darkdimension/avdl/package/avdl/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/darkdimension/avdl/package/avdl/)
+
+Enable the repository using the package manager, and install:
+
+    dnf copr enable darkdimension/avdl
+    dnf install avdl
+
+Note: These commands may require `root` permissions.
+
 ## How to compile and install manually
 
 This project currently supports only compilation for Linux out of the box.
@@ -101,6 +112,12 @@ to get everything you need:
 Use the following command to get the required packages:
 
     pacman -S freeglut glew sdl2 sdl2_mixer make gcc
+
+### Fedora 34, Fedora 35, Fedora rawhide
+
+Use the following command to get the required packages:
+
+    dnf install make gcc glew-devel freeglut-devel SDL2-devel SDL2_mixer-devel
 
 ### Compilation - Linux
 
