@@ -14,17 +14,18 @@
  * specific distribution apps that might not
  * support save locally.
  */
-char avdl_data_saveDirectory[1000] = "saves";
+char avdl_data_saveDirectory[1024] = "saves";
 
 int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 
 	/*
 	 * if needed, make all directories recursively
 	 */
-	char buffer[1000];
+	char buffer[1024];
 	strcpy(buffer, avdl_data_saveDirectory);
 	strcat(buffer, "/");
 	strcat(buffer, filename);
+	buffer[1023] = '\0';
 
 	char *start = buffer;
 	char *end = start+1;
