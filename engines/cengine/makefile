@@ -60,7 +60,7 @@ ${STATIC_OUT}: ${OBJ}
 # make sure compiled build directories exist
 #
 ${DIRECTORIES}:
-	mkdir $@
+	mkdir -p $@
 
 #
 # compile source files to object files
