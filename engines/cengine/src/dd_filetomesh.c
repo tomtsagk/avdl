@@ -233,7 +233,8 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 				}
 
 				// next word is format
-				if ( sscanf(f, "%s%n", buff, &charRead) == EOF ) {
+				buff[1023] = '\0';
+				if ( sscanf(f, "%1022s%n", buff, &charRead) == EOF ) {
 					goto error;
 				}
 				f += charRead;
