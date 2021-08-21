@@ -1,14 +1,14 @@
-#include "semantic_analyser.h"
-#include "lexer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "symtable.h"
-#include "struct_table.h"
-#include "agc_commands.h"
 #include <stdarg.h>
 
-extern enum AVDL_PLATFORM avdl_platform;
+#include "avdl_symtable.h"
+#include "avdl_struct_table.h"
+#include "avdl_commands.h"
+#include "avdl_semantic_analyser.h"
+#include "avdl_lexer.h"
+#include "avdl_platform.h"
 
 static struct ast_node *expect_command_definition();
 static struct ast_node *expect_command_classDefinition();
@@ -79,7 +79,7 @@ static struct ast_node *expect_command_asset() {
 	 *
 	 * temporary solution
 	 */
-	if (avdl_platform == AVDL_PLATFORM_ANDROID) {
+	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
 		char buffer[500];
 		strcpy(buffer, asset->lex);
 
@@ -105,8 +105,9 @@ static struct ast_node *expect_command_asset() {
 		strcpy(asset->lex, lastSlash);
 	}
 	else
-	// on native, attach the custom install location as the asset's prefix
-	if (avdl_platform == AVDL_PLATFORM_NATIVE) {
+	// on linux and windows, attach the custom install location as the asset's prefix
+	if (avdl_platform_get() == AVDL_PLATFORM_LINUX
+	||  avdl_platform_get() == AVDL_PLATFORM_WINDOWS) {
 		char buffer[500];
 		strcpy(buffer, installLocation);
 		strcat(buffer, asset->lex);
@@ -225,24 +226,33 @@ static struct ast_node *expect_command_classDefinition() {
 	if (lexer_peek() == LEXER_TOKEN_IDENTIFIER) {
 		subclassname = expect_identifier();
 	}
+	// no subclass for this class
 	else {
 		struct ast_node *n = expect_int();
 		if (n->value != 0) {
 			semantic_error("subclass can either be an identifier or '0'");
 		}
-		subclassname = 0;
+		subclassname = ast_create(AST_EMPTY, 0);
 	}
 
 	symtable_push();
 	struct ast_node *definitions = expect_command();
 
-	int structIndex = struct_table_push(classname->lex, subclassname->lex);
+	// add new struct to the struct table
+	int structIndex;
+	if (subclassname->node_type == AST_IDENTIFIER) {
+		structIndex = struct_table_push(classname->lex, subclassname->lex);
+	}
+	else {
+		structIndex = struct_table_push(classname->lex, 0);
+	}
 
 	for (int i = 0; i < definitions->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&definitions->children, i);
 		struct ast_node *type = dd_da_get(&child->children, 0);
 		struct ast_node *name = dd_da_get(&child->children, 1);
 
+		// new variable
 		if (strcmp(child->lex, "def") == 0) {
 
 			struct entry *e = symtable_entryat(symtable_lookup(name->lex));
@@ -266,20 +276,22 @@ static struct ast_node *expect_command_classDefinition() {
 				struct_table_push_member(name->lex, dd_variable_type_convert(type->lex), type->lex, e->isRef);
 			}
 		}
+		// new function
 		else {
-			//printf("function: %s %s\n", type->lex, name->lex);
+			/*
+			 * there's a subclass, check if new function is
+			 * overriding another one
+			 */
+			if (subclassname->node_type == AST_IDENTIFIER) {
+				int parentDepth = struct_table_is_member_parent(structIndex, name->lex);
 
-			int parentDepth = struct_table_is_member_parent(structIndex, name->lex);
-			//printf("var: %s %s\n", type->lex, name->lex);
-			//printf("parent depth: %d\n", parentDepth);
+				// overriding subclass function
+				if (parentDepth >= 0) {
+					child->value = 1;
+				}
+			}
 
-			// override function
-			if (parentDepth >= 0) {
-				child->value = 1;
-			}
-			// new function
-			else {
-			}
+			// add function to struct table
 			struct_table_push_member(name->lex, DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 		}
 	}
@@ -468,7 +480,7 @@ static struct ast_node *expect_identifier() {
 
 		// identifiers that own objects have to be structs
 		if (symEntry->token != DD_VARIABLE_TYPE_STRUCT) {
-			semantic_error("identifier '%s' not a struct, so it can't own objects");
+			semantic_error("identifier '%s' not a struct, so it can't own objects", identifier->lex);
 		}
 
 		//printf("name of struct: %s\n", struct_table_get_name(e->value));
@@ -723,5 +735,7 @@ static void semantic_error(const char *msg, ...) {
 	vprintf(msg, args);
 	printf("\n");
 	lexer_printCurrentLine();
+
+	va_end(args);
 	exit(-1);
 }

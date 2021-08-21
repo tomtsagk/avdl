@@ -1,35 +1,17 @@
 # avdl - Abstract video-game development language
 
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tomtsagk/avdl)
+![Travis (.com)](https://img.shields.io/travis/com/tomtsagk/avdl)
+
 This is a high level programming language for making video games.
 
 The idea behind it, is that a game is described using the language in an abstract
-way, similar to how an image file describes the pixels of an image. Then it's
-the compiler's responsibility of compiling that into an actual executable
-game for specific platforms.
+way. Then it's the compiler's responsibility to compile that into an
+actual executable game for specific platforms.
 
-The current plan for the license, is to keep the compiler itself and
-all modifications to it free and open-source, but any game made with it will be
-completely owned by the user that made it, and it's their choice to monetize
-it or not.
-
-## Platforms
-
-`avdl` currently can only be compiled for Linux. However it is possible
-to compile for Windows using Linux-emulated tools (like Cygwin).
-
-Games made with this language can currently be compiled for:
-
-* Linux (Not handling dependencies at the moment)
-
-Platforms planned:
-
-* Windows (It's possible to currently cross-compile to it, but it's not straightforward)
-* Android (It's possible to compile an `.apk`, but there are a few
-	steps that haven't been automated yet)
-
-As the language is still growing, it can currently transpile source files to
-the C programming language, which can then be manually compiled for the desired platform.
-This is mostly for advanced users that know what they are doing.
+Published under the GPL-3 license, this project can be used for free.
+Any game created with `avdl` fully belongs to the person that made it,
+and they can what they like with it.
 
 ## Games made with this language
 
@@ -59,7 +41,7 @@ You can find this project packaged for the following Linux distributions:
 
 ### Ubuntu 20.04.2 LTS
 
-Add the Personal Package Archives (PPA) to your system,
+Add the Personal Package Archive (PPA) to your system,
 then update repositories and install:
 
     add-apt-repository ppa:darkdimension/avdl
@@ -69,7 +51,9 @@ then update repositories and install:
 Note: These commands require `root` permissions, usually aquired with
 the `sudo` command.
 
-### Arch Linux
+### Arch Linux - AUR
+
+[![AUR version](https://img.shields.io/aur/version/avdl)](https://aur.archlinux.org/packages/avdl/)
 
 You can find this project in the Arch User Repository (AUR). Make sure
 to install the dependencies listed here:
@@ -118,7 +102,7 @@ Use the following command to get the required packages:
 
     pacman -S freeglut glew sdl2 sdl2_mixer make gcc
 
-### Compilation
+### Compilation - Linux
 
 On a linux system, simply execute the following lines from the terminal,
 while you are at the project root directory:
@@ -141,8 +125,3 @@ For how to use `avdl` through the command line, together
 with arguments, see the man page at `manual/avdl.1`. You can do
 so with `man manual/avdl.1` from the project's root directory,
 or if you have the project installed, you can run `man avdl` instead.
-
-About the language's syntax, there is currently some documentation in
-`doc/avdl.texi` which when installed can be viewed with `info avdl`.
-As this project is becoming more stable, the documentation there will
-become more up to date.

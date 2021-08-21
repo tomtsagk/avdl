@@ -1,7 +1,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "symtable.h"
+
+#include "avdl_symtable.h"
 
 int symtable_current = -1;
 

@@ -1,7 +1,7 @@
 #ifndef _SYMTABLE_H_
 #define _SYMTABLE_H_
 
-#include "dd_variable_type.h"
+#include "avdl_variable_type.h"
 
 #define DD_SYMTABLE_STRUCT 0
 #define DD_SYMTABLE_NATIVE 1
