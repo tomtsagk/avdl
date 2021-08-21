@@ -148,7 +148,7 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 	 */
 
 	//Read words until end of file or end of header
-	while ( sscanf(f, "%s%n", buff, &charRead) != EOF
+	while ( sscanf(f, "%1024s%n", buff, &charRead) != EOF
 		&& strcmp(buff, "end_header") != 0
 		&& f[0] != '\0')
 	{
@@ -167,7 +167,7 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 			elements[elementCurrent].propertyCurrent = -1;
 
 			//Get next word
-			if (sscanf(f, "%s%n", buff, &charRead) == EOF ) {
+			if (sscanf(f, "%1024s%n", buff, &charRead) == EOF ) {
 				goto error;
 			}
 			f += charRead;
@@ -655,7 +655,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	 */
 
 	//Read words until end of file or end of header
-	while ( fscanf(f, "%s", buff) != EOF
+	while ( fscanf(f, "%1024s", buff) != EOF
 		&& strcmp(buff, "end_header") != 0 )
 	{
 		// Found comment - Skip line
@@ -671,7 +671,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 			elements[elementCurrent].propertyCurrent = -1;
 
 			//Get next word
-			if ( fscanf(f, "%s", buff) == EOF )
+			if ( fscanf(f, "%1024s", buff) == EOF )
 				goto error;
 
 			strncpy(elements[elementCurrent].name, buff, 99);
@@ -977,7 +977,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 	char buff[1024];
 
 	//Get the first character of each line
-	while ( fscanf(f, "%s", buff) != EOF ) {
+	while ( fscanf(f, "%1024s", buff) != EOF ) {
 		//Vertex
 		if (buff[0] == 'v') {
 			//Get vertex xyz
@@ -1035,7 +1035,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 		//Unsupported element
 		else {
 			//Skip line
-			if ( fscanf(f, "%[^\n]%*1c", buff) == EOF ) {
+			if ( fscanf(f, "%1024[^\n]%*1c", buff) == EOF ) {
 				goto error;
 			}
 		}
