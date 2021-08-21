@@ -1,3 +1,9 @@
+avdl (0.0.7-1) focal; urgency=low
+
+  * Fix compiling issue when providing `-j` to `make`.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Sat, 21 Aug 2021 14:27:00 +0100
+
 avdl (0.0.6-1) focal; urgency=low
 
   * Fix some small edge-case bugs.
