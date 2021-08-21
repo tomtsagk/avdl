@@ -148,7 +148,8 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 	 */
 
 	//Read words until end of file or end of header
-	while ( sscanf(f, "%1024s%n", buff, &charRead) != EOF
+	buff[1023] = '\0';
+	while ( sscanf(f, "%1022s%n", buff, &charRead) != EOF
 		&& strcmp(buff, "end_header") != 0
 		&& f[0] != '\0')
 	{
@@ -167,7 +168,8 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 			elements[elementCurrent].propertyCurrent = -1;
 
 			//Get next word
-			if (sscanf(f, "%1024s%n", buff, &charRead) == EOF ) {
+			buff[1023] = '\0';
+			if (sscanf(f, "%1022s%n", buff, &charRead) == EOF ) {
 				goto error;
 			}
 			f += charRead;
@@ -217,7 +219,8 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 			// if list, get list's format
 			property->list_format = PLY_FORMAT_NONE;
 			if (strcmp(buff, "list") == 0) {
-				if ( sscanf(f, "%s%n", buff, &charRead) == EOF ) {
+				buff[1023] = '\0';
+				if ( sscanf(f, "%1022s%n", buff, &charRead) == EOF ) {
 					goto error;
 				}
 				f += charRead;
