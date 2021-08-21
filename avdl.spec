@@ -1,5 +1,5 @@
 Name:           avdl
-Version:        0.0.6
+Version:        0.0.7
 Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
@@ -37,6 +37,10 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 
 %changelog
 * Sat Aug 21 2021 Tom Tsagk <tomtsagk@darkdimension.org>
+- Update to version `0.0.7`
+
+* Sat Aug 21 2021 Tom Tsagk <tomtsagk@darkdimension.org>
 - Update to github source
+
 * Sat Aug 07 2021 Tom Tsagk <tomtsagk@darkdimension.org>
 - Initial Release
