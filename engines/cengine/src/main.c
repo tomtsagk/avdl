@@ -177,17 +177,32 @@ int dd_main(int argc, char *argv[]) {
 	}
 
 	#if DD_PLATFORM_NATIVE
-	// init audio
-	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
-		dd_log("avdl: error initialising audio");
-		exit(-1);
+
+	// audio is meant to be active
+	if (dd_hasAudio) {
+
+		/*
+		 * initialise audio, if it fails, don't play audio at all
+		 * during the game
+		 */
+		if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+			dd_log("avdl: error initialising audio");
+			dd_hasAudio = 0;
+		}
+		else {
+			if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
+				dd_log("avdl: error initialising audio mixer");
+				dd_hasAudio = 0;
+			}
+		}
+
+	} // init audio
+
+	// audio is off - display message about it
+	if (!dd_hasAudio) {
+		dd_log("Game will play without audio");
 	}
 
-	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
-		dd_log("avdl: error initialising audio mixer");
-		dd_hasAudio = 0;
-		//exit(-1);
-	}
 	#endif
 
 	// initialise world
