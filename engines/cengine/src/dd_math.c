@@ -6,6 +6,7 @@
 float dd_math_rad2dec(float rad) { return rad *180 /3.14; }
 float dd_math_dec2rad(float dec) { return dec *3.14 /180; }
 int dd_math_rand(int to) { return rand() %to; }
+float dd_math_randf(float to) { return ((float) rand() /(float) RAND_MAX) *to; }
 
 float dd_math_tan(float val) {return tan(val);}
 

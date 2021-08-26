@@ -70,7 +70,16 @@ void struct_table_init() {
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setDelay", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setParticleLife", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
-	struct_table_push_member("setParticleSpeed", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticlePositionXFunc", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticlePositionYFunc", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticlePositionZFunc", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticleScaleFunc", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticlePosition", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticlePositionFuzz", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticleRotation", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticleRotationFuzz", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticleScale", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setParticleScaleFuzz", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

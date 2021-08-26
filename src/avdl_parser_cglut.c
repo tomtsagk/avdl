@@ -260,7 +260,7 @@ static void print_command_function(FILE *fd, struct ast_node *n) {
 
 	// print function signature and args
 	fprintf(fd, "%s %s(", functype->lex, funcname->lex);
-	print_command_functionArguments(fd, funcargs, 1);
+	print_command_functionArguments(fd, funcargs, 0);
 	fprintf(fd, ") {\n");
 
 	if (funcstatements) {
