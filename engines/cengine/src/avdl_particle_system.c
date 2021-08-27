@@ -1,5 +1,6 @@
 #include "avdl_particle_system.h"
 #include "dd_math.h"
+#include "dd_log.h"
 
 /*
  * Particle System Initialisation
@@ -13,6 +14,7 @@ void avdl_particle_system_create(struct avdl_particle_system *o) {
 	o->delayMax = o->delayCurrent = 0;
 	o->particlesCount = 0;
 	o->particlesStart = 0;
+	o->particlesTotal = PARTICLES_TOTAL;
 
 	o->particleLife = 0;
 
@@ -54,6 +56,7 @@ void avdl_particle_system_create(struct avdl_particle_system *o) {
 	o->setParticleRotationFuzz = avdl_particle_system_setParticleRotationFuzz;
 	o->setParticleScale = avdl_particle_system_setParticleScale;
 	o->setParticleScaleFuzz = avdl_particle_system_setParticleScaleFuzz;
+	o->setParticlesTotal = avdl_particle_system_setParticlesTotal;
 }
 
 void avdl_particle_system_clean(struct avdl_particle_system *o) {
@@ -79,7 +82,7 @@ void avdl_particle_system_update(struct avdl_particle_system *o) {
 
 	// decide if a new particle needs to appear
 	o->delayCurrent -= 1;
-	if (o->delayCurrent <= 0 && o->particlesCount < PARTICLES_TOTAL) {
+	if (o->delayCurrent <= 0 && o->particlesCount < o->particlesTotal) {
 		int index = (o->particlesStart +o->particlesCount) %PARTICLES_TOTAL;
 		o->delayCurrent = o->delayMax;
 		o->particles[index].mesh = o->particleMesh;
@@ -225,4 +228,14 @@ void avdl_particle_system_setParticleScale(struct avdl_particle_system *o, float
 
 void avdl_particle_system_setParticleScaleFuzz(struct avdl_particle_system *o, float x, float y, float z) {
 	o->particleScaleFuzz.set(&o->particleScaleFuzz, x, y, z);
+}
+
+void avdl_particle_system_setParticlesTotal(struct avdl_particle_system *o, int particlesTotal) {
+	if (particlesTotal > PARTICLES_TOTAL) {
+		dd_log("avdl error: cannot have %d particles, limiting to %d",
+			particlesTotal, PARTICLES_TOTAL
+		);
+		particlesTotal = PARTICLES_TOTAL;
+	}
+	o->particlesTotal = particlesTotal;
 }

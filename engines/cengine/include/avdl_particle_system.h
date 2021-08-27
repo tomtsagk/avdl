@@ -20,7 +20,7 @@
  * the maximum number of particles that can
  * be active at a time, for now
  */
-#define PARTICLES_TOTAL 10
+#define PARTICLES_TOTAL 50
 
 /*
  * each individual particle's data
@@ -46,6 +46,9 @@ struct avdl_particle_system {
 	struct avdl_particle particles[PARTICLES_TOTAL];
 	int particlesCount;
 	int particlesStart;
+
+	// artificial limit
+	int particlesTotal;
 
 	// how often particles appear
 	float delayMax;
@@ -86,6 +89,7 @@ struct avdl_particle_system {
 	void (*setParticlePositionYFunc)(struct avdl_particle_system *, float (*)(float));
 	void (*setParticlePositionZFunc)(struct avdl_particle_system *, float (*)(float));
 	void (*setParticleScaleFunc)(struct avdl_particle_system *, float (*)(float));
+	void (*setParticlesTotal)(struct avdl_particle_system *, int);
 
 	// initial value setters
 	void (*setParticlePosition)(struct avdl_particle_system *, float, float, float);
@@ -117,5 +121,7 @@ void avdl_particle_system_setParticleRotation    (struct avdl_particle_system *o
 void avdl_particle_system_setParticleRotationFuzz(struct avdl_particle_system *o, float x, float y, float z);
 void avdl_particle_system_setParticleScale       (struct avdl_particle_system *o, float x, float y, float z);
 void avdl_particle_system_setParticleScaleFuzz   (struct avdl_particle_system *o, float x, float y, float z);
+
+void avdl_particle_system_setParticlesTotal(struct avdl_particle_system *o, int);
 
 #endif
