@@ -183,6 +183,7 @@ int dd_main(int argc, char *argv[]) {
 	mainWindow = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED, width, height, flags);
 	mainGLContext = SDL_GL_CreateContext(mainWindow);
+	handleResize(dd_window_width(), dd_window_height());
 
 	// trigger an update event
 	timer = SDL_AddTimer(30, GameLoopTimer, 0);
