@@ -41,6 +41,7 @@ unsigned int dependencies_count = sizeof(dependencies) /sizeof(char *);
 char *includePath = 0;
 
 char *installLocation = "";
+char *additionalLibDirectory = 0;
 
 // init data, parse, exit
 int main(int argc, char *argv[])
@@ -166,6 +167,18 @@ int main(int argc, char *argv[])
 				}
 				else {
 					printf("avdl error: include path is expected after `-I`\n");
+					return -1;
+				}
+			}
+			else
+			// add library path
+			if (strcmp(argv[i], "-L") == 0) {
+				if (argc > i+1) {
+					additionalLibDirectory = argv[i+1];
+					i++;
+				}
+				else {
+					printf("avdl error: library path is expected after `-L`\n");
 					return -1;
 				}
 			}
@@ -295,6 +308,12 @@ int main(int argc, char *argv[])
 			filename[i][strlen(filename[i]) -1] = 'o';
 			strcat(buffer, filename[i]);
 		}
+
+		if (additionalLibDirectory) {
+			strcat(buffer, " -L ");
+			strcat(buffer, additionalLibDirectory);
+		}
+
 		strcat(buffer, " -O3 -lGL -lGLU -lGLEW -lglut -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer");
 		if (includePath) {
 			strcat(buffer, " -I ");
@@ -351,6 +370,12 @@ int main(int argc, char *argv[])
 		else {
 			strcat(buffer, "game");
 		}
+
+		if (additionalLibDirectory) {
+			strcat(buffer, " -L");
+			strcat(buffer, additionalLibDirectory);
+		}
+
 		strcat(buffer, " -lGLU -O3 -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread -lglut -lGL -lGLEW");
 		//printf("command: %s\n", buffer);
 		if (system(buffer)) {
