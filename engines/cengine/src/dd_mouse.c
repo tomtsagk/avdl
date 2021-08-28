@@ -1,11 +1,6 @@
 #include "dd_mouse.h"
 #include "dd_game.h"
 
-#if DD_PLATFORM_ANDROID
-#else
-#include <GL/freeglut.h>
-#endif
-
 extern int input_mouse_x;
 extern int input_mouse_y;
 int dd_mouse_x() {

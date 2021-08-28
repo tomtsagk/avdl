@@ -33,8 +33,9 @@ float dd_mouse_yProportion();
 #elif DD_PLATFORM_NATIVE
 #define DD_MOUSE_SHAPE_INHERIT GLUT_CURSOR_INHERIT
 #define DD_MOUSE_SHAPE_NONE GLUT_CURSOR_NONE
-#define dd_mouse_shape(shape) glutSetCursor(shape)
-#define dd_mouse_position(x, y) glutWarpPointer(x, y)
+// temporarily disable
+//#define dd_mouse_shape(shape) glutSetCursor(shape)
+//#define dd_mouse_position(x, y) glutWarpPointer(x, y)
 #endif
 
 #endif
