@@ -93,8 +93,7 @@ To compile this project, you will need the following dependencies:
 * `make` - to build the project
 * `gcc` - used to compile this project
 	and to aid the compilation process of `avdl` projects
-* `freeglut` - used for windowing
-* `sdl2` and `sdl2_mixer` - used for audio
+* `sdl2` and `sdl2_mixer` - used for windowing and audio
 * `glew` - used for advanced opengl functionality
 
 There's a different process to get the dependencies, depending on your
@@ -105,19 +104,19 @@ operating system. Here's some examples:
 On a clean install, you will need to install the following packages
 to get everything you need:
 
-    apt install git make gcc freeglut3-dev libglew-dev libsdl2-dev libsdl2-mixer-dev
+    apt install git make gcc libglew-dev libsdl2-dev libsdl2-mixer-dev
 
 #### Arch Linux
 
 Use the following command to get the required packages:
 
-    pacman -S freeglut glew sdl2 sdl2_mixer make gcc
+    pacman -S glew sdl2 sdl2_mixer make gcc
 
 ### Fedora 34, Fedora 35, Fedora rawhide
 
 Use the following command to get the required packages:
 
-    dnf install make gcc glew-devel freeglut-devel SDL2-devel SDL2_mixer-devel
+    dnf install make gcc glew-devel SDL2-devel SDL2_mixer-devel
 
 ### Compilation - Linux
 
