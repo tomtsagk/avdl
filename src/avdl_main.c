@@ -32,7 +32,6 @@ struct ast_node *game_node;
 const char *dependencies[] = {
 	"GLEW",
 	"m",
-	"glut",
 	"SDL2-2.0",
 	"SDL2_mixer-2.0",
 };
@@ -314,7 +313,7 @@ int main(int argc, char *argv[])
 			strcat(buffer, additionalLibDirectory);
 		}
 
-		strcat(buffer, " -O3 -lGL -lGLU -lGLEW -lglut -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer");
+		strcat(buffer, " -O3 -lGL -lGLU -lGLEW -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer");
 		if (includePath) {
 			strcat(buffer, " -I ");
 			strcat(buffer, includePath);
@@ -376,7 +375,7 @@ int main(int argc, char *argv[])
 			strcat(buffer, additionalLibDirectory);
 		}
 
-		strcat(buffer, " -lGLU -O3 -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread -lglut -lGL -lGLEW");
+		strcat(buffer, " -lGLU -O3 -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
 		//printf("command: %s\n", buffer);
 		if (system(buffer)) {
 			printf("avdl: error linking files\n");
