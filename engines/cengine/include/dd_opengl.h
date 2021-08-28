@@ -14,8 +14,7 @@ int  avdl_opengl_getContextId();
 // import opengl on native
 #elif DD_PLATFORM_NATIVE
 #include <GL/glew.h>
-#include <GL/glut.h>
-#include <GL/freeglut.h>
+#include <SDL2/SDL.h>
 
 #endif
 

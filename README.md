@@ -11,7 +11,7 @@ actual executable game for specific platforms.
 
 Published under the GPL-3 license, this project can be used for free.
 Any game created with `avdl` fully belongs to the person that made it,
-and they can what they like with it.
+and they can do what they like with it.
 
 ## Games made with this language
 
@@ -69,6 +69,17 @@ Using the command line, move to an empty directory and run:
 Note: The command `pacman -U` needs `root` permissions, as it is
 used to install packaged from a local file.
 
+### Fedora 34, Fedora 35, Fedora rawhide
+
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/darkdimension/avdl/package/avdl/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/darkdimension/avdl/package/avdl/)
+
+Enable the repository using the package manager, and install:
+
+    dnf copr enable darkdimension/avdl
+    dnf install avdl
+
+Note: These commands may require `root` permissions.
+
 ## How to compile and install manually
 
 This project currently supports only compilation for Linux out of the box.
@@ -82,8 +93,7 @@ To compile this project, you will need the following dependencies:
 * `make` - to build the project
 * `gcc` - used to compile this project
 	and to aid the compilation process of `avdl` projects
-* `freeglut` - used for windowing
-* `sdl2` and `sdl2_mixer` - used for audio
+* `sdl2` and `sdl2_mixer` - used for windowing and audio
 * `glew` - used for advanced opengl functionality
 
 There's a different process to get the dependencies, depending on your
@@ -94,13 +104,19 @@ operating system. Here's some examples:
 On a clean install, you will need to install the following packages
 to get everything you need:
 
-    apt install git make gcc freeglut3-dev libglew-dev libsdl2-dev libsdl2-mixer-dev
+    apt install git make gcc libglew-dev libsdl2-dev libsdl2-mixer-dev
 
 #### Arch Linux
 
 Use the following command to get the required packages:
 
-    pacman -S freeglut glew sdl2 sdl2_mixer make gcc
+    pacman -S glew sdl2 sdl2_mixer make gcc
+
+### Fedora 34, Fedora 35, Fedora rawhide
+
+Use the following command to get the required packages:
+
+    dnf install make gcc glew-devel SDL2-devel SDL2_mixer-devel
 
 ### Compilation - Linux
 

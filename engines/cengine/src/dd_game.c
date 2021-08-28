@@ -2,6 +2,10 @@
 #include "dd_math.h"
 #include "dd_fov.h"
 
+SDL_Window* mainWindow;
+SDL_GLContext mainGLContext;
+SDL_TimerID timer;
+
 int dd_flag_initialised = 0;
 int dd_flag_focused = 0;
 int dd_flag_updateThread = 0;
@@ -11,7 +15,7 @@ int dd_flag_exit = 0;
 int dd_width = 0;
 int dd_height = 0;
 #else
-#include <GL/freeglut.h>
+#include <SDL2/SDL.h>
 #endif
 
 float dd_clearcolor_r;
@@ -27,6 +31,18 @@ void dd_gameInitDefault() {
 	gameTitle = "game";
 	dd_gameInitWindowWidth = 640;
 	dd_gameInitWindowHeight = 480;
+}
+
+int dd_window_width() {
+	int w, h;
+	SDL_GetWindowSize(mainWindow, &w, &h);
+	return w;
+}
+
+int dd_window_height() {
+	int w, h;
+	SDL_GetWindowSize(mainWindow, &w, &h);
+	return h;
 }
 
 // screen limits

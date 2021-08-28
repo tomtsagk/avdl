@@ -7,7 +7,8 @@
 #include <stdlib.h>
 
 // Random
-int dd_math_rand(int to);
+int   dd_math_rand (int   to);
+float dd_math_randf(float to);
 
 /*
  * Eases

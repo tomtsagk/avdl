@@ -1,9 +1,14 @@
 #ifndef DD_GAME_H
 #define DD_GAME_H
 
+#include <SDL2/SDL.h>
+
 /* defines game-specific data that are used by the engine
  * but are configured from each individual game
  */
+extern SDL_Window* mainWindow;
+extern SDL_GLContext mainGLContext;
+extern SDL_TimerID timer;
 
 // way to change the background clear colour
 extern float dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b;
@@ -30,8 +35,8 @@ extern int dd_height;
 #define dd_window_width() dd_width
 #define dd_window_height() dd_height
 #else
-#define dd_window_width() glutGet(GLUT_WINDOW_WIDTH)
-#define dd_window_height() glutGet(GLUT_WINDOW_HEIGHT)
+int dd_window_width();
+int dd_window_height();
 #endif
 float dd_screen_width_get (float z);
 float dd_screen_height_get(float z);
@@ -42,7 +47,8 @@ float dd_screen_distance_geth(float height);
 
 // full screen
 #if DD_PLATFORM_NATIVE
-#define dd_fullscreenToggle() glutFullScreenToggle()
+// temporarily disable
+//#define dd_fullscreenToggle() glutFullScreenToggle()
 #elif DD_PLATFORM_ANDROID
 #define dd_fullscreenToggle()
 #endif

@@ -20,7 +20,7 @@ pthread_t updatePthread;
 	#include <jni.h>
 
 /*
- * cglut includes
+ * cengine includes
  */
 #elif DD_PLATFORM_NATIVE
 
@@ -90,6 +90,24 @@ pthread_mutex_t updateDrawMutex;
 int avdl_state_initialised = 0;
 int avdl_state_active = 0;
 
+extern SDL_Window* mainWindow;
+extern SDL_GLContext mainGLContext;
+extern SDL_TimerID timer;
+
+Uint32 GameLoopTimer(Uint32 interval, void *param) {
+	// Create a user event to call the game loop.
+	SDL_Event event;
+
+	event.type = SDL_USEREVENT;
+	event.user.code = 1;
+	event.user.data1 = 0;
+	event.user.data2 = 0;
+
+	SDL_PushEvent(&event);
+
+	return interval;
+}
+
 int dd_main(int argc, char *argv[]) {
 
 	avdl_assetManager_init();
@@ -154,14 +172,20 @@ int dd_main(int argc, char *argv[]) {
 	dd_gameInit();
 
 	#if DD_PLATFORM_NATIVE
-	// initialise glut and a window
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-	//glutInitContextVersion(2, 0);
-	//glutInitContextProfile(GLUT_CORE_PROFILE);
 
-	glutInitWindowSize(dd_gameInitWindowWidth, dd_gameInitWindowHeight);
-	glutCreateWindow(gameTitle);
+	// Initialise SDL window
+	SDL_Init(SDL_INIT_EVERYTHING);
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+	int width = dd_gameInitWindowWidth;
+	int height = dd_gameInitWindowHeight;
+	mainWindow = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED, width, height, flags);
+	mainGLContext = SDL_GL_CreateContext(mainWindow);
+
+	// trigger an update event
+	timer = SDL_AddTimer(30, GameLoopTimer, 0);
 
 	// init opengl
 	glewInit();
@@ -177,17 +201,26 @@ int dd_main(int argc, char *argv[]) {
 	}
 
 	#if DD_PLATFORM_NATIVE
-	// init audio
-	if (SDL_Init(SDL_INIT_AUDIO) < 0) {
-		dd_log("avdl: error initialising audio");
-		exit(-1);
+
+	// audio is meant to be active
+	if (dd_hasAudio) {
+
+		/*
+		 * initialise audio, if it fails, don't play audio at all
+		 * during the game
+		 */
+		if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
+			dd_log("avdl: error initialising audio mixer");
+			dd_hasAudio = 0;
+		}
+
+	} // init audio
+
+	// audio is off - display message about it
+	if (!dd_hasAudio) {
+		dd_log("Game will play without audio");
 	}
 
-	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
-		dd_log("avdl: error initialising audio mixer");
-		dd_hasAudio = 0;
-		//exit(-1);
-	}
 	#endif
 
 	// initialise world
@@ -205,18 +238,40 @@ int dd_main(int argc, char *argv[]) {
 
 	avdl_state_initialised = 1;
 	#if DD_PLATFORM_NATIVE
-	// give functions to glut
-	glutDisplayFunc(draw);
-	glutReshapeFunc(handleResize);
-	glutKeyboardFunc(handleKeyboardPress);
-	glutMouseFunc(handleMousePress);
-	glutPassiveMotionFunc(handlePassiveMotion);
-	glutMotionFunc(handlePassiveMotion);
-
 	onResume();
 
 	// start the loop
-	glutMainLoop();
+	int isRunning = 1;
+	SDL_Event event;
+	while (isRunning && SDL_WaitEvent(&event)) {
+		switch (event.type) {
+			case SDL_USEREVENT:
+				update();
+				break;
+			case SDL_QUIT:
+				isRunning = 0;
+				break;
+			case SDL_WINDOWEVENT:
+				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+					handleResize(event.window.data1, event.window.data2);
+				}
+				break;
+			case SDL_MOUSEMOTION:
+				handlePassiveMotion(event.motion.x, event.motion.y);
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				handleMousePress(0, 0, event.motion.x, event.motion.y);
+				break;
+			case SDL_MOUSEBUTTONUP:
+				handleMousePress(0, 1, event.motion.x, event.motion.y);
+				break;
+			case SDL_KEYDOWN:
+				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+					handleKeyboardPress(27, 0, 0);
+				}
+				break;
+		}
+	}
 
 	clean();
 	#elif DD_PLATFORM_ANDROID
@@ -241,6 +296,10 @@ void clean() {
 	pthread_mutex_destroy(&jniMutex);
 	#endif
 	pthread_mutex_destroy(&updateDrawMutex);
+
+	// destroy window
+	SDL_GL_DeleteContext(mainGLContext);
+	SDL_DestroyWindow(mainWindow);
 
 	#if DD_PLATFORM_NATIVE
 	Mix_Quit();
@@ -482,7 +541,7 @@ void update() {
 /*
 		JNIEnv *env;
 		int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
-	
+
 		if (getEnvStat == JNI_EDETACHED) {
 			if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
 				dd_log("avdl: failed to attach thread for new world");
@@ -511,9 +570,7 @@ void update() {
 
 	// prepare next frame
 	#if DD_PLATFORM_NATIVE
-	glutPostRedisplay();
-	//glutTimerFunc(33, update, 0);
-	glutTimerFunc(25, update, 0);
+	draw();
 	#endif
 }
 
@@ -540,7 +597,7 @@ void draw() {
 
 	#if DD_PLATFORM_NATIVE
 	// show result
-	glutSwapBuffers();
+	SDL_GL_SwapWindow(mainWindow);
 	#endif
 }
 
@@ -562,24 +619,29 @@ void handleMousePress(int button, int state, int x, int y) {
 	input_mouse_x = x;
 	input_mouse_y = y;
 	switch (state) {
-		case GLUT_DOWN:
+		//case GLUT_DOWN:
+		case 0:
 			input_mouse_state = DD_INPUT_MOUSE_TYPE_PRESSED;
 			break;
-		case GLUT_UP:
+		//case GLUT_UP:
+		case 1:
 			input_mouse_state = DD_INPUT_MOUSE_TYPE_RELEASED;
 			break;
 	}
 
 	switch (button) {
-		case GLUT_LEFT_BUTTON:
+		//case GLUT_LEFT_BUTTON:
+		case 0:
 			input_mouse_button = DD_INPUT_MOUSE_BUTTON_LEFT;
 			input_mouse = 1;
 			break;
-		case GLUT_MIDDLE_BUTTON:
+		//case GLUT_MIDDLE_BUTTON:
+		case 1:
 			input_mouse_button = DD_INPUT_MOUSE_BUTTON_MIDDLE;
 			input_mouse = 1;
 			break;
-		case GLUT_RIGHT_BUTTON:
+		//case GLUT_RIGHT_BUTTON:
+		case 2:
 			input_mouse_button = DD_INPUT_MOUSE_BUTTON_RIGHT;
 			input_mouse = 1;
 			break;
@@ -611,7 +673,7 @@ void onResume() {
 		#if DD_PLATFORM_ANDROID
 		pthread_create(&updatePthread, NULL, &updateThread, NULL);
 		#elif DD_PLATFORM_NATIVE
-		glutTimerFunc(25, update, 0);
+		// resume update with sdl?
 		#endif
 	}
 }
