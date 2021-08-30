@@ -79,7 +79,7 @@ ${INSTALL_DIRS}:
 #
 # install library
 #
-install: ${STATIC_OUT} ${INSTALL_DIRS}
+install: ${DIRECTORIES} ${INSTALL_DIRS} ${STATIC_OUT}
 	install -m644 ${HEADERS} ${DESTDIR}${prefix}/include
 	install -m755 ${STATIC_OUT} ${DESTDIR}${prefix}/lib
 
