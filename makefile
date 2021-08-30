@@ -56,17 +56,21 @@ ${EXECUTABLE}: ${DIRECTORY_ALL} ${OBJ}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${OBJ} -o $@
 
 #
+# create install directories
+#
+INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/man/man1/ \
+	${DESTDIR}${prefix}/share/avdl/android
+
+${INSTALL_DIRS}:
+	mkdir -p $@
+
+#
 # install the program to the current system
 #
-install: ${EXECUTABLE}
-	@# executable
-	mkdir -p ${DESTDIR}${prefix}/bin
+install: ${EXECUTABLE} ${INSTALL_DIRS}
+	@# avdl files
 	install ${EXECUTABLE} ${DESTDIR}${prefix}/bin/
-	@# manual
-	mkdir -p ${DESTDIR}${prefix}/share/man/man1/
 	install manual/avdl.1 ${DESTDIR}${prefix}/share/man/man1/
-	@# android engine
-	mkdir -p ${DESTDIR}${prefix}/share/avdl/android
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
 	@# c engine
 	${MAKE} -C ${CENGINE_PATH} prefix="${prefix}" destdir="${DESTDIR}" install

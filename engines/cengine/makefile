@@ -69,12 +69,18 @@ ${DIRECTORY_OBJ}/%.o: ${DIRECTORY_SRC}/%.c ${HEADERS}
 	${CC} ${COMPILER_FLAGS} -Iinclude -DDD_PLATFORM_NATIVE -o $@ -c $<
 
 #
+# create install directories
+#
+INSTALL_DIRS = ${DESTDIR}${prefix}/include ${DESTDIR}${prefix}/lib
+
+${INSTALL_DIRS}:
+	mkdir -p $@
+
+#
 # install library
 #
-install: ${STATIC_OUT}
-	mkdir -p ${DESTDIR}${prefix}/include
+install: ${STATIC_OUT} ${INSTALL_DIRS}
 	install -m644 ${HEADERS} ${DESTDIR}${prefix}/include
-	mkdir -p ${DESTDIR}${prefix}/lib
 	install -m755 ${STATIC_OUT} ${DESTDIR}${prefix}/lib
 
 #
