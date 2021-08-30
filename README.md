@@ -118,6 +118,12 @@ Use the following command to get the required packages:
 
     dnf install make gcc glew-devel SDL2-devel SDL2_mixer-devel
 
+### Alpine Linux
+
+Use the following command to get the required packages:
+
+    apk add make git gcc musl-dev glew-dev sdl2-dev sdl2_mixer-dev
+
 ### Compilation - Linux
 
 On a linux system, simply execute the following lines from the terminal,
