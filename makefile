@@ -73,7 +73,7 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	install manual/avdl.1 ${DESTDIR}${prefix}/share/man/man1/
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
 	@# c engine
-	${MAKE} -C ${CENGINE_PATH} prefix="${prefix}" destdir="${DESTDIR}" install
+	${MAKE} -C ${CENGINE_PATH} prefix="${prefix}" DESTDIR="${DESTDIR}" install
 
 #mkdir -p ${INSTALL_LOCATION}/share/info/
 #install avdl.info.gz ${INSTALL_LOCATION}/share/info/
