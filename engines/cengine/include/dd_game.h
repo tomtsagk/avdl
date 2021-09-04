@@ -1,7 +1,8 @@
 #ifndef DD_GAME_H
 #define DD_GAME_H
 
-#include <SDL2/SDL.h>
+#if DD_PLATFORM_NATIVE
+#include "dd_opengl.h"
 
 /* defines game-specific data that are used by the engine
  * but are configured from each individual game
@@ -9,6 +10,7 @@
 extern SDL_Window* mainWindow;
 extern SDL_GLContext mainGLContext;
 extern SDL_TimerID timer;
+#endif
 
 // way to change the background clear colour
 extern float dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b;

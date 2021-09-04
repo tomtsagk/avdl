@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <errno.h>
+#include <fcntl.h>
 
 #include "avdl_struct_table.h"
 #include "avdl_commands.h"
@@ -29,18 +30,12 @@ struct ast_node *game_node;
 
 #define MAX_INPUT_FILES 10
 
-const char *dependencies[] = {
-	"GLEW",
-	"m",
-	"SDL2-2.0",
-	"SDL2_mixer-2.0",
-};
-unsigned int dependencies_count = sizeof(dependencies) /sizeof(char *);
-
 char *includePath = 0;
 
 char *installLocation = "";
 char *additionalLibDirectory = 0;
+
+int create_android_directory(const char *androidDirName);
 
 // init data, parse, exit
 int main(int argc, char *argv[])
@@ -54,7 +49,6 @@ int main(int argc, char *argv[])
 	char filename[MAX_INPUT_FILES][100];
 	int input_file_total = 0;
 	char *outname = 0;
-	int getDependencies = 0;
 
 	/*
 	 * phases
@@ -77,11 +71,6 @@ int main(int argc, char *argv[])
 			// double dash argument
 			if (strlen(argv[i]) > 1 && argv[i][1] == '-') {
 
-				// temp
-				if (strcmp(argv[i], "--dependencies") == 0) {
-					getDependencies = 1;
-				}
-				else
 				// print abstract syntax tree
 				if (strcmp(argv[i], "--print-ast") == 0) {
 					show_ast = 1;
@@ -105,7 +94,6 @@ int main(int argc, char *argv[])
 				// compiling for android
 				if (strcmp(argv[i], "--android") == 0) {
 					avdl_platform_set(AVDL_PLATFORM_ANDROID);
-					link = 0;
 				}
 				else
 				// show version number
@@ -209,19 +197,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	if (getDependencies) {
-		for (unsigned int i = 0; i < dependencies_count; i++) {
-			strcpy(buffer, "ldd ");
-			strcat(buffer, filename[0]);
-			strcat(buffer, " | grep 'lib");
-			strcat(buffer, dependencies[i]);
-			strcat(buffer, "\\.' | sed 's/^.*=> \\(.*\\) .*$/\\1/'");
-			//printf("command: %s\n", buffer);
-			system(buffer);
-		}
-		return 0;
-	}
-
 	if (outname && !link && input_file_total > 1) {
 		printf("avdl error: cannot supply `-o` with `-c` and multiple input files\n");
 		return -1;
@@ -230,7 +205,9 @@ int main(int argc, char *argv[])
 	if (translate) {
 		//printf("~~~ translation phase ~~~\n");
 	}
-	// translate all given input files
+	/*
+	 * translate all given `avdl` files to `.c` files
+	 */
 	for (int i = 0; i < input_file_total && translate; i++) {
 
 		// check if file is meant to be compiled, or is already compiled
@@ -255,7 +232,7 @@ int main(int argc, char *argv[])
 		}
 		else {
 			// given an outname, compile the .c file in the same directory
-			if (outname) {
+			if (outname && !link) {
 				strcpy(buffer, outname);
 				buffer[strlen(buffer) -1] = 'c';
 				strcpy(filename[i], buffer);
@@ -286,7 +263,9 @@ int main(int argc, char *argv[])
 	if (compile) {
 		//printf("~~~ compilation phase ~~~\n");
 	}
-	// compile all given input files
+	/*
+	 * compile all given `.c` files to `.o` files
+	 */
 	for (int i = 0; i < input_file_total && compile; i++) {
 
 		// check if file is meant to be compiled, or is already compiled
@@ -295,6 +274,17 @@ int main(int argc, char *argv[])
 		}
 
 		//printf("compiling: %s\n", filename[i]);
+
+		/*
+		 * on android, object files are the same as `.c` source files
+		 * for now
+		 */
+		if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+			strcpy(buffer, filename[i]);
+			filename[i][strlen(filename[i]) -1] = 'o';
+			file_copy(buffer, filename[i], 0);
+			continue;
+		}
 
 		// compile
 		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -c -w ");
@@ -328,7 +318,7 @@ int main(int argc, char *argv[])
 	if (1) {
 		//printf("~~~ asset phase ~~~\n");
 	}
-	// compile all given input files
+	// compile all given asset files
 	for (int i = 0; i < input_file_total && compile; i++) {
 
 		// check if file is asset
@@ -339,13 +329,55 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		if (outname) {
-			strcpy(buffer, outname);
+		// on android, put assets in a specific directory
+		if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+			char *out;
+			if (outname) {
+				out = outname;
+			}
+			else {
+				out = "android";
+			}
+
+			if (create_android_directory(out) < 0) {
+				printf("avdl: error while compiling asset '%s'\n", filename[i]);
+				return -1;
+			}
+
+			char *assetDir;
+
+			if (strcmp(filename[i] +strlen(filename[i]) -4, ".ply") == 0
+			||  strcmp(filename[i] +strlen(filename[i]) -4, ".ogg") == 0
+			||  strcmp(filename[i] +strlen(filename[i]) -4, ".wav") == 0) {
+				assetDir = "raw";
+			}
+			else
+			if (strcmp(filename[i] +strlen(filename[i]) -4, ".bmp") == 0) {
+				assetDir = "drawable";
+			}
+
+			strcpy(buffer, out);
+			strcat(buffer, "/app/src/main/res/");
+			strcat(buffer, assetDir);
+			dir_create(buffer);
+			strcat(buffer, "/");
+
+			char *raw = filename[i];
+			char *temp;
+			while ((temp = strstr(raw, "/"))) {
+				raw = temp+1;
+			}
+			strcat(buffer, raw);
 		}
 		else {
-			strcpy(buffer, filename[i]);
-			buffer[strlen(buffer) -4] = '\0';
-			strcat(buffer, ".asset");
+			if (outname) {
+				strcpy(buffer, outname);
+			}
+			else {
+				strcpy(buffer, filename[i]);
+				buffer[strlen(buffer) -4] = '\0';
+				strcat(buffer, ".asset");
+			}
 		}
 
 		//printf("compiling asset: %s to %s\n", filename[i], buffer);
@@ -356,33 +388,110 @@ int main(int argc, char *argv[])
 	// compile the final executable
 	if (link) {
 		//printf("~~~ link phase ~~~\n");
-		buffer[0] = '\0';
-		sprintf(buffer, "gcc -DDD_PLATFORM_NATIVE ");
-		for (int i = 0; i < input_file_total; i++) {
-			strcat(buffer, filename[i]);
-			strcat(buffer, " ");
-		}
-		strcat(buffer, "-o ");
-		if (outname) {
-			strcat(buffer, outname);
+
+		// on android put all object files in an android project
+		if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+			char *androidDir;
+			if (outname) {
+				androidDir = outname;
+			}
+			else {
+				androidDir = "android";
+			}
+
+			if (create_android_directory(androidDir) < 0) {
+				printf("avdl: error while linking\n");
+				return -1;
+			}
+
+			// put all object files to android
+			strcpy(buffer, androidDir);
+			strcat(buffer, "/app/src/main/cpp/game/");
+			dir_create(buffer);
+
+			// in the destination, remove directory ("/something/myfile.c" -> "myfile.c")
+			for (int i = 0; i < input_file_total; i++) {
+				strcpy(buffer, androidDir);
+				strcat(buffer, "/app/src/main/cpp/game/");
+				char *rawFilename = filename[i];
+				char *temp;
+				while ((temp = strstr(rawFilename, "/"))) {
+					rawFilename = temp+1;
+				}
+				strncat(buffer, rawFilename, 99);
+				strcat(buffer, ".c");
+				file_copy(filename[i], buffer, 0);
+			}
+
+			// folder to edit
+			strcpy(buffer, androidDir);
+			strcat(buffer, "/app/src/main/cpp/");
+			int outDir = open(buffer, O_DIRECTORY);
+			if (!outDir) {
+				printf("avdl: can't open %s: %s\n", buffer, strerror(errno));
+				return -1;
+			}
+
+			// files to swap in
+			buffer[0] = '\0';
+			for (int i = 0; i < input_file_total; i++) {
+				strcat(buffer, "game/");
+				char *rawFilename = filename[i];
+				char *temp;
+				while ((temp = strstr(rawFilename, "/"))) {
+					rawFilename = temp+1;
+				}
+				strcat(buffer, rawFilename);
+				strcat(buffer, ".c ");
+			}
+
+			// add in the avdl-compiled source files
+			file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt", "%AVDL_GAME_FILES%", buffer);
 		}
 		else {
-			strcat(buffer, "game");
-		}
 
-		if (additionalLibDirectory) {
-			strcat(buffer, " -L");
-			strcat(buffer, additionalLibDirectory);
-		}
+			strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE ");
+			for (int i = 0; i < input_file_total; i++) {
+				strcat(buffer, filename[i]);
+				strcat(buffer, " ");
+			}
+			strcat(buffer, "-o ");
+			if (outname) {
+				strcat(buffer, outname);
+			}
+			else {
+				strcat(buffer, "game");
+			}
 
-		strcat(buffer, " -lGLU -O3 -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
-		//printf("command: %s\n", buffer);
-		if (system(buffer)) {
-			printf("avdl: error linking files\n");
-			exit(-1);
+			if (additionalLibDirectory) {
+				strcat(buffer, " -L");
+				strcat(buffer, additionalLibDirectory);
+			}
+
+			strcat(buffer, " -lGLU -O3 -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+			//printf("command: %s\n", buffer);
+			if (system(buffer)) {
+				printf("avdl: error linking files\n");
+				exit(-1);
+			}
 		}
 	}
 
 	// success!
+	return 0;
+}
+
+int create_android_directory(const char *androidDirName) {
+	int isDir = is_dir(androidDirName);
+	if (isDir == 0) {
+		dir_create(androidDirName);
+		dir_copy_recursive(0, PKG_LOCATION "/share/avdl/android", 0, androidDirName);
+	}
+	else
+	if (isDir < 0) {
+		printf("avdl error: file '%s' not a directory\n", androidDirName);
+		return -1;
+	}
+
 	return 0;
 }

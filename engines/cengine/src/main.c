@@ -33,6 +33,10 @@ pthread_t updatePthread;
 
 	#include "dd_async_call.h"
 
+	extern SDL_Window* mainWindow;
+	extern SDL_GLContext mainGLContext;
+	extern SDL_TimerID timer;
+
 #endif
 
 /*
@@ -90,10 +94,7 @@ pthread_mutex_t updateDrawMutex;
 int avdl_state_initialised = 0;
 int avdl_state_active = 0;
 
-extern SDL_Window* mainWindow;
-extern SDL_GLContext mainGLContext;
-extern SDL_TimerID timer;
-
+#if DD_PLATFORM_NATIVE
 Uint32 GameLoopTimer(Uint32 interval, void *param) {
 	// Create a user event to call the game loop.
 	SDL_Event event;
@@ -107,6 +108,7 @@ Uint32 GameLoopTimer(Uint32 interval, void *param) {
 
 	return interval;
 }
+#endif
 
 int dd_main(int argc, char *argv[]) {
 
@@ -298,11 +300,11 @@ void clean() {
 	#endif
 	pthread_mutex_destroy(&updateDrawMutex);
 
+	#if DD_PLATFORM_NATIVE
 	// destroy window
 	SDL_GL_DeleteContext(mainGLContext);
 	SDL_DestroyWindow(mainWindow);
 
-	#if DD_PLATFORM_NATIVE
 	Mix_Quit();
 	SDL_Quit();
 
