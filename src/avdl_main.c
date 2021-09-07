@@ -38,8 +38,8 @@ char *additionalLibDirectory = 0;
 int create_android_directory(const char *androidDirName);
 
 // init data, parse, exit
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
+
 	avdl_platform_initialise();
 
 	/* tweakable data

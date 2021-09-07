@@ -100,31 +100,6 @@ void ast_print(struct ast_node *node) {
 	tabs--;
 }
 
-// AST table
-#define AST_TABLE_MAX 1000
-struct ast_node* ast_table[AST_TABLE_MAX];
-int ast_table_lastentry;
-
-int ast_push(struct ast_node *n) {
-	if (ast_table_lastentry +1 >= AST_TABLE_MAX) {
-		return 0;
-	}
-
-	ast_table_lastentry++;
-	ast_table[ast_table_lastentry] = n;
-
-	// everything is ok, return a true value
-	return 1;
-}
-
-struct ast_node *ast_pop() {
-	if (ast_table_lastentry < 0) {
-		return 0;
-	}
-	ast_table_lastentry--;
-	return ast_table[ast_table_lastentry+1];
-}
-
 void ast_addLex(struct ast_node *n, const char *newLex) {
 	if (strlen(newLex) > 499) {
 		printf("lex is too long: %s\n", newLex);
@@ -133,4 +108,17 @@ void ast_addLex(struct ast_node *n, const char *newLex) {
 
 	strcpy(n->lex, newLex);
 	n->lex[499] = '\0';
+}
+
+// getters
+int ast_get_childCount(struct ast_node *node) {
+	return node->children.elements;
+}
+
+struct ast_node *ast_get_child(struct ast_node *node, int index) {
+	return dd_da_get(&node->children, index);
+}
+
+enum AST_NODE_TYPE ast_get_type(struct ast_node *node) {
+	return node->node_type;
 }

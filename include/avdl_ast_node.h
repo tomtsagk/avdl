@@ -61,10 +61,12 @@ void ast_delete(struct ast_node *node);
 
 void ast_addLex(struct ast_node *node, const char *newLex);
 
+// getters
+int ast_get_childCount(struct ast_node *node);
+struct ast_node *ast_get_child(struct ast_node *node, int index);
+enum AST_NODE_TYPE ast_get_type(struct ast_node *node);
+
 // Debug - Print node tree
 void ast_print(struct ast_node *node);
-
-int ast_push(struct ast_node *n);
-struct ast_node *ast_pop();
 
 #endif
