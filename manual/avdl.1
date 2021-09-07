@@ -1,11 +1,11 @@
 ./" Written by Tom Tsagk <tomtsagk@darkdimension.org>
-.TH AVDL 1 "2021-02-28" "avdl 0.0.0"
+.TH AVDL 1 "2021-09-07" "avdl 0.1.3"
 
 .SH NAME
 avdl \- abstract video-game development language compiler
 
 .SH SYNOPSIS
-.B avdl\fR [\fB-c\fR] [\fB-o \fIoutput\fR] \fIfile\fR...
+.B avdl\fR [\fB--android\fR] [\fB-c\fR] [\fB-o \fIoutput\fR] \fIfiles\fR...
 
 .SH DESCRIPTION
 .B avdl
@@ -13,6 +13,10 @@ is a high level programming language designed to describe a video game
 in an abstract way, and then compile it for different platforms.
 
 .SH OPTIONS
+
+.TP
+\fB--android\fR
+Compile the given source files for the android platform.
 
 .TP
 \fB-c\fR
@@ -27,12 +31,16 @@ Provide a name for the \fIoutput\fR file.
 If \fB-c\fR is active, \fIoutput\fR will be an object file.
 Otherwise, \fIoutput\fR will be the executable file.
 
+if \fB--android\fR is active, \fIoutput\fR will be a directory
+hosting the android project.
+
 .SH EXAMPLES
+.SS "Compile for Linux"
 To compile a file, use the following command:
 .PP
 .nf
 .RS
-avdl file1 file2
+avdl file1.dd file2.dd
 .RE
 .fi
 .PP
@@ -46,13 +54,41 @@ of a project that have changed, instead of the whole project:
 .PP
 .nf
 .RS
-avdl -c file1 -o file1.ago
-avdl -c file2 -o file2.ago
-avdl file1.ago file2.ago -o my_game
+avdl -c file1.dd -o file1.o
+avdl -c file2.dd -o file2.o
+avdl file1.o file2.o -o my_game
 .RE
 .fi
 .PP
 Take a look at \fBsamples/\fR for examples of actual projects.
+
+.SS "Compile for Android"
+To compile a file for android, use the following command:
+.PP
+.nf
+.RS
+avdl --android file.dd -o android_dir/
+.RE
+.fi
+.PP
+This will create a directory \fBandroid_dir/\fR and
+initialise an avdl android project inside, with the
+given source file.
+
+In order to turn that into an \fB.apk\fR file, it
+would require the \fBAndroid SDK\fR and \fBJava\fR to be installed.
+Then navigate to \fBandroid_dir/\fR and run:
+
+.PP
+.nf
+.RS
+./glew build
+.RE
+.fi
+.PP
+
+This will compile and create the final \fB.apk\fR file in
+\fBapp/build/outputs/apk/release\fR.
 
 .SH AUTHOR
 Tom Tsagk (tomtsagk@darkdimension.org)
