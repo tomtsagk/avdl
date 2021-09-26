@@ -12,7 +12,7 @@ prefix=/usr/local/
 #
 # compiler data
 #
-COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security#-Werror
+COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -fprofile-arcs -ftest-coverage --coverage#-Werror
 COMPILER_DEFINES=\
 	-DPKG_NAME=\"${PACKAGE_NAME}\"\
 	-DPKG_VERSION=\"${PACKAGE_VERSION}\"\
