@@ -7,7 +7,6 @@
 #include "avdl_assetManager.h"
 
 extern GLuint defaultProgram;
-extern GLuint risingProgram;
 
 // constructor
 void dd_meshColour_create(struct dd_meshColour *m) {
@@ -89,7 +88,6 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 	glDisableVertexAttribArray(0);
 }
 
-#if DD_PLATFORM_ANDROID
 /*
  * load the mesh based on a string instead of a file,
  * used for specific platforms like Android
@@ -102,20 +100,6 @@ void dd_meshColour_load(struct dd_meshColour *m, const char *asset) {
 	// mark to be loaded
 	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHCOLOUR, asset);
 }
-#else
-/* load vertex positions and colours from file
- */
-void dd_meshColour_load(struct dd_meshColour *m, const char *filename) {
-	dd_meshColour_clean(m);
-	struct dd_loaded_mesh lm;
-	dd_filetomesh(&lm, filename, DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
-	m->parent.vcount = lm.vcount;
-	m->parent.v = lm.v;
-	m->parent.dirtyVertices = 1;
-	m->c = lm.c;
-	m->dirtyColours = 1;
-}
-#endif
 
 void dd_meshColour_copy(struct dd_meshColour *dest, struct dd_meshColour *src) {
 	dd_mesh_copy((struct dd_mesh *) dest, (struct dd_mesh *) src);

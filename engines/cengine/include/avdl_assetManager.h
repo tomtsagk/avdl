@@ -16,19 +16,24 @@ struct dd_meshToLoad {
 
 extern struct dd_dynamic_array meshesToLoad;
 
+// init-clean
 void avdl_assetManager_init();
-void avdl_assetManager_add(void *object, int meshType, const char *assetname);
-void avdl_assetManager_loadAssets();
-void avdl_assetManager_loadAssetsAsync();
 void avdl_assetManager_clean();
-void avdl_assetManager_setPercentage(float percentage);
 
+// add assets to load
+void avdl_assetManager_add(void *object, int meshType, const char *assetname);
+void avdl_assetManager_loadAll();
+
+// getters
 int avdl_assetManager_isLoading();
+int avdl_assetManager_hasAssetsToLoad();
 int avdl_assetManager_isReady();
-int avdl_assetManager_hasAssets();
+float avdl_assetManager_getLoadedProportion();
 
 void avdl_assetManager_lockLoading();
 void avdl_assetManager_unlockLoading();
 void avdl_assetManager_clear();
+
+void avdl_assetManager_setPercentage(float percentage);
 
 #endif

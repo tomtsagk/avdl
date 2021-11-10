@@ -79,7 +79,6 @@ jobject activity = 0;
 // shaders
 GLuint defaultProgram;
 GLuint fontProgram;
-GLuint risingProgram = 0;
 
 #if DD_PLATFORM_NATIVE
 // threads
@@ -392,7 +391,6 @@ void update() {
 	}
 	#endif
 
-	#if DD_PLATFORM_ANDROID
 	// a new world is signaled to be loaded
 	if (nworld_constructor) {
 
@@ -415,7 +413,7 @@ void update() {
 		}
 		else
 		// The world has finished loading
-		if (nworld && nworld_ready && avdl_assetManager_isReady()) {
+		if (nworld && nworld_ready && avdl_assetManager_getLoadedProportion() >= 1.0) {
 
 			/*
 			// Cancel async calls
@@ -451,62 +449,8 @@ void update() {
 		}
 
 	}
-	#elif DD_PLATFORM_NATIVE
-	// A new world has been flagged to be loaded
-	if (nworld_constructor) {
 
-		// world is ready to be viewed
-		if (nworld_ready) {
-			dd_world_change(nworld_size, nworld_constructor);
-		}
-
-		/*
-		// The world has finished loading
-		if (nworld && nworld_ready) {
-
-			// Cancel async calls
-			dd_isAsyncCallActive = 0;
-
-			// free any previous world
-			if (cworld) {
-				cworld->clean(cworld);
-				cworld = 0;
-			}
-
-			// Apply the new world
-			cworld = nworld;
-			nworld = 0;
-
-			// From this point on, new world can be set
-			nworld_constructor = 0;
-			nworld_size = 0;
-			nworld_ready = 0;
-			loadingNewWorld = 0;
-
-			// notify the world that it has loaded assets
-			cworld->onload(cworld);
-
-			// resize the new world
-			if (cworld->resize) {
-				cworld->resize(cworld);
-			}
-
-		}
-		else
-		// The new world has not started loading, so start loading it
-		if (!loadingNewWorld) {
-			loadingNewWorld = 1;
-			newWorldData.size = nworld_size;
-			newWorldData.constructor = nworld_constructor;
-			pthread_t thread;
-			pthread_create(&thread, NULL, newWorld_loading_thread_function, &newWorldData);
-			pthread_detach(thread);
-
-		}
-		*/
-	}
-	#endif
-
+	/*
 	#if DD_PLATFORM_NATIVE
 	// handle asynchronous calls
 	if (dd_isAsyncCallActive) {
@@ -520,13 +464,15 @@ void update() {
 		pthread_mutex_unlock(&asyncCallMutex);
 	}
 	#endif
+	*/
 
-	// handle input
+	// handle key input
 	if (cworld && cworld->key_input && input_key) {
 		cworld->key_input(cworld, input_key);
 		input_key = 0;
 	}
 
+	// handle mouse input
 	if (cworld && cworld->mouse_input && input_mouse) {
 		cworld->mouse_input(cworld, input_mouse_button, input_mouse_state);
 		input_mouse = 0;
@@ -567,8 +513,8 @@ void update() {
 	}
 
 	// asset loader will load any new assets
-	if (avdl_assetManager_hasAssets() && !avdl_assetManager_isLoading()) {
-		avdl_assetManager_loadAssetsAsync();
+	if (avdl_assetManager_hasAssetsToLoad() && !avdl_assetManager_isLoading()) {
+		avdl_assetManager_loadAll();
 	}
 
 	// prepare next frame
