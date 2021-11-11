@@ -272,56 +272,12 @@ void avdl_assetManager_loadAssets() {
 		#else
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
-//			struct dd_meshTexture *mesh = m->mesh;
-//
-//			jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
-//			jstring *parameter = (*env)->NewStringUTF(env, m->filename);
-//			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, MethodID, parameter);
-//
-//			if (result) {
-//
-//				// the first object describes the size of the texture
-//				const jintArray size  = (*(*env)->GetObjectArrayElement)(env, result, 0);
-//				const jint *sizeValues = (*(*env)->GetIntArrayElements)(env, size, 0);
-//
-//				// the second object describes the pixels
-//				const jintArray pixels  = (*(*env)->GetObjectArrayElement)(env, result, 1);
-//				const jint *pixelValues = (*(*env)->GetIntArrayElements)(env, pixels, 0);
-//
-//				int width = sizeValues[0];
-//				int height = sizeValues[1];
-//				GLubyte *pixelsb = malloc(sizeof(GLubyte) *width *height *3);
-//
-//				/*
-//				 * read pixels into a new array
-//				 * for some reason the texture returned is flipped on the y axis
-//				 * so it can be parsed in reverse, until it's more clear why this
-//				 * happens
-//				 */
-//				jsize len = (*env)->GetArrayLength(env, pixels);
-//				for (int x = 0; x < width; x++) {
-//				for (int y = 0; y < height; y++) {
-//					int index = ((y *width) +x);
-//					int indexReverse = (((height -(y+1)) *width) +x);
-//					pixelsb[indexReverse*3 +0] = (pixelValues[index] & 0x00FF0000) >> 16;
-//					pixelsb[indexReverse*3 +1] = (pixelValues[index] & 0x0000FF00) >>  8;
-//					pixelsb[indexReverse*3 +2] = (pixelValues[index] & 0x000000FF);
-//				}
-//				}
-//
-//				(*env)->ReleaseIntArrayElements(env, size, sizeValues, JNI_ABORT);
-//				(*env)->ReleaseIntArrayElements(env, pixels, pixelValues, JNI_ABORT);
-//
-//				pthread_mutex_lock(&updateDrawMutex);
-//				mesh->img.width = width;
-//				mesh->img.height = height;
-//				mesh->img.pixelsb = pixelsb;
-//				pthread_mutex_unlock(&updateDrawMutex);
-//			}
-//			//dd_log("done: %s", m->filename);
+			struct dd_meshTexture *mesh = m->mesh;
+			dd_image_load_bmp(&mesh->img, m->filename);
 		}
 		// load mesh
 		else {
+			// mesh
 			if (m->meshType == AVDL_ASSETMANAGER_MESH) {
 				struct dd_mesh *mesh = m->mesh;
 				dd_mesh_clean(mesh);
@@ -332,6 +288,7 @@ void avdl_assetManager_loadAssets() {
 				mesh->dirtyVertices = 1;
 			}
 			else
+			// mesh colour
 			if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
 				struct dd_meshColour *mesh = m->mesh;
 				dd_meshColour_clean(mesh);
