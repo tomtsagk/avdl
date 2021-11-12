@@ -594,7 +594,17 @@ static struct ast_node *expect_command() {
 
 	// get the command's name
 	struct ast_node *cmd;
-	struct ast_node *cmdname = expect_identifier();
+	struct ast_node *cmdname;
+
+	// empty command is equivalent to `(group)`
+	if (lexer_peek() == LEXER_TOKEN_COMMANDEND) {
+		cmdname = ast_create(AST_IDENTIFIER, 0);
+		ast_addLex(cmdname, "group");
+	}
+	// otherwise, get command name
+	else {
+		cmdname = expect_identifier();
+	}
 
 	// native command, special rules
 	if (agc_commands_isNative(cmdname->lex)) {
