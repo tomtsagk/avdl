@@ -63,3 +63,12 @@ float dd_screen_distance_getw(float width) {
 float dd_screen_distance_geth(float height) {
 	return (height/2) /dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) );
 }
+
+void dd_fullscreenToggle() {
+	#if DD_PLATFORM_NATIVE
+	Uint32 FullscreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
+	int isFullscreen = SDL_GetWindowFlags(mainWindow) & FullscreenFlag;
+	SDL_SetWindowFullscreen(mainWindow, isFullscreen ? 0 : FullscreenFlag);
+	#elif DD_PLATFORM_ANDROID
+	#endif
+}
