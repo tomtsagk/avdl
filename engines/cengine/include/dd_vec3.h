@@ -19,4 +19,8 @@ float dd_vec3_getZ(struct dd_vec3 *o);
 
 void dd_vec3_clean(struct dd_vec3 *o);
 
+void dd_vec3_cross(struct dd_vec3 *o, struct dd_vec3 *v1, struct dd_vec3 *v2);
+void dd_vec3_normalise(struct dd_vec3 *o);
+float dd_vec3_magnitude(struct dd_vec3 *o);
+
 #endif

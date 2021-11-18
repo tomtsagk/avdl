@@ -5,6 +5,7 @@
 #include "dd_dynamic_array.h"
 #include "dd_log.h"
 #include <string.h>
+#include "dd_vec3.h"
 
 void dd_matrix_create(struct dd_matrix *m) {}
 void dd_matrix_clean(struct dd_matrix *m) {}
@@ -279,4 +280,36 @@ void dd_matrix_pop() {
 
 struct dd_matrix *dd_matrix_globalGet() {
 	return &dd_cam[dd_cam_index];
+}
+
+void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float targetZ) {
+
+	struct dd_vec3 forward;
+	dd_vec3_create(&forward);
+	dd_vec3_set(&forward, -targetX, -targetY, -targetZ);
+	dd_vec3_normalise(&forward);
+
+	struct dd_vec3 fakeup;
+	dd_vec3_create(&fakeup);
+	dd_vec3_set(&fakeup, 0, 1, 0);
+
+	struct dd_vec3 right;
+	dd_vec3_create(&right);
+	dd_vec3_cross(&right, &fakeup, &forward);
+
+	struct dd_vec3 up;
+	dd_vec3_create(&up);
+	dd_vec3_cross(&up, &forward, &right);
+
+	float rot_mat[] = {
+		right.x, right.y, right.z, 0,
+		up.x, up.y, up.z, 0,
+		forward.x, forward.y, forward.z, 0,
+		0, 0, 0, 1,
+	};
+
+	for (int i = 0; i < 16; i++) {
+		m->cell[i] = rot_mat[i];
+	}
+
 }

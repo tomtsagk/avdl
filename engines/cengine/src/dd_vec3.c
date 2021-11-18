@@ -1,4 +1,5 @@
 #include "dd_vec3.h"
+#include "dd_math.h"
 
 void dd_vec3_create(struct dd_vec3 *o) {
 	o->x = 0;
@@ -33,4 +34,23 @@ void dd_vec3_add(struct dd_vec3 *o1, struct dd_vec3 *o2) {
 	o1->x += o2->x;
 	o1->y += o2->y;
 	o1->z += o2->z;
+}
+
+void dd_vec3_cross(struct dd_vec3 *o, struct dd_vec3 *v1, struct dd_vec3 *v2) {
+	dd_vec3_set(o,
+		dd_vec3_getY(v1) *dd_vec3_getZ(v2) -dd_vec3_getZ(v1) *dd_vec3_getY(v2),
+		dd_vec3_getZ(v1) *dd_vec3_getX(v2) -dd_vec3_getX(v1) *dd_vec3_getZ(v2),
+		dd_vec3_getX(v1) *dd_vec3_getY(v2) -dd_vec3_getY(v1) *dd_vec3_getX(v2)
+	);
+}
+
+void dd_vec3_normalise(struct dd_vec3 *o) {
+	float magn = dd_vec3_magnitude(o);
+	o->x /= magn;
+	o->y /= magn;
+	o->z /= magn;
+}
+
+float dd_vec3_magnitude(struct dd_vec3 *o) {
+	return dd_math_sqrt(dd_math_pow(o->x, 2) +dd_math_pow(o->y, 2) +dd_math_pow(o->z, 2));
 }

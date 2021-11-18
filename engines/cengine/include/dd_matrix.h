@@ -49,6 +49,8 @@ struct dd_matrix *dd_matrix_globalGet();
 #define dd_rotatef(angle, x, y, z) dd_matrix_rotatem(dd_matrix_globalGet(), angle, x, y, z)
 #define dd_multMatrixf(matrix) dd_matrix_mult(dd_matrix_globalGet(), matrix);
 
+void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float targetZ);
+
 /*
  * deprecated functions
  *
