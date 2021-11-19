@@ -282,6 +282,11 @@ struct dd_matrix *dd_matrix_globalGet() {
 	return &dd_cam[dd_cam_index];
 }
 
+/*
+ * lookat function
+ *
+ * make given matrix look at target (local space)
+ */
 void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float targetZ) {
 
 	struct dd_vec3 forward;
@@ -296,10 +301,12 @@ void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float t
 	struct dd_vec3 right;
 	dd_vec3_create(&right);
 	dd_vec3_cross(&right, &fakeup, &forward);
+	dd_vec3_normalise(&right);
 
 	struct dd_vec3 up;
 	dd_vec3_create(&up);
 	dd_vec3_cross(&up, &forward, &right);
+	dd_vec3_normalise(&up);
 
 	float rot_mat[] = {
 		right.x, right.y, right.z, 0,
