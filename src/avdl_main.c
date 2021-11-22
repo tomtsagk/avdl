@@ -28,7 +28,7 @@ char buffer[DD_BUFFER_SIZE];
 // game node, parent of all nodes
 struct ast_node *game_node;
 
-#define MAX_INPUT_FILES 10
+#define MAX_INPUT_FILES 20
 
 char *includePath = 0;
 

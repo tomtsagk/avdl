@@ -48,12 +48,7 @@ float dd_screen_distance_getw(float width);
 float dd_screen_distance_geth(float height);
 
 // full screen
-#if DD_PLATFORM_NATIVE
-// temporarily disable
-//#define dd_fullscreenToggle() glutFullScreenToggle()
-#elif DD_PLATFORM_ANDROID
-#define dd_fullscreenToggle()
-#endif
+void dd_fullscreenToggle();
 
 extern int dd_flag_initialised;
 extern int dd_flag_focused;

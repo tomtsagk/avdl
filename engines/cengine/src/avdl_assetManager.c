@@ -42,24 +42,25 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname) {
 	if (lockLoading) {
 		return;
 	}
-	#if DD_PLATFORM_ANDROID
+	//#if DD_PLATFORM_ANDROID
+	/*
 	if (assetManagerLoading) {
 		dd_log("error add new asset while loading: %s", assetname);
 		return;
 	}
+	*/
 
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.mesh = object;
 	meshToLoad.meshType = meshType;
-	strcpy(&meshToLoad.filename, assetname);
+	strcpy(meshToLoad.filename, assetname);
 	dd_da_add(&meshesToLoad, &meshToLoad);
-	#endif
+	//#endif
 
 }
 
 void avdl_assetManager_loadAssets() {
 
-	#if DD_PLATFORM_ANDROID
 	// load assets here
 	//dd_log("meshes to load: %d", meshesLoading.elements);
 	for (int i = 0; i < meshesLoading.elements; i++) {
@@ -67,6 +68,7 @@ void avdl_assetManager_loadAssets() {
 		//dd_log("loading asset: %s", m->filename);
 		//dd_log("loading asset type: %d", m->meshType);
 
+		#if DD_PLATFORM_ANDROID
 		/*
 		 * attempt to get hold of a valid jni
 		 * will most likely matter during
@@ -80,7 +82,6 @@ void avdl_assetManager_loadAssets() {
 			pthread_mutex_lock(&jniMutex);
 		}
 
-		#if DD_PLATFORM_ANDROID
 		JNIEnv *env;
 		int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
 
@@ -93,7 +94,6 @@ void avdl_assetManager_loadAssets() {
 		} else if (getEnvStat == JNI_EVERSION) {
 			dd_log("avdl: GetEnv: version not supported");
 		}
-		#endif
 
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
@@ -265,30 +265,68 @@ void avdl_assetManager_loadAssets() {
 			}
 		}
 
-		#if DD_PLATFORM_ANDROID
 		if (jvm && getEnvStat == JNI_EDETACHED) {
 			//dd_log("detach thread");
 			(*jvm)->DetachCurrentThread(jvm);
 		}
+		#else
+		// load texture
+		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
+			struct dd_meshTexture *mesh = m->mesh;
+			dd_image_load_bmp(&mesh->img, m->filename);
+		}
+		// load mesh
+		else {
+			// mesh
+			if (m->meshType == AVDL_ASSETMANAGER_MESH) {
+				struct dd_mesh *mesh = m->mesh;
+				dd_mesh_clean(mesh);
+				struct dd_loaded_mesh lm;
+				dd_filetomesh(&lm, m->filename, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY);
+				mesh->vcount = lm.vcount;
+				mesh->v = lm.v;
+				mesh->dirtyVertices = 1;
+			}
+			else
+			// mesh colour
+			if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
+				struct dd_meshColour *mesh = m->mesh;
+				dd_meshColour_clean(mesh);
+				struct dd_loaded_mesh lm;
+				dd_filetomesh(&lm, m->filename,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
+				mesh->parent.vcount = lm.vcount;
+				mesh->parent.v = lm.v;
+				mesh->parent.dirtyVertices = 1;
+				mesh->c = lm.c;
+				mesh->dirtyColours = 1;
+			}
+		}
 		#endif
 
+		#if DD_PLATFORM_ANDROID
 		pthread_mutex_unlock(&jniMutex);
-
 		pthread_mutex_lock(&updateDrawMutex);
+		#endif
 		totalAssetsLoaded++;
 		if (interruptLoading) break;
 		//dd_log("assets loaded: %d / %d", totalAssetsLoaded, totalAssets);
+		#if DD_PLATFORM_ANDROID
 		pthread_mutex_unlock(&updateDrawMutex);
+		#endif
 
 		//dd_log("done");
 	}
 	dd_da_empty(&meshesLoading);
 	//dd_log("finished all loading");
-	#endif
 
+	#if DD_PLATFORM_ANDROID
 	pthread_mutex_lock(&updateDrawMutex);
+	#endif
 	assetManagerLoading = 0;
+	#if DD_PLATFORM_ANDROID
 	pthread_mutex_unlock(&updateDrawMutex);
+	#endif
 
 }
 
@@ -305,7 +343,7 @@ void *load_assets_thread_function(void *data) {
 	pthread_exit(NULL);
 }
 
-void avdl_assetManager_loadAssetsAsync() {
+void avdl_assetManager_loadAll() {
 	if (assetManagerLoading) return;
 
 	dd_da_copy(&meshesLoading, &meshesToLoad);
@@ -320,8 +358,12 @@ void avdl_assetManager_loadAssetsAsync() {
 		loadAssetsThread = 0;
 	}
 	*/
+	#if DD_PLATFORM_ANDROID
 	pthread_create(&loadAssetsThread, NULL, load_assets_thread_function, 0);
 	pthread_detach(loadAssetsThread);
+	#else
+	avdl_assetManager_loadAssets();
+	#endif
 }
 
 int avdl_assetManager_isLoading() {
@@ -329,18 +371,18 @@ int avdl_assetManager_isLoading() {
 }
 
 int avdl_assetManager_isReady() {
+	return totalAssetsLoaded == totalAssets;
+
+	/*
 	if (totalAssetsLoaded == totalAssets) {
 		return 1;
 	}
 
 	return (float) totalAssetsLoaded / (float) totalAssets >= desiredLoadedPercentage;
+	*/
 }
 
-void avdl_assetManager_setPercentage(float percentage) {
-	desiredLoadedPercentage = percentage;
-}
-
-int avdl_assetManager_hasAssets() {
+int avdl_assetManager_hasAssetsToLoad() {
 	return meshesToLoad.elements > 0;
 }
 
@@ -350,6 +392,14 @@ void avdl_assetManager_lockLoading() {
 
 void avdl_assetManager_unlockLoading() {
 	lockLoading = 0;
+}
+
+float avdl_assetManager_getLoadedProportion() {
+	if (totalAssets <= 0) {
+		return 1.0;
+	}
+
+	return (float) totalAssetsLoaded / (float) totalAssets;
 }
 
 void avdl_assetManager_clear() {
@@ -362,4 +412,8 @@ void avdl_assetManager_clear() {
 		loadAssetsThread = 0;
 	}
 	*/
+}
+
+void avdl_assetManager_setPercentage(float percentage) {
+	desiredLoadedPercentage = percentage;
 }

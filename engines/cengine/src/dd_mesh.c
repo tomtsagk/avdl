@@ -6,11 +6,6 @@
 #include "avdl_assetManager.h"
 
 extern GLuint defaultProgram;
-extern GLuint risingProgram;
-
-#if DD_PLATFORM_ANDROID
-jclass *clazz;
-#endif
 
 float shape_triangle[] = {
 	0, 0.5, 0,
@@ -100,18 +95,14 @@ void dd_mesh_draw(struct dd_mesh *m) {
 
 	GLuint MatrixID = glGetUniformLocation(defaultProgram, "matrix");
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
-	MatrixID = glGetUniformLocation(risingProgram, "matrix");
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
 
 	glDrawArrays(GL_TRIANGLES, 0, m->vcount);
 
 	glDisableVertexAttribArray(0);
 }
 
-#if DD_PLATFORM_ANDROID
 /*
- * load the mesh based on a string instead of a file,
- * used for specific platforms like Android
+ * add the mesh to be loaded from the asset manager
  */
 void dd_mesh_load(struct dd_mesh *m, const char *asset) {
 
@@ -122,16 +113,6 @@ void dd_mesh_load(struct dd_mesh *m, const char *asset) {
 	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH, asset);
 
 }
-#else
-void dd_mesh_load(struct dd_mesh *m, const char *filename) {
-	dd_mesh_clean(m);
-	struct dd_loaded_mesh lm;
-	dd_filetomesh(&lm, filename, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY);
-	m->vcount = lm.vcount;
-	m->v = lm.v;
-	m->dirtyVertices = 1;
-}
-#endif
 
 void dd_mesh_copy(struct dd_mesh *dest, struct dd_mesh *src) {
 	dest->vcount = src->vcount;

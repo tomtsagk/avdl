@@ -10,13 +10,6 @@ enum dd_primitives {
 #include "dd_opengl.h"
 #include "dd_matrix.h"
 
-#if DD_PLATFORM_ANDROID
-#include <jni.h>
-extern JavaVM* jvm;
-extern JNIEnv *jniEnv;
-extern jclass *clazz;
-#endif
-
 /* Generic mesh that holds all the data needed to draw a mesh
  * like colors or normals
  * vcount : number of vertices

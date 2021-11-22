@@ -97,15 +97,10 @@ void dd_meshTexture_set_primitive_texcoords(struct dd_meshTexture *m, float offs
 void dd_meshTexture_preloadTexture(struct dd_meshTexture *m, char *filename) {
 
 	m->openglContextId = avdl_opengl_getContextId();
-	#if DD_PLATFORM_ANDROID
 	//dd_log("add texture for loading: %s\n", filename);
 	m->assetName = filename;
 	// mark to be loaded
 	avdl_assetManager_add(m, AVDL_ASSETMANAGER_TEXTURE, filename);
-	#else
-	m->assetName = filename;
-	dd_image_load_bmp(&m->img, filename);
-	#endif
 }
 
 int dd_meshTexture_applyTexture(struct dd_meshTexture *m) {
