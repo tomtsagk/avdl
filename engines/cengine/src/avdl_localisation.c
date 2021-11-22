@@ -1,6 +1,7 @@
 #include "avdl_localisation.h"
 #include "dd_json.h"
 #include <string.h>
+#include "dd_log.h"
 
 void avdl_localisation_create(struct avdl_localisation *o) {
 	o->count = 0;
@@ -14,8 +15,9 @@ void avdl_localisation_clean(struct avdl_localisation *o) {
 void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) {
 
 	struct dd_json_object obj;
-	strcpy(obj.buffer, keyGroupID);
-	strcat(obj.buffer, ".json");
+	strcpy(obj.buffer, "assets/");
+	strcat(obj.buffer, keyGroupID);
+	strcat(obj.buffer, ".asset");
 	dd_json_initFile(&obj, obj.buffer);
 
 	// expect start of object
