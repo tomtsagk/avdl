@@ -46,5 +46,9 @@ void dd_da_free(struct dd_dynamic_array *da);
 /* Get element of the array */
 void *dd_da_get(struct dd_dynamic_array *da, unsigned int element);
 
+/*
+ * Get number of elements in array
+ */
+unsigned int dd_da_count(struct dd_dynamic_array *da);
 
 #endif

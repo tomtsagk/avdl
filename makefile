@@ -12,7 +12,8 @@ prefix=/usr/local/
 #
 # compiler data
 #
-COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security#-Werror
+#COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -fprofile-arcs -ftest-coverage --coverage#-Werror
+COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security #-Werror
 COMPILER_DEFINES=\
 	-DPKG_NAME=\"${PACKAGE_NAME}\"\
 	-DPKG_VERSION=\"${PACKAGE_VERSION}\"\
@@ -51,6 +52,12 @@ EXECUTABLE=${DIRECTORY_EXE}/${PACKAGE_NAME}
 # c engine data
 #
 CENGINE_PATH=engines/cengine
+
+#
+# test data
+#
+TESTS=$(wildcard tests/*)
+TEST_NAMES=${TESTS:tests/%=%}
 
 #
 # compile the package, together with all engines
@@ -113,6 +120,24 @@ clean:
 	${MAKE} -C ${CENGINE_PATH} clean
 	rm -f ${EXECUTABLE} ${OBJ}
 
+test:
+	$(foreach TEST_NAME, ${TEST_NAMES}, \
+		$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage \
+			tests/${TEST_NAME}/${TEST_NAME}.test.c $(shell cat tests/${TEST_NAME}/dependencies) \
+			-o tests/${TEST_NAME}/result.out \
+		&& ./tests/${TEST_NAME}/result.out \
+	)
+
+test-advance:
+	$(foreach TEST_NAME, ${TEST_NAMES}, \
+		$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage \
+			tests/${TEST_NAME}/${TEST_NAME}.test.c $(shell cat tests/${TEST_NAME}/dependencies) \
+			-o tests/${TEST_NAME}/result.out \
+		&& ./tests/${TEST_NAME}/result.out \
+		&& gcov ./tests/${TEST_NAME}/*.gcno \
+		&& mv *.gcov ./tests/${TEST_NAME} \
+	)
+
 #
 # create needed directories
 #
@@ -125,4 +150,4 @@ ${DIRECTORIES} ${DIRECTORY_ALL}:
 ${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -c $< -o $@
 
-.PHONY: all tarball clean install
+.PHONY: all tarball clean install test test-advance

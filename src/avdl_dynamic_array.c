@@ -205,3 +205,7 @@ void *dd_da_get(struct dd_dynamic_array *da, unsigned int element) {
 	}
 	return ((char*)da->array) +(element *da->element_size);
 }
+
+unsigned int dd_da_count(struct dd_dynamic_array *da) {
+	return da->elements;
+}
