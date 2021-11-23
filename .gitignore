@@ -10,3 +10,9 @@ build/
 
 # ignore generated docs
 avdl.info.gz
+
+# ignore test files
+*.gcno
+*.gcda
+*.gcov
+*result.out
