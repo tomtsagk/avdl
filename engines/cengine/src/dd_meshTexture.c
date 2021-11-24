@@ -140,7 +140,7 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 	}
 
 	// texture not yet in opengl, pass it
-	if (m->img.pixelsb) {
+	if (m->img.pixels || m->img.pixelsb) {
 		dd_meshTexture_applyTexture(m);
 	}
 
