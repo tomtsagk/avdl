@@ -75,8 +75,10 @@ ${EXECUTABLE}: ${DIRECTORY_ALL} ${OBJ}
 # create install directories
 #
 INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/man/man1/ \
-	${DESTDIR}${prefix}/share/avdl/android\
-	${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine
+	${DESTDIR}${prefix}/share/avdl/android \
+	${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine \
+	${DESTDIR}${prefix}/share/vim/vimfiles/syntax/ \
+	${DESTDIR}${prefix}/share/vim/vimfiles/ftdetect/
 
 ${INSTALL_DIRS}:
 	mkdir -p $@
@@ -96,14 +98,12 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine
 	sed -i '/%AVDL_ENGINE_FILES%/ s#%AVDL_ENGINE_FILES%#${ENGINE_FILES_ANDROID}#'\
 		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/CMakeLists.txt.in
+	@# vim syntax files
+	install vim/syntax/avdl.vim ${DESTDIR}${prefix}/share/vim/vimfiles/syntax/
+	install vim/ftdetect/avdl.vim ${DESTDIR}${prefix}/share/vim/vimfiles/ftdetect/
 
 #mkdir -p ${INSTALL_LOCATION}/share/info/
 #install avdl.info.gz ${INSTALL_LOCATION}/share/info/
-# vim files
-#mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
-#install vim/syntax/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/syntax/
-#mkdir -p ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
-#install vim/ftdetect/avdl.vim ${INSTALL_LOCATION}/share/vim/vimfiles/ftdetect/
 
 #
 # create a tarball of all source files needed to compile this project

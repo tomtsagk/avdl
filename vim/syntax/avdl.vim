@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: avdl
 " Maintainer: Tom Tsagk
-" Latest Revision: 15 September 2019
+" Latest Revision: 29 November 2021
 
 if exists("b:current_syntax")
   finish
@@ -25,9 +25,23 @@ syntax match avdlKeywords '&&'
 syntax match avdlKeywords '||'
 syntax match avdlKeywords '<'
 syntax match avdlKeywords '>'
+syntax match avdlKeywords "this"
+syntax match avdlKeywords '('
+syntax match avdlKeywords ')'
+
+" classes
+syntax match avdlKeywords 'dd_matrix'
+syntax match avdlKeywords 'dd_world'
+syntax match avdlKeywords 'dd_mesh'
+syntax match avdlKeywords 'dd_meshColour'
+syntax match avdlKeywords 'dd_meshTexture'
+syntax match avdlKeywords 'dd_string3d'
+syntax match avdlKeywords 'avdl_particle_system'
+syntax match avdlKeywords 'avdl_localisation'
+syntax match avdlKeywords 'avdl_program'
 
 " primitive variable types
-syntax keyword avdlPrimitiveVariableTypes int float string char
+syntax keyword avdlPrimitiveVariableTypes int float string char void
 
 " constants (numbers and strings)
 syn match ddNumber '[-+]\?\<\d\+\>'
