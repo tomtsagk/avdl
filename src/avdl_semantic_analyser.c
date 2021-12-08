@@ -358,8 +358,11 @@ static struct ast_node *expect_command_definition() {
 	struct ast_node *varname = expect_identifier();
 
 	// add newly defined variable to symbol table
-	struct entry *e = symtable_entryat(symtable_insert(varname->lex, SYMTABLE_VARIABLE));
-	e->value = dd_variable_type_convert(type->lex);
+	struct entry *e = symtable_entryat(symtable_insert(varname->lex, dd_variable_type_convert(type->lex)));
+	e->value = 0;
+	if (struct_table_exists(type->lex)) {
+		e->value = struct_table_get_index(type->lex);
+	}
 	e->isRef = isRef;
 	definition->isRef = isRef;
 
@@ -435,7 +438,7 @@ static struct ast_node *expect_identifier() {
 	struct entry *symEntry = symtable_lookupEntry(identifier->lex);
 	if (symEntry) {
 		identifier->isRef = symEntry->isRef;
-		identifier->value = symEntry->value;
+		identifier->value = symEntry->token;
 	}
 
 	// does it have an array modifier?
@@ -472,7 +475,6 @@ static struct ast_node *expect_identifier() {
 	if (lexer_peek() == LEXER_TOKEN_PERIOD) {
 		lexer_getNextToken();
 
-		//symtable_print();
 		// identifiers that own objects have to be in the symbol table
 		if (!symEntry) {
 			semantic_error("identifier '%s' not a known symbol", identifier->lex);
@@ -482,8 +484,6 @@ static struct ast_node *expect_identifier() {
 		if (symEntry->token != DD_VARIABLE_TYPE_STRUCT) {
 			semantic_error("identifier '%s' not a struct, so it can't own objects", identifier->lex);
 		}
-
-		//printf("name of struct: %s\n", struct_table_get_name(e->value));
 
 		// add struct's members to new symbol table
 		symtable_push();
