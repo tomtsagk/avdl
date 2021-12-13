@@ -49,6 +49,8 @@ int main(int argc, char *argv[]) {
 	char filename[MAX_INPUT_FILES][100];
 	int input_file_total = 0;
 	char *outname = 0;
+	char *gameVersion = "0.0.0";
+	char *gameRevision = "0";
 
 	/*
 	 * phases
@@ -110,6 +112,53 @@ int main(int argc, char *argv[]) {
 					}
 					else {
 						printf("avdl error: --install-loc expects a path\n");
+						return -1;
+					}
+				}
+				else
+				if (strcmp(argv[i], "--game-version") == 0) {
+					if (argc > i+1) {
+						gameVersion = argv[i+1];
+
+						// confirm format, only digits and '.' allowed
+						for (int j = 0; j < strlen(gameVersion); j++) {
+							if ((gameVersion[j] >= '0' && gameVersion[j] <= '9')
+							||  gameVersion[j] == '.') {
+								continue;
+							}
+
+							printf("avdl error: '%s' argument can only contain digits and '.'\n", argv[i]);
+							return -1;
+						}
+
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects a version string\n", argv[i]);
+						return -1;
+					}
+				}
+				else
+				if (strcmp(argv[i], "--game-revision") == 0) {
+					if (argc > i+1) {
+						gameRevision = argv[i+1];
+
+						// confirm format, only digits allowed
+						for (int j = 0; j < strlen(gameRevision); j++) {
+							if (gameRevision[j] >= '0'
+							&&  gameRevision[j] <= '9') {
+								continue;
+							}
+
+							printf("avdl error: '%s' argument can only contain digits\n", argv[i]);
+							return -1;
+						}
+
+						i++;
+
+					}
+					else {
+						printf("avdl error: %s expects a revision string\n", argv[i]);
 						return -1;
 					}
 				}
@@ -287,7 +336,11 @@ int main(int argc, char *argv[]) {
 		}
 
 		// compile
-		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -c -w ");
+		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -DAVDL_GAME_VERSION=\"\\\"");
+		strcat(buffer, gameVersion);
+		strcat(buffer, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
+		strcat(buffer, gameRevision);
+		strcat(buffer, "\\\"\" -c -w ");
 		strcat(buffer, filename[i]);
 		strcat(buffer, " -o ");
 		if (outname && !link) {
