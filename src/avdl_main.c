@@ -162,6 +162,19 @@ int main(int argc, char *argv[]) {
 						return -1;
 					}
 				}
+				else
+				if (strcmp(argv[i], "--get-assets-directory") == 0) {
+					if (argc > i+1) {
+						printf("%s/assets\n", argv[i+1]);
+						i++;
+
+						return 0;
+					}
+					else {
+						printf("avdl error: '%s' expects a path\n", argv[i]);
+						return -1;
+					}
+				}
 				// unknown double dash argument
 				else {
 					printf("avdl error: cannot understand double dash argument '%s'\n", argv[i]);
@@ -426,6 +439,51 @@ int main(int argc, char *argv[]) {
 		else {
 			if (outname) {
 				strcpy(buffer, outname);
+				strcat(buffer, "/assets/");
+
+				int character = 0;
+				int lastSlash = -1;
+				int lastDot = -1;
+				while (filename[i][character] != '\0') {
+					if (filename[i][character] == '/') {
+						lastSlash = character;
+					}
+
+					if (filename[i][character] == '.') {
+						lastDot = character;
+					}
+
+					character++;
+				}
+
+				// has slash ("dir/*")
+				if (lastSlash >= 0) {
+					lastSlash++;
+
+					// has file extention ("dir/file.ext")
+					if (lastDot >= 0) {
+						int length = lastDot -lastSlash;
+						strncat(buffer, filename[i] +lastSlash, length);
+					}
+					// no file extention ("dir/file")
+					else {
+						int length = strlen(filename[i] +lastSlash) -lastSlash;
+						strncat(buffer, filename[i] +lastSlash, length);
+					}
+				}
+				// no slash ("*")
+				else {
+					// has file extention ("file.ext")
+					if (lastDot >= 0) {
+						int length = lastDot;
+						strncat(buffer, filename[i], length);
+					}
+					// no file extention ("file")
+					else {
+						strcat(buffer, filename[i]);
+					}
+				}
+				strcat(buffer, ".asset");
 			}
 			else {
 				strcpy(buffer, filename[i]);
@@ -512,9 +570,10 @@ int main(int argc, char *argv[]) {
 			strcat(buffer, "-o ");
 			if (outname) {
 				strcat(buffer, outname);
+				strcat(buffer, "/game");
 			}
 			else {
-				strcat(buffer, "game");
+				strcat(buffer, "game/game");
 			}
 
 			if (additionalLibDirectory) {
