@@ -162,19 +162,6 @@ int main(int argc, char *argv[]) {
 						return -1;
 					}
 				}
-				else
-				if (strcmp(argv[i], "--get-assets-directory") == 0) {
-					if (argc > i+1) {
-						printf("%s/assets\n", argv[i+1]);
-						i++;
-
-						return 0;
-					}
-					else {
-						printf("avdl error: '%s' expects a path\n", argv[i]);
-						return -1;
-					}
-				}
 				// unknown double dash argument
 				else {
 					printf("avdl error: cannot understand double dash argument '%s'\n", argv[i]);
