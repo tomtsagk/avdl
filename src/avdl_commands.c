@@ -40,6 +40,7 @@ const char *keywords[] = {
 	"if",
 	"for",
 	"asset",
+	"savefile",
 
 	"extern",
 	"multistring",

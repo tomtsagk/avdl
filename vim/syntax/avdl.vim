@@ -8,7 +8,7 @@ if exists("b:current_syntax")
 endif
 
 " keywords
-syntax keyword avdlKeywords if echo def group
+syntax keyword avdlKeywords if echo def group savefile
 	\ class class_function function return
 	\ for asset extern multistring include
 

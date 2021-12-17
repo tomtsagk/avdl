@@ -16,16 +16,36 @@
  */
 char avdl_data_saveDirectory[1024] = "saves";
 
+void parse_filename(char *buffer, const char *filename) {
+	buffer[0] = '\0';
+	int bufferC = 0;
+	int c = 0;
+	while (filename[c] != '\0' && bufferC < 1023) {
+
+		if (filename[c] == '~') {
+			strcat(buffer, getenv("HOME"));
+			bufferC = strlen(buffer);
+		}
+		else {
+			buffer[bufferC] = filename[c];
+			bufferC++;
+		}
+		c++;
+	}
+	buffer[bufferC] = '\0';
+}
+
 int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 
 	/*
 	 * if needed, make all directories recursively
 	 */
 	char buffer[1024];
-	strcpy(buffer, avdl_data_saveDirectory);
-	strcat(buffer, "/");
-	strcat(buffer, filename);
-	buffer[1023] = '\0';
+	parse_filename(buffer, filename);
+	//strcpy(buffer, avdl_data_saveDirectory);
+	//strcat(buffer, "/");
+	//strcpy(buffer, filename);
+	//buffer[1023] = '\0';
 
 	char *start = buffer;
 	char *end = start+1;
@@ -78,10 +98,14 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 
 int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 
-	char buffer[1000];
+	char buffer[1024];
+	parse_filename(buffer, filename);
+	//buffer[1023] = '\0';
+	/*
 	strcpy(buffer, avdl_data_saveDirectory);
 	strcat(buffer, "/");
 	strcat(buffer, filename);
+	*/
 
 	/*
 	 * if file fails to open for reading, bail out

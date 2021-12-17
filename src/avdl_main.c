@@ -33,6 +33,7 @@ struct ast_node *game_node;
 char *includePath = 0;
 
 char *installLocation = "";
+char *saveLocation = "";
 char *additionalLibDirectory = 0;
 
 int create_android_directory(const char *androidDirName);
@@ -49,6 +50,7 @@ int main(int argc, char *argv[]) {
 	char filename[MAX_INPUT_FILES][100];
 	int input_file_total = 0;
 	char *outname = 0;
+	char *gameName = "game";
 	char *gameVersion = "0.0.0";
 	char *gameRevision = "0";
 
@@ -116,6 +118,18 @@ int main(int argc, char *argv[]) {
 					}
 				}
 				else
+				// custom save location
+				if (strcmp(argv[i], "--save-loc") == 0) {
+					if (argc > i+1) {
+						saveLocation = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: %s expects a path\n", argv[i]);
+						return -1;
+					}
+				}
+				else
 				if (strcmp(argv[i], "--game-version") == 0) {
 					if (argc > i+1) {
 						gameVersion = argv[i+1];
@@ -159,6 +173,33 @@ int main(int argc, char *argv[]) {
 					}
 					else {
 						printf("avdl error: %s expects a revision string\n", argv[i]);
+						return -1;
+					}
+				}
+				else
+				if (strcmp(argv[i], "--game-name") == 0) {
+					if (argc > i+1) {
+						gameName = argv[i+1];
+
+						// confirm format, only digits and '.' allowed
+						for (int j = 0; j < strlen(gameName); j++) {
+							if ((gameName[j] >= '0' && gameName[j] <= '9')
+							||  (gameName[j] >= 'a' && gameName[j] <= 'z')
+							||  (gameName[j] >= 'A' && gameName[j] <= 'Z')
+							||   gameName[j] == '_') {
+								continue;
+							}
+
+							printf("avdl error: '%s' argument can only contain digits, a-z, A-Z and '_'\n",
+								argv[i]
+							);
+							return -1;
+						}
+
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects a game name string\n", argv[i]);
 						return -1;
 					}
 				}
@@ -557,11 +598,12 @@ int main(int argc, char *argv[]) {
 			strcat(buffer, "-o ");
 			if (outname) {
 				strcat(buffer, outname);
-				strcat(buffer, "/game");
+				strcat(buffer, "/");
 			}
 			else {
-				strcat(buffer, "game/game");
+				strcat(buffer, "game/");
 			}
+			strcat(buffer, gameName);
 
 			if (additionalLibDirectory) {
 				strcat(buffer, " -L");

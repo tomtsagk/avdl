@@ -120,6 +120,54 @@ static struct ast_node *expect_command_asset() {
 	return asset;
 }
 
+extern char *saveLocation;
+static struct ast_node *expect_command_savefile() {
+	struct ast_node *savefile = expect_string();
+
+	/*
+	 * on android, a path to a file is truncated to the filename
+	 * minus the ending.
+	 *
+	 * temporary solution
+	 */
+	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+		char buffer[500];
+		strcpy(buffer, savefile->lex);
+
+		char *lastSlash = buffer;
+		char *p = buffer;
+		while (p[0] != '\0') {
+			if (p[0] == '/') {
+				lastSlash = p+1;
+			}
+			p++;
+		}
+
+		char *lastDot = buffer;
+		p = buffer;
+		while (p[0] != '\0') {
+			if (p[0] == '.') {
+				lastDot = p;
+			}
+			p++;
+		}
+		lastDot[0] = '\0';
+
+		strcpy(savefile->lex, lastSlash);
+	}
+	else
+	// on linux and windows, attach the custom install location as the asset's prefix
+	if (avdl_platform_get() == AVDL_PLATFORM_LINUX
+	||  avdl_platform_get() == AVDL_PLATFORM_WINDOWS) {
+		char buffer[500];
+		strcpy(buffer, saveLocation);
+		strcat(buffer, savefile->lex);
+		strcpy(savefile->lex, buffer);
+	}
+
+	return savefile;
+}
+
 static struct ast_node *expect_command_include() {
 	struct ast_node *include = ast_create(AST_INCLUDE, 0);
 	struct ast_node *filename = expect_string();
@@ -672,6 +720,10 @@ static struct ast_node *expect_command() {
 		else
 		if (strcmp(cmdname->lex, "asset") == 0) {
 			cmd = expect_command_asset();
+		}
+		else
+		if (strcmp(cmdname->lex, "savefile") == 0) {
+			cmd = expect_command_savefile();
 		}
 		else
 		if (strcmp(cmdname->lex, "for") == 0) {
