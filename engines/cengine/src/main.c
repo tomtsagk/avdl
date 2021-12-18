@@ -18,6 +18,7 @@ pthread_t updatePthread;
 #if DD_PLATFORM_ANDROID
 
 	#include <jni.h>
+	jclass *clazz;
 
 /*
  * cengine includes
@@ -310,21 +311,6 @@ void clean() {
 	//curl_global_cleanup();
 	#endif
 }
-
-#if DD_PLATFORM_ANDROID
-static void gluPerspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar) {
-	GLfloat xmin, xmax, ymin, ymax;
-
-	ymax = zNear * (GLfloat)tan(fovy * PI / 360);
-	ymin = -ymax;
-	xmin = ymin * aspect;
-	xmax = ymax * aspect;
-
-	glFrustumx((GLfixed)(xmin * 65536), (GLfixed)(xmax * 65536),
-		(GLfixed)(ymin * 65536), (GLfixed)(ymax * 65536),
-		(GLfixed)(zNear * 65536), (GLfixed)(zFar * 65536));
-}
-#endif
 
 void dd_perspective(float *matrix, float fovyDegrees, float aspectRatio,
 	float znear, float zfar) {

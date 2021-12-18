@@ -450,6 +450,9 @@ int main(int argc, char *argv[]) {
 			if (strcmp(filename[i] +strlen(filename[i]) -4, ".bmp") == 0) {
 				assetDir = "drawable";
 			}
+			else {
+				assetDir = "raw";
+			}
 
 			strcpy(buffer, out);
 			strcat(buffer, "/app/src/main/res/");

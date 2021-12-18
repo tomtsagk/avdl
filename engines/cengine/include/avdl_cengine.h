@@ -1,3 +1,7 @@
+#ifndef AVDL_GAME_VERSION
+#define AVDL_GAME_VERSION "0.0.0"
+#endif
+
 #include "dd_opengl.h"
 #include "dd_dynamic_array.h"
 #include "dd_filetomesh.h"
