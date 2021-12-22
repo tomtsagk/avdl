@@ -75,6 +75,7 @@ ${EXECUTABLE}: ${DIRECTORY_ALL} ${OBJ}
 # create install directories
 #
 INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/man/man1/ \
+	${DESTDIR}${prefix}/share/avdl/cengine \
 	${DESTDIR}${prefix}/share/avdl/android \
 	${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine \
 	${DESTDIR}${prefix}/share/vim/vimfiles/syntax/ \

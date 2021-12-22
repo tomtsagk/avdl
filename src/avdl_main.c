@@ -22,7 +22,7 @@ char included_files[10][100];
 int included_files_num = 0;
 
 // buffer for general use
-#define DD_BUFFER_SIZE 1000
+#define DD_BUFFER_SIZE 2048
 char buffer[DD_BUFFER_SIZE];
 
 // game node, parent of all nodes
@@ -37,6 +37,36 @@ char *saveLocation = "";
 char *additionalLibDirectory = 0;
 
 int create_android_directory(const char *androidDirName);
+
+char *cengine_files[] = {
+	"avdl_assetManager.c",
+	"avdl_data.c",
+	"avdl_localisation.c",
+	"avdl_particle_system.c",
+	"avdl_shaders.c",
+	"dd_dynamic_array.c",
+	"dd_filetomesh.c",
+	"dd_fov.c",
+	"dd_game.c",
+	"dd_gamejolt.c",
+	"dd_image.c",
+	"dd_json.c",
+	"dd_log.c",
+	"dd_math.c",
+	"dd_matrix.c",
+	"dd_mesh.c",
+	"dd_meshColour.c",
+	"dd_meshTexture.c",
+	"dd_mouse.c",
+	"dd_opengl.c",
+	"dd_sound.c",
+	"dd_string3d.c",
+	"dd_vec3.c",
+	"dd_vec4.c",
+	"dd_world.c",
+	"main.c",
+};
+unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 
 // init data, parse, exit
 int main(int argc, char *argv[]) {
@@ -593,19 +623,67 @@ int main(int argc, char *argv[]) {
 		}
 		else {
 
+			char *outdir;
+			if (outname) {
+				outdir = outname;
+			}
+			else {
+				outdir = "game";
+			}
+
+			/*
+			 * if not available, compile `cengine` and cache it
+			 */
+			strcpy(buffer, outdir);
+			strcat(buffer, "_cache");
+			if (!is_dir(buffer)) {
+
+				printf("avdl: compiling cengine\n");
+				dir_create(buffer);
+
+				char compile_command[DD_BUFFER_SIZE];
+				for (int i = 0; i < cengine_files_total; i++) {
+					strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE " PKG_LOCATION "/share/avdl/cengine/");
+					strcat(compile_command, cengine_files[i]);
+					strcat(compile_command, " -o ");
+					strcat(compile_command, buffer);
+					strcat(compile_command, "/");
+					strcat(compile_command, cengine_files[i]);
+					compile_command[strlen(compile_command)-1] = 'o';
+					strcat(compile_command, " -I" PKG_LOCATION "/include");
+					if (system(compile_command) != 0) {
+						printf("error compiling cengine\n");
+						exit(-1);
+					}
+				}
+				printf("done\n");
+			}
+
+			// prepare link command
 			strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE ");
+
+			// add game files to link
 			for (int i = 0; i < input_file_total; i++) {
 				strcat(buffer, filename[i]);
 				strcat(buffer, " ");
 			}
-			strcat(buffer, "-o ");
-			if (outname) {
-				strcat(buffer, outname);
+
+			// add cengine files to link
+			char tempDir[DD_BUFFER_SIZE];
+			strcpy(tempDir, outdir);
+			strcat(tempDir, "_cache");
+			for (int i = 0; i < cengine_files_total; i++) {
+				strcat(buffer, tempDir);
 				strcat(buffer, "/");
+				strcat(buffer, cengine_files[i]);
+				buffer[strlen(buffer)-1] = 'o';
+				strcat(buffer, " ");
 			}
-			else {
-				strcat(buffer, "game/");
-			}
+
+			// output file
+			strcat(buffer, "-o ");
+			strcat(buffer, outdir);
+			strcat(buffer, "/");
 			strcat(buffer, gameName);
 
 			if (additionalLibDirectory) {
@@ -613,8 +691,8 @@ int main(int argc, char *argv[]) {
 				strcat(buffer, additionalLibDirectory);
 			}
 
-			strcat(buffer, " -lGLU -O3 -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
-			//printf("command: %s\n", buffer);
+			strcat(buffer, " -lGLU -O3 -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+			//printf("link command: %s\n", buffer);
 			if (system(buffer)) {
 				printf("avdl: error linking files\n");
 				exit(-1);

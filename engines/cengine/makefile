@@ -48,7 +48,7 @@ prefix=/usr/local
 #
 # compile the whole library
 #
-all: ${DIRECTORIES} ${STATIC_OUT}
+all: ${DIRECTORIES} #${STATIC_OUT}
 
 #
 # create static library
@@ -79,9 +79,10 @@ ${INSTALL_DIRS}:
 #
 # install library
 #
-install: ${DIRECTORIES} ${INSTALL_DIRS} ${STATIC_OUT}
+install: ${DIRECTORIES} ${INSTALL_DIRS} #${STATIC_OUT}
 	install -m644 ${HEADERS} ${DESTDIR}${prefix}/include
-	install -m755 ${STATIC_OUT} ${DESTDIR}${prefix}/lib
+	install -m644 ${SRC} ${DESTDIR}${prefix}/share/avdl/cengine
+	#install -m755 ${STATIC_OUT} ${DESTDIR}${prefix}/lib
 
 #
 # clean working directory
