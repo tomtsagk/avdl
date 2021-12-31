@@ -49,7 +49,8 @@ int main(int argc, char *argv[]) {
 	// initialisation with array
 	dd_da_inita(&array, sizeof(int), 5);
 
-	printf("hello world\n");
+	// free array
+	dd_da_free(&array);
 
 	return 0;
 }

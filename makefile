@@ -58,6 +58,8 @@ CENGINE_PATH=engines/cengine
 #
 TESTS=$(wildcard tests/*)
 TEST_NAMES=${TESTS:tests/%=%}
+VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
+	--track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all
 
 #
 # compile the package, together with all engines
@@ -137,6 +139,7 @@ test-advance:
 		&& ./tests/${TEST_NAME}/result.out \
 		&& gcov ./tests/${TEST_NAME}/*.gcno \
 		&& mv *.gcov ./tests/${TEST_NAME} \
+		&& valgrind ${VALGRIND_ARGS} ./tests/${TEST_NAME}/result.out \
 	)
 
 #
