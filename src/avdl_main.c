@@ -69,7 +69,11 @@ char *cengine_files[] = {
 unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 
 // init data, parse, exit
+#ifdef AVDL_UNIT_TEST
+int avdl_main(int argc, char *argv[]) {
+#else
 int main(int argc, char *argv[]) {
+#endif
 
 	avdl_platform_initialise();
 

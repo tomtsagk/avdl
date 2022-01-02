@@ -58,6 +58,7 @@ CENGINE_PATH=engines/cengine
 #
 TESTS=$(wildcard tests/*)
 TEST_NAMES=${TESTS:tests/%=%}
+TEST_NAMES_ADV=${TESTS:tests/%=%-adv}
 VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
 	--track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all
 
@@ -123,24 +124,33 @@ clean:
 	${MAKE} -C ${CENGINE_PATH} clean
 	rm -f ${EXECUTABLE} ${OBJ}
 
-test:
-	$(foreach TEST_NAME, ${TEST_NAMES}, \
-		$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage \
-			tests/${TEST_NAME}/${TEST_NAME}.test.c $(shell cat tests/${TEST_NAME}/dependencies) \
-			-o tests/${TEST_NAME}/result.out \
-		&& ./tests/${TEST_NAME}/result.out \
-	)
+#
+# simple tests, they are just compiled and run
+#
+test: ${TEST_NAMES}
+${TEST_NAMES}:
+	@echo "Running tests on $@"
+	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} tests/$@/$@.test.c src/*.c -DAVDL_UNIT_TEST -o test.out -Wno-unused-variable -Wno-parentheses
+	@./test.out
+	@rm test.out
 
-test-advance:
-	$(foreach TEST_NAME, ${TEST_NAMES}, \
-		$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage \
-			tests/${TEST_NAME}/${TEST_NAME}.test.c $(shell cat tests/${TEST_NAME}/dependencies) \
-			-o tests/${TEST_NAME}/result.out \
-		&& ./tests/${TEST_NAME}/result.out \
-		&& gcov ./tests/${TEST_NAME}/*.gcno \
-		&& mv *.gcov ./tests/${TEST_NAME} \
-		&& valgrind ${VALGRIND_ARGS} ./tests/${TEST_NAME}/result.out \
-	)
+#
+# advanced tests, depend on `gcc`, `gcov`, `lcov` and `valgrind`
+# they check code coverage and memory leaks, on top of simple tests
+#
+test-advance: ${TEST_NAMES_ADV}
+	mkdir -p coverage
+	lcov $(foreach TEST_NAME, ${TEST_NAMES}, \
+		-a ./tests/${TEST_NAME}/lcov.info \
+	) -o ./coverage/lcov.info
+
+${TEST_NAMES_ADV}:
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage tests/${@:%-adv=%}/${@:%-adv=%}.test.c src/*.c -DAVDL_UNIT_TEST -o test.out
+	./test.out
+	gcov ./*.gcno
+	geninfo . -b . -o ./tests/${@:%-adv=%}/lcov.info
+	valgrind ${VALGRIND_ARGS} ./test.out
+	rm -f -- ./test.out ./*.gc*
 
 #
 # create needed directories
@@ -154,4 +164,4 @@ ${DIRECTORIES} ${DIRECTORY_ALL}:
 ${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -c $< -o $@
 
-.PHONY: all tarball clean install test test-advance
+.PHONY: all tarball clean install test test-advance ${TEST_NAMES} ${TEST_NAMES_ADV}

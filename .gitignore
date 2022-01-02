@@ -15,4 +15,7 @@ avdl.info.gz
 *.gcno
 *.gcda
 *.gcov
-*result.out
+*.out
+
+# code coverage generated data
+coverage/*
