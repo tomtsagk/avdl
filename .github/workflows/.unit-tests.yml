@@ -1,0 +1,29 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      development-github
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Dependencies
+      run: |
+         sudo apt update && sudo apt install -y valgrind lcov gcc
+
+    - uses: actions/checkout@v1
+
+    - name: Build
+      run: |
+        make CC=gcc
+
+    - name: Tests
+      run: |
+       make CC=gcc test-advance
+
+    - name: Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
