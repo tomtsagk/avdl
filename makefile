@@ -162,7 +162,7 @@ ${CENG_TEST_NAMES}:
 	./test.out
 	gcov ./*.gcno
 	geninfo . -b . -o ./engines/cengine/tests/${@:%-adv=%}-lcov.info
-	valgrind ${VALGRIND_ARGS} ./test.out
+	@#valgrind ${VALGRIND_ARGS} ./test.out
 	rm -f -- ./test.out ./*.gc*
 
 #
