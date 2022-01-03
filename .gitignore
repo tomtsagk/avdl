@@ -19,3 +19,4 @@ avdl.info.gz
 
 # code coverage generated data
 coverage/*
+*lcov.info
