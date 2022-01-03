@@ -59,6 +59,9 @@ CENGINE_PATH=engines/cengine
 TESTS=$(wildcard tests/*)
 TEST_NAMES=${TESTS:tests/%=%}
 TEST_NAMES_ADV=${TESTS:tests/%=%-adv}
+CENG_TESTS=$(wildcard engines/cengine/tests/*)
+CENG_TEST_NAMES=${CENG_TESTS:engines/cengine/tests/%.test.c=%}
+CENG_TEST_NAMES_ADV=${CENG_TESTS:engines/cengine/tests/%.test.c=%-adv}
 VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
 	--track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all
 
@@ -138,10 +141,12 @@ ${TEST_NAMES}:
 # advanced tests, depend on `gcc`, `gcov`, `lcov` and `valgrind`
 # they check code coverage and memory leaks, on top of simple tests
 #
-test-advance: ${TEST_NAMES_ADV}
+test-advance: ${TEST_NAMES_ADV} ${CENG_TEST_NAMES}
 	mkdir -p coverage
 	lcov $(foreach TEST_NAME, ${TEST_NAMES}, \
 		-a ./tests/${TEST_NAME}/lcov.info \
+	) $(foreach TEST_NAME, ${CENG_TEST_NAMES}, \
+		-a ./engines/cengine/tests/${TEST_NAME}-lcov.info \
 	) -o ./coverage/lcov.info
 
 ${TEST_NAMES_ADV}:
@@ -149,6 +154,14 @@ ${TEST_NAMES_ADV}:
 	./test.out
 	gcov ./*.gcno
 	geninfo . -b . -o ./tests/${@:%-adv=%}/lcov.info
+	valgrind ${VALGRIND_ARGS} ./test.out
+	rm -f -- ./test.out ./*.gc*
+
+${CENG_TEST_NAMES}:
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage engines/cengine/tests/$@.test.c engines/cengine/src/*.c -DAVDL_UNIT_TEST -o test.out -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
+	./test.out
+	gcov ./*.gcno
+	geninfo . -b . -o ./engines/cengine/tests/${@:%-adv=%}-lcov.info
 	valgrind ${VALGRIND_ARGS} ./test.out
 	rm -f -- ./test.out ./*.gc*
 

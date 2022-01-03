@@ -20,7 +20,7 @@ These are games made by me, using `avdl`, to get an idea of what
 the language can do.
 
 * Rue -
-[Itch.io](https://darkdimension.itch.io/rue) |
+[Itch.io](https://darkdimension.itch.io/rue.html) |
 [GameJolt](https://gamejolt.com/games/rue/632453) |
 [Google Play](https://play.google.com/store/apps/details?id=org.darkdimension.rue)
 
