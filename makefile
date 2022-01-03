@@ -158,7 +158,7 @@ ${TEST_NAMES_ADV}:
 	rm -f -- ./test.out ./*.gc*
 
 ${CENG_TEST_NAMES}:
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage engines/cengine/tests/$@.test.c engines/cengine/src/*.c -DAVDL_UNIT_TEST -o test.out -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include --coverage engines/cengine/tests/$@.test.c engines/cengine/src/*.c -DAVDL_UNIT_TEST -o test.out -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
 	./test.out
 	gcov ./*.gcno
 	geninfo . -b . -o ./engines/cengine/tests/${@:%-adv=%}-lcov.info
