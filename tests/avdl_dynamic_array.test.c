@@ -43,7 +43,30 @@ int main(int argc, char *argv[]) {
 	assert(*exampleReturn == 4);
 	assert(dd_da_count(&array) == 2);
 
+	/* error calls
+	 */
+	exampleReturn = dd_da_get(&array, 2);
+	assert(exampleReturn == 0);
+
+	assert(dd_da_remove(&array, 2) == 0);
+
+	assert(dd_da_pop(&array));
+	assert(dd_da_pop(&array));
+	assert(!dd_da_pop(&array));
+
+	for (int i = 0; i < 100; i++) {
+		dd_da_add(&array, &singleElement);
+	}
+	for (int i = 0; i < 100; i++) {
+		assert(dd_da_pop(&array));
+	}
+
 	// free array
+	dd_da_free(&array);
+
+	// reinit
+	dd_da_init(&array, sizeof(int));
+	dd_da_add_first(&array, &singleElement);
 	dd_da_free(&array);
 
 	// initialisation with array
