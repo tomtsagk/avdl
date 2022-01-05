@@ -4,192 +4,152 @@
 
 #include "avdl_dynamic_array.h"
 
-/* Init empty array */
+static int set_array_size(struct dd_dynamic_array *da, int count) {
+
+	da->array_size = count;
+	if (!da->array) {
+		da->array = malloc(da->element_size *da->array_size);
+
+		if (!da->array) {
+			printf("dd_da: initialise_array: cannot allocate memory\n");
+			return 0;
+		}
+	}
+	else {
+		void *temp = realloc(da->array, da->element_size *da->array_size);
+
+		/* Allocation worked */
+		if (temp) {
+			da->array = temp;
+		}
+		/* Allocation failed */
+		else {
+			printf("error: cannot re-allocate memory, abort\n");
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+/*
+ * Init empty array
+ */
 int dd_da_init(struct dd_dynamic_array *da, int el_size) {
-	/* Init everything to 0, except element size to given value */
 	da->element_size = el_size;
 	da->elements = 0;
-
 	da->array_size = 0;
 	da->array = 0;
-
-	/* Everything OK */
-	return 0;
+	return 1;
 }
 
-/* Init array with specific array size */
-int dd_da_inita(struct dd_dynamic_array *da, int el_size, int ar_size) {
-	/* Init element and array size, and allocate memory 
-	 * there are no elements in initialization 
+/*
+ * Adds one element to the array
+ */
+int dd_da_push(struct dd_dynamic_array *da, void *data) {
+	return dd_da_add(da, data, 1, -1);
+}
+
+int dd_da_add(struct dd_dynamic_array *da, void *data, unsigned int data_count, int position) {
+
+	/*
+	 * position of negative value means add to end of array
 	 */
-	da->element_size = el_size;
-	da->elements = 0;
-
-	/* create array based on (array_size * element_size) */
-	da->array_size = ar_size;
-	da->array = malloc( da->element_size *da->array_size );
-
-	/* Check allocation */
-	if (!da->array) {
-		fprintf(stderr, "da_inita: cannot allocate memory\n");
-		return -1;
+	if (position < 0) {
+		position = da->elements;
 	}
 
-	/* Everything OK */
-	return 0;
-}
-
-/* Adds one element (of size element_size) to the array */
-int dd_da_add(struct dd_dynamic_array *da, void *data) {
-
-	/* first check if array can hold new data, if not
-	 * increase array size, then just add the new element
+	/*
+	 * array doesn't exist or can't hold new data - resize it
 	 */
-
-	/* No array exists */
-	if (!da->array) {
-		/* Init array at 3 elements */
-		da->array_size = 3;
-		da->array = malloc(da->element_size *da->array_size);
-
-		/* check allocation */
-		if (!da->array) {
-			printf("da_add: cannot allocate memory\n");
-			return -1;
+	if (!da->array
+	||  da->elements +data_count > da->array_size) {
+		int newSize = da->elements > 3 ? da->elements : 3;
+		while (newSize < da->elements +data_count) {
+			newSize *= 2;
 		}
-	} else
-	/* New element will go over array size */
-	if (da->elements +1 > da->array_size) {
-		/* Double array size */
-		da->array_size *= 2;
-		void *temp = realloc(da->array, da->element_size *da->array_size);
+		if (!set_array_size(da, newSize)) {
+			return 0;
+		}
+	}
 
-		/* Allocation worked */
-		if (temp) {
-			da->array = temp;
-		}
-		/* Allocation failed */
-		else {
-			printf("error: cannot re-allocate memory, abort\n");
-			return -1;
-		}
+	/*
+	 * move elements to make a gap for new elements
+	 * if not adding to end of array
+	 */
+	if (position < da->elements) {
+		memmove(((char*)da->array) +(da->element_size *(position +data_count)),
+			((char*)da->array) +(da->element_size * position), da->element_size *(da->elements -position)
+		);
 	}
 
 	/* Copy element byte-by-byte (according to element_size) to array */
-	memcpy( ((char*)da->array) +(da->element_size *da->elements),
-		data, da->element_size);
+	memcpy((char*)da->array +(da->element_size *position),
+		data, da->element_size *data_count
+	);
 
 	/* Increment elements */
-	da->elements++;
+	da->elements += data_count;
 
 	/* Return OK */
-	return 0;
+	return 1;
 }
 
-/* Adds an array of data to the dynamic array */
-int dd_da_adda(struct dd_dynamic_array *da, void *data, unsigned int ar_size) {
-	/* For each element, try to add it, return on error 
-	 * (char*) is used to count 1 byte at a time, this might need fixing later on
-	 */
-	for (unsigned int i = 0; i < ar_size; i++) {
-		if (dd_da_add(da, ((char*) data) +(da->element_size *i)) != 0) {
-			fprintf(stderr, "da_adda: unable to add array of data to dynamic array\n");
-			return -1;
-		}
-	}
-	return 0;
-}
-
-/* Adds one element (of size element_size) to the array */
-int dd_da_add_first(struct dd_dynamic_array *da, void *data) {
-
-	/* first check if array can hold new data, if not
-	 * increase array size, then just add the new element
-	 */
-
-	/* No array exists */
-	if (!da->array) {
-		/* Init array at 3 elements */
-		da->array_size = 3;
-		da->array = malloc(da->element_size *da->array_size);
-
-		/* check allocation */
-		if (!da->array) {
-			printf("da_add: cannot allocate memory\n");
-			return -1;
-		}
-	} else
-	/* New element will go over array size */
-	if (da->elements +1 > da->array_size) {
-		/* Double array size */
-		da->array_size *= 2;
-		void *temp = realloc(da->array, da->element_size *da->array_size);
-
-		/* Allocation worked */
-		if (temp) {
-			da->array = temp;
-		}
-		/* Allocation failed */
-		else {
-			printf("error: cannot re-allocate memory, abort\n");
-			return -1;
-		}
-	}
-
-	/* move elements to free first slot */
-	memmove( ((char*)da->array) +(da->element_size *1),
-		 (char*)da->array, da->element_size *da->elements);
-
-	/* Copy element byte-by-byte (according to element_size) to array */
-	memcpy( (char*)da->array,
-		data, da->element_size);
-
-	/* Increment elements */
-	da->elements++;
-
-	/* Return OK */
-	return 0;
-}
-
+/*
+ * remove last element from array, shrink if needed
+ */
 int dd_da_pop(struct dd_dynamic_array *da) {
-	if (da->elements > 0) {
-		da->elements--;
-		if (da->elements < da->array_size/3) {
-			da->array_size /= 3;
-			void *ptr;
-			ptr = realloc(da->array, da->array_size * da->element_size);
-			if (ptr) {
-				da->array = ptr;
-				return 0;
-			}
-			return -1;
-		}
+	return dd_da_remove(da, 1, -1);
+}
+
+/*
+ * remove arbitrary element from array
+ */
+int dd_da_remove(struct dd_dynamic_array *da, unsigned int count, int position) {
+
+	/*
+	 * a negative position means remove last elements
+	 */
+	if (position < 0) {
+		position = da->elements -count;
+	}
+
+	/*
+	 * selected element does not exist
+	 */
+	if (position >= da->elements
+	||  position < 0
+	||  count <= 0
+	||  position +count > da->elements) {
 		return 0;
 	}
-	return -1;
-}
 
-int dd_da_remove(struct dd_dynamic_array *da, unsigned int element) {
-
-	/* selected element does not exist */
-	if (element >= da->elements) {
-		return -1;;
-	}
-
-	/* move elements one step backwards */
-	unsigned int i = element;
-	for (i = element+1; i < da->elements; i++) {
-		memcpy( dd_da_get(da, i-1), dd_da_get(da, i), da->element_size );
+	/*
+	 * move elements backwards, to override removed elements
+	 * unless removing last elements of array
+	 */
+	if (position +count < da->elements) {
+		memmove(dd_da_get(da, position), dd_da_get(da, position +count), da->element_size *(da->elements -count -position));
 	}
 
 	/* finaly, remove element */
-	da->elements--;
+	da->elements -= count;
+
+	/*
+	 * shrink array, if less than a third filled
+	 */
+	if (da->elements < da->array_size/3
+	&&  da->array_size/3 >= 3) {
+		set_array_size(da, da->array_size/3);
+	}
 
 	/* element removed succesfully */
-	return 0;
+	return 1;
 }
 
-/* Clean allocated array */
+/*
+ * clean allocated memory
+ */
 void dd_da_free(struct dd_dynamic_array *da) {
 	/* if array exists, free it, leaves struct in undefined state */
 	if (da->array) {
@@ -197,13 +157,20 @@ void dd_da_free(struct dd_dynamic_array *da) {
 	}
 }
 
-/* Get element */
-void *dd_da_get(struct dd_dynamic_array *da, unsigned int element) {
-	if (element >= da->elements) {
-		printf("dd_da_get: out of bounds error: %u / %u\n", element, da->elements);
-		exit(-1);
+/*
+ * get element in array
+ */
+void *dd_da_get(struct dd_dynamic_array *da, int position) {
+
+	if (position < 0) {
+		position = da->elements -1;
 	}
-	return ((char*)da->array) +(element *da->element_size);
+
+	if (position >= da->elements) {
+		return 0;
+	}
+
+	return ((char*)da->array) +(position *da->element_size);
 }
 
 unsigned int dd_da_count(struct dd_dynamic_array *da) {

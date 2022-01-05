@@ -56,12 +56,13 @@ CENGINE_PATH=engines/cengine
 #
 # test data
 #
-TESTS=$(wildcard tests/*)
-TEST_NAMES=${TESTS:tests/%=%}
-TEST_NAMES_ADV=${TESTS:tests/%=%-adv}
-CENG_TESTS=$(wildcard engines/cengine/tests/*)
+TESTS=$(wildcard tests/*.test.c)
+TEST_NAMES=${TESTS:tests/%.test.c=%}
+TEST_NAMES_ADV=${TESTS:tests/%.test.c=%-adv}
+CENG_TESTS=$(wildcard engines/cengine/tests/*.test.c)
 CENG_TEST_NAMES=${CENG_TESTS:engines/cengine/tests/%.test.c=%}
 CENG_TEST_NAMES_ADV=${CENG_TESTS:engines/cengine/tests/%.test.c=%-adv}
+TEST_DEPENDENCIES=src/*.c
 VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
 	--track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all
 
@@ -133,7 +134,7 @@ clean:
 test: ${TEST_NAMES}
 ${TEST_NAMES}:
 	@echo "Running tests on $@"
-	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} tests/$@/$@.test.c src/*.c -DAVDL_UNIT_TEST -o test.out -Wno-unused-variable -Wno-parentheses
+	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} tests/$@.test.c ${TEST_DEPENDENCIES} -DAVDL_UNIT_TEST -o test.out -Wno-unused-variable -Wno-parentheses
 	@./test.out
 	@rm test.out
 
@@ -144,16 +145,17 @@ ${TEST_NAMES}:
 test-advance: ${TEST_NAMES_ADV} ${CENG_TEST_NAMES}
 	mkdir -p coverage
 	lcov $(foreach TEST_NAME, ${TEST_NAMES}, \
-		-a ./tests/${TEST_NAME}/lcov.info \
+		-a ./tests/${TEST_NAME}-lcov.info \
 	) $(foreach TEST_NAME, ${CENG_TEST_NAMES}, \
 		-a ./engines/cengine/tests/${TEST_NAME}-lcov.info \
 	) -o ./coverage/lcov.info
 
 ${TEST_NAMES_ADV}:
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage tests/${@:%-adv=%}/${@:%-adv=%}.test.c src/*.c -DAVDL_UNIT_TEST -o test.out
+	@echo "Running advanced tests on $@"
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage tests/${@:%-adv=%}.test.c ${TEST_DEPENDENCIES} -DAVDL_UNIT_TEST -o test.out
 	./test.out
 	gcov ./*.gcno
-	geninfo . -b . -o ./tests/${@:%-adv=%}/lcov.info
+	geninfo . -b . -o ./tests/${@:%-adv=%}-lcov.info
 	valgrind ${VALGRIND_ARGS} ./test.out
 	rm -f -- ./test.out ./*.gc*
 

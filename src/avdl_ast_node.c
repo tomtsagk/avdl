@@ -23,13 +23,13 @@ struct ast_node *ast_create(enum AST_NODE_TYPE node_type, int value) {
 }
 
 int ast_child_add(struct ast_node *parent, struct ast_node *child) {
-	dd_da_add(&parent->children, child);
+	dd_da_push(&parent->children, child);
 	free(child);
 	return parent->children.elements-1;
 }
 
 void ast_child_add_first(struct ast_node *parent, struct ast_node *child) {
-	dd_da_add_first(&parent->children, child);
+	dd_da_add(&parent->children, child, 1, 0);
 	free(child);
 }
 
