@@ -64,7 +64,7 @@ CENG_TEST_NAMES=${CENG_TESTS:engines/cengine/tests/%.test.c=%}
 CENG_TEST_NAMES_ADV=${CENG_TESTS:engines/cengine/tests/%.test.c=%-adv}
 TEST_DEPENDENCIES=src/*.c
 VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
-	--track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all
+	--track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all -q
 
 #
 # compile the package, together with all engines
@@ -148,14 +148,14 @@ test-advance: ${TEST_NAMES_ADV} ${CENG_TEST_NAMES}
 		-a ./tests/${TEST_NAME}-lcov.info \
 	) $(foreach TEST_NAME, ${CENG_TEST_NAMES}, \
 		-a ./engines/cengine/tests/${TEST_NAME}-lcov.info \
-	) -o ./coverage/lcov.info
+	) -o ./coverage/lcov.info -q
 
 ${TEST_NAMES_ADV}:
 	@echo "Running advanced tests on $@"
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage tests/${@:%-adv=%}.test.c ${TEST_DEPENDENCIES} -DAVDL_UNIT_TEST -o test.out
 	./test.out
 	gcov ./*.gcno
-	geninfo . -b . -o ./tests/${@:%-adv=%}-lcov.info
+	geninfo . -b . -o ./tests/${@:%-adv=%}-lcov.info -q
 	valgrind ${VALGRIND_ARGS} ./test.out
 	rm -f -- ./test.out ./*.gc*
 
@@ -163,7 +163,7 @@ ${CENG_TEST_NAMES}:
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include --coverage engines/cengine/tests/$@.test.c engines/cengine/src/*.c -DAVDL_UNIT_TEST -o test.out -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
 	./test.out
 	gcov ./*.gcno
-	geninfo . -b . -o ./engines/cengine/tests/${@:%-adv=%}-lcov.info
+	geninfo . -b . -o ./engines/cengine/tests/${@:%-adv=%}-lcov.info -q
 	@#valgrind ${VALGRIND_ARGS} ./test.out
 	rm -f -- ./test.out ./*.gc*
 
