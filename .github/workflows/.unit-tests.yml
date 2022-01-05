@@ -3,7 +3,7 @@ name: Unit Tests
 on:
   push:
     branches:
-      development-github
+      github
 
 jobs:
   merge:

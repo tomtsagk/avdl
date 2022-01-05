@@ -2,7 +2,7 @@
 
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tomtsagk/avdl)
 ![Travis (.com)](https://img.shields.io/travis/com/tomtsagk/avdl)
-[![Coverage Status](https://coveralls.io/repos/github/tomtsagk/avdl/badge.svg?branch=development-github)](https://coveralls.io/github/tomtsagk/avdl?branch=development-github)
+[![Coverage Status](https://coveralls.io/repos/github/tomtsagk/avdl/badge.svg?branch=github)](https://coveralls.io/github/tomtsagk/avdl?branch=github)
 
 This is a high level programming language for making video games.
 
