@@ -44,91 +44,52 @@ int dd_da_init(struct dd_dynamic_array *da, int el_size) {
 }
 
 /*
- * Init array with specific array size
- */
-int dd_da_inita(struct dd_dynamic_array *da, int el_size, int ar_size) {
-	dd_da_init(da, el_size);
-	if (!set_array_size(da, ar_size)) {
-		return 0;
-	}
-	return 1;
-}
-
-/*
  * Adds one element to the array
  */
-int dd_da_add(struct dd_dynamic_array *da, void *data) {
+int dd_da_push(struct dd_dynamic_array *da, void *data) {
+	return dd_da_add(da, data, 1, -1);
+}
 
-	/* No array exists */
-	if (!da->array) {
-		if (!set_array_size(da, 3)) {
+int dd_da_add(struct dd_dynamic_array *da, void *data, unsigned int data_count, int position) {
+
+	/*
+	 * position of negative value means add to end of array
+	 */
+	if (position < 0) {
+		position = da->elements;
+	}
+
+	/*
+	 * array doesn't exist or can't hold new data - resize it
+	 */
+	if (!da->array
+	||  da->elements +data_count > da->array_size) {
+		int newSize = da->elements > 3 ? da->elements : 3;
+		while (newSize < da->elements +data_count) {
+			newSize *= 2;
+		}
+		if (!set_array_size(da, newSize)) {
 			return 0;
 		}
-	} else
-	/* New element will go over array size */
-	if (da->elements +1 > da->array_size) {
-		if (!set_array_size(da, da->array_size *2)) {
-			return 0;
-		}
+	}
+
+	/*
+	 * move elements to make a gap for new elements
+	 * if not adding to end of array
+	 */
+	if (position < da->elements) {
+		memmove(((char*)da->array) +(da->element_size *(position +data_count)),
+			((char*)da->array) +(da->element_size * position), da->element_size *(da->elements -position)
+		);
 	}
 
 	/* Copy element byte-by-byte (according to element_size) to array */
-	memcpy(
-		((char*)da->array) +(da->element_size *da->elements),
-		data, da->element_size
+	memcpy((char*)da->array +(da->element_size *position),
+		data, da->element_size *data_count
 	);
 
 	/* Increment elements */
-	da->elements++;
-
-	/* Return OK */
-	return 1;
-}
-
-/* Adds an array of data to the dynamic array */
-int dd_da_adda(struct dd_dynamic_array *da, void *data, unsigned int ar_size) {
-	/* For each element, try to add it, return on error 
-	 * (char*) is used to count 1 byte at a time, this might need fixing later on
-	 */
-	for (unsigned int i = 0; i < ar_size; i++) {
-		if (!dd_da_add(da, ((char*) data) +(da->element_size *i))) {
-			fprintf(stderr, "da_adda: unable to add array of data to dynamic array\n");
-			return 0;
-		}
-	}
-	return 1;
-}
-
-/* Adds one element (of size element_size) to the array */
-int dd_da_add_first(struct dd_dynamic_array *da, void *data) {
-
-	/* first check if array can hold new data, if not
-	 * increase array size, then just add the new element
-	 */
-
-	/* No array exists */
-	if (!da->array) {
-		if (!set_array_size(da, 3)) {
-			return 0;
-		}
-	} else
-	/* New element will go over array size */
-	if (da->elements +1 > da->array_size) {
-		if (!set_array_size(da, da->array_size *2)) {
-			return 0;
-		}
-	}
-
-	/* move elements to free first slot */
-	memmove( ((char*)da->array) +(da->element_size *1),
-		 (char*)da->array, da->element_size *da->elements);
-
-	/* Copy element byte-by-byte (according to element_size) to array */
-	memcpy( (char*)da->array,
-		data, da->element_size);
-
-	/* Increment elements */
-	da->elements++;
+	da->elements += data_count;
 
 	/* Return OK */
 	return 1;
@@ -138,42 +99,57 @@ int dd_da_add_first(struct dd_dynamic_array *da, void *data) {
  * remove last element from array, shrink if needed
  */
 int dd_da_pop(struct dd_dynamic_array *da) {
-	if (da->elements > 0) {
-		da->elements--;
-		if (da->elements < da->array_size/3) {
-			if (!set_array_size(da, da->array_size/3)) {
-				return 0;
-			}
-		}
-		return 1;
-	}
-	return 0;
+	return dd_da_remove(da, 1, -1);
 }
 
 /*
  * remove arbitrary element from array
  */
-int dd_da_remove(struct dd_dynamic_array *da, unsigned int element) {
+int dd_da_remove(struct dd_dynamic_array *da, unsigned int count, int position) {
 
-	/* selected element does not exist */
-	if (element >= da->elements) {
+	/*
+	 * a negative position means remove last elements
+	 */
+	if (position < 0) {
+		position = da->elements -count;
+	}
+
+	/*
+	 * selected element does not exist
+	 */
+	if (position >= da->elements
+	||  position < 0
+	||  count <= 0
+	||  position +count > da->elements) {
 		return 0;
 	}
 
-	/* move elements one step backwards */
-	unsigned int i = element;
-	for (i = element+1; i < da->elements; i++) {
-		memcpy( dd_da_get(da, i-1), dd_da_get(da, i), da->element_size );
+	/*
+	 * move elements backwards, to override removed elements
+	 * unless removing last elements of array
+	 */
+	if (position +count < da->elements) {
+		memmove(dd_da_get(da, position), dd_da_get(da, position +count), da->element_size *(da->elements -count -position));
 	}
 
 	/* finaly, remove element */
-	da->elements--;
+	da->elements -= count;
+
+	/*
+	 * shrink array, if less than a third filled
+	 */
+	if (da->elements < da->array_size/3
+	&&  da->array_size/3 >= 3) {
+		set_array_size(da, da->array_size/3);
+	}
 
 	/* element removed succesfully */
 	return 1;
 }
 
-/* Clean allocated array */
+/*
+ * clean allocated memory
+ */
 void dd_da_free(struct dd_dynamic_array *da) {
 	/* if array exists, free it, leaves struct in undefined state */
 	if (da->array) {
@@ -181,12 +157,20 @@ void dd_da_free(struct dd_dynamic_array *da) {
 	}
 }
 
-/* Get element */
-void *dd_da_get(struct dd_dynamic_array *da, unsigned int element) {
-	if (element >= da->elements) {
+/*
+ * get element in array
+ */
+void *dd_da_get(struct dd_dynamic_array *da, int position) {
+
+	if (position < 0) {
+		position = da->elements -1;
+	}
+
+	if (position >= da->elements) {
 		return 0;
 	}
-	return ((char*)da->array) +(element *da->element_size);
+
+	return ((char*)da->array) +(position *da->element_size);
 }
 
 unsigned int dd_da_count(struct dd_dynamic_array *da) {
