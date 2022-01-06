@@ -134,9 +134,9 @@ clean:
 test: ${TEST_NAMES}
 ${TEST_NAMES}:
 	@echo "Running tests on $@"
-	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} tests/$@.test.c ${TEST_DEPENDENCIES} -DAVDL_UNIT_TEST -o test.out -Wno-unused-variable -Wno-parentheses
-	@./test.out
-	@rm test.out
+	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} tests/$@.test.c ${TEST_DEPENDENCIES} -DAVDL_UNIT_TEST -o $@.test.out -Wno-unused-variable -Wno-parentheses
+	@./$@.test.out
+	@rm $@.test.out
 
 #
 # advanced tests, depend on `gcc`, `gcov`, `lcov` and `valgrind`
@@ -152,20 +152,20 @@ test-advance: ${TEST_NAMES_ADV} ${CENG_TEST_NAMES}
 
 ${TEST_NAMES_ADV}:
 	@echo "Running advanced tests on $@"
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage tests/${@:%-adv=%}.test.c ${TEST_DEPENDENCIES} -DAVDL_UNIT_TEST -o test.out
-	./test.out
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage tests/${@:%-adv=%}.test.c ${TEST_DEPENDENCIES} -DAVDL_UNIT_TEST -o $@.test.out
+	./$@.test.out
 	gcov ./*.gcno
 	geninfo . -b . -o ./tests/${@:%-adv=%}-lcov.info -q
-	valgrind ${VALGRIND_ARGS} ./test.out
-	rm -f -- ./test.out ./*.gc*
+	valgrind ${VALGRIND_ARGS} ./$@.test.out
+	rm -f -- ./$@.test.out ./*.gc*
 
 ${CENG_TEST_NAMES}:
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include --coverage engines/cengine/tests/$@.test.c engines/cengine/src/*.c -DAVDL_UNIT_TEST -o test.out -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
-	./test.out
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include --coverage engines/cengine/tests/$@.test.c engines/cengine/src/*.c -DAVDL_UNIT_TEST -o $@.test.out -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
+	./$@.test.out
 	gcov ./*.gcno
 	geninfo . -b . -o ./engines/cengine/tests/${@:%-adv=%}-lcov.info -q
-	@#valgrind ${VALGRIND_ARGS} ./test.out
-	rm -f -- ./test.out ./*.gc*
+	@#valgrind ${VALGRIND_ARGS} ./$@.test.out
+	rm -f -- ./$@.test.out ./*.gc*
 
 #
 # create needed directories
