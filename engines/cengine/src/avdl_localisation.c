@@ -3,6 +3,10 @@
 #include <string.h>
 #include "dd_log.h"
 
+#ifndef PKG_LOCATION
+#define PKG_LOCATION
+#endif
+
 void avdl_localisation_create(struct avdl_localisation *o) {
 	o->count = 0;
 	o->set = avdl_localisation_set;
@@ -15,7 +19,7 @@ void avdl_localisation_clean(struct avdl_localisation *o) {
 void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) {
 
 	struct dd_json_object obj;
-	strcpy(obj.buffer, "assets/");
+	strcpy(obj.buffer, PKG_LOCATION "assets/");
 	strcat(obj.buffer, keyGroupID);
 	strcat(obj.buffer, ".asset");
 	dd_json_initFile(&obj, obj.buffer);
