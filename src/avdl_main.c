@@ -657,7 +657,9 @@ int main(int argc, char *argv[]) {
 
 				char compile_command[DD_BUFFER_SIZE];
 				for (int i = 0; i < cengine_files_total; i++) {
-					strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE " PKG_LOCATION "/share/avdl/cengine/");
+					strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DPKG_LOCATION=\\\"");
+					strcat(compile_command, installLocation);
+					strcat(compile_command, "\\\" " PKG_LOCATION "/share/avdl/cengine/");
 					strcat(compile_command, cengine_files[i]);
 					strcat(compile_command, " -o ");
 					strcat(compile_command, buffer);
