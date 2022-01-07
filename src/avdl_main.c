@@ -140,6 +140,12 @@ int main(int argc, char *argv[]) {
 					return -1;
 				}
 				else
+				// show pkg location
+				if (strcmp(argv[i], "--get-pkg-location") == 0) {
+					printf("%s\n", PKG_LOCATION);
+					return -1;
+				}
+				else
 				// custom install location
 				if (strcmp(argv[i], "--install-loc") == 0) {
 					if (argc > i+1) {
@@ -505,6 +511,10 @@ int main(int argc, char *argv[]) {
 			if (outname) {
 				strcpy(buffer, outname);
 				strcat(buffer, "/assets/");
+
+				if (!is_dir(buffer)) {
+					dir_create(buffer);
+				}
 
 				int character = 0;
 				int lastSlash = -1;
