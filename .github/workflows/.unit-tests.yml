@@ -17,7 +17,7 @@ jobs:
 
     - name: Build
       run: |
-        make -j4 --prefix=/usr CC=gcc
+        make -j4 prefix=/usr CC=gcc
 
     - name: Tests
       run: |
