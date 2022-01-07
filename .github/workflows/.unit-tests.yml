@@ -6,7 +6,7 @@ on:
       github
 
 jobs:
-  merge:
+  test-advance:
     runs-on: ubuntu-latest
     steps:
     - name: Dependencies
@@ -17,7 +17,7 @@ jobs:
 
     - name: Build
       run: |
-        make CC=gcc
+        make -j4 --prefix=/usr CC=gcc
 
     - name: Tests
       run: |
