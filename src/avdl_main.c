@@ -417,7 +417,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		// compile
-		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -DAVDL_GAME_VERSION=\"\\\"");
+		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
 		strcat(buffer, gameVersion);
 		strcat(buffer, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
 		strcat(buffer, gameRevision);
@@ -437,7 +437,7 @@ int main(int argc, char *argv[]) {
 			strcat(buffer, additionalLibDirectory);
 		}
 
-		strcat(buffer, " -O3 -lGL -lGLU -lGLEW -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer");
+		strcat(buffer, " -O3 -lGL -lGLEW -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer");
 		if (includePath) {
 			strcat(buffer, " -I ");
 			strcat(buffer, includePath);
@@ -657,7 +657,7 @@ int main(int argc, char *argv[]) {
 
 				char compile_command[DD_BUFFER_SIZE];
 				for (int i = 0; i < cengine_files_total; i++) {
-					strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DPKG_LOCATION=\\\"");
+					strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
 					strcat(compile_command, installLocation);
 					strcat(compile_command, "\\\" " PKG_LOCATION "/share/avdl/cengine/");
 					strcat(compile_command, cengine_files[i]);
@@ -676,7 +676,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			// prepare link command
-			strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE ");
+			strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
 
 			// add game files to link
 			for (int i = 0; i < input_file_total; i++) {
@@ -707,7 +707,7 @@ int main(int argc, char *argv[]) {
 				strcat(buffer, additionalLibDirectory);
 			}
 
-			strcat(buffer, " -lGLU -O3 -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+			strcat(buffer, " -O3 -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
 			//printf("link command: %s\n", buffer);
 			if (system(buffer)) {
 				printf("avdl: error linking files\n");
