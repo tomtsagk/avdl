@@ -126,7 +126,7 @@ ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar:
 #
 clean:
 	${MAKE} -C ${CENGINE_PATH} clean
-	rm -f ${EXECUTABLE} ${OBJ}
+	rm -rf build
 
 #
 # simple tests, they are just compiled and run
