@@ -349,7 +349,7 @@ int main(int argc, char *argv[]) {
 
 		// initialise the parent node
 
-		game_node = ast_create(AST_GAME, 0);
+		game_node = ast_create(AST_GAME);
 		semanticAnalyser_convertToAst(game_node, filename[i]);
 
 		/*
