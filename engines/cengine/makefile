@@ -88,7 +88,7 @@ install: ${DIRECTORIES} ${INSTALL_DIRS} #${STATIC_OUT}
 # clean working directory
 #
 clean:
-	rm -f ${OBJ} ${STATIC_OUT}
+	rm -rf build
 
 #
 # phony recipes
