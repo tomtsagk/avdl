@@ -16,6 +16,18 @@
 #include "avdl_parser.h"
 #include "avdl_platform.h"
 
+#ifndef PKG_NAME
+#define PKG_NAME "avdl"
+#endif
+
+#ifndef PKG_VERSION
+#define PKG_VERSION "0.0.0"
+#endif
+
+#ifndef PKG_LOCATION
+#define PKG_LOCATION ""
+#endif
+
 extern float parsing_float;
 
 char included_files[10][100];
