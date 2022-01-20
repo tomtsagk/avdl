@@ -1,10 +1,20 @@
-#include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#if defined(_WIN32) || defined(WIN32)
+#include <io.h>
+#include <windows.h>
+#define AVDL_FILE_OPEN(x, y) _open(x, y)
+#define AVDL_FILE_OPEN_MODE(x, y, z) _open(x, y, z)
+#else
 #include <dirent.h>
+#include <unistd.h>
+#define AVDL_FILE_OPEN(x, y) open(x, y)
+#define AVDL_FILE_OPEN_MODE(x, y, z) open(x, y, z)
+#endif
 
 #include "avdl_file_op.h"
 
@@ -14,6 +24,8 @@ int file_copy(const char *src, const char *dest, int append) {
 }
 
 int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int append) {
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	int s;
 	if (src_at) {
 		s = openat(src_at, src, O_RDONLY);
@@ -53,6 +65,7 @@ int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int
 
 	close(s);
 	close(d);
+	#endif
 
 	return 0;
 }
@@ -60,6 +73,8 @@ int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int
 int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 	const char *findString, const char *replaceString) {
 
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	int s;
 	if (src_at) {
 		s = openat(src_at, src, O_RDONLY);
@@ -139,12 +154,15 @@ int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 
 	close(s);
 	close(d);
+	#endif
 
 	return 0;
 }
 
 int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst) {
 
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	// open source directory
 	int src_dir;
 	if (src_at) {
@@ -242,6 +260,7 @@ int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst)
 	close(src_dir);
 	close(dst_dir);
 	closedir(d);
+	#endif
 	return 0;
 }
 
@@ -250,6 +269,8 @@ int dir_create(const char *filename) {
 }
 
 int dir_createat(int dir_at, const char *filename) {
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
 	if (dir_at) {
 		mkdirat(dir_at, filename, mode);
@@ -257,10 +278,13 @@ int dir_createat(int dir_at, const char *filename) {
 	else {
 		mkdir(filename, mode);
 	}
+	#endif
 	return 0;
 }
 
 int is_dir(const char *filename) {
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	DIR *dir = opendir(filename);
 	if (dir) {
 		return 1;
@@ -272,4 +296,6 @@ int is_dir(const char *filename) {
 	else {
 		return -1;
 	}
+	#endif
+	return 0;
 }

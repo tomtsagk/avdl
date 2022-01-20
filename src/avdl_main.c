@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -15,6 +14,11 @@
 #include "avdl_ast_node.h"
 #include "avdl_parser.h"
 #include "avdl_platform.h"
+
+#if defined(_WIN32) || defined(WIN32)
+#else
+#include <unistd.h>
+#endif
 
 #ifndef PKG_NAME
 #define PKG_NAME "avdl"
@@ -590,6 +594,8 @@ int main(int argc, char *argv[]) {
 
 		// on android put all object files in an android project
 		if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+			#if defined(_WIN32) || defined(WIN32)
+			#else
 			char *androidDir;
 			if (outname) {
 				androidDir = outname;
@@ -646,6 +652,7 @@ int main(int argc, char *argv[]) {
 
 			// add in the avdl-compiled source files
 			file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt", "%AVDL_GAME_FILES%", buffer);
+			#endif
 		}
 		else {
 
@@ -733,6 +740,8 @@ int main(int argc, char *argv[]) {
 }
 
 int create_android_directory(const char *androidDirName) {
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	int isDir = is_dir(androidDirName);
 	if (isDir == 0) {
 		dir_create(androidDirName);
@@ -743,6 +752,7 @@ int create_android_directory(const char *androidDirName) {
 		printf("avdl error: file '%s' not a directory\n", androidDirName);
 		return -1;
 	}
+	#endif
 
 	return 0;
 }
