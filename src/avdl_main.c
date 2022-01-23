@@ -84,6 +84,38 @@ char *cengine_files[] = {
 };
 unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 
+char *cengine_headers[] = {
+	"avdl_assetManager.h",
+	"avdl_cengine.h",
+	"avdl_data.h",
+	"avdl_localisation.h",
+	"avdl_particle_system.h",
+	"avdl_shaders.h",
+	"dd_async_call.h",
+	"dd_dynamic_array.h",
+	"dd_filetomesh.h",
+	"dd_fov.h",
+	"dd_game.h",
+	"dd_gamejolt.h",
+	"dd_image.h",
+	"dd_json.h",
+	"dd_log.h",
+	"dd_math.h",
+	"dd_matrix.h",
+	"dd_mesh.h",
+	"dd_meshColour.h",
+	"dd_meshTexture.h",
+	"dd_mouse.h",
+	"dd_opengl.h",
+	"dd_sound.h",
+	"dd_string3d.h",
+	"dd_vec2.h",
+	"dd_vec3.h",
+	"dd_vec4.h",
+	"dd_world.h",
+};
+unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
+
 // init data, parse, exit
 #ifdef AVDL_UNIT_TEST
 int avdl_main(int argc, char *argv[]) {
@@ -103,6 +135,7 @@ int main(int argc, char *argv[]) {
 	char *gameName = "game";
 	char *gameVersion = "0.0.0";
 	char *gameRevision = "0";
+	int getCengine = 0;
 
 	/*
 	 * phases
@@ -160,6 +193,11 @@ int main(int argc, char *argv[]) {
 				if (strcmp(argv[i], "--get-pkg-location") == 0) {
 					printf("%s\n", PKG_LOCATION);
 					return -1;
+				}
+				else
+				// grab a copy of the cengine
+				if (strcmp(argv[i], "--get-cengine") == 0) {
+					getCengine = 1;
 				}
 				else
 				// custom install location
@@ -335,6 +373,28 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 		}
+	}
+
+	// grab a copy of the cengine
+	if (getCengine) {
+		dir_create("cengine");
+		//dir_copy_recursive(0, PKG_LOCATION "/share/avdl/cengine", 0, "cengine");
+		char tempBuffer[DD_BUFFER_SIZE];
+		for (int i = 0; i < cengine_headers_total; i++) {
+			strcpy(buffer, PKG_LOCATION "/include/");
+			strcat(buffer, cengine_headers[i]);
+			strcpy(tempBuffer, "cengine/");
+			strcat(tempBuffer, cengine_headers[i]);
+			file_copy(buffer, tempBuffer, 0);
+		}
+		for (int i = 0; i < cengine_files_total; i++) {
+			strcpy(buffer, PKG_LOCATION "/share/avdl/cengine/");
+			strcat(buffer, cengine_files[i]);
+			strcpy(tempBuffer, "cengine/");
+			strcat(tempBuffer, cengine_files[i]);
+			file_copy(buffer, tempBuffer, 0);
+		}
+		return 0;
 	}
 
 	// make sure the minimum to parse exists

@@ -19,7 +19,41 @@
 #include "avdl_file_op.h"
 
 int file_copy(const char *src, const char *dest, int append) {
+	printf("copy file: %s -> %s\n", src, dest);
+	#if defined(_WIN32) || defined(WIN32)
+	int s = AVDL_FILE_OPEN(src, _O_RDONLY);
+	if (!s) {
+		printf("can't open %s: %s\n", src, strerror(errno));
+		return -1;
+	}
+
+	int dest_flags = _O_WRONLY | _O_CREAT;
+	if (append) dest_flags |= _O_APPEND;
+	int d = AVDL_FILE_OPEN_MODE(dest, dest_flags, _S_IREAD | _S_IWRITE);
+	if (!d) {
+		printf("can't open %s: %s\n", dest, strerror(errno));
+		close(s);
+		return -1;
+	}
+
+	char buffer[1024];
+
+	int i = 0;
+	ssize_t nread;
+	while (nread = read(s, buffer, 1024), nread > 0) {
+		if (write(d, buffer, nread) == -1) {
+			printf("avdl error: %s\n", strerror(errno));
+		}
+		i++;
+	}
+
+	close(s);
+	close(d);
+
+	return 0;
+	#else
 	file_copy_at(0, src, 0, dest, append);
+	#endif
 	return 0;
 }
 
@@ -58,7 +92,7 @@ int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int
 	ssize_t nread;
 	while (nread = read(s, buffer, 1024), nread > 0) {
 		if (write(d, buffer, nread) == -1) {
-			printf("error: %s\n", strerror(errno));
+			printf("avdl error: %s\n", strerror(errno));
 		}
 		i++;
 	}
