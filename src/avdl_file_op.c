@@ -9,17 +9,18 @@
 #include <windows.h>
 #define AVDL_FILE_OPEN(x, y) _open(x, y)
 #define AVDL_FILE_OPEN_MODE(x, y, z) _open(x, y, z)
+#define AVDL_FILE_MKDIR(filename, mode) _mkdir(filename)
 #else
 #include <dirent.h>
 #include <unistd.h>
 #define AVDL_FILE_OPEN(x, y) open(x, y)
 #define AVDL_FILE_OPEN_MODE(x, y, z) open(x, y, z)
+#define AVDL_FILE_MKDIR(filename, mode) mkdir(filename, mode)
 #endif
 
 #include "avdl_file_op.h"
 
 int file_copy(const char *src, const char *dest, int append) {
-	printf("copy file: %s -> %s\n", src, dest);
 	#if defined(_WIN32) || defined(WIN32)
 	int s = AVDL_FILE_OPEN(src, _O_RDONLY);
 	if (!s) {
@@ -39,7 +40,7 @@ int file_copy(const char *src, const char *dest, int append) {
 	char buffer[1024];
 
 	int i = 0;
-	ssize_t nread;
+	long int nread;
 	while (nread = read(s, buffer, 1024), nread > 0) {
 		if (write(d, buffer, nread) == -1) {
 			printf("avdl error: %s\n", strerror(errno));
@@ -304,6 +305,13 @@ int dir_create(const char *filename) {
 
 int dir_createat(int dir_at, const char *filename) {
 	#if defined(_WIN32) || defined(WIN32)
+	if (!dir_at) {
+		AVDL_FILE_MKDIR(filename, mode);
+	}
+	else {
+		printf("avdl error: cannot create directories on specific locations on windows yet\n");
+		return 0;
+	}
 	#else
 	mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
 	if (dir_at) {

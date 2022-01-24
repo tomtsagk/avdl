@@ -20,18 +20,6 @@
 #include <unistd.h>
 #endif
 
-#ifndef PKG_NAME
-#define PKG_NAME "avdl"
-#endif
-
-#ifndef PKG_VERSION
-#define PKG_VERSION "0.0.0"
-#endif
-
-#ifndef PKG_LOCATION
-#define PKG_LOCATION ""
-#endif
-
 extern float parsing_float;
 
 char included_files[10][100];
@@ -124,6 +112,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 	avdl_platform_initialise();
+	avdl_initProjectLocation();
 
 	/* tweakable data
 	 */
@@ -191,7 +180,7 @@ int main(int argc, char *argv[]) {
 				else
 				// show pkg location
 				if (strcmp(argv[i], "--get-pkg-location") == 0) {
-					printf("%s\n", PKG_LOCATION);
+					printf("%s\n", avdl_getProjectLocation());
 					return -1;
 				}
 				else
@@ -378,17 +367,18 @@ int main(int argc, char *argv[]) {
 	// grab a copy of the cengine
 	if (getCengine) {
 		dir_create("cengine");
-		//dir_copy_recursive(0, PKG_LOCATION "/share/avdl/cengine", 0, "cengine");
 		char tempBuffer[DD_BUFFER_SIZE];
 		for (int i = 0; i < cengine_headers_total; i++) {
-			strcpy(buffer, PKG_LOCATION "/include/");
+			strcpy(buffer, avdl_getProjectLocation());
+			strcat(buffer, "/include/");
 			strcat(buffer, cengine_headers[i]);
 			strcpy(tempBuffer, "cengine/");
 			strcat(tempBuffer, cengine_headers[i]);
 			file_copy(buffer, tempBuffer, 0);
 		}
 		for (int i = 0; i < cengine_files_total; i++) {
-			strcpy(buffer, PKG_LOCATION "/share/avdl/cengine/");
+			strcpy(buffer, avdl_getProjectLocation());
+			strcat(buffer, "/share/avdl/cengine/");
 			strcat(buffer, cengine_files[i]);
 			strcpy(tempBuffer, "cengine/");
 			strcat(tempBuffer, cengine_files[i]);
@@ -738,14 +728,18 @@ int main(int argc, char *argv[]) {
 				for (int i = 0; i < cengine_files_total; i++) {
 					strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
 					strcat(compile_command, installLocation);
-					strcat(compile_command, "\\\" " PKG_LOCATION "/share/avdl/cengine/");
+					strcat(compile_command, "\\\" ");
+					strcat(compile_command, avdl_getProjectLocation());
+					strcat(compile_command, "/share/avdl/cengine/");
 					strcat(compile_command, cengine_files[i]);
 					strcat(compile_command, " -o ");
 					strcat(compile_command, buffer);
 					strcat(compile_command, "/");
 					strcat(compile_command, cengine_files[i]);
 					compile_command[strlen(compile_command)-1] = 'o';
-					strcat(compile_command, " -I" PKG_LOCATION "/include");
+					strcat(compile_command, " -I");
+					strcat(compile_command, avdl_getProjectLocation());
+					strcat(compile_command, "/include");
 					if (system(compile_command) != 0) {
 						printf("error compiling cengine\n");
 						exit(-1);
@@ -794,6 +788,8 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
+
+	avdl_cleanProjectLocation();
 
 	// success!
 	return 0;
