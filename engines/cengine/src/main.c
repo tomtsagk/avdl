@@ -26,8 +26,7 @@ pthread_t updatePthread;
 #elif DD_PLATFORM_NATIVE
 
 	// audio
-	#include <SDL2/SDL.h>
-	#include <SDL2/SDL_mixer.h>
+	#include "dd_sound.h"
 
 	// curl
 	//#include <curl/curl.h>

@@ -14,7 +14,12 @@ int  avdl_opengl_getContextId();
 // import opengl on native
 #elif DD_PLATFORM_NATIVE
 #include <GL/glew.h>
+
+#if defined(_WIN32) || defined(WIN32)
+#include <SDL.h>
+#else
 #include <SDL2/SDL.h>
+#endif
 
 #endif
 
