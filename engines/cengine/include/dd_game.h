@@ -55,4 +55,9 @@ extern int dd_flag_focused;
 extern int dd_flag_updateThread;
 extern int dd_flag_exit;
 
+// project settings
+const char *avdl_getProjectLocation();
+void avdl_initProjectLocation();
+void avdl_cleanProjectLocation();
+
 #endif

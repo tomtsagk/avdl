@@ -53,7 +53,8 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname) {
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.mesh = object;
 	meshToLoad.meshType = meshType;
-	strcpy(meshToLoad.filename, assetname);
+	strcpy(meshToLoad.filename, avdl_getProjectLocation());
+	strcat(meshToLoad.filename, assetname);
 	dd_da_add(&meshesToLoad, &meshToLoad);
 	//#endif
 

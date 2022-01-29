@@ -112,6 +112,7 @@ Uint32 GameLoopTimer(Uint32 interval, void *param) {
 
 int dd_main(int argc, char *argv[]) {
 
+	avdl_initProjectLocation();
 	avdl_assetManager_init();
 
 	/*
@@ -289,6 +290,8 @@ int dd_main(int argc, char *argv[]) {
 void clean() {
 	if (!avdl_state_initialised) return;
 	avdl_state_initialised = 0;
+
+	avdl_cleanProjectLocation();
 
 	if (cworld) {
 		cworld->clean(cworld);

@@ -37,6 +37,7 @@ struct ast_node *game_node;
 char *includePath = 0;
 
 char *installLocation = "";
+int installLocationDynamic = 0;
 char *saveLocation = "";
 char *additionalLibDirectory = 0;
 
@@ -69,6 +70,7 @@ char *cengine_files[] = {
 	"dd_vec4.c",
 	"dd_world.c",
 	"main.c",
+	"whereami.c",
 };
 unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 
@@ -101,6 +103,7 @@ char *cengine_headers[] = {
 	"dd_vec3.h",
 	"dd_vec4.h",
 	"dd_world.h",
+	"whereami.h",
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 
@@ -199,6 +202,11 @@ int main(int argc, char *argv[]) {
 						printf("avdl error: --install-loc expects a path\n");
 						return -1;
 					}
+				}
+				else
+				// dynamic install location
+				if (strcmp(argv[i], "--install-loc-dynamic") == 0) {
+					installLocationDynamic = 1;
 				}
 				else
 				// custom save location

@@ -73,6 +73,7 @@ static struct ast_node *expect_command_for() {
 }
 
 extern char *installLocation;
+extern int installLocationDynamic;
 static struct ast_node *expect_command_asset() {
 	struct ast_node *asset = expect_string();
 
@@ -111,10 +112,12 @@ static struct ast_node *expect_command_asset() {
 	// on linux and windows, attach the custom install location as the asset's prefix
 	if (avdl_platform_get() == AVDL_PLATFORM_LINUX
 	||  avdl_platform_get() == AVDL_PLATFORM_WINDOWS) {
-		char buffer[500];
-		strcpy(buffer, installLocation);
-		strcat(buffer, ast_getLex(asset));
-		ast_setLex(asset, buffer);
+		if (!installLocationDynamic) {
+			char buffer[500];
+			strcpy(buffer, installLocation);
+			strcat(buffer, ast_getLex(asset));
+			ast_setLex(asset, buffer);
+		}
 	}
 
 	// waste the type for now

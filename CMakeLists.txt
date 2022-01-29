@@ -50,6 +50,7 @@ install(FILES
 	engines/cengine/src/dd_vec4.c
 	engines/cengine/src/dd_world.c
 	engines/cengine/src/main.c
+	engines/cengine/src/whereami.c
 	DESTINATION
 	share/avdl/cengine
 )
@@ -82,6 +83,7 @@ install(FILES
 	engines/cengine/include/dd_vec3.h
 	engines/cengine/include/dd_vec4.h
 	engines/cengine/include/dd_world.h
+	engines/cengine/include/whereami.h
 	DESTINATION
 	include
 )
