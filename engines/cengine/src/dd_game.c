@@ -1,6 +1,8 @@
 #include "dd_game.h"
 #include "dd_math.h"
 #include "dd_fov.h"
+#include "whereami.h"
+#include <stdio.h>
 
 int dd_flag_initialised = 0;
 int dd_flag_focused = 0;
@@ -11,7 +13,7 @@ int dd_flag_exit = 0;
 int dd_width = 0;
 int dd_height = 0;
 #else
-#include <SDL2/SDL.h>
+#include "dd_opengl.h"
 
 SDL_Window* mainWindow;
 SDL_GLContext mainGLContext;

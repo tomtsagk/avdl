@@ -4,9 +4,13 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#if defined(_WIN32) || defined(WIN32)
+#else
+#include <unistd.h>
+#endif
 
 /*
  * variable that defines the save directory.
@@ -17,6 +21,9 @@
 char avdl_data_saveDirectory[1024] = "saves";
 
 void parse_filename(char *buffer, const char *filename) {
+	#if defined(_WIN32) || defined(WIN32)
+	return;
+	#else
 	buffer[0] = '\0';
 	int bufferC = 0;
 	int c = 0;
@@ -33,9 +40,14 @@ void parse_filename(char *buffer, const char *filename) {
 		c++;
 	}
 	buffer[bufferC] = '\0';
+	#endif
 }
 
 int avdl_data_save_internal(void *data, int data_size, const char *filename) {
+
+	#if defined(_WIN32) || defined(WIN32)
+	return 0;
+	#else
 
 	/*
 	 * if needed, make all directories recursively
@@ -94,9 +106,15 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 
 	// everything worked as expected
 	return 0;
+
+	#endif
 }
 
 int avdl_data_load_internal(void *data, int data_size, const char *filename) {
+
+	#if defined(_WIN32) || defined(WIN32)
+	return 0;
+	#else
 
 	char buffer[1024];
 	parse_filename(buffer, filename);
@@ -143,4 +161,6 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 
 	// everything worked as expected
 	return 0;
+
+	#endif
 }

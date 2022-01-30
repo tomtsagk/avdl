@@ -18,6 +18,10 @@ void avdl_localisation_clean(struct avdl_localisation *o) {
 
 void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) {
 
+	#if defined(_WIN32) || defined(WIN32)
+	return;
+	#else
+
 	struct dd_json_object obj;
 	strcpy(obj.buffer, PKG_LOCATION "assets/");
 	strcat(obj.buffer, keyGroupID);
@@ -43,15 +47,21 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 	}
 
 	//avdl_localisation_print(o);
+
+	#endif
 }
 
 char *avdl_localisation_getValue(struct avdl_localisation *o, const char *key) {
+	#if defined(_WIN32) || defined(WIN32)
+	return "empty";
+	#else
 	for (int i = 0; i < o->count; i++) {
 		if (strcmp(o->keys[i], key) == 0) {
 			return o->values[i];
 		}
 	}
 	return "empty";
+	#endif
 }
 
 void avdl_localisation_print(struct avdl_localisation *o) {
