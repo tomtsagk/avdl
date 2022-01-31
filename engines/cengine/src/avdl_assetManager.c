@@ -1,12 +1,20 @@
 #include "avdl_assetManager.h"
 #include "dd_dynamic_array.h"
 #include "dd_filetomesh.h"
-#include <pthread.h>
 #include "dd_log.h"
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include "dd_meshTexture.h"
+#include <stdio.h>
+#include "dd_game.h"
+
+#if defined(_WIN32) || defined(WIN32)
+#else
+#include <pthread.h>
+#include <unistd.h>
+extern pthread_mutex_t updateDrawMutex;
+extern pthread_mutex_t jniMutex;
+#endif
 
 #if DD_PLATFORM_ANDROID
 #include <jni.h>
@@ -16,9 +24,6 @@ extern jclass *clazz;
 
 struct dd_dynamic_array meshesToLoad;
 struct dd_dynamic_array meshesLoading;
-
-extern pthread_mutex_t updateDrawMutex;
-extern pthread_mutex_t jniMutex;
 
 int assetManagerLoading;
 
@@ -337,12 +342,14 @@ void avdl_assetManager_clean() {
 /*
  * load assets async
  */
+#if DD_PLATFORM_ANDROID
 static pthread_t loadAssetsThread = 0;
 
 void *load_assets_thread_function(void *data) {
 	avdl_assetManager_loadAssets();
 	pthread_exit(NULL);
 }
+#endif
 
 void avdl_assetManager_loadAll() {
 	if (assetManagerLoading) return;
@@ -353,6 +360,7 @@ void avdl_assetManager_loadAll() {
 	totalAssets = meshesLoading.elements;
 	totalAssetsLoaded = 0;
 	assetManagerLoading = 1;
+
 	/*
 	if (loadAssetsThread) {
 		pthread_join(&loadAssetsThread, NULL);
