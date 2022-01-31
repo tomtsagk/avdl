@@ -542,10 +542,27 @@ int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int 
 	return -1;
 }
 
+extern float shape_triangle[];
+float colour_triangle[] = {
+	1, 0, 0,
+	0, 1, 0,
+	0, 0, 1,
+};
 /* Parse PLY - STILL WORKING ON IT */
 /*
  */
 int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
+
+	#if defined(_WIN32) || defined(WIN32)
+	m->vcount = 3;
+	m->v = malloc(sizeof(float) *m->vcount *3);
+	m->c = malloc(sizeof(float) *m->vcount *3);
+	for (int i = 0; i < m->vcount *3; i++) {
+		m->v[i] = shape_triangle[i];
+		m->c[i] = colour_triangle[i];
+	}
+	return 0;
+	#else
 
 	//Open file and check error
 	FILE *f = fopen(path, "r");
@@ -962,6 +979,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	}
 	fclose(f);
 	return -1;
+
+	#endif
 }
 
 /* Parse OBJ */
