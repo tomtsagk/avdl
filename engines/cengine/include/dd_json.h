@@ -22,7 +22,7 @@ enum DD_JSON_TOKEN {
 	DD_JSON_EOB,
 };
 
-#define DD_JSON_BUFFER_SIZE 255
+#define DD_JSON_BUFFER_SIZE 1000
 
 struct dd_json_object {
 

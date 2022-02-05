@@ -39,6 +39,7 @@ void dd_meshTexture_load(struct dd_meshTexture *m, const char *filename) {
 	// mark to be loaded
 	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHTEXTURE, filename);
 	#else
+	/*
 	dd_meshTexture_clean(m);
 	struct dd_loaded_mesh lm;
 	dd_filetomesh(&lm, filename, DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR | DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
@@ -49,6 +50,7 @@ void dd_meshTexture_load(struct dd_meshTexture *m, const char *filename) {
 	m->parent.dirtyColours = 1;
 	m->t = lm.t;
 	m->dirtyTextures = 1;
+	*/
 	#endif
 }
 

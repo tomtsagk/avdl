@@ -32,7 +32,7 @@ void dd_json_next(struct dd_json_object *o) {
 
 
 		// ignore whitespace
-		fscanf(o->file, "%200[ \t\n]", o->buffer);
+		fscanf(o->file, "%200[ \t\n\r]", o->buffer);
 
 		// grab first character
 		long pos = ftell(o->file);

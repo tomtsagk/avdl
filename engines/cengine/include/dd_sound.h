@@ -8,7 +8,7 @@
 #if defined(_WIN32) || defined(WIN32)
 #include <SDL_mixer.h>
 #else
-#include <SDL/SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 #endif
 
 #endif
