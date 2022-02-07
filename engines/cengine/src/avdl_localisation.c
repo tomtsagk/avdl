@@ -21,21 +21,20 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 
 	//dd_log("avdl: localisation '%s'", keyGroupID);
 	struct dd_json_object obj;
-	/*
+
+	#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+	wcscpy(obj.bufferW, avdl_getProjectLocation());
+	wcscat(obj.bufferW, L"assets/");
+	mbstowcs((obj.bufferW +wcslen(obj.bufferW)), keyGroupID, 1000 -wcslen(obj.bufferW));
+	wcscat(obj.bufferW, L".asset");
+	dd_json_initFile(&obj, obj.bufferW);
+	#else
 	strcpy(obj.buffer, avdl_getProjectLocation());
 	strcat(obj.buffer, "assets/");
 	strcat(obj.buffer, keyGroupID);
 	strcat(obj.buffer, ".asset");
-	*/
-
-	wcscpy(obj.bufferW, avdl_getProjectLocation());
-	wcscat(obj.bufferW, L"assets/");
-	//wcscat(obj.bufferW, keyGroupID);
-	//wcscat(obj.bufferW, L"keyGroupID");
-	mbstowcs((obj.bufferW +wcslen(obj.bufferW)), keyGroupID, 1000 -wcslen(obj.bufferW));
-	wcscat(obj.bufferW, L".asset");
-	//wprintf(L"localisation: %lS\n", obj.bufferW);
-	dd_json_initFile(&obj, obj.bufferW);
+	dd_json_initFile(&obj, obj.buffer);
+	#endif
 
 	// expect start of object
 	dd_json_next(&obj);

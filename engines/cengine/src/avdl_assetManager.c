@@ -286,7 +286,6 @@ void avdl_assetManager_loadAssets() {
 		#else
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
-			continue;
 			struct dd_meshTexture *mesh = m->mesh;
 			dd_image_load_bmp(&mesh->img, m->filename);
 		}
@@ -324,6 +323,29 @@ void avdl_assetManager_loadAssets() {
 				mesh->parent.dirtyVertices = 1;
 				mesh->c = lm.c;
 				mesh->dirtyColours = 1;
+			}
+			else
+			// mesh texture
+			if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
+				struct dd_meshTexture *mesh = m->mesh;
+				dd_meshTexture_clean(mesh);
+				struct dd_loaded_mesh lm;
+				#if defined(_WIN32) || defined(WIN32)
+				dd_filetomesh(&lm, m->filenameW,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
+					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
+				#else
+				dd_filetomesh(&lm, m->filename,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
+					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
+				#endif
+				mesh->parent.parent.vcount = lm.vcount;
+				mesh->parent.parent.v = lm.v;
+				mesh->parent.parent.dirtyVertices = 1;
+				mesh->parent.c = lm.c;
+				mesh->parent.dirtyColours = 1;
+				mesh->t = lm.t;
+				mesh->dirtyTextures = 1;
 			}
 		}
 		#endif
