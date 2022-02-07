@@ -21,62 +21,69 @@ enum AVDL_PLATFORM avdl_platform_get() {
 	return avdl_platform;
 }
 
-char *dynamicProjectLocation = 0;
+#if defined(_WIN32) || defined(WIN32)
+#include <windows.h>
+wchar_t dynamicProjectLocationW[1000];
+#endif
 
+#if defined(_WIN32) || defined(WIN32)
+const wchar_t *avdl_getProjectLocation() {
+#else
 const char *avdl_getProjectLocation() {
+#endif
 	#ifdef AVDL_DYNAMIC_PKG_LOCATION
-	if (!dynamicProjectLocation) {
-		return "";
+
+	#if defined(_WIN32) || defined(WIN32)
+	if (!dynamicProjectLocationW) {
+		return L"";
 	}
 	else {
-		return dynamicProjectLocation;
+		return dynamicProjectLocationW;
 	}
 	#else
+	return "";
+	#endif
+
+	#else
+
+	#if defined(_WIN32) || defined(WIN32)
+	return LPKG_LOCATION;
+	#else
 	return PKG_LOCATION;
+	#endif
+
 	#endif
 }
 
 void avdl_initProjectLocation() {
 	#ifdef AVDL_DYNAMIC_PKG_LOCATION
-	int length = wai_getExecutablePath(0, 0, 0);
-	dynamicProjectLocation = malloc(sizeof(char) *(length+1));
-	if (!dynamicProjectLocation) {
-		printf("avdl error: unable to allocate memory for dynamic package location\n");
-	}
-	wai_getExecutablePath(dynamicProjectLocation, length, 0);
-	dynamicProjectLocation[length] = '\0';
 
-	int directoriesToSkip = 1;
-	for (int i = length-1; i >= 0; i--) {
-		#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-		if (dynamicProjectLocation[i] == '\\') {
-		#else
-		if (dynamicProjectLocation[i] == '/') {
-		#endif
-			if (directoriesToSkip > 0) {
-				directoriesToSkip--;
-			}
-			else {
-				dynamicProjectLocation[i+1] = '\0';
-				directoriesToSkip = -1;
-				break;
-			}
+	#if defined(_WIN32) || defined(WIN32)
+	wchar_t *pointer = dynamicProjectLocationW;
+	wchar_t *secondToLastSlash = 0;
+	wchar_t *lastSlash = 0;
+	int slashesLeft = 2;
+	GetModuleFileNameW(NULL, dynamicProjectLocationW, 999);
+	dynamicProjectLocationW[999] = L'\0';
+
+	while (pointer[0] != L'\0') {
+		if (pointer[0] == L'\\') {
+			secondToLastSlash = lastSlash;
+			lastSlash = pointer;
 		}
+		pointer++;
 	}
-
-	if (directoriesToSkip != -1) {
-		printf("avdl error: unable to parse dynamic package location: %s\n", dynamicProjectLocation);
-		free(dynamicProjectLocation);
-		dynamicProjectLocation = 0;
-		return;
+	if (secondToLastSlash) {
+		secondToLastSlash++;
+		secondToLastSlash[0] = L'\0';
 	}
+	#else
+	// not supported on non-windows os for now
 	#endif
+
+	#endif
+
 }
 
 void avdl_cleanProjectLocation() {
-	#ifdef AVDL_DYNAMIC_PKG_LOCATION
-	if (dynamicProjectLocation) {
-		free(dynamicProjectLocation);
-	}
-	#endif
 }
