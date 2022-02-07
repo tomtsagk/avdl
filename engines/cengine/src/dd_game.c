@@ -79,21 +79,68 @@ char *dynamicProjectLocation = 0;
 extern char *installLocation = "";
 extern int installLocationDynamic;
 
+#if defined(_WIN32) || defined(WIN32)
+wchar_t dynamicProjectLocationW[1000];
+
+#include <windows.h>
+#endif
+
+#if defined(_WIN32) || defined(WIN32)
+const wchar_t *avdl_getProjectLocation() {
+#else
 const char *avdl_getProjectLocation() {
+#endif
 	#ifdef AVDL_DYNAMIC_PKG_LOCATION
 	if (!dynamicProjectLocation) {
+		#if defined(_WIN32) || defined(WIN32)
+		return L"";
+		#else
 		return "";
+		#endif
 	}
 	else {
-		return dynamicProjectLocation;
+		return dynamicProjectLocationW;
 	}
 	#else
+
+	#if defined(_WIN32) || defined(WIN32)
+	return LPKG_LOCATION;
+	#else
 	return PKG_LOCATION;
+	#endif
+
 	#endif
 }
 
 void avdl_initProjectLocation() {
 	#ifdef AVDL_DYNAMIC_PKG_LOCATION
+	//wprintf(L"get project loc\n");
+
+	#if defined(_WIN32) || defined(WIN32)
+	wchar_t *pointer = dynamicProjectLocationW;
+	wchar_t *secondToLastSlash = 0;
+	wchar_t *lastSlash = 0;
+	int slashesLeft = 2;
+	GetModuleFileNameW(NULL, dynamicProjectLocationW, 999);
+	dynamicProjectLocationW[999] = L'\0';
+
+	while (pointer[0] != L'\0') {
+		if (pointer[0] == L'\\') {
+			secondToLastSlash = lastSlash;
+			lastSlash = pointer;
+		}
+		pointer++;
+	}
+	if (secondToLastSlash) {
+		secondToLastSlash++;
+		secondToLastSlash[0] = L'\0';
+	}
+	//wprintf(L"project loc: %lS\n", dynamicProjectLocationW);
+	#else
+	// not supported on non-windows os for now
+	#endif
+
+	/*
 	int length = wai_getExecutablePath(0, 0, 0);
 	dynamicProjectLocation = malloc(sizeof(char) *(length+1));
 	if (!dynamicProjectLocation) {
@@ -126,6 +173,7 @@ void avdl_initProjectLocation() {
 		dynamicProjectLocation = 0;
 		return;
 	}
+	*/
 	#endif
 }
 

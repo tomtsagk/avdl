@@ -11,7 +11,8 @@
 struct dd_meshToLoad {
 	struct dd_meshColour *mesh;
 	int meshType;
-	char filename[200];
+	char filename[400];
+	wchar_t filenameW[400];
 };
 
 extern struct dd_dynamic_array meshesToLoad;

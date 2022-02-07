@@ -22,11 +22,7 @@
  */
 char avdl_data_saveDirectory[1024] = "saves";
 
-#if defined(_WIN32) || defined(WIN32)
-void parse_filename(char *buffer, const wchar_t *filename) {
-#else
 void parse_filename(char *buffer, const char *filename) {
-#endif
 	#if defined(_WIN32) || defined(WIN32)
 	dd_log("parsing: %s", filename);
 
@@ -58,22 +54,21 @@ void parse_filename(char *buffer, const char *filename) {
 	#endif
 }
 
-#if defined(_WIN32) || defined(WIN32)
-int avdl_data_save_internal(void *data, int data_size, const wchar_t *filename) {
-#else
 int avdl_data_save_internal(void *data, int data_size, const char *filename) {
-#endif
 
 	#if defined(_WIN32) || defined(WIN32)
 
 	PWSTR path;
 	SHGetKnownFolderPath(&FOLDERID_LocalAppData, 0, NULL, &path);
 
-	wchar_t *finalLoc = malloc(sizeof(wchar_t) *(wcslen(path) +wcslen(L"\\rue\\") +wcslen(filename) +1));
+	int pathLen = wcslen(path) +wcslen(L"\\rue\\") +strlen(filename) +1;
+	wchar_t *finalLoc = malloc(sizeof(wchar_t) *pathLen);
 	wcscpy(finalLoc, path);
-	wcscat(finalLoc, L"\\rue\\\0");
-	wcscat(finalLoc, filename);
-	wprintf(L"path final to save into: %lS\n", finalLoc);
+	wcscat(finalLoc, L"\\rue\\");
+	//wcscat(finalLoc, filename);
+	mbstowcs((finalLoc +wcslen(finalLoc)), filename, strlen(filename));
+	finalLoc[pathLen-1] = L'\0';
+	wprintf(L"path final to save: %lS\n", finalLoc);
 
 	// make all needed directories
 	wchar_t *start = finalLoc;
@@ -185,22 +180,23 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 	#endif
 }
 
-#if defined(_WIN32) || defined(WIN32)
-int avdl_data_load_internal(void *data, int data_size, const wchar_t *filename) {
-#else
 int avdl_data_load_internal(void *data, int data_size, const char *filename) {
-#endif
 
 	#if defined(_WIN32) || defined(WIN32)
+
+	//dd_log("save file: %s", filename);
 
 	PWSTR path;
 	SHGetKnownFolderPath(&FOLDERID_LocalAppData, 0, NULL, &path);
 
-	wchar_t *finalLoc = malloc(sizeof(wchar_t) *(wcslen(path) +wcslen(L"\\rue\\") +wcslen(filename) +1));
+	int pathLen = wcslen(path) +wcslen(L"\\rue\\") +strlen(filename) +1;
+	wchar_t *finalLoc = malloc(sizeof(wchar_t) *pathLen);
 	wcscpy(finalLoc, path);
-	wcscat(finalLoc, L"\\rue\\\0");
-	wcscat(finalLoc, filename);
-	//wprintf(L"path final: %lS\n", finalLoc);
+	wcscat(finalLoc, L"\\rue\\");
+	//wcscat(finalLoc, filename);
+	mbstowcs((finalLoc +wcslen(finalLoc)), filename, strlen(filename));
+	finalLoc[pathLen-1] = L'\0';
+	wprintf(L"path final: %lS\n", finalLoc);
 
 	/*
 	 * if file fails to open, that means there are no save data

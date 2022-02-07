@@ -30,6 +30,10 @@ struct dd_loaded_mesh {
 };
 
 /* Creates a loaded mesh from a file */
+#if defined(_WIN32) || defined(WIN32)
+int dd_filetomesh(struct dd_loaded_mesh *m, const wchar_t *path, int settings, int file_type);
+#else
 int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int file_type);
+#endif
 
 #endif /* DD_FILETOMESH_H */

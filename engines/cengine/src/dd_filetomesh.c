@@ -528,11 +528,20 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 #else
 
 /* Different functions for each file */
+#if defined(_WIN32) || defined(WIN32)
+int dd_load_ply(struct dd_loaded_mesh *m, const wchar_t *path, int settings);
+int dd_load_obj(struct dd_loaded_mesh *m, const wchar_t *path, int settings);
+#else
 int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings);
 int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings);
+#endif
 
 /* Select the right function depending on file_type */
+#if defined(_WIN32) || defined(WIN32)
+int dd_filetomesh(struct dd_loaded_mesh *m, const wchar_t *path, int settings, int file_type) {
+#else
 int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int file_type) {
+#endif
 
 	switch (file_type) {
 		case DD_PLY: return dd_load_ply(m, path, settings);
@@ -576,12 +585,20 @@ int my_min(num1, num2) {
 /* Parse PLY - STILL WORKING ON IT */
 /*
  */
+#if defined(_WIN32) || defined(WIN32)
+int dd_load_ply(struct dd_loaded_mesh *m, const wchar_t *path, int settings) {
+#else
 int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
+#endif
 
 	#if defined(_WIN32) || defined(WIN32)
 
 	//Open file and check error
+	#if defined(_WIN32) || defined(WIN32)
+	FILE *f = _wfopen(path, L"r");
+	#else
 	FILE *f = fopen(path, "r");
+	#endif
 	if (!f)
 	{
 		dd_log("load_ply: error opening file: %s: %s", path, strerror(errno));
@@ -1157,7 +1174,11 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 }
 
 /* Parse OBJ */
+#if defined(_WIN32) || defined(WIN32)
+int dd_load_obj(struct dd_loaded_mesh *m, const wchar_t *path, int settings) {
+#else
 int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
+#endif
 
 	//(void) attr;
 
@@ -1172,7 +1193,11 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 	dd_da_init(&v_out, sizeof(struct dd_vec3));
 
 	//File
+	#if defined(_WIN32) || defined(WIN32)
+	FILE *f = _wfopen(path, L"r");
+	#else
 	FILE *f = fopen(path, "r");
+	#endif
 	if ( !f ) {
 		dd_log("load_obj: %s: failed to open file: %s", path, strerror(errno));
 		goto error;
