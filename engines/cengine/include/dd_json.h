@@ -29,8 +29,10 @@ struct dd_json_object {
 	/*
 	 * string parsing
 	 */
-	char buffer[DD_JSON_BUFFER_SIZE];
+	#if defined(WIN32) || defined(_WIN32)
 	wchar_t bufferW[DD_JSON_BUFFER_SIZE];
+	#endif
+	char buffer[DD_JSON_BUFFER_SIZE];
 	char *str;
 	int size;
 

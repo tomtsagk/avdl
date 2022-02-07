@@ -91,16 +91,23 @@ const wchar_t *avdl_getProjectLocation() {
 const char *avdl_getProjectLocation() {
 #endif
 	#ifdef AVDL_DYNAMIC_PKG_LOCATION
-	if (!dynamicProjectLocation) {
-		#if defined(_WIN32) || defined(WIN32)
+
+	#if defined(_WIN32) || defined(WIN32)
+	if (!dynamicProjectLocationW) {
 		return L"";
-		#else
-		return "";
-		#endif
 	}
 	else {
 		return dynamicProjectLocationW;
 	}
+	#else
+	if (!dynamicProjectLocation) {
+		return "";
+	}
+	else {
+		return dynamicProjectLocation;
+	}
+	#endif
+
 	#else
 
 	#if defined(_WIN32) || defined(WIN32)

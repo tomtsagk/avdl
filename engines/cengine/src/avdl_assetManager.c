@@ -55,17 +55,18 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname) {
 	}
 	*/
 
+	//printf("add asset: %s\n", assetname);
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.mesh = object;
 	meshToLoad.meshType = meshType;
 	#if defined(_WIN32) || defined(WIN32)
 	wcscpy(meshToLoad.filenameW, avdl_getProjectLocation());
 	mbstowcs((meshToLoad.filenameW +wcslen(meshToLoad.filenameW)), assetname, 400 -wcslen(meshToLoad.filenameW));
+	//wprintf(L"add assetW: %lS\n", meshToLoad.filenameW);
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
 	strcat(meshToLoad.filename, assetname);
 	#endif
-	//wprintf(L"add assetW: %lS\n", meshToLoad.filenameW);
 	//printf("add asset: %s\n", assetname);
 	dd_da_add(&meshesToLoad, &meshToLoad);
 	//#endif
@@ -286,9 +287,12 @@ void avdl_assetManager_loadAssets() {
 		#else
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
-			continue;
 			struct dd_meshTexture *mesh = m->mesh;
+			#if defined(_WIN32) || defined(WIN32)
+			dd_image_load_bmp(&mesh->img, m->filenameW);
+			#else
 			dd_image_load_bmp(&mesh->img, m->filename);
+			#endif
 		}
 		// load mesh
 		else {
@@ -324,6 +328,29 @@ void avdl_assetManager_loadAssets() {
 				mesh->parent.dirtyVertices = 1;
 				mesh->c = lm.c;
 				mesh->dirtyColours = 1;
+			}
+			else
+			// mesh texture
+			if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
+				struct dd_meshTexture *mesh = m->mesh;
+				dd_meshTexture_clean(mesh);
+				struct dd_loaded_mesh lm;
+				#if defined(_WIN32) || defined(WIN32)
+				dd_filetomesh(&lm, m->filenameW,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
+					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
+				#else
+				dd_filetomesh(&lm, m->filename,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
+					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
+				#endif
+				mesh->parent.parent.vcount = lm.vcount;
+				mesh->parent.parent.v = lm.v;
+				mesh->parent.parent.dirtyVertices = 1;
+				mesh->parent.c = lm.c;
+				mesh->parent.dirtyColours = 1;
+				mesh->t = lm.t;
+				mesh->dirtyTextures = 1;
 			}
 		}
 		#endif

@@ -653,6 +653,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	float vertexX[VERTEX_MAX];
 	float vertexY[VERTEX_MAX];
 	float vertexZ[VERTEX_MAX];
+	float vertexS[VERTEX_MAX];
+	float vertexT[VERTEX_MAX];
 	float vertexR[VERTEX_MAX];
 	float vertexG[VERTEX_MAX];
 	float vertexB[VERTEX_MAX];
@@ -662,6 +664,9 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		float x;
 		float y;
 		float z;
+
+		float s;
+		float t;
 
 		int r;
 		int g;
@@ -683,24 +688,40 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		p = skip_to_whitespace(p);
 		p = skip_whitespace(p);
 
-		r = atoi(p);
-		p = skip_to_whitespace(p);
-		p = skip_whitespace(p);
-
-		g = atoi(p);
-		p = skip_to_whitespace(p);
-		p = skip_whitespace(p);
-
-		b = atoi(p);
-		p = skip_to_whitespace(p);
-		p = skip_whitespace(p);
-
 		vertexX[i] = x;
 		vertexY[i] = y;
 		vertexZ[i] = z;
-		vertexR[i] = r/255.0;
-		vertexG[i] = g/255.0;
-		vertexB[i] = b/255.0;
+
+		if (settings & DD_FILETOMESH_SETTINGS_TEX_COORD) {
+			s = atof(p);
+			p = skip_to_whitespace(p);
+			p = skip_whitespace(p);
+
+			t = atof(p);
+			p = skip_to_whitespace(p);
+			p = skip_whitespace(p);
+
+			vertexS[i] = s;
+			vertexT[i] = t;
+		}
+
+		if (settings & DD_FILETOMESH_SETTINGS_COLOUR) {
+			r = atoi(p);
+			p = skip_to_whitespace(p);
+			p = skip_whitespace(p);
+
+			g = atoi(p);
+			p = skip_to_whitespace(p);
+			p = skip_whitespace(p);
+
+			b = atoi(p);
+			p = skip_to_whitespace(p);
+			p = skip_whitespace(p);
+
+			vertexR[i] = r/255.0;
+			vertexG[i] = g/255.0;
+			vertexB[i] = b/255.0;
+		}
 	}
 
 	int faceIndices[VERTEX_MAX *3];
@@ -741,14 +762,30 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	m->vcount = my_min(faceNumber *3, VERTEX_MAX -1);
 	m->v = malloc(sizeof(float) *m->vcount *3);
-	m->c = malloc(sizeof(float) *m->vcount *3);
+
+	if (settings & DD_FILETOMESH_SETTINGS_TEX_COORD) {
+		m->t = malloc(sizeof(float) *m->vcount *2);
+	}
+
+	if (settings & DD_FILETOMESH_SETTINGS_COLOUR) {
+		m->c = malloc(sizeof(float) *m->vcount *3);
+	}
+
 	for (int i = 0; i < m->vcount; i++) {
 		m->v[i*3+0] = vertexX[faceIndices[i]];
 		m->v[i*3+1] = vertexY[faceIndices[i]];
 		m->v[i*3+2] = vertexZ[faceIndices[i]];
-		m->c[i*3+0] = vertexR[faceIndices[i]];
-		m->c[i*3+1] = vertexG[faceIndices[i]];
-		m->c[i*3+2] = vertexB[faceIndices[i]];
+
+		if (settings & DD_FILETOMESH_SETTINGS_COLOUR) {
+			m->c[i*3+0] = vertexR[faceIndices[i]];
+			m->c[i*3+1] = vertexG[faceIndices[i]];
+			m->c[i*3+2] = vertexB[faceIndices[i]];
+		}
+
+		if (settings & DD_FILETOMESH_SETTINGS_TEX_COORD) {
+			m->t[i*2+0] = vertexS[faceIndices[i]];
+			m->t[i*2+1] = vertexT[faceIndices[i]];
+		}
 	}
 
 	return 0;
