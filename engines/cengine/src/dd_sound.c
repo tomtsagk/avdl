@@ -6,8 +6,6 @@
 #include <jni.h>
 extern jclass *clazz;
 extern JavaVM *jvm;
-#else
-#include <SDL2/SDL_mixer.h>
 #endif
 
 int dd_hasAudio = 1;

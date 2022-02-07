@@ -4,9 +4,15 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#if defined(_WIN32) || defined(WIN32)
+#include <shlobj_core.h>
+#include <Objbase.h>
+#else
+#include <unistd.h>
+#endif
 
 /*
  * variable that defines the save directory.
@@ -17,6 +23,18 @@
 char avdl_data_saveDirectory[1024] = "saves";
 
 void parse_filename(char *buffer, const char *filename) {
+	#if defined(_WIN32) || defined(WIN32)
+	dd_log("parsing: %s", filename);
+
+	/*
+	PWSTR *path;
+	SHGetKnownFolderPath(&FOLDERID_LocalAppData, 0, NULL, path);
+	wprintf(L"path: %ls\n", path);
+	CoTaskMemFree(path);
+	*/
+
+	return;
+	#else
 	buffer[0] = '\0';
 	int bufferC = 0;
 	int c = 0;
@@ -33,9 +51,73 @@ void parse_filename(char *buffer, const char *filename) {
 		c++;
 	}
 	buffer[bufferC] = '\0';
+	#endif
 }
 
 int avdl_data_save_internal(void *data, int data_size, const char *filename) {
+
+	#if defined(_WIN32) || defined(WIN32)
+
+	PWSTR path;
+	SHGetKnownFolderPath(&FOLDERID_LocalAppData, 0, NULL, &path);
+
+	int pathLen = wcslen(path) +wcslen(L"\\rue\\") +strlen(filename) +1;
+	wchar_t *finalLoc = malloc(sizeof(wchar_t) *pathLen);
+	wcscpy(finalLoc, path);
+	wcscat(finalLoc, L"\\rue\\");
+	//wcscat(finalLoc, filename);
+	mbstowcs((finalLoc +wcslen(finalLoc)), filename, strlen(filename));
+	finalLoc[pathLen-1] = L'\0';
+	//wprintf(L"path final to save: %lS\n", finalLoc);
+
+	// make all needed directories
+	wchar_t *start = finalLoc;
+	wchar_t *end = start+1;
+	while (end[0] != L'\0') {
+		while (end[0] != L'\\' && end[0] != L'\0') end++;
+		if (end[0] == '\0') break;
+		end[0] = L'\0';
+		_wmkdir(start);
+		end[0] = L'\\';
+		end++;
+	}
+
+	/*
+	 * if file fails to open for reading, bail out
+	 */
+	FILE *f = _wfopen(finalLoc, L"w");
+	if (!f) {
+		wprintf(L"avdl: error opening file '%lS': %lS\n", finalLoc, _wcserror(errno));
+		free(finalLoc);
+		CoTaskMemFree(path);
+		return -1;
+	}
+
+	/*
+	 * if it fails to read data, also bail out
+	 */
+	if (fwrite(data, data_size, 1, f) == 0) {
+		if (fclose(f) != 0) {
+			wprintf(L"avdl: error while closing file '%lS': %lS\n", finalLoc, _wcserror(errno));
+		}
+		free(finalLoc);
+		CoTaskMemFree(path);
+		return -1;
+	}
+
+	/*
+	 * close file and check for errors
+	 */
+	if (fclose(f) != 0) {
+		wprintf(L"avdl: error while closing file '%lS': %lS\n", finalLoc, _wcserror(errno));
+		return -1;
+	}
+
+	free(finalLoc);
+	CoTaskMemFree(path);
+	return 0;
+
+	#else
 
 	/*
 	 * if needed, make all directories recursively
@@ -94,9 +176,65 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 
 	// everything worked as expected
 	return 0;
+
+	#endif
 }
 
 int avdl_data_load_internal(void *data, int data_size, const char *filename) {
+
+	#if defined(_WIN32) || defined(WIN32)
+
+	//dd_log("save file: %s", filename);
+
+	PWSTR path;
+	SHGetKnownFolderPath(&FOLDERID_LocalAppData, 0, NULL, &path);
+
+	int pathLen = wcslen(path) +wcslen(L"\\rue\\") +strlen(filename) +1;
+	wchar_t *finalLoc = malloc(sizeof(wchar_t) *pathLen);
+	wcscpy(finalLoc, path);
+	wcscat(finalLoc, L"\\rue\\");
+	//wcscat(finalLoc, filename);
+	mbstowcs((finalLoc +wcslen(finalLoc)), filename, strlen(filename));
+	finalLoc[pathLen-1] = L'\0';
+	//wprintf(L"path final: %lS\n", finalLoc);
+
+	/*
+	 * if file fails to open, that means there are no save data
+	 */
+	FILE *f = _wfopen(finalLoc, L"r");
+	if (!f) {
+		wprintf(L"avdl: error opening file '%lS': %lS\n", finalLoc, _wcserror(errno));
+		free(finalLoc);
+		CoTaskMemFree(path);
+		return -1;
+	}
+
+	/*
+	 * if it fails to read data, also bail out
+	 */
+	if (fread(data, data_size, 1, f) == 0) {
+		if (fclose(f) != 0) {
+			wprintf(L"avdl: error closing file '%lS': %lS\n", finalLoc, _wcserror(errno));
+		}
+		free(finalLoc);
+		CoTaskMemFree(path);
+		return -1;
+	}
+
+	/*
+	 * close file and check for errors
+	 */
+	if (fclose(f) != 0) {
+		wprintf(L"avdl: error closing file 2 '%lS': %lS\n", finalLoc, _wcserror(errno));
+		free(finalLoc);
+		CoTaskMemFree(path);
+		return -1;
+	}
+
+	free(finalLoc);
+	CoTaskMemFree(path);
+	return 0;
+	#else
 
 	char buffer[1024];
 	parse_filename(buffer, filename);
@@ -143,4 +281,6 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 
 	// everything worked as expected
 	return 0;
+
+	#endif
 }

@@ -1,12 +1,20 @@
 #include "avdl_assetManager.h"
 #include "dd_dynamic_array.h"
 #include "dd_filetomesh.h"
-#include <pthread.h>
 #include "dd_log.h"
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include "dd_meshTexture.h"
+#include <stdio.h>
+#include "dd_game.h"
+
+#if defined(_WIN32) || defined(WIN32)
+#else
+#include <pthread.h>
+#include <unistd.h>
+extern pthread_mutex_t updateDrawMutex;
+extern pthread_mutex_t jniMutex;
+#endif
 
 #if DD_PLATFORM_ANDROID
 #include <jni.h>
@@ -16,9 +24,6 @@ extern jclass *clazz;
 
 struct dd_dynamic_array meshesToLoad;
 struct dd_dynamic_array meshesLoading;
-
-extern pthread_mutex_t updateDrawMutex;
-extern pthread_mutex_t jniMutex;
 
 int assetManagerLoading;
 
@@ -50,10 +55,19 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname) {
 	}
 	*/
 
+	//printf("add asset: %s\n", assetname);
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.mesh = object;
 	meshToLoad.meshType = meshType;
-	strcpy(meshToLoad.filename, assetname);
+	#if defined(_WIN32) || defined(WIN32)
+	wcscpy(meshToLoad.filenameW, avdl_getProjectLocation());
+	mbstowcs((meshToLoad.filenameW +wcslen(meshToLoad.filenameW)), assetname, 400 -wcslen(meshToLoad.filenameW));
+	//wprintf(L"add assetW: %lS\n", meshToLoad.filenameW);
+	#else
+	strcpy(meshToLoad.filename, avdl_getProjectLocation());
+	strcat(meshToLoad.filename, assetname);
+	#endif
+	//printf("add asset: %s\n", assetname);
 	dd_da_add(&meshesToLoad, &meshToLoad);
 	//#endif
 
@@ -66,6 +80,7 @@ void avdl_assetManager_loadAssets() {
 	for (int i = 0; i < meshesLoading.elements; i++) {
 		struct dd_meshToLoad *m = dd_da_get(&meshesLoading, i);
 		//dd_log("loading asset: %s", m->filename);
+		//wprintf(L"loading asset: %lS", m->filenameW);
 		//dd_log("loading asset type: %d", m->meshType);
 
 		#if DD_PLATFORM_ANDROID
@@ -273,7 +288,11 @@ void avdl_assetManager_loadAssets() {
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
 			struct dd_meshTexture *mesh = m->mesh;
+			#if defined(_WIN32) || defined(WIN32)
+			dd_image_load_bmp(&mesh->img, m->filenameW);
+			#else
 			dd_image_load_bmp(&mesh->img, m->filename);
+			#endif
 		}
 		// load mesh
 		else {
@@ -282,7 +301,11 @@ void avdl_assetManager_loadAssets() {
 				struct dd_mesh *mesh = m->mesh;
 				dd_mesh_clean(mesh);
 				struct dd_loaded_mesh lm;
+				#if defined(_WIN32) || defined(WIN32)
+				dd_filetomesh(&lm, m->filenameW, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY);
+				#else
 				dd_filetomesh(&lm, m->filename, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY);
+				#endif
 				mesh->vcount = lm.vcount;
 				mesh->v = lm.v;
 				mesh->dirtyVertices = 1;
@@ -293,13 +316,41 @@ void avdl_assetManager_loadAssets() {
 				struct dd_meshColour *mesh = m->mesh;
 				dd_meshColour_clean(mesh);
 				struct dd_loaded_mesh lm;
+				#if defined(_WIN32) || defined(WIN32)
+				dd_filetomesh(&lm, m->filenameW,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
+				#else
 				dd_filetomesh(&lm, m->filename,
 					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
+				#endif
 				mesh->parent.vcount = lm.vcount;
 				mesh->parent.v = lm.v;
 				mesh->parent.dirtyVertices = 1;
 				mesh->c = lm.c;
 				mesh->dirtyColours = 1;
+			}
+			else
+			// mesh texture
+			if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
+				struct dd_meshTexture *mesh = m->mesh;
+				dd_meshTexture_clean(mesh);
+				struct dd_loaded_mesh lm;
+				#if defined(_WIN32) || defined(WIN32)
+				dd_filetomesh(&lm, m->filenameW,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
+					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
+				#else
+				dd_filetomesh(&lm, m->filename,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
+					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
+				#endif
+				mesh->parent.parent.vcount = lm.vcount;
+				mesh->parent.parent.v = lm.v;
+				mesh->parent.parent.dirtyVertices = 1;
+				mesh->parent.c = lm.c;
+				mesh->parent.dirtyColours = 1;
+				mesh->t = lm.t;
+				mesh->dirtyTextures = 1;
 			}
 		}
 		#endif
@@ -336,12 +387,14 @@ void avdl_assetManager_clean() {
 /*
  * load assets async
  */
+#if DD_PLATFORM_ANDROID
 static pthread_t loadAssetsThread = 0;
 
 void *load_assets_thread_function(void *data) {
 	avdl_assetManager_loadAssets();
 	pthread_exit(NULL);
 }
+#endif
 
 void avdl_assetManager_loadAll() {
 	if (assetManagerLoading) return;
@@ -352,6 +405,7 @@ void avdl_assetManager_loadAll() {
 	totalAssets = meshesLoading.elements;
 	totalAssetsLoaded = 0;
 	assetManagerLoading = 1;
+
 	/*
 	if (loadAssetsThread) {
 		pthread_join(&loadAssetsThread, NULL);

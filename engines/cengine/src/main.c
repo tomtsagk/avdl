@@ -1,16 +1,21 @@
 #include <stdlib.h>
 #include <time.h>
 #include <complex.h>
-#include <unistd.h>
 #include <string.h>
-
-// Threads
-#include <pthread.h>
 
 // world interface and starting world
 #include "avdl_cengine.h"
 
+#if defined(_WIN32) || defined(WIN32)
+#else
+
+#include <unistd.h>
+// Threads
+#include <pthread.h>
 pthread_t updatePthread;
+pthread_mutex_t updateDrawMutex;
+
+#endif
 
 /*
  * android includes
@@ -26,8 +31,7 @@ pthread_t updatePthread;
 #elif DD_PLATFORM_NATIVE
 
 	// audio
-	#include <SDL2/SDL.h>
-	#include <SDL2/SDL_mixer.h>
+	#include "dd_sound.h"
 
 	// curl
 	//#include <curl/curl.h>
@@ -83,13 +87,12 @@ GLuint fontProgram;
 
 #if DD_PLATFORM_NATIVE
 // threads
-pthread_mutex_t asyncCallMutex;
+//pthread_mutex_t asyncCallMutex;
 #endif
 
 #if DD_PLATFORM_ANDROID
 pthread_mutex_t jniMutex;
 #endif
-pthread_mutex_t updateDrawMutex;
 
 int avdl_state_initialised = 0;
 int avdl_state_active = 0;
@@ -112,6 +115,7 @@ Uint32 GameLoopTimer(Uint32 interval, void *param) {
 
 int dd_main(int argc, char *argv[]) {
 
+	avdl_initProjectLocation();
 	avdl_assetManager_init();
 
 	/*
@@ -150,11 +154,14 @@ int dd_main(int argc, char *argv[]) {
 	}
 	#endif
 
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
 	{
 		dd_log("avdl: mutex for update/draw init failed");
 		return -1;
 	}
+	#endif
 
 	#if DD_PLATFORM_NATIVE
 	/*
@@ -192,6 +199,7 @@ int dd_main(int argc, char *argv[]) {
 
 	// init opengl
 	glewInit();
+
 	#endif
 
 	avdl_engine_init_opengl();
@@ -240,8 +248,8 @@ int dd_main(int argc, char *argv[]) {
 	*/
 
 	avdl_state_initialised = 1;
-	#if DD_PLATFORM_NATIVE
 	onResume();
+	#if DD_PLATFORM_NATIVE
 
 	// start the loop
 	int isRunning = 1;
@@ -277,8 +285,6 @@ int dd_main(int argc, char *argv[]) {
 	}
 
 	clean();
-	#elif DD_PLATFORM_ANDROID
-	onResume();
 	#endif
 
 	// everything ok
@@ -290,6 +296,8 @@ void clean() {
 	if (!avdl_state_initialised) return;
 	avdl_state_initialised = 0;
 
+	avdl_cleanProjectLocation();
+
 	if (cworld) {
 		cworld->clean(cworld);
 		cworld = 0;
@@ -298,7 +306,11 @@ void clean() {
 	#if DD_PLATFORM_ANDROID
 	pthread_mutex_destroy(&jniMutex);
 	#endif
+
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	pthread_mutex_destroy(&updateDrawMutex);
+	#endif
 
 	#if DD_PLATFORM_NATIVE
 	// destroy window
@@ -432,6 +444,7 @@ void update() {
 			if (cworld->resize) {
 				cworld->resize(cworld);
 			}
+
 		}
 
 	}
@@ -537,9 +550,18 @@ void draw() {
 }
 
 void handleKeyboardPress(unsigned char key, int x, int y) {
+
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	pthread_mutex_lock(&updateDrawMutex);
+	#endif
+
 	input_key = key;
+
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	pthread_mutex_unlock(&updateDrawMutex);
+	#endif
 }
 
 void handleMousePress(int button, int state, int x, int y) {
@@ -598,10 +620,16 @@ void onResume() {
 
 	if (!avdl_state_initialised) return;
 
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	pthread_mutex_lock(&updateDrawMutex);
+	#endif
 	dd_flag_exit = 0;
 	dd_flag_focused = 1;
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	pthread_mutex_unlock(&updateDrawMutex);
+	#endif
 
 	if (!avdl_state_active) {
 		avdl_state_active = 1;
@@ -632,10 +660,16 @@ void onPause() {
 		pthread_join(updatePthread, NULL);
 		#endif
 	}
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	pthread_mutex_lock(&updateDrawMutex);
+	#endif
 	dd_flag_focused = 0;
 	//dd_flag_initialised = 0;
+	#if defined(_WIN32) || defined(WIN32)
+	#else
 	pthread_mutex_unlock(&updateDrawMutex);
+	#endif
 }
 
 int avdl_engine_init_opengl() {

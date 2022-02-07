@@ -10,6 +10,11 @@ add_executable(avdl
 	src/avdl_main.c src/avdl_platform.c src/avdl_struct_table.c src/avdl_variable_type.c
 )
 
+add_compile_definitions(
+	PKG_VERSION=\"0.2.3\"
+	AVDL_DYNAMIC_PKG_LOCATION
+)
+
 # add include directory, for binary `avdl`
 target_include_directories(avdl PUBLIC include)
 
@@ -44,6 +49,10 @@ install(FILES
 	engines/cengine/src/dd_vec4.c
 	engines/cengine/src/dd_world.c
 	engines/cengine/src/main.c
+	DESTINATION
+	share/avdl/cengine
+)
+install(FILES
 	engines/cengine/include/avdl_assetManager.h
 	engines/cengine/include/avdl_cengine.h
 	engines/cengine/include/avdl_data.h
@@ -73,11 +82,11 @@ install(FILES
 	engines/cengine/include/dd_vec4.h
 	engines/cengine/include/dd_world.h
 	DESTINATION
-	cengine
+	include
 )
 
 # android engine
-install(DIRECTORY engines/android DESTINATION .)
+install(DIRECTORY engines/android DESTINATION share/avdl/)
 
 # packaging using `cpack`
 include(InstallRequiredSystemLibraries)

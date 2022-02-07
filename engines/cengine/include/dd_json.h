@@ -22,13 +22,16 @@ enum DD_JSON_TOKEN {
 	DD_JSON_EOB,
 };
 
-#define DD_JSON_BUFFER_SIZE 255
+#define DD_JSON_BUFFER_SIZE 1000
 
 struct dd_json_object {
 
 	/*
 	 * string parsing
 	 */
+	#if defined(WIN32) || defined(_WIN32)
+	wchar_t bufferW[DD_JSON_BUFFER_SIZE];
+	#endif
 	char buffer[DD_JSON_BUFFER_SIZE];
 	char *str;
 	int size;
@@ -50,7 +53,11 @@ struct dd_json_object {
 };
 
 void dd_json_init(struct dd_json_object *o, char *json_string, int size);
+#if defined(_WIN32) || defined(WIN32)
+void dd_json_initFile(struct dd_json_object *o, wchar_t *filename);
+#else
 void dd_json_initFile(struct dd_json_object *o, char *filename);
+#endif
 
 void dd_json_next(struct dd_json_object *o);
 enum DD_JSON_TOKEN dd_json_getToken(struct dd_json_object *o);
