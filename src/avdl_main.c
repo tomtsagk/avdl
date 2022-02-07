@@ -183,7 +183,11 @@ int main(int argc, char *argv[]) {
 				else
 				// show pkg location
 				if (strcmp(argv[i], "--get-pkg-location") == 0) {
+					#if defined(_WIN32) || defined(WIN32)
+					wprintf(L"%lS\n", avdl_getProjectLocation());
+					#else
 					printf("%s\n", avdl_getProjectLocation());
+					#endif
 					return -1;
 				}
 				else
