@@ -1,7 +1,6 @@
 #include "dd_game.h"
 #include "dd_math.h"
 #include "dd_fov.h"
-#include "whereami.h"
 #include <stdio.h>
 
 int dd_flag_initialised = 0;

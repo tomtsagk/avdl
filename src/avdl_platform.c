@@ -1,7 +1,6 @@
 #include "avdl_platform.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <whereami.h>
 
 enum AVDL_PLATFORM avdl_platform;
 

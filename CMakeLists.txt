@@ -8,7 +8,6 @@ add_executable(avdl
 	src/avdl_ast_node.c src/avdl_dynamic_array.c src/avdl_lexer.c src/avdl_parser_cglut.c
 	src/avdl_semantic_analyser.c src/avdl_symtable.c src/avdl_commands.c src/avdl_file_op.c
 	src/avdl_main.c src/avdl_platform.c src/avdl_struct_table.c src/avdl_variable_type.c
-	src/whereami.c
 )
 
 add_compile_definitions(
@@ -50,7 +49,6 @@ install(FILES
 	engines/cengine/src/dd_vec4.c
 	engines/cengine/src/dd_world.c
 	engines/cengine/src/main.c
-	engines/cengine/src/whereami.c
 	DESTINATION
 	share/avdl/cengine
 )
@@ -83,7 +81,6 @@ install(FILES
 	engines/cengine/include/dd_vec3.h
 	engines/cengine/include/dd_vec4.h
 	engines/cengine/include/dd_world.h
-	engines/cengine/include/whereami.h
 	DESTINATION
 	include
 )

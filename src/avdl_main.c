@@ -70,7 +70,6 @@ char *cengine_files[] = {
 	"dd_vec4.c",
 	"dd_world.c",
 	"main.c",
-	"whereami.c",
 };
 unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 
@@ -103,7 +102,6 @@ char *cengine_headers[] = {
 	"dd_vec3.h",
 	"dd_vec4.h",
 	"dd_world.h",
-	"whereami.h",
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 
