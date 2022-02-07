@@ -55,17 +55,18 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname) {
 	}
 	*/
 
+	//printf("add asset: %s\n", assetname);
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.mesh = object;
 	meshToLoad.meshType = meshType;
 	#if defined(_WIN32) || defined(WIN32)
 	wcscpy(meshToLoad.filenameW, avdl_getProjectLocation());
 	mbstowcs((meshToLoad.filenameW +wcslen(meshToLoad.filenameW)), assetname, 400 -wcslen(meshToLoad.filenameW));
+	//wprintf(L"add assetW: %lS\n", meshToLoad.filenameW);
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
 	strcat(meshToLoad.filename, assetname);
 	#endif
-	//wprintf(L"add assetW: %lS\n", meshToLoad.filenameW);
 	//printf("add asset: %s\n", assetname);
 	dd_da_add(&meshesToLoad, &meshToLoad);
 	//#endif
@@ -287,7 +288,11 @@ void avdl_assetManager_loadAssets() {
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
 			struct dd_meshTexture *mesh = m->mesh;
+			#if defined(_WIN32) || defined(WIN32)
+			dd_image_load_bmp(&mesh->img, m->filenameW);
+			#else
 			dd_image_load_bmp(&mesh->img, m->filename);
+			#endif
 		}
 		// load mesh
 		else {

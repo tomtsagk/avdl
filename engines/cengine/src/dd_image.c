@@ -3,7 +3,11 @@
 #include <stdio.h>
 #include "dd_log.h"
 
+#if defined(WIN32) || defined(_WIN32)
+void dd_image_load_bmp(struct dd_image *img, const wchar_t *filename) {
+#else
 void dd_image_load_bmp(struct dd_image *img, const char *filename) {
+#endif
 
 	#if DD_PLATFORM_ANDROID
 	#else
@@ -27,11 +31,19 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	} headerinfo;
 
 	// on Unix system, "r" is enough, on windows "rb" is needed
+	#if defined(WIN32) || defined(_WIN32)
+	FILE *f = _wfopen(filename, L"rb");
+	if (!f) {
+		wprintf(L"dd_image_load_bmp: error opening file: '%lS'", filename);
+		exit(-1);
+	}
+	#else
 	FILE *f = fopen(filename, "rb");
 	if (!f) {
 		dd_log("dd_image_load_bmp: error opening file: '%s'", filename);
 		exit(-1);
 	}
+	#endif
 
 	fread(&header.type, sizeof(unsigned short int), 1, f);
 	fread(&header.size, sizeof(unsigned int), 1, f);
@@ -40,7 +52,11 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	fread(&header.offset, sizeof(unsigned int), 1, f);
 
 	if (fread(&headerinfo, sizeof(struct bmp_headerinfo), 1, f) != 1) {
+		#if defined(WIN32) || defined(_WIN32)
+		wprintf(L"dd_image_load_bmp: error reading info header: '%lS'", filename);
+		#else
 		dd_log("dd_image_load_bmp: error reading info header: '%s'", filename);
+		#endif
 	}
 
 	fseek(f, header.offset, SEEK_SET);

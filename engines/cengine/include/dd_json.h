@@ -31,9 +31,8 @@ struct dd_json_object {
 	 */
 	#if defined(WIN32) || defined(_WIN32)
 	wchar_t bufferW[DD_JSON_BUFFER_SIZE];
-	#else
-	char buffer[DD_JSON_BUFFER_SIZE];
 	#endif
+	char buffer[DD_JSON_BUFFER_SIZE];
 	char *str;
 	int size;
 

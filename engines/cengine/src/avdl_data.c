@@ -68,7 +68,7 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 	//wcscat(finalLoc, filename);
 	mbstowcs((finalLoc +wcslen(finalLoc)), filename, strlen(filename));
 	finalLoc[pathLen-1] = L'\0';
-	wprintf(L"path final to save: %lS\n", finalLoc);
+	//wprintf(L"path final to save: %lS\n", finalLoc);
 
 	// make all needed directories
 	wchar_t *start = finalLoc;
@@ -196,7 +196,7 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 	//wcscat(finalLoc, filename);
 	mbstowcs((finalLoc +wcslen(finalLoc)), filename, strlen(filename));
 	finalLoc[pathLen-1] = L'\0';
-	wprintf(L"path final: %lS\n", finalLoc);
+	//wprintf(L"path final: %lS\n", finalLoc);
 
 	/*
 	 * if file fails to open, that means there are no save data
