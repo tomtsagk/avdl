@@ -14,9 +14,9 @@
 #include "avdl_ast_node.h"
 #include "avdl_parser.h"
 #include "avdl_platform.h"
+#include "avdl_settings.h"
 
-#if defined(_WIN32) || defined(WIN32)
-#else
+#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
 #endif
 
@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
 				else
 				// show pkg location
 				if (strcmp(argv[i], "--get-pkg-location") == 0) {
-					#if defined(_WIN32) || defined(WIN32)
+					#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 					wprintf(L"%lS\n", avdl_getProjectLocation());
 					#else
 					printf("%s\n", avdl_getProjectLocation());
@@ -654,7 +654,7 @@ int main(int argc, char *argv[]) {
 
 		// on android put all object files in an android project
 		if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
-			#if defined(_WIN32) || defined(WIN32)
+			#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 			#else
 			char *androidDir;
 			if (outname) {
@@ -806,7 +806,7 @@ int main(int argc, char *argv[]) {
 }
 
 int create_android_directory(const char *androidDirName) {
-	#if defined(_WIN32) || defined(WIN32)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	#else
 	int isDir = is_dir(androidDirName);
 	if (isDir == 0) {

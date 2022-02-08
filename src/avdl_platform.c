@@ -2,12 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "avdl_settings.h"
+
+
 enum AVDL_PLATFORM avdl_platform;
 
 void avdl_platform_initialise() {
-	#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	avdl_platform = AVDL_PLATFORM_WINDOWS;
-	#elif __linux__
+	#elif AVDL_IS_OS(AVDL_OS_LINUX)
 	avdl_platform = AVDL_PLATFORM_LINUX;
 	#endif
 }
@@ -20,19 +23,19 @@ enum AVDL_PLATFORM avdl_platform_get() {
 	return avdl_platform;
 }
 
-#if defined(_WIN32) || defined(WIN32)
+#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <windows.h>
 wchar_t dynamicProjectLocationW[1000];
 #endif
 
-#if defined(_WIN32) || defined(WIN32)
+#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 const wchar_t *avdl_getProjectLocation() {
 #else
 const char *avdl_getProjectLocation() {
 #endif
 	#ifdef AVDL_DYNAMIC_PKG_LOCATION
 
-	#if defined(_WIN32) || defined(WIN32)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	if (!dynamicProjectLocationW) {
 		return L"";
 	}
@@ -45,7 +48,7 @@ const char *avdl_getProjectLocation() {
 
 	#else
 
-	#if defined(_WIN32) || defined(WIN32)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	return LPKG_LOCATION;
 	#else
 	return PKG_LOCATION;
@@ -57,7 +60,7 @@ const char *avdl_getProjectLocation() {
 void avdl_initProjectLocation() {
 	#ifdef AVDL_DYNAMIC_PKG_LOCATION
 
-	#if defined(_WIN32) || defined(WIN32)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	wchar_t *pointer = dynamicProjectLocationW;
 	wchar_t *secondToLastSlash = 0;
 	wchar_t *lastSlash = 0;

@@ -4,7 +4,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#if defined(_WIN32) || defined(WIN32)
+#include "avdl_file_op.h"
+#include "avdl_settings.h"
+
+#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <io.h>
 #include <windows.h>
 #define AVDL_FILE_OPEN(x, y) _open(x, y)
@@ -18,10 +21,8 @@
 #define AVDL_FILE_MKDIR(filename, mode) mkdir(filename, mode)
 #endif
 
-#include "avdl_file_op.h"
-
 int file_copy(const char *src, const char *dest, int append) {
-	#if defined(_WIN32) || defined(WIN32)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	int s = AVDL_FILE_OPEN(src, _O_RDONLY);
 	if (!s) {
 		printf("can't open %s: %s\n", src, strerror(errno));
@@ -59,7 +60,7 @@ int file_copy(const char *src, const char *dest, int append) {
 }
 
 int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int append) {
-	#if defined(_WIN32) || defined(WIN32)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	#else
 	int s;
 	if (src_at) {
@@ -108,7 +109,7 @@ int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int
 int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 	const char *findString, const char *replaceString) {
 
-	#if defined(_WIN32) || defined(WIN32)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	#else
 	int s;
 	if (src_at) {
@@ -151,7 +152,8 @@ int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 		buffer[nread] = '\0';
 
 		// possibly found the string it is looking for
-		if (found = strstr(buffer, strToFind)) {
+		found = strstr(buffer, strToFind);
+		if (found) {
 
 			/*
 			 * string is cutoff - can't determine if it's the one
@@ -196,7 +198,7 @@ int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 
 int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst) {
 
-	#if defined(_WIN32) || defined(WIN32)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	#else
 	// open source directory
 	int src_dir;
@@ -304,7 +306,7 @@ int dir_create(const char *filename) {
 }
 
 int dir_createat(int dir_at, const char *filename) {
-	#if defined(_WIN32) || defined(WIN32)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	if (!dir_at) {
 		AVDL_FILE_MKDIR(filename, mode);
 	}
@@ -325,7 +327,7 @@ int dir_createat(int dir_at, const char *filename) {
 }
 
 int is_dir(const char *filename) {
-	#if defined(_WIN32) || defined(WIN32)
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	#else
 	DIR *dir = opendir(filename);
 	if (dir) {
