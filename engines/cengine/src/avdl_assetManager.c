@@ -66,8 +66,8 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname) {
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
 	strcat(meshToLoad.filename, assetname);
-	#endif
 	//printf("add asset: %s\n", assetname);
+	#endif
 	dd_da_add(&meshesToLoad, &meshToLoad);
 	//#endif
 
