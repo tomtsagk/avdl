@@ -74,9 +74,6 @@ void dd_fullscreenToggle() {
 	#endif
 }
 
-extern char *installLocation = "";
-extern int installLocationDynamic;
-
 #if defined(_WIN32) || defined(WIN32)
 wchar_t dynamicProjectLocationW[1000];
 
