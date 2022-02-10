@@ -42,7 +42,7 @@ void dd_math_ease_catmullrom2d(struct dd_vec2 *point, float t, struct dd_vec2 p0
 #define dd_math_floor(val) floorf(val)
 #define dd_math_ceil(val) ceilf(val)
 
-float dd_math_tan(float val);
+//float dd_math_tan(float val);
 
 #define dd_math_min(a, b) (a > b ? b : a)
 #define dd_math_max(a, b) (a > b ? a : b)

@@ -1,19 +1,67 @@
-#include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <dirent.h>
 
 #include "avdl_file_op.h"
+#include "avdl_settings.h"
+
+#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+#include <io.h>
+#include <windows.h>
+#define AVDL_FILE_OPEN(x, y) _open(x, y)
+#define AVDL_FILE_OPEN_MODE(x, y, z) _open(x, y, z)
+#define AVDL_FILE_MKDIR(filename, mode) _mkdir(filename)
+#else
+#include <dirent.h>
+#include <unistd.h>
+#define AVDL_FILE_OPEN(x, y) open(x, y)
+#define AVDL_FILE_OPEN_MODE(x, y, z) open(x, y, z)
+#define AVDL_FILE_MKDIR(filename, mode) mkdir(filename, mode)
+#endif
 
 int file_copy(const char *src, const char *dest, int append) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	int s = AVDL_FILE_OPEN(src, _O_RDONLY);
+	if (!s) {
+		printf("can't open %s: %s\n", src, strerror(errno));
+		return -1;
+	}
+
+	int dest_flags = _O_WRONLY | _O_CREAT;
+	if (append) dest_flags |= _O_APPEND;
+	int d = AVDL_FILE_OPEN_MODE(dest, dest_flags, _S_IREAD | _S_IWRITE);
+	if (!d) {
+		printf("can't open %s: %s\n", dest, strerror(errno));
+		close(s);
+		return -1;
+	}
+
+	char buffer[1024];
+
+	int i = 0;
+	long int nread;
+	while (nread = read(s, buffer, 1024), nread > 0) {
+		if (write(d, buffer, nread) == -1) {
+			printf("avdl error: %s\n", strerror(errno));
+		}
+		i++;
+	}
+
+	close(s);
+	close(d);
+
+	return 0;
+	#else
 	file_copy_at(0, src, 0, dest, append);
+	#endif
 	return 0;
 }
 
 int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int append) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	#else
 	int s;
 	if (src_at) {
 		s = openat(src_at, src, O_RDONLY);
@@ -46,13 +94,14 @@ int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int
 	ssize_t nread;
 	while (nread = read(s, buffer, 1024), nread > 0) {
 		if (write(d, buffer, nread) == -1) {
-			printf("error: %s\n", strerror(errno));
+			printf("avdl error: %s\n", strerror(errno));
 		}
 		i++;
 	}
 
 	close(s);
 	close(d);
+	#endif
 
 	return 0;
 }
@@ -60,6 +109,8 @@ int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int
 int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 	const char *findString, const char *replaceString) {
 
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	#else
 	int s;
 	if (src_at) {
 		s = openat(src_at, src, O_RDONLY);
@@ -101,7 +152,8 @@ int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 		buffer[nread] = '\0';
 
 		// possibly found the string it is looking for
-		if (found = strstr(buffer, strToFind)) {
+		found = strstr(buffer, strToFind);
+		if (found) {
 
 			/*
 			 * string is cutoff - can't determine if it's the one
@@ -139,12 +191,15 @@ int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 
 	close(s);
 	close(d);
+	#endif
 
 	return 0;
 }
 
 int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst) {
 
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	#else
 	// open source directory
 	int src_dir;
 	if (src_at) {
@@ -242,6 +297,7 @@ int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst)
 	close(src_dir);
 	close(dst_dir);
 	closedir(d);
+	#endif
 	return 0;
 }
 
@@ -250,6 +306,15 @@ int dir_create(const char *filename) {
 }
 
 int dir_createat(int dir_at, const char *filename) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	if (!dir_at) {
+		AVDL_FILE_MKDIR(filename, mode);
+	}
+	else {
+		printf("avdl error: cannot create directories on specific locations on windows yet\n");
+		return 0;
+	}
+	#else
 	mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
 	if (dir_at) {
 		mkdirat(dir_at, filename, mode);
@@ -257,10 +322,13 @@ int dir_createat(int dir_at, const char *filename) {
 	else {
 		mkdir(filename, mode);
 	}
+	#endif
 	return 0;
 }
 
 int is_dir(const char *filename) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	#else
 	DIR *dir = opendir(filename);
 	if (dir) {
 		return 1;
@@ -272,4 +340,6 @@ int is_dir(const char *filename) {
 	else {
 		return -1;
 	}
+	#endif
+	return 0;
 }

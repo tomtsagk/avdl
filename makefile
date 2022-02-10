@@ -2,7 +2,7 @@
 # package data
 #
 PACKAGE_NAME=avdl
-PACKAGE_VERSION=0.2.3
+PACKAGE_VERSION=0.3.0
 
 #
 # system data
@@ -126,7 +126,7 @@ ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar:
 #
 clean:
 	${MAKE} -C ${CENGINE_PATH} clean
-	rm -f ${EXECUTABLE} ${OBJ}
+	rm -rf build
 
 #
 # simple tests, they are just compiled and run

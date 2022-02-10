@@ -528,11 +528,20 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 #else
 
 /* Different functions for each file */
+#if defined(_WIN32) || defined(WIN32)
+int dd_load_ply(struct dd_loaded_mesh *m, const wchar_t *path, int settings);
+int dd_load_obj(struct dd_loaded_mesh *m, const wchar_t *path, int settings);
+#else
 int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings);
 int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings);
+#endif
 
 /* Select the right function depending on file_type */
+#if defined(_WIN32) || defined(WIN32)
+int dd_filetomesh(struct dd_loaded_mesh *m, const wchar_t *path, int settings, int file_type) {
+#else
 int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int file_type) {
+#endif
 
 	switch (file_type) {
 		case DD_PLY: return dd_load_ply(m, path, settings);
@@ -542,10 +551,245 @@ int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int 
 	return -1;
 }
 
+#if defined(_WIN32) || defined(WIN32)
+#include <windows.h>
+
+char *skip_whitespace(char *str) {
+	while (str[0] == ' '
+	||     str[0] == '\t'
+	||     str[0] == '\n'
+	||     str[0] == '\r') {
+		str++;
+	}
+
+	return str;
+}
+
+char *skip_to_whitespace(char *str) {
+	while (str[0] != ' '
+	&&     str[0] != '\t'
+	&&     str[0] != '\n'
+	&&     str[0] != '\r'
+	&&     str[0] != '\0') {
+		str++;
+	}
+
+	return str;
+}
+
+int my_min(num1, num2) {
+	return num1 > num2 ? num2 : num1;
+}
+#endif
+
 /* Parse PLY - STILL WORKING ON IT */
 /*
  */
+#if defined(_WIN32) || defined(WIN32)
+int dd_load_ply(struct dd_loaded_mesh *m, const wchar_t *path, int settings) {
+#else
 int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
+#endif
+
+	#if defined(_WIN32) || defined(WIN32)
+
+	//Open file and check error
+	#if defined(_WIN32) || defined(WIN32)
+	FILE *f = _wfopen(path, L"r");
+	#else
+	FILE *f = fopen(path, "r");
+	#endif
+	if (!f)
+	{
+		dd_log("load_ply: error opening file: %s: %s", path, strerror(errno));
+		return -1;
+	}
+
+	int vertexNumber = 0;
+	int faceNumber = 0;
+
+	int line = 0;
+	char buff[1000];
+	char *p;
+	while (fgets(buff, 1000, f)) {
+		line++;
+		p = buff;
+
+		// ignore comments
+		if (strncmp("comment", p, strlen("comment")) == 0) {
+		}
+		else
+		// new element
+		if (strncmp("element", p, strlen("element")) == 0) {
+
+			p += strlen("element");
+			p = skip_whitespace(p);
+
+			if (strncmp("vertex", p, strlen("vertex")) == 0) {
+				p += strlen("vertex");
+				p = skip_whitespace(p);
+				vertexNumber = atoi(p);
+			}
+			else
+			if (strncmp("face", p, strlen("face")) == 0) {
+				p += strlen("face");
+				p = skip_whitespace(p);
+				faceNumber = atoi(p);
+			}
+		}
+		else
+		// new property
+		if (strncmp("property", p, strlen("property")) == 0) {
+		}
+		else
+		// end of header
+		if (strncmp("end_header", p, strlen("end_header")) == 0) {
+			break;
+		}
+	}
+
+	#define VERTEX_MAX 20000
+
+	float vertexX[VERTEX_MAX];
+	float vertexY[VERTEX_MAX];
+	float vertexZ[VERTEX_MAX];
+	float vertexS[VERTEX_MAX];
+	float vertexT[VERTEX_MAX];
+	float vertexR[VERTEX_MAX];
+	float vertexG[VERTEX_MAX];
+	float vertexB[VERTEX_MAX];
+
+	for (int i = 0; i < vertexNumber; i++) {
+
+		float x;
+		float y;
+		float z;
+
+		float s;
+		float t;
+
+		int r;
+		int g;
+		int b;
+		fgets(buff, 1000, f);
+		p = buff;
+
+		if (i >= VERTEX_MAX) continue;
+
+		x = atof(p);
+		p = skip_to_whitespace(p);
+		p = skip_whitespace(p);
+
+		y = atof(p);
+		p = skip_to_whitespace(p);
+		p = skip_whitespace(p);
+
+		z = atof(p);
+		p = skip_to_whitespace(p);
+		p = skip_whitespace(p);
+
+		vertexX[i] = x;
+		vertexY[i] = y;
+		vertexZ[i] = z;
+
+		if (settings & DD_FILETOMESH_SETTINGS_TEX_COORD) {
+			s = atof(p);
+			p = skip_to_whitespace(p);
+			p = skip_whitespace(p);
+
+			t = atof(p);
+			p = skip_to_whitespace(p);
+			p = skip_whitespace(p);
+
+			vertexS[i] = s;
+			vertexT[i] = t;
+		}
+
+		if (settings & DD_FILETOMESH_SETTINGS_COLOUR) {
+			r = atoi(p);
+			p = skip_to_whitespace(p);
+			p = skip_whitespace(p);
+
+			g = atoi(p);
+			p = skip_to_whitespace(p);
+			p = skip_whitespace(p);
+
+			b = atoi(p);
+			p = skip_to_whitespace(p);
+			p = skip_whitespace(p);
+
+			vertexR[i] = r/255.0;
+			vertexG[i] = g/255.0;
+			vertexB[i] = b/255.0;
+		}
+	}
+
+	int faceIndices[VERTEX_MAX *3];
+
+	for (int i = 0; i < faceNumber; i++) {
+
+		int faces;
+		int face1;
+		int face2;
+		int face3;
+
+		fgets(buff, 1000, f);
+		p = buff;
+
+		if (i >= VERTEX_MAX) continue;
+
+		faces = atoi(p);
+		p = skip_to_whitespace(p);
+		p = skip_whitespace(p);
+
+		face1 = atoi(p);
+		p = skip_to_whitespace(p);
+		p = skip_whitespace(p);
+
+		face2 = atoi(p);
+		p = skip_to_whitespace(p);
+		p = skip_whitespace(p);
+
+		face3 = atoi(p);
+		p = skip_to_whitespace(p);
+		p = skip_whitespace(p);
+
+		faceIndices[i*3+0] = my_min(face1, VERTEX_MAX -1);
+		faceIndices[i*3+1] = my_min(face2, VERTEX_MAX -1);
+		faceIndices[i*3+2] = my_min(face3, VERTEX_MAX -1);
+
+	}
+
+	m->vcount = my_min(faceNumber *3, VERTEX_MAX -1);
+	m->v = malloc(sizeof(float) *m->vcount *3);
+
+	if (settings & DD_FILETOMESH_SETTINGS_TEX_COORD) {
+		m->t = malloc(sizeof(float) *m->vcount *2);
+	}
+
+	if (settings & DD_FILETOMESH_SETTINGS_COLOUR) {
+		m->c = malloc(sizeof(float) *m->vcount *3);
+	}
+
+	for (int i = 0; i < m->vcount; i++) {
+		m->v[i*3+0] = vertexX[faceIndices[i]];
+		m->v[i*3+1] = vertexY[faceIndices[i]];
+		m->v[i*3+2] = vertexZ[faceIndices[i]];
+
+		if (settings & DD_FILETOMESH_SETTINGS_COLOUR) {
+			m->c[i*3+0] = vertexR[faceIndices[i]];
+			m->c[i*3+1] = vertexG[faceIndices[i]];
+			m->c[i*3+2] = vertexB[faceIndices[i]];
+		}
+
+		if (settings & DD_FILETOMESH_SETTINGS_TEX_COORD) {
+			m->t[i*2+0] = vertexS[faceIndices[i]];
+			m->t[i*2+1] = vertexT[faceIndices[i]];
+		}
+	}
+
+	return 0;
+	#else
 
 	//Open file and check error
 	FILE *f = fopen(path, "r");
@@ -962,10 +1206,16 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	}
 	fclose(f);
 	return -1;
+
+	#endif
 }
 
 /* Parse OBJ */
+#if defined(_WIN32) || defined(WIN32)
+int dd_load_obj(struct dd_loaded_mesh *m, const wchar_t *path, int settings) {
+#else
 int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
+#endif
 
 	//(void) attr;
 
@@ -980,7 +1230,11 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 	dd_da_init(&v_out, sizeof(struct dd_vec3));
 
 	//File
+	#if defined(_WIN32) || defined(WIN32)
+	FILE *f = _wfopen(path, L"r");
+	#else
 	FILE *f = fopen(path, "r");
+	#endif
 	if ( !f ) {
 		dd_log("load_obj: %s: failed to open file: %s", path, strerror(errno));
 		goto error;

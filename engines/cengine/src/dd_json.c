@@ -17,6 +17,14 @@ void dd_json_init(struct dd_json_object *o, char *json_string, int size) {
 	o->file = 0;
 }
 
+#if defined(_WIN32) || defined(WIN32)
+void dd_json_initFile(struct dd_json_object *o, wchar_t *filename) {
+	o->file = _wfopen(filename, L"r");
+	if (!o->file) {
+		wprintf(L"avdl: error opening file '%lS': %lS\n", filename, _wcserror(errno));
+	}
+}
+#else
 void dd_json_initFile(struct dd_json_object *o, char *filename) {
 	o->file = fopen(filename, "r");
 	if (!o->file) {
@@ -25,14 +33,14 @@ void dd_json_initFile(struct dd_json_object *o, char *filename) {
 		);
 	}
 }
+#endif
 
 void dd_json_next(struct dd_json_object *o) {
 
 	if (o->file) {
 
-
 		// ignore whitespace
-		fscanf(o->file, "%200[ \t\n]", o->buffer);
+		fscanf(o->file, "%200[ \t\n\r]", o->buffer);
 
 		// grab first character
 		long pos = ftell(o->file);

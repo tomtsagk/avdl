@@ -1,6 +1,11 @@
 #ifndef AVDL_DATA_H
 #define AVDL_DATA_H
 
+#if defined(_WIN32) || defined(WIN32)
+#include <shlobj_core.h>
+#include <Objbase.h>
+#endif
+
 extern char avdl_data_saveDirectory[];
 
 int avdl_data_save_internal(void *data, int data_size, const char *filename);

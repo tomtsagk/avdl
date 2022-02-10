@@ -39,34 +39,49 @@ enum AST_NODE_TYPE {
 
 // Struct for a single node
 struct ast_node {
+
+	// type and its value (int or float)
 	enum AST_NODE_TYPE node_type;
 	union {
 		int value;
 		float fvalue;
 	};
+
+	// space to add string, useful for variables
+	char lex[500];
+
+	// values that may or may not stay here
 	int arraySize;
 	int isRef;
 	int isExtern;
 	int isIncluded;
+
+	// node may have a parent, and any number of children
 	struct dd_dynamic_array children;
 	struct ast_node *parent;
-	char lex[500];
 };
 
-// Actions
-struct ast_node *ast_create(enum AST_NODE_TYPE node_type, int value);
-int ast_child_add(struct ast_node *parent, struct ast_node *child);
-void ast_child_add_first(struct ast_node *parent, struct ast_node *child);
-void ast_delete(struct ast_node *node);
+// lifecycle
+struct ast_node *ast_create(enum AST_NODE_TYPE node_type);
+int ast_addChild  (struct ast_node *parent, struct ast_node *child);
+int ast_addChildAt(struct ast_node *parent, struct ast_node *child, int index);
+int ast_delete(struct ast_node *n);
 
-void ast_addLex(struct ast_node *node, const char *newLex);
+// setters
+int ast_setValuei(struct ast_node *n, int value);
+int ast_setValuef(struct ast_node *n, float value);
+int ast_setLex   (struct ast_node *n, const char *newLex);
 
 // getters
-int ast_get_childCount(struct ast_node *node);
-struct ast_node *ast_get_child(struct ast_node *node, int index);
-enum AST_NODE_TYPE ast_get_type(struct ast_node *node);
+int   ast_getChildCount(struct ast_node *n);
+int   ast_getValuei    (struct ast_node *n);
+float ast_getValuef    (struct ast_node *n);
+const char *ast_getLex (struct ast_node *n);
+enum AST_NODE_TYPE ast_getType(struct ast_node *n);
+struct ast_node *ast_getChild (struct ast_node *n, int index);
+struct ast_node *ast_getParent(struct ast_node *n);
 
 // Debug - Print node tree
-void ast_print(struct ast_node *node);
+void ast_print(struct ast_node *n);
 
 #endif

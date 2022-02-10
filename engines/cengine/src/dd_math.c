@@ -8,7 +8,7 @@ float dd_math_dec2rad(float dec) { return dec *3.14 /180; }
 int dd_math_rand(int to) { return rand() %to; }
 float dd_math_randf(float to) { return ((float) rand() /(float) RAND_MAX) *to; }
 
-float dd_math_tan(float val) {return tan(val);}
+//float dd_math_tan(float val) {return tan(val);}
 
 float dd_math_ease_catmullrom(float t, float p0, float p1, float p2, float p3) {
 	return 0.5 *(
