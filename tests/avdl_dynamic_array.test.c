@@ -1,6 +1,26 @@
 #include "avdl_dynamic_array.h"
+#include "avdl_std.h"
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+
+static int avdlStdFailures = 0;
+
+void *custom_malloc(size_t size) {
+	if (avdlStdFailures > 0) {
+		avdlStdFailures--;
+		return 0;
+	}
+	return malloc(size);
+}
+
+void *custom_realloc(void *ptr, size_t size) {
+	if (avdlStdFailures > 0) {
+		avdlStdFailures--;
+		return 0;
+	}
+	return realloc(ptr, size);
+}
 
 int main(int argc, char *argv[]) {
 
@@ -8,7 +28,7 @@ int main(int argc, char *argv[]) {
 	int *exampleReturn;
 
 	// initialise array
-	dd_da_init(&array, sizeof(int));
+	assert(dd_da_init(&array, sizeof(int)));
 
 	// add example single element
 	int singleElement = 4;
@@ -116,6 +136,25 @@ int main(int argc, char *argv[]) {
 	assert(dd_da_count(&array) == 0);
 
 	// free array
+	dd_da_free(&array);
+
+	// edge cases
+	avdl_malloc = custom_malloc;
+	avdl_realloc = custom_realloc;
+
+	// malloc failure
+	avdlStdFailures = 1;
+	assert(dd_da_init(&array, sizeof(int)));
+	int expectedArray_5[10] = { 2, 6, 52, 11, 32, 93, 6, 26, 84, 66 };
+	assert(!dd_da_add(&array, expectedArray_5, 10, 0));
+	dd_da_free(&array);
+
+	// realloc failure
+	assert(dd_da_init(&array, sizeof(int)));
+	assert(dd_da_add(&array, expectedArray_5, 10, 0));
+	assert(dd_da_add(&array, expectedArray_5, 10, 0));
+	avdlStdFailures = 1;
+	assert(!dd_da_add(&array, expectedArray_5, 10, 0));
 	dd_da_free(&array);
 
 	return 0;

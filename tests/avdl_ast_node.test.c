@@ -3,6 +3,18 @@
 #include <string.h>
 #include <math.h>
 #include "avdl_ast_node.h"
+#include "avdl_std.h"
+#include <stdlib.h>
+
+static int avdlStdFailures = 0;
+
+void *custom_malloc(size_t size) {
+	if (avdlStdFailures > 0) {
+		avdlStdFailures--;
+		return 0;
+	}
+	return malloc(size);
+}
 
 int main(int argc, char *argv[]) {
 
@@ -102,6 +114,30 @@ int main(int argc, char *argv[]) {
 	n = ast_create(AST_GAME);
 	assert(n);
 	assert(ast_delete(n));
+
+	// edge cases
+	avdl_malloc = custom_malloc;
+
+	// malloc failure
+	avdlStdFailures = 1;
+	struct ast_node *e = ast_create(AST_GAME);
+	assert(!e);
+
+	// add child failure
+	struct ast_node *e2 = ast_create(AST_GAME);
+	assert(e2);
+
+	for (int i = 0; i < 100; i++) {
+		avdlStdFailures = 0;
+		struct ast_node *e3 = ast_create(AST_GAME);
+		assert(e3);
+		avdlStdFailures = 1;
+		if (!ast_addChildAt(e2, e3, 0)) {
+			ast_delete(e3);
+		}
+	}
+
+	ast_delete(e2);
 
 	// all pass!
 	return 0;
