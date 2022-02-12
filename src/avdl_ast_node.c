@@ -5,12 +5,13 @@
 #include "avdl_symtable.h"
 #include "avdl_ast_node.h"
 #include "avdl_dynamic_array.h"
+#include "avdl_std.h"
 
 // Create node with given token and value - no children
 struct ast_node *ast_create(enum AST_NODE_TYPE node_type) {
 
 	// initialise the node itself
-	struct ast_node *new_node = malloc(sizeof(struct ast_node));
+	struct ast_node *new_node = avdl_malloc(sizeof(struct ast_node));
 	if (!new_node) {
 		return 0;
 	}
@@ -28,10 +29,13 @@ struct ast_node *ast_create(enum AST_NODE_TYPE node_type) {
 	new_node->isIncluded = 0;
 
 	// initialise children and parents
+	dd_da_init(&new_node->children, sizeof(struct ast_node));
+	/* dd_da_init cannot fail for now
 	if (!dd_da_init(&new_node->children, sizeof(struct ast_node))) {
-		free(new_node);
+		avdl_free(new_node);
 		return 0;
 	}
+	*/
 	new_node->parent = 0;
 
 	// return newly created node
@@ -62,7 +66,7 @@ int ast_addChildAt(struct ast_node *parent, struct ast_node *child, int index) {
 	}
 
 	// the original child is destroyed
-	free(child);
+	avdl_free(child);
 
 	// success
 	return 1;
@@ -82,7 +86,7 @@ int ast_delete(struct ast_node *n) {
 		return 0;
 	}
 	ast_delete_children(n);
-	free(n);
+	avdl_free(n);
 	return 1;
 }
 
@@ -167,7 +171,6 @@ struct ast_node *ast_getParent(struct ast_node *n) {
 /*
  * Print whole node tree, meant for debugging only
  * might delete, or modify at a later point
- */
 int tabs = 0;
 void ast_print(struct ast_node *node) {
 
@@ -217,3 +220,4 @@ void ast_print(struct ast_node *node) {
 	}
 	tabs--;
 }
+ */

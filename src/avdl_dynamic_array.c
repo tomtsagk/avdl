@@ -3,20 +3,20 @@
 #include <string.h>
 
 #include "avdl_dynamic_array.h"
+#include "avdl_std.h"
 
 static int set_array_size(struct dd_dynamic_array *da, int count) {
 
 	da->array_size = count;
 	if (!da->array) {
-		da->array = malloc(da->element_size *da->array_size);
+		da->array = avdl_malloc(da->element_size *da->array_size);
 
 		if (!da->array) {
-			printf("dd_da: initialise_array: cannot allocate memory\n");
 			return 0;
 		}
 	}
 	else {
-		void *temp = realloc(da->array, da->element_size *da->array_size);
+		void *temp = avdl_realloc(da->array, da->element_size *da->array_size);
 
 		/* Allocation worked */
 		if (temp) {
@@ -24,7 +24,6 @@ static int set_array_size(struct dd_dynamic_array *da, int count) {
 		}
 		/* Allocation failed */
 		else {
-			printf("error: cannot re-allocate memory, abort\n");
 			return 0;
 		}
 	}
@@ -153,7 +152,7 @@ int dd_da_remove(struct dd_dynamic_array *da, unsigned int count, int position) 
 void dd_da_free(struct dd_dynamic_array *da) {
 	/* if array exists, free it, leaves struct in undefined state */
 	if (da->array) {
-		free(da->array);
+		avdl_free(da->array);
 	}
 }
 
