@@ -183,7 +183,11 @@ int dd_main(int argc, char *argv[]) {
 	#if DD_PLATFORM_NATIVE
 
 	// Initialise SDL window
-	SDL_Init(SDL_INIT_EVERYTHING);
+	int sdlError = SDL_Init(SDL_INIT_EVERYTHING);
+	if (sdlError) {
+		dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
+		return -1;
+	}
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
@@ -191,14 +195,25 @@ int dd_main(int argc, char *argv[]) {
 	int height = dd_gameInitWindowHeight;
 	mainWindow = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED, width, height, flags);
+	if (mainWindow == NULL) {
+		dd_log("avdl: failed to create SDL2 window: %s\n", SDL_GetError());
+		return -1;
+	}
 	mainGLContext = SDL_GL_CreateContext(mainWindow);
+	if (mainGLContext == NULL) {
+		dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
+	}
 	handleResize(dd_window_width(), dd_window_height());
 
 	// trigger an update event
 	timer = SDL_AddTimer(30, GameLoopTimer, 0);
 
 	// init opengl
-	glewInit();
+	GLenum glewError = glewInit();
+	if (glewError != GLEW_OK) {
+		dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
+		return -1;
+	}
 
 	#endif
 

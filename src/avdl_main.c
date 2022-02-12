@@ -457,9 +457,11 @@ int main(int argc, char *argv[]) {
 		}
 
 		// print debug data
+		/*
 		if (show_ast) {
 			ast_print(game_node);
 		}
+		*/
 
 		if (show_struct_table) {
 			struct_table_print();
