@@ -1,6 +1,12 @@
 #ifndef AVDL_PLATFORM_H
 #define AVDL_PLATFORM_H
 
+#include "avdl_settings.h"
+
+#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+#include <windows.h>
+#endif
+
 #ifndef PKG_NAME
 #define PKG_NAME "avdl"
 #endif
@@ -36,7 +42,11 @@ void avdl_platform_set(enum AVDL_PLATFORM);
 enum AVDL_PLATFORM avdl_platform_get();
 
 // project settings
+#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+const wchar_t *avdl_getProjectLocation();
+#else
 const char *avdl_getProjectLocation();
+#endif
 void avdl_initProjectLocation();
 void avdl_cleanProjectLocation();
 
