@@ -6,8 +6,10 @@
 #include "dd_log.h"
 #include "avdl_assetManager.h"
 #include "dd_opengl.h"
+#include "dd_log.h"
 
 extern GLuint defaultProgram;
+extern GLuint currentProgram;
 
 void dd_meshTexture_create(struct dd_meshTexture *m) {
 	dd_meshColour_create(&m->parent);
@@ -150,8 +152,13 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 		//glUniformi("image", 0);
 	}
 
-	GLuint MatrixID = glGetUniformLocation(defaultProgram, "matrix");
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+	GLint MatrixID = glGetUniformLocation(currentProgram, "matrix");
+	if (MatrixID < 0) {
+		dd_log("avdl: dd_meshTexture_draw: location of `matrix` not found in current program");
+	}
+	else {
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+	}
 
 	glDrawArrays(GL_TRIANGLES, 0, m->parent.parent.vcount);
 

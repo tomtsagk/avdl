@@ -7,6 +7,7 @@ static struct dd_mesh letter[26];
 static struct dd_mesh number[26];
 extern GLuint fontProgram;
 extern GLuint defaultProgram;
+extern GLuint currentProgram;
 
 static int isActive = 0;
 static const char *fontname = 0;
@@ -25,7 +26,7 @@ static void dd_string3d_drawLetter(struct dd_string3d *font, struct dd_mesh *o) 
 	int previousProgram;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
 	glUseProgram(fontProgram);
-	GLuint MatrixID = glGetUniformLocation(fontProgram, "matrix");
+	GLint MatrixID = glGetUniformLocation(fontProgram, "matrix");
 	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
 
 	glEnableVertexAttribArray(0);

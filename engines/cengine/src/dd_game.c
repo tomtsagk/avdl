@@ -103,7 +103,13 @@ const char *avdl_getProjectLocation() {
 	#if defined(_WIN32) || defined(WIN32)
 	return LPKG_LOCATION;
 	#else
+
+	#ifdef PKG_LOCATION
 	return PKG_LOCATION;
+	#else
+	return "";
+	#endif
+
 	#endif
 
 	#endif

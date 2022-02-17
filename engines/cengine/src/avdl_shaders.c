@@ -143,7 +143,8 @@ unsigned int create_shader(int type, const char *src) {
 		 * create shader and compile it
 		 */
 		unsigned int sdr = glCreateShader(type);
-		if (!sdr || glGetError() != GL_NO_ERROR) {
+		GLenum err = glGetError();
+		if (!sdr || err != GL_NO_ERROR) {
 			dd_log("avdl: create_shader: error creating shader");
 			return 0;
 		}
@@ -155,23 +156,23 @@ unsigned int create_shader(int type, const char *src) {
 		glCompileShader(sdr);
 		if (glGetError() != GL_NO_ERROR) {
 			dd_log("avdl: create_shader: error compiling shader source");
-			return 0;
-		}
 
-		//Get compilation log
-		int logsz;
-		glGetShaderiv(sdr, GL_INFO_LOG_LENGTH, &logsz);
-		if (logsz > 1) {
 			/*
-			char *buf = malloc(sizeof(char) *(logsz +1));
-			glGetShaderInfoLog(sdr, logsz, 0, buf);
-			buf[logsz] = 0;
-			dd_log("avdl: compilation of %s shader failed: %s",
-				type == GL_VERTEX_SHADER   ? "vertex" :
-				type == GL_FRAGMENT_SHADER ? "fragment" :
-				"<unknown>", buf);
-			free(buf);
+			//Get compilation log
+			int logsz;
+			glGetShaderiv(sdr, GL_INFO_LOG_LENGTH, &logsz);
+			if (logsz > 1) {
+				char *buf = malloc(sizeof(char) *(logsz +1));
+				glGetShaderInfoLog(sdr, logsz, 0, buf);
+				buf[logsz] = 0;
+				dd_log("avdl: compilation of %s shader failed: %s",
+					type == GL_VERTEX_SHADER   ? "vertex" :
+					type == GL_FRAGMENT_SHADER ? "fragment" :
+					"<unknown>", buf);
+				free(buf);
+			}
 			*/
+			return 0;
 		}
 
 		//Check compilation status
@@ -240,12 +241,15 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
 }
 
 extern GLuint defaultProgram;
+extern GLuint currentProgram;
 void avdl_useProgram(struct avdl_program *o) {
 	if (!o || !o->program) {
 		glUseProgram(defaultProgram);
+		currentProgram = defaultProgram;
 	}
 	else {
 		glUseProgram(o->program);
+		currentProgram = o->program;
 	}
 }
 
@@ -363,6 +367,6 @@ void avdl_program_useProgram(struct avdl_program *o) {
 	avdl_useProgram(o);
 }
 
-int avdl_getUniformLocation(struct avdl_program *o, char *varname) {
+GLint avdl_getUniformLocation(struct avdl_program *o, char *varname) {
 	return glGetUniformLocation(o->program, varname);
 }
