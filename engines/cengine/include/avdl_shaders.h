@@ -29,7 +29,7 @@ void avdl_useProgram(struct avdl_program *o);
 /*
  * get/edit uniforms
  */
-int avdl_getUniformLocation(struct avdl_program *o, char *varname);
+GLint avdl_getUniformLocation(struct avdl_program *o, char *varname);
 #define avdl_setUniformMatrix4f(uniform, matrix) glUniformMatrix4fv(unfirom, 1, GL_FALSE, matrix)
 
 #define avdl_setUniform1f(uniform, f1)             glUniform1f(uniform, f1)

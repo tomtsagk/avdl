@@ -24,7 +24,7 @@ char avdl_data_saveDirectory[1024] = "saves";
 
 void parse_filename(char *buffer, const char *filename) {
 	#if defined(_WIN32) || defined(WIN32)
-	dd_log("parsing: %s", filename);
+	//dd_log("parsing: %s", filename);
 
 	/*
 	PWSTR *path;
@@ -34,6 +34,13 @@ void parse_filename(char *buffer, const char *filename) {
 	*/
 
 	return;
+
+	#elif defined(DD_PLATFORM_ANDROID)
+
+	strcpy(buffer, avdl_data_saveDirectory);
+	strcat(buffer, "/");
+	strcat(buffer, filename);
+
 	#else
 	buffer[0] = '\0';
 	int bufferC = 0;

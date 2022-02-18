@@ -84,6 +84,7 @@ jobject activity = 0;
 // shaders
 GLuint defaultProgram;
 GLuint fontProgram;
+GLuint currentProgram;
 
 #if DD_PLATFORM_NATIVE
 // threads
@@ -710,6 +711,7 @@ int avdl_engine_init_opengl() {
 	}
 
 	glUseProgram(defaultProgram);
+	currentProgram = defaultProgram;
 
 	return 0;
 

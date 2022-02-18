@@ -4,8 +4,10 @@
 #include "dd_filetomesh.h"
 #include <string.h>
 #include "avdl_assetManager.h"
+#include "dd_log.h"
 
 extern GLuint defaultProgram;
+extern GLuint currentProgram;
 
 float shape_triangle[] = {
 	0, 0.5, 0,
@@ -93,8 +95,13 @@ void dd_mesh_draw(struct dd_mesh *m) {
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m->v);
 
-	GLuint MatrixID = glGetUniformLocation(defaultProgram, "matrix");
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+	GLint MatrixID = glGetUniformLocation(currentProgram, "matrix");
+	if (MatrixID < 0) {
+		dd_log("avdl: dd_meshTexture_draw: location of `matrix` not found in current program");
+	}
+	else {
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+	}
 
 	glDrawArrays(GL_TRIANGLES, 0, m->vcount);
 

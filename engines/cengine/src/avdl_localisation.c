@@ -19,6 +19,10 @@ void avdl_localisation_clean(struct avdl_localisation *o) {
 
 void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) {
 
+	#if DD_PLATFORM_ANDROID
+	return;
+	#endif
+
 	//dd_log("avdl: localisation '%s'", keyGroupID);
 	struct dd_json_object obj;
 

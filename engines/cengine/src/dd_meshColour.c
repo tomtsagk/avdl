@@ -5,8 +5,10 @@
 #include <string.h>
 #include "dd_matrix.h"
 #include "avdl_assetManager.h"
+#include "dd_log.h"
 
 extern GLuint defaultProgram;
+extern GLuint currentProgram;
 
 // constructor
 void dd_meshColour_create(struct dd_meshColour *m) {
@@ -77,8 +79,13 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 		#endif
 	}
 
-	GLuint MatrixID = glGetUniformLocation(defaultProgram, "matrix");
-	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+	GLint MatrixID = glGetUniformLocation(currentProgram, "matrix");
+	if (MatrixID < 0) {
+		dd_log("avdl: dd_meshTexture_draw: location of `matrix` not found in current program");
+	}
+	else {
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+	}
 
 	glDrawArrays(GL_TRIANGLES, 0, m->parent.vcount);
 
