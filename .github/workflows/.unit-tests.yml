@@ -5,9 +5,9 @@ on:
     branches:
       - github
       #- github-test
-  pull_request:
-    branches:
-      - development
+  #pull_request:
+  #  branches:
+  #    - development
 
 jobs:
   test-advance:

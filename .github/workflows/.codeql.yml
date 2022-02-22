@@ -14,9 +14,9 @@ name: "CodeQL"
 on:
   push:
     branches: [ github-test, github, development, package/*, stable ]
-  pull_request:
+  #pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ development ]
+    #branches: [ development ]
   schedule:
     - cron: '16 0 * * 3'
 
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'cpp', 'java' ]
+        language: [ 'cpp' ]
         # CodeQL supports [ 'cpp', 'csharp', 'go', 'java', 'javascript', 'python', 'ruby' ]
         # Learn more about CodeQL language support at https://git.io/codeql-language-support
 
