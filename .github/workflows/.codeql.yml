@@ -13,7 +13,7 @@ name: "CodeQL"
 
 on:
   push:
-    branches: [ github, development, package/*, stable ]
+    branches: [ github-test, github, development, package/*, stable ]
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [ development ]
