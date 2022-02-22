@@ -3,7 +3,8 @@ name: Unit Tests
 on:
   push:
     branches:
-      github
+      - github
+      - github-test
 
 jobs:
   test-advance:
