@@ -26,7 +26,13 @@ COMPILER_INCLUDES=-Iinclude
 DIRECTORY_BUILD=build
 DIRECTORY_EXE=${DIRECTORY_BUILD}/bin
 DIRECTORY_OBJ=${DIRECTORY_BUILD}/objects
-DIRECTORY_ALL=${DIRECTORY_BUILD} ${DIRECTORY_EXE} ${DIRECTORY_OBJ}
+DIRECTORY_TESTS=${DIRECTORY_BUILD}/tests
+DIRECTORY_TESTS_DEPS=${DIRECTORY_TESTS}/objects
+DIRECTORY_TESTS_CENG=${DIRECTORY_TESTS}/cengine
+DIRECTORY_TESTS_CENG_DEPS=${DIRECTORY_TESTS_CENG}/objects
+DIRECTORY_COVERAGE=coverage/
+DIRECTORY_ALL=${DIRECTORY_BUILD} ${DIRECTORY_EXE} ${DIRECTORY_OBJ} ${DIRECTORY_TESTS} \
+	${DIRECTORY_TESTS_DEPS} ${DIRECTORY_COVERAGE} ${DIRECTORY_TESTS_CENG} ${DIRECTORY_TESTS_CENG_DEPS}
 
 #
 # source files
@@ -54,15 +60,20 @@ EXECUTABLE=${DIRECTORY_EXE}/${PACKAGE_NAME}
 CENGINE_PATH=engines/cengine
 
 #
-# test data
+# unit test data
 #
 TESTS=$(wildcard tests/*.test.c)
-TEST_NAMES=${TESTS:tests/%.test.c=%}
-TEST_NAMES_ADV=${TESTS:tests/%.test.c=%-adv}
-CENG_TESTS=$(wildcard engines/cengine/tests/*.test.c)
-CENG_TEST_NAMES=${CENG_TESTS:engines/cengine/tests/%.test.c=%}
-CENG_TEST_NAMES_ADV=${CENG_TESTS:engines/cengine/tests/%.test.c=%-adv}
-TEST_DEPENDENCIES=src/*.c
+TESTS_OBJ=${TESTS:tests/%.c=build/tests/%.o}
+TESTS_OBJ_DEPS=${SRC:src/%.c=build/tests/objects/%.o}
+TESTS_OUT=${TESTS_OBJ:%.o=%.out}
+
+TESTS_CENG=$(wildcard engines/cengine/tests/*.test.c)
+TESTS_CENG_OBJ=${TESTS_CENG:engines/cengine/tests/%.c=build/tests/cengine/%.o}
+TESTS_CENG_OBJ_DEPS=${ENGINE_FILES_SRC:engines/cengine/src/%.c=build/tests/cengine/objects/%.o}
+TESTS_CENG_OUT=${TESTS_CENG_OBJ:%.o=%.out}
+
+TESTS_NAMES=${TESTS:tests/%.test.c=%}
+
 VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
 	--track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all -q
 
@@ -131,10 +142,10 @@ clean:
 #
 # simple tests, they are just compiled and run
 #
-test: ${TEST_NAMES}
-${TEST_NAMES}:
+test: ${TESTS_NAMES}
+${TESTS_NAMES}:
 	@echo "Running tests on $@"
-	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} tests/$@.test.c ${TEST_DEPENDENCIES} -DAVDL_UNIT_TEST -o $@.test.out -Wno-unused-variable -Wno-parentheses
+	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} tests/$@.test.c src/*.c -DAVDL_UNIT_TEST -o $@.test.out -Wno-unused-variable -Wno-parentheses
 	@./$@.test.out
 	@rm $@.test.out
 
@@ -142,30 +153,42 @@ ${TEST_NAMES}:
 # advanced tests, depend on `gcc`, `gcov`, `lcov` and `valgrind`
 # they check code coverage and memory leaks, on top of simple tests
 #
-test-advance: ${TEST_NAMES_ADV} ${CENG_TEST_NAMES}
-	mkdir -p coverage
-	lcov $(foreach TEST_NAME, ${TEST_NAMES}, \
-		-a ./tests/${TEST_NAME}-lcov.info \
-	) $(foreach TEST_NAME, ${CENG_TEST_NAMES}, \
-		-a ./engines/cengine/tests/${TEST_NAME}-lcov.info \
-	) -o ./coverage/lcov.info -q
+test-advance: ${DIRECTORY_COVERAGE}/lcov.info
 
-${TEST_NAMES_ADV}:
-	@echo "Running advanced tests on $@"
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage tests/${@:%-adv=%}.test.c ${TEST_DEPENDENCIES} -DAVDL_UNIT_TEST -o $@.test.out
-	./$@.test.out
-	gcov ./*.gcno
-	geninfo . -b . -o ./tests/${@:%-adv=%}-lcov.info -q
-	valgrind ${VALGRIND_ARGS} ./$@.test.out
-	rm -f -- ./$@.test.out ./*.gc*
+# generate the final lcov.info file
+${DIRECTORY_COVERAGE}/lcov.info: ${TESTS_OUT} ${TESTS_CENG_OUT} ${DIRECTORY_COVERAGE}
+	gcov ${DIRECTORY_TESTS_CENG_DEPS}/*.o
+	gcov ${DIRECTORY_TESTS_DEPS}/*.o
+	geninfo . -q -o ${DIRECTORY_TESTS}/result.info
+	lcov -a ${DIRECTORY_TESTS}/result.info -o ${DIRECTORY_COVERAGE}/lcov.info
 
-${CENG_TEST_NAMES}:
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include --coverage engines/cengine/tests/$@.test.c engines/cengine/src/*.c -DAVDL_UNIT_TEST -o $@.test.out -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
-	./$@.test.out
-	gcov ./*.gcno
-	geninfo . -b . -o ./engines/cengine/tests/${@:%-adv=%}-lcov.info -q
-	@#valgrind ${VALGRIND_ARGS} ./$@.test.out
-	rm -f -- ./$@.test.out ./*.gc*
+# test executables
+${DIRECTORY_TESTS_CENG}/%.out: ${DIRECTORY_TESTS_CENG}/%.o ${TESTS_CENG_OBJ_DEPS}
+	@echo "Running cengine tests on $@"
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include --coverage -o $@ $^ -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
+	@./$@
+	@# These fail on some systems, so disabled for now
+	@#valgrind ${VALGRIND_ARGS} ./$@
+
+${DIRECTORY_TESTS}/%.out: ${DIRECTORY_TESTS}/%.o ${TESTS_OBJ_DEPS}
+	@echo "Running tests on $@"
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage -o $@ $^ -DAVDL_UNIT_TEST
+	@./$@
+	@valgrind ${VALGRIND_ARGS} ./$@
+
+# test objects
+${DIRECTORY_TESTS_CENG}/%.o: engines/cengine/tests/%.c ${DIRECTORY_TESTS_CENG}
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include -c --coverage -o $@ $< -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
+
+${DIRECTORY_TESTS}/%.o: tests/%.c ${DIRECTORY_TESTS}
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage -c -o $@ $< -DAVDL_UNIT_TEST
+
+# test dependency objects
+${DIRECTORY_TESTS_CENG_DEPS}/%.o: engines/cengine/src/%.c ${DIRECTORY_TESTS_CENG_DEPS}
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include -c --coverage -o $@ $< -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
+
+${DIRECTORY_TESTS_DEPS}/%.o: src/%.c ${DIRECTORY_TESTS_DEPS}
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage -c -o $@ $< -DAVDL_UNIT_TEST
 
 #
 # create needed directories
@@ -179,4 +202,4 @@ ${DIRECTORIES} ${DIRECTORY_ALL}:
 ${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -c $< -o $@
 
-.PHONY: all tarball clean install test test-advance ${TEST_NAMES} ${TEST_NAMES_ADV}
+.PHONY: all tarball clean install test test-advance ${TESTS_NAMES}
