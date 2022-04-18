@@ -64,4 +64,7 @@ const char *avdl_getProjectLocation();
 void avdl_initProjectLocation();
 void avdl_cleanProjectLocation();
 
+// clear drawing depth buffer
+#define avdl_clear_depth() glClear(GL_DEPTH_BUFFER_BIT)
+
 #endif
