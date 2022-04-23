@@ -60,6 +60,10 @@ syntax match avdlKeywords 'DD_INPUT_MOUSE_TYPE_PRESSED'
 syntax match avdlKeywords 'DD_INPUT_MOUSE_TYPE_RELEASED'
 syntax match avdlKeywords 'DD_STRING3D_ALIGN_CENTER'
 syntax match avdlKeywords 'avdl_clear_depth'
+syntax match avdlKeywords 'dd_clearColour'
+syntax match avdlKeywords 'dd_world_prepareReady'
+syntax match avdlKeywords 'avdl_setUniform1f'
+syntax match avdlKeywords 'avdl_exit'
 
 " primitive variable types
 syntax keyword avdlPrimitiveVariableTypes int float string char void

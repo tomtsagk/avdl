@@ -67,4 +67,6 @@ void avdl_cleanProjectLocation();
 // clear drawing depth buffer
 #define avdl_clear_depth() glClear(GL_DEPTH_BUFFER_BIT)
 
+#define avdl_exit() dd_flag_exit = 1;
+
 #endif
