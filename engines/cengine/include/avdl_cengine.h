@@ -18,6 +18,7 @@
 #include "dd_vec4.h"
 #include "dd_mouse.h"
 #include "dd_string3d.h"
+#include "dd_image.h"
 #include "avdl_shaders.h"
 #include "dd_log.h"
 #include "avdl_data.h"

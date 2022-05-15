@@ -7,6 +7,7 @@
 #include "avdl_assetManager.h"
 #include "dd_opengl.h"
 #include "dd_log.h"
+#include <stdlib.h>
 
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
@@ -15,20 +16,15 @@ void dd_meshTexture_create(struct dd_meshTexture *m) {
 	dd_meshColour_create(&m->parent);
 	m->dirtyTextures = 0;
 	m->t = 0;
-	m->img.tex = 0;
-	m->img.pixels = 0;
-	m->dirtyImage = 0;
-	m->assetName = 0;
+	m->img = 0;
 	m->parent.parent.load = (void (*)(struct dd_mesh *, const char *filename)) dd_meshTexture_load;
-	m->preloadTexture = (void (*)(struct dd_mesh *, char *filename)) dd_meshTexture_preloadTexture;
-	m->applyTexture = (int (*)(struct dd_mesh *)) dd_meshTexture_applyTexture;
-	m->loadTexture = (void (*)(struct dd_mesh *, char *filename)) dd_meshTexture_loadTexture;
 	m->parent.parent.draw = (void (*)(struct dd_mesh *)) dd_meshTexture_draw;
 	m->parent.parent.clean = (void (*)(struct dd_mesh *)) dd_meshTexture_clean;
 	m->parent.parent.set_primitive = (void (*)(struct dd_mesh *, enum dd_primitives shape)) dd_meshTexture_set_primitive;
 	m->set_primitive_texcoords = dd_meshTexture_set_primitive_texcoords;
+	m->setTexture = dd_meshTexture_setTexture;
 	m->parent.parent.copy = (void (*)(struct dd_mesh *, struct dd_mesh *))  dd_meshTexture_copy;
-	m->copyTexture = (void (*)(struct dd_meshTexture *, struct dd_meshTexture *)) dd_meshTexture_copyTexture;
+	m->parent.parent.combine = (void (*)(struct dd_mesh *, struct dd_mesh *, float x, float y, float z))  dd_meshTexture_combine;
 }
 
 void dd_meshTexture_load(struct dd_meshTexture *m, const char *filename) {
@@ -49,10 +45,6 @@ void dd_meshTexture_clean(struct dd_meshTexture *m) {
 		m->dirtyTextures = 0;
 	}
 
-	if (m->dirtyImage) {
-		dd_image_free(&m->img);
-		m->dirtyImage = 0;
-	}
 }
 
 void dd_meshTexture_set_primitive(struct dd_meshTexture *m, enum dd_primitives shape) {
@@ -83,32 +75,6 @@ void dd_meshTexture_set_primitive_texcoords(struct dd_meshTexture *m, float offs
 	}
 }
 
-void dd_meshTexture_preloadTexture(struct dd_meshTexture *m, char *filename) {
-
-	m->openglContextId = avdl_opengl_getContextId();
-	//dd_log("add texture for loading: %s\n", filename);
-	m->assetName = filename;
-	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_TEXTURE, filename);
-}
-
-int dd_meshTexture_applyTexture(struct dd_meshTexture *m) {
-	#if DD_PLATFORM_ANDROID
-	if (m->img.pixelsb) {
-	#elif DD_PLATFORM_NATIVE
-	if (m->img.pixels) {
-	#endif
-		dd_image_to_opengl(&m->img);
-		m->dirtyImage = 1;
-		return 1;
-	}
-	return 0;
-}
-
-void dd_meshTexture_loadTexture(struct dd_meshTexture *m, char *filename) {
-	dd_meshTexture_preloadTexture(m, filename);
-}
-
 void dd_meshTexture_draw(struct dd_meshTexture *m) {
 
 	glEnableVertexAttribArray(0);
@@ -128,28 +94,8 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, m->t);
 	}
 
-	// texture not yet in opengl, pass it
-	if (m->img.pixels || m->img.pixelsb) {
-		dd_meshTexture_applyTexture(m);
-	}
-
-	// there is a texture to draw
-	if (m->img.tex) {
-
-		// texture is valid in this opengl context, bind it
-		if (m->openglContextId == avdl_opengl_getContextId()) {
-			glBindTexture(GL_TEXTURE_2D, m->img.tex);
-		}
-		// texture was in a previous opengl context, reload it
-		else
-		if (m->assetName) {
-			m->img.tex = 0;
-			dd_meshTexture_preloadTexture(m, m->assetName);
-		}
-
-		// if opengl ID matches, bind, otherwise mark to be loaded
-		//glActiveTexture(GL_TEXTURE0);
-		//glUniformi("image", 0);
+	if (m->img) {
+		m->img->bind(m->img);
 	}
 
 	GLint MatrixID = glGetUniformLocation(currentProgram, "matrix");
@@ -162,7 +108,9 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 
 	glDrawArrays(GL_TRIANGLES, 0, m->parent.parent.vcount);
 
-	if (m->img.tex) glBindTexture(GL_TEXTURE_2D, 0);
+	if (m->img) {
+		m->img->unbind(m->img);
+	}
 	if (m->t) glDisableVertexAttribArray(2);
 	if (m->parent.c) glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
@@ -177,10 +125,25 @@ void dd_meshTexture_copy(struct dd_meshTexture *dest, struct dd_meshTexture *src
 	}
 }
 
-void dd_meshTexture_copyTexture(struct dd_meshTexture *dest, struct dd_meshTexture *src) {
-	if (src->img.tex) {
-		dest->img.tex = src->img.tex;
-		dest->dirtyImage = 1;
-		dest->openglContextId = src->openglContextId;
+void dd_meshTexture_setTexture(struct dd_meshTexture *o, struct dd_image *tex) {
+	o->img = tex;
+}
+
+void dd_meshTexture_combine(struct dd_meshTexture *dst, struct dd_meshTexture *src, float offsetX, float offsetY, float offsetZ) {
+	dd_meshColour_combine(dst, src, offsetX, offsetY, offsetZ);
+
+	if ((!dst->t && src->t) || dst->t) {
+		dst->t = realloc(dst->t, dst->parent.parent.vcount *sizeof(float) *2);
+		int oldVertices = dst->parent.parent.vcount -src->parent.parent.vcount;
+		for (int i = oldVertices *2; i < dst->parent.parent.vcount *2; i += 2) {
+			if (src->t) {
+				dst->t[i+0] = src->t[(i+0) -(oldVertices *2)];
+				dst->t[i+1] = src->t[(i+1) -(oldVertices *2)];
+			}
+			else {
+				dst->t[i+0] = 0;
+				dst->t[i+1] = 0;
+			}
+		}
 	}
 }

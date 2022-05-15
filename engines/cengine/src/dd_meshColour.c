@@ -6,6 +6,7 @@
 #include "dd_matrix.h"
 #include "avdl_assetManager.h"
 #include "dd_log.h"
+#include <stdlib.h>
 
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
@@ -21,6 +22,7 @@ void dd_meshColour_create(struct dd_meshColour *m) {
 	m->parent.load = (void (*)(struct dd_mesh *, const char *filename)) dd_meshColour_load;
 	m->set_colour = (void (*)(struct dd_mesh *, float r, float g, float b)) dd_meshColour_set_colour;
 	m->parent.copy = (void (*)(struct dd_mesh *, struct dd_mesh *)) dd_meshColour_copy;
+	m->parent.combine = (void (*)(struct dd_mesh *, struct dd_mesh *, float x, float y, float z)) dd_meshColour_combine;
 }
 
 void dd_meshColour_set_primitive(struct dd_meshColour *m, enum dd_primitives shape) {
@@ -114,5 +116,30 @@ void dd_meshColour_copy(struct dd_meshColour *dest, struct dd_meshColour *src) {
 		dest->c = malloc(sizeof(float) *dest->parent.vcount *4);
 		memcpy(dest->c, src->c, sizeof(float) *dest->parent.vcount *4);
 		dest->dirtyColours = 1;
+	}
+}
+
+void dd_meshColour_combine(struct dd_meshColour *dst, struct dd_meshColour *src, float offsetX, float offsetY, float offsetZ) {
+	dd_mesh_combine(dst, src, offsetX, offsetY, offsetZ);
+
+	if ((!dst->c && src->c) || dst->c) {
+		dst->c = realloc(dst->c, dst->parent.vcount *sizeof(float) *4);
+		int oldVertices = dst->parent.vcount -src->parent.vcount;
+		for (int i = oldVertices *4; i < dst->parent.vcount *4; i += 4) {
+			// get new mesh's colour
+			if (src->c) {
+				dst->c[i+0] = src->c[(i+0) -(oldVertices *4)];
+				dst->c[i+1] = src->c[(i+1) -(oldVertices *4)];
+				dst->c[i+2] = src->c[(i+2) -(oldVertices *4)];
+				dst->c[i+3] = src->c[(i+3) -(oldVertices *4)];
+			}
+			// new mesh has no colour - add default
+			else {
+				dst->c[i+0] = 0;
+				dst->c[i+1] = 0;
+				dst->c[i+2] = 0;
+				dst->c[i+3] = 0;
+			}
+		}
 	}
 }

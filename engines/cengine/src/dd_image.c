@@ -2,6 +2,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "dd_log.h"
+#include "avdl_assetManager.h"
+
+void dd_image_create(struct dd_image *o) {
+	o->tex = 0;
+	o->width = 0;
+	o->height = 0;
+	o->pixels = 0;
+	o->pixelsb = 0;
+	o->assetName = 0;
+	o->openglContextId = -1;
+
+	o->bind = dd_image_bind;
+	o->unbind = dd_image_unbind;
+	o->clean = dd_image_clean;
+	o->set = dd_image_set;
+}
 
 #if defined(WIN32) || defined(_WIN32)
 void dd_image_load_bmp(struct dd_image *img, const wchar_t *filename) {
@@ -119,9 +135,48 @@ void dd_image_to_opengl(struct dd_image *img) {
 
 }
 
-void dd_image_free(struct dd_image *img) {
-	glDeleteTextures(1, &img->tex);
+void dd_image_clean(struct dd_image *o) {
+	if (o->pixels) {
+		free(o->pixels);
+		o->pixels = 0;
+	}
+
+	if (o->pixelsb) {
+		free(o->pixelsb);
+		o->pixelsb = 0;
+	}
+
+	if (o->tex) {
+		glDeleteTextures(1, &o->tex);
+	}
 }
 
-void dd_image_draw(struct dd_image *img) {
+void dd_image_bind(struct dd_image *o) {
+
+	if (o->pixels || o->pixelsb) {
+		dd_image_to_opengl(o);
+	}
+
+	// texture is valid in this opengl context, bind it
+	if (o->openglContextId == avdl_opengl_getContextId()) {
+		glBindTexture(GL_TEXTURE_2D, o->tex);
+	}
+	// texture was in a previous opengl context, reload it
+	else
+	if (o->assetName) {
+		o->tex = 0;
+		o->set(o, o->assetName);
+	}
+}
+
+void dd_image_unbind(struct dd_image *o) {
+	if (o->tex) {
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+}
+
+void dd_image_set(struct dd_image *o, const char *filename) {
+	o->openglContextId = avdl_opengl_getContextId();
+	o->assetName = filename;
+	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename);
 }

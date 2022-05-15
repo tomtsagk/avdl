@@ -29,6 +29,8 @@ struct dd_mesh {
 	void (*set_primitive)(struct dd_mesh *m, enum dd_primitives shape);
 	void (*load)(struct dd_mesh *m, const char *filename);
 	void (*copy)(struct dd_mesh *, struct dd_mesh *);
+
+	void (*combine)(struct dd_mesh *dst, struct dd_mesh *src, float offsetX, float offsetY, float offsetZ);
 };
 
 // constructor
@@ -43,5 +45,6 @@ void dd_mesh_set_primitive(struct dd_mesh *m, enum dd_primitives shape);
 void dd_mesh_load(struct dd_mesh *m, const char *filename);
 
 void dd_mesh_copy(struct dd_mesh *dest, struct dd_mesh *src);
+void dd_mesh_combine(struct dd_mesh *dest, struct dd_mesh *src, float offsetX, float offsetY, float offsetZ);
 
 #endif /* MESH_H */

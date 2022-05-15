@@ -39,6 +39,12 @@ void struct_table_init() {
 	struct_table_push_member("loadTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("set_primitive_texcoords", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("copyTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("dd_image", 0);
+	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("bind", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("unbind", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_sound", 0);
 	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -53,8 +59,7 @@ void struct_table_init() {
 	struct_table_push_member("getZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_string3d", 0);
 	struct_table_push_member("setAlign", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
-	struct_table_push_member("setColorFront", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
-	struct_table_push_member("setColorBack", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setText", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("drawInt", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("drawLimit", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

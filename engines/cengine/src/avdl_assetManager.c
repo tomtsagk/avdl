@@ -57,7 +57,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname) {
 
 	//printf("add asset: %s\n", assetname);
 	struct dd_meshToLoad meshToLoad;
-	meshToLoad.mesh = object;
+	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
 	#if defined(_WIN32) || defined(WIN32)
 	wcscpy(meshToLoad.filenameW, avdl_getProjectLocation());
@@ -112,7 +112,7 @@ void avdl_assetManager_loadAssets() {
 
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
-			struct dd_meshTexture *mesh = m->mesh;
+			struct dd_image *mesh = m->object;
 
 			jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
 			jstring *parameter = (*env)->NewStringUTF(env, m->filename);
@@ -153,9 +153,9 @@ void avdl_assetManager_loadAssets() {
 				(*env)->ReleaseIntArrayElements(env, pixels, pixelValues, JNI_ABORT);
 
 				pthread_mutex_lock(&updateDrawMutex);
-				mesh->img.width = width;
-				mesh->img.height = height;
-				mesh->img.pixelsb = pixelsb;
+				mesh->width = width;
+				mesh->height = height;
+				mesh->pixelsb = pixelsb;
 				pthread_mutex_unlock(&updateDrawMutex);
 			}
 			//dd_log("done: %s", m->filename);
@@ -183,7 +183,7 @@ void avdl_assetManager_loadAssets() {
 			 */
 			if (result && (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE)) {
 
-				struct dd_meshTexture *mesh = m->mesh;
+				struct dd_meshTexture *mesh = m->object;
 
 				// the first object describes the size of the texture
 				const jintArray pos  = (*(*env)->GetObjectArrayElement)(env, result, 0);
@@ -223,7 +223,7 @@ void avdl_assetManager_loadAssets() {
 			else
 			if (result && (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR)) {
 
-				struct dd_meshColour *mesh = m->mesh;
+				struct dd_meshColour *mesh = m->object;
 
 				// the first object describes the size of the texture
 				const jintArray pos  = (*(*env)->GetObjectArrayElement)(env, result, 0);
@@ -257,7 +257,7 @@ void avdl_assetManager_loadAssets() {
 			else
 			if (result) {
 
-				struct dd_mesh *mesh = m->mesh;
+				struct dd_mesh *mesh = m->object;
 
 				// the first object describes the size of the texture
 				const jintArray pos  = (*(*env)->GetObjectArrayElement)(env, result, 0);
@@ -287,18 +287,18 @@ void avdl_assetManager_loadAssets() {
 		#else
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
-			struct dd_meshTexture *mesh = m->mesh;
+			struct dd_image *mesh = m->object;
 			#if defined(_WIN32) || defined(WIN32)
-			dd_image_load_bmp(&mesh->img, m->filenameW);
+			dd_image_load_bmp(mesh, m->filenameW);
 			#else
-			dd_image_load_bmp(&mesh->img, m->filename);
+			dd_image_load_bmp(mesh, m->filename);
 			#endif
 		}
 		// load mesh
 		else {
 			// mesh
 			if (m->meshType == AVDL_ASSETMANAGER_MESH) {
-				struct dd_mesh *mesh = m->mesh;
+				struct dd_mesh *mesh = m->object;
 				dd_mesh_clean(mesh);
 				struct dd_loaded_mesh lm;
 				#if defined(_WIN32) || defined(WIN32)
@@ -313,7 +313,7 @@ void avdl_assetManager_loadAssets() {
 			else
 			// mesh colour
 			if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
-				struct dd_meshColour *mesh = m->mesh;
+				struct dd_meshColour *mesh = m->object;
 				dd_meshColour_clean(mesh);
 				struct dd_loaded_mesh lm;
 				#if defined(_WIN32) || defined(WIN32)
@@ -332,7 +332,7 @@ void avdl_assetManager_loadAssets() {
 			else
 			// mesh texture
 			if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
-				struct dd_meshTexture *mesh = m->mesh;
+				struct dd_meshTexture *mesh = m->object;
 				dd_meshTexture_clean(mesh);
 				struct dd_loaded_mesh lm;
 				#if defined(_WIN32) || defined(WIN32)
