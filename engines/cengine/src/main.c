@@ -32,6 +32,7 @@ pthread_mutex_t updateDrawMutex;
 
 	// audio
 	#include "dd_sound.h"
+	#include "dd_music.h"
 
 	// curl
 	//#include <curl/curl.h>
@@ -239,6 +240,20 @@ int dd_main(int argc, char *argv[]) {
 		if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
 			dd_log("avdl: error initialising audio mixer");
 			dd_hasAudio = 0;
+		}
+		// audio initialisation succeeded
+		else {
+
+			// make sure there's at least 8 channels
+			dd_numberOfAudioChannels = Mix_AllocateChannels(-1);
+			if (dd_numberOfAudioChannels < 8) {
+				dd_numberOfAudioChannels = Mix_AllocateChannels(8);
+			}
+
+			// start at full volume
+			avdl_music_setVolume(100);
+			avdl_sound_setVolume(100);
+
 		}
 
 	} // init audio

@@ -14,6 +14,7 @@
 #endif
 
 extern int dd_hasAudio;
+extern int dd_numberOfAudioChannels;
 
 /*
  * support audio formats
@@ -39,7 +40,6 @@ struct dd_sound {
 	void (*play)(struct dd_sound *);
 	void (*playLoop)(struct dd_sound *, int loops);
 	void (*stop)(struct dd_sound *);
-	void (*setVolume)(struct dd_sound *, int volume);
 };
 
 void dd_sound_create(struct dd_sound *);
@@ -48,6 +48,8 @@ void dd_sound_clean(struct dd_sound *);
 void dd_sound_play(struct dd_sound *);
 void dd_sound_playLoop(struct dd_sound *, int loops);
 void dd_sound_stop(struct dd_sound *);
-void dd_sound_setVolume(struct dd_sound *, int volume);
+
+void avdl_sound_setVolume(int volume);
+int avdl_sound_getVolume();
 
 #endif

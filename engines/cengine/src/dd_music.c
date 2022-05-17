@@ -1,4 +1,4 @@
-#include "dd_sound.h"
+#include "dd_music.h"
 #include "dd_log.h"
 #include <string.h>
 
@@ -8,28 +8,24 @@ extern jclass *clazz;
 extern JavaVM *jvm;
 #endif
 
-int dd_hasAudio = 1;
-int dd_numberOfAudioChannels = 0;
-
-void dd_sound_create(struct dd_sound *o) {
-	o->load = dd_sound_load;
-	o->clean = dd_sound_clean;
-	o->play = dd_sound_play;
-	o->playLoop = dd_sound_playLoop;
-	o->stop = dd_sound_stop;
+void dd_music_create(struct dd_music *o) {
+	o->load = dd_music_load;
+	o->clean = dd_music_clean;
+	o->play = dd_music_play;
+	o->playLoop = dd_music_playLoop;
+	o->stop = dd_music_stop;
 
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
 	o->filename[0] = '\0';
 	o->index = -1;
 	#else
-	o->sound = 0;
+	o->music = 0;
 	#endif
 
-	o->playingChannel = -1;
 }
 
-void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_format format) {
+void dd_music_load(struct dd_music *o, const char *filename) {
 	if (!dd_hasAudio) return;
 	if (strlen(filename) >= 100) {
 		dd_log("avdl: asset name can't be more than 100 characters: %s", filename);
@@ -37,22 +33,22 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 	#if DD_PLATFORM_ANDROID
 	strcpy(o->filename, filename);
 	#else
-	o->sound = Mix_LoadWAV(filename);
+	o->music = Mix_LoadMUS(filename);
 	#endif
 }
 
-void dd_sound_clean(struct dd_sound *o) {
+void dd_music_clean(struct dd_music *o) {
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
 	#else
-	if (o->sound) {
-		Mix_FreeChunk(o->sound);
-		o->sound = 0;
+	if (o->music) {
+		Mix_FreeMusic(o->music);
+		o->music = 0;
 	}
 	#endif
 }
 
-void dd_sound_play(struct dd_sound *o) {
+void dd_music_play(struct dd_music *o) {
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
 	JNIEnv *env;
@@ -77,11 +73,11 @@ void dd_sound_play(struct dd_sound *o) {
 		(*jvm)->DetachCurrentThread(jvm);
 	}
 	#else
-	o->playingChannel = Mix_PlayChannel(-1, o->sound, 0);
+	Mix_PlayMusic(o->music, 1);
 	#endif
 }
 
-void dd_sound_playLoop(struct dd_sound *o, int loops) {
+void dd_music_playLoop(struct dd_music *o, int loops) {
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
 	JNIEnv *env;
@@ -106,11 +102,11 @@ void dd_sound_playLoop(struct dd_sound *o, int loops) {
 		(*jvm)->DetachCurrentThread(jvm);
 	}
 	#else
-	o->playingChannel = Mix_PlayChannel(-1, o->sound, loops);
+	Mix_PlayMusic(o->music, -1);
 	#endif
 }
 
-void dd_sound_stop(struct dd_sound *o) {
+void dd_music_stop(struct dd_music *o) {
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
 	if (o->index == -1) return;
@@ -137,26 +133,26 @@ void dd_sound_stop(struct dd_sound *o) {
 		(*jvm)->DetachCurrentThread(jvm);
 	}
 	#else
-	Mix_HaltChannel(o->playingChannel);
+	Mix_HaltMusic();
 	#endif
 }
 
-void avdl_sound_setVolume(int volume) {
+void avdl_music_setVolume(int volume) {
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
 	#else
 	if (volume < 0) volume = 0;
 	if (volume > 100) volume = 100;
-	Mix_Volume(-1, (volume /100.0) *MIX_MAX_VOLUME);
+	Mix_VolumeMusic((volume /100.0) *MIX_MAX_VOLUME);
 	#endif
 }
 
-int avdl_sound_getVolume() {
+int avdl_music_getVolume() {
 	if (!dd_hasAudio) return 0;
 	#if DD_PLATFORM_ANDROID
 	return 0;
 	#else
-	int volume = Mix_Volume(-1, -1);
+	int volume = Mix_VolumeMusic(-1);
 	return ((float) volume /MIX_MAX_VOLUME) *100;
 	#endif
 }
