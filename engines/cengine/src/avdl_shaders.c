@@ -309,29 +309,34 @@ const char *avdl_shaderDefault_fragment =
 
 const char *avdl_shaderFont_vertex =
 "AVDL_IN vec4 position;\n"
+"AVDL_IN vec2 texCoord;\n"
 
 "uniform vec3 colorFront;\n"
 "uniform vec3 colorBack;\n"
 "uniform mat4 matrix;\n"
 
 "AVDL_OUT vec4 outColour;\n"
+"AVDL_OUT vec2 outTexCoord;\n"
 
 "void main() {\n"
 "	gl_Position = matrix *position;\n"
-"	if (position.z >= 0.0) {\n"
-"		outColour = vec4(colorFront, 1);\n"
-"	}\n"
-"	else {\n"
-"		outColour = vec4(colorBack, 1);\n"
-"	}\n"
+"	outColour = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
+"	outTexCoord  = texCoord;\n"
 "}\n"
 ;
 
 const char *avdl_shaderFont_fragment =
 "AVDL_IN vec4 outColour;\n"
+"AVDL_IN vec2 outTexCoord;\n"
+
+"uniform sampler2D image;\n"
 
 "void main() {\n"
-"	avdl_frag_color = outColour;\n"
+"	vec4 finalCol = avdl_texture(image, outTexCoord);\n"
+"	if (finalCol.r < 0.05 && finalCol.g < 0.05 && finalCol.b < 0.05) {\n"
+"		discard;\n"
+"	}\n"
+"	avdl_frag_color = finalCol;\n"
 "}\n"
 ;
 

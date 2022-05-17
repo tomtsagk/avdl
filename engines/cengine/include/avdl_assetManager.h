@@ -9,7 +9,7 @@
 #define AVDL_ASSETMANAGER_TEXTURE 4
 
 struct dd_meshToLoad {
-	struct dd_meshColour *mesh;
+	void *object;
 	int meshType;
 	char filename[400];
 	wchar_t filenameW[400];

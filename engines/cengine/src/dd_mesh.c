@@ -5,6 +5,7 @@
 #include <string.h>
 #include "avdl_assetManager.h"
 #include "dd_log.h"
+#include <stdlib.h>
 
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
@@ -126,4 +127,14 @@ void dd_mesh_copy(struct dd_mesh *dest, struct dd_mesh *src) {
 	dest->v = malloc(src->vcount *sizeof(float) *3);
 	memcpy(dest->v, src->v, sizeof(float) *src->vcount *3);
 	dest->dirtyVertices = 1;
+}
+
+void dd_mesh_combine(struct dd_mesh *dst, struct dd_mesh *src, float offsetX, float offsetY, float offsetZ) {
+	dst->v = realloc(dst->v, (dst->vcount +src->vcount) *sizeof(float) *3);
+	for (int i = dst->vcount *3; i < (dst->vcount +src->vcount) *3; i += 3) {
+		dst->v[i+0] = src->v[(i+0) -(dst->vcount *3)] +offsetX;
+		dst->v[i+1] = src->v[(i+1) -(dst->vcount *3)] +offsetY;
+		dst->v[i+2] = src->v[(i+2) -(dst->vcount *3)] +offsetZ;
+	}
+	dst->vcount += src->vcount;
 }
