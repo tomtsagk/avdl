@@ -51,7 +51,12 @@ void struct_table_init() {
 	struct_table_push_member("play", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("playLoop", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("stop", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
-	struct_table_push_member("setVolume", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("dd_music", 0);
+	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("play", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("playLoop", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("stop", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_vec3", 0);
 	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getX", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
