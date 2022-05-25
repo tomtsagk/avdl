@@ -42,7 +42,7 @@ void dd_string3d_init() {
 
 void dd_string3d_create(struct dd_string3d *o) {
 
-	dd_da_init(&o->textMeshes, sizeof(struct dd_meshTexture));
+	dd_da_init(&o->textMeshes, sizeof(struct dd_word_mesh));
 
 	o->align = DD_STRING3D_ALIGN_LEFT;
 	o->colorFront[0] = 1.0;
@@ -80,33 +80,69 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 
 void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 
-	if (o->textMeshes.elements > 0) {
-		struct dd_meshTexture *m = dd_da_get(&o->textMeshes, 0);
+	dd_matrix_push();
+
+	int wordsTotal = 0;
+
+	// for each line
+	do {
+		int lineWords = 0;
+		int lineWidth = 0;
+
+		for (int i = wordsTotal; i < o->textMeshes.elements; i++) {
+			struct dd_word_mesh *m = dd_da_get(&o->textMeshes, i);
+
+			// fits in the same line
+			if (!limit
+			|| (!lineWords && m->width > limit)
+			|| lineWidth +m->width <= limit) {
+				// not first word, add space
+				if (lineWords != 0) {
+					lineWidth++;
+				}
+				lineWidth += m->width;
+				lineWords++;
+			}
+			// doesn't fit in line
+			else {
+				break;
+			}
+		}
 
 		dd_matrix_push();
-
 		switch (o->align) {
 		case DD_STRING3D_ALIGN_LEFT:
 			break;
 		case DD_STRING3D_ALIGN_CENTER:
-			dd_translatef(0.5 -(o->len *0.5), 0, 0);
+			dd_translatef(-lineWidth *0.5, 0, 0);
 			break;
 		case DD_STRING3D_ALIGN_RIGHT:
-			dd_translatef(0.5 -(o->len), 0, 0);
+			dd_translatef(-lineWidth, 0, 0);
 			break;
 		}
 
-		int previousProgram;
-		glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
-		glUseProgram(fontProgram);
-		GLint MatrixID = glGetUniformLocation(fontProgram, "matrix");
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+		//for (int i = 0; i < o->textMeshes.elements; i++) {
+		for (int i = 0; i < lineWords; i++) {
+			struct dd_word_mesh *m = dd_da_get(&o->textMeshes, wordsTotal +i);
 
-		dd_meshTexture_draw(m);
+			int previousProgram;
+			glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
+			glUseProgram(fontProgram);
+			GLint MatrixID = glGetUniformLocation(fontProgram, "matrix");
+			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
 
-		glUseProgram(previousProgram);
+			dd_meshTexture_draw(&m->m);
+
+			glUseProgram(previousProgram);
+
+			dd_translatef(m->width +1, 0, 0);
+		}
+		wordsTotal += lineWords;
 		dd_matrix_pop();
-	}
+		dd_translatef(0, -1, 0);
+	} while (wordsTotal < o->textMeshes.elements);
+
+	dd_matrix_pop();
 }
 
 void dd_string3d_clean(struct dd_string3d *o) {
@@ -117,43 +153,74 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 
 	// empty previous text meshes (if any)
 	for (int i = 0; i < o->textMeshes.elements; i++) {
-		struct dd_meshTexture *p;
+		struct dd_word_mesh *p;
 		p = dd_da_get(&o->textMeshes, i);
-		dd_meshTexture_clean(p);
+		dd_meshTexture_clean(&p->m);
 	}
 	dd_da_empty(&o->textMeshes);
 
 	// add new text meshes
-	struct dd_meshTexture m;
-	dd_da_add(&o->textMeshes, &m);
+	struct dd_word_mesh m;
+	struct dd_word_mesh *p;
 
-	struct dd_meshTexture *p;
-	p = dd_da_get(&o->textMeshes, 0);
+	int tries = 5;
 
-	dd_meshTexture_create(p);
-	dd_meshTexture_setTexture(p, &fontTexture);
+	char *t = text;
 
-	o->len = strlen(text);
+	do {
+		// skip whitespace
+		if (t[0] == ' ') {
+			t++;
+			continue;
+		}
 
-	int len = strlen(text);
-	for (int i = 0; i < len; i++) {
+		// create new mesh for the new word
+		dd_da_add(&o->textMeshes, &m);
+		p = dd_da_get(&o->textMeshes, o->textMeshes.elements-1);
 
-		struct dd_meshTexture m2;
-		dd_meshTexture_create(&m2);
-		dd_meshTexture_set_primitive(&m2, DD_PRIMITIVE_RECTANGLE);
-		dd_meshColour_set_colour(&m2, 1, 1, 1);
+		dd_meshTexture_create(&p->m);
+		dd_meshTexture_setTexture(&p->m, &fontTexture);
 
-		// for each letter, create a mesh and position it
-		int offsetX = (text[i] -32) %14;
-		int offsetY = 6 -((text[i] -32) /14);
-		dd_meshTexture_set_primitive_texcoords(&m2,
-			((fontWidth /fontColumns) *offsetX),
-			(1.0 -fontHeight) +((fontHeight /fontRows) *offsetY),
-			(fontWidth /fontColumns),
-			(fontHeight /fontRows)
-		);
+		// to-fix
+		//o->len = strlen(text);
+		o->len = 5;
+		p->width = 5;
 
-		dd_meshTexture_combine(p, &m2, i *1, 0, 0);
-	}
+		// find characters until word end
+		char *t2 = t;
+		while (t2[0] != ' ' && t2[0] != '\0') {
+			t2++;
+		}
+		p->width = t2 -t;
+
+		// add each letter of the word
+		int characterNumber = 0;
+		for (int i = 0; i < p->width; i++) {
+
+			struct dd_meshTexture m2;
+			dd_meshTexture_create(&m2);
+			dd_meshTexture_set_primitive(&m2, DD_PRIMITIVE_RECTANGLE);
+			dd_meshColour_set_colour(&m2, 1, 1, 1);
+
+			// for each letter, create a mesh and position it
+			int offsetX = (t[i] -32) %14;
+			int offsetY = 6 -((t[i] -32) /14);
+			dd_meshTexture_set_primitive_texcoords(&m2,
+				((fontWidth /fontColumns) *offsetX),
+				(1.0 -fontHeight) +((fontHeight /fontRows) *offsetY),
+				(fontWidth /fontColumns),
+				(fontHeight /fontRows)
+			);
+
+			dd_meshTexture_combine(&p->m, &m2, 0.5 +characterNumber *1, 0, 0);
+
+			// move to next character
+			characterNumber++;
+
+		}
+
+		t += p->width;
+
+	} while (t[0] != '\0');
 
 }
