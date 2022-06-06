@@ -1,6 +1,8 @@
 #ifndef DD_TEXT_H
 #define DD_TEXT_H
 
+#include "avdl_cengine.h"
+
 void dd_string3d_activate(const char *src, float fColumns, float fRows, float fWidth, float fHeight);
 int dd_string3d_isActive();
 
@@ -10,6 +12,11 @@ enum dd_string3d_align {
 	DD_STRING3D_ALIGN_LEFT,
 	DD_STRING3D_ALIGN_CENTER,
 	DD_STRING3D_ALIGN_RIGHT,
+};
+
+struct dd_word_mesh {
+	struct dd_meshTexture m;
+	int width;
 };
 
 struct dd_string3d {
