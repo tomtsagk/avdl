@@ -52,4 +52,6 @@ void dd_string3d_clean(struct dd_string3d *o);
 
 void dd_string3d_setText(struct dd_string3d *o, const char *text);
 
+void dd_string3d_setKerning(float nkerning);
+
 #endif
