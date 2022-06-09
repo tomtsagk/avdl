@@ -1,0 +1,81 @@
+avdl (0.4.0-1) focal; urgency=low
+
+  * Change `dd_string3d` to now render 2D bitmap fonts on 3D planes.
+  * Add support for word wrap when drawing text.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Mon, 06 Jun 2022 19:25:00 +0100
+
+avdl (0.3.4-1) focal; urgency=low
+
+  * Fixed a big that caused shaders to not render meshes on some platforms
+  * Update android compilation, to support save files
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Fri, 18 Feb 2022 12:52:00 +0100
+
+avdl (0.3.1-1) focal; urgency=low
+
+  * Added `cmake` files to make it easier to compile for windows.
+  * Minor bug fixes
+  * Fix bug that added asset location twice
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Thu, 10 Feb 2022 04:18:00 +0100
+
+avdl (0.2.3-1) focal; urgency=low
+
+  * Fix compilation instructions for launchpad
+  * Fix localisation error when compiling games
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Fri, 07 Jan 2022 03:28:00 +0100
+
+avdl (0.2.1-1) focal; urgency=low
+
+  * Minor fix about running and compiling unit tests.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Wed, 06 Jan 2022 00:05:00 +0100
+
+avdl (0.2.0-1) focal; urgency=low
+
+  * Update to version 0.2.0
+  * Add unit testing.
+  * The internal game engine now compiles for each project, to make cross compilation easier.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Tue, 05 Jan 2022 23:30:00 +0100
+
+avdl (0.1.2-1) focal; urgency=low
+
+  * Update to version 0.1.2
+  * Remove `freeglut` dependency, game now uses SDL for windowing.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Sun, 29 Aug 2021 01:08:00 +0100
+
+avdl (0.0.7-1) focal; urgency=low
+
+  * Fix compiling issue when providing `-j` to `make`.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Sat, 21 Aug 2021 14:27:00 +0100
+
+avdl (0.0.6-1) focal; urgency=low
+
+  * Fix some small edge-case bugs.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Sat, 21 Aug 2021 12:04:00 +0100
+
+avdl (0.0.5-288) focal; urgency=low
+
+  * Testing builds for different versions of Ubuntu.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Sat, 14 Aug 2021 14:04:00 +0100
+
+avdl (0.0.5-2) focal; urgency=low
+
+  * Update to make feature builds automatically.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Wed, 11 Aug 2021 22:46:39 +0100
+
+avdl (0.0.5-1) focal; urgency=low
+
+  * Initial Release.
+  * Improved the compilation process to make it easier to build packages for
+    games made with `avdl`.
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Thu, 05 Aug 2021 20:11:44 +0100
