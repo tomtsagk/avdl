@@ -16,6 +16,10 @@ static int fontRows = 1;
 static float fontWidth = 1.0;
 static float fontHeight = 1.0;
 
+static float fontKerning = 1.0;
+
+struct dd_meshTexture numbers[10];
+
 void dd_string3d_activate(const char *src, float fColumns, float fRows, float fWidth, float fHeight) {
 	isActive = 1;
 	fontname = src;
@@ -38,6 +42,23 @@ void dd_string3d_init() {
 	dd_image_create(&fontTexture);
 	dd_image_set(&fontTexture, fontname);
 
+	for (int i = 0; i < 10; i++) {
+		dd_meshTexture_create(&numbers[i]);
+		dd_meshTexture_set_primitive(&numbers[i], DD_PRIMITIVE_RECTANGLE);
+		dd_meshColour_set_colour(&numbers[i], 1, 1, 1);
+		dd_meshTexture_setTexture(&numbers[i], &fontTexture);
+
+		// for each letter, create a mesh and position it
+		int offsetX = (16 +i) %fontColumns;
+		int offsetY = (fontColumns-1) -((16 +i) /fontColumns);
+		dd_meshTexture_set_primitive_texcoords(&numbers[i],
+			((fontWidth /fontColumns) *offsetX),
+			(1.0 -fontHeight) +((fontHeight /fontRows) *offsetY),
+			(fontWidth /fontColumns),
+			(fontHeight /fontRows)
+		);
+	}
+
 } // string3d init
 
 void dd_string3d_create(struct dd_string3d *o) {
@@ -51,7 +72,6 @@ void dd_string3d_create(struct dd_string3d *o) {
 	o->colorBack[0] = 0.0;
 	o->colorBack[1] = 0.0;
 	o->colorBack[2] = 0.0;
-	o->len = 0;
 
 	o->setAlign = dd_string3d_setAlign;
 	o->clean = dd_string3d_clean;
@@ -71,11 +91,45 @@ void dd_string3d_draw(struct dd_string3d *o) {
 }
 
 void dd_string3d_drawInt(struct dd_string3d *o, int num) {
-	/*
 	char numberString[11];
 	snprintf(numberString, 11, "%d", num);
-	dd_string3d_draw(o, numberString);
-	*/
+	numberString[10] = '\0';
+	dd_matrix_push();
+
+	int lineWidth = 0;
+
+	lineWidth = strlen(numberString);
+
+	dd_translatef(fontKerning*0.5, 0, 0);
+
+	switch (o->align) {
+	case DD_STRING3D_ALIGN_LEFT:
+		break;
+	case DD_STRING3D_ALIGN_CENTER:
+		dd_translatef(-lineWidth *0.5 *fontKerning, 0, 0);
+		break;
+	case DD_STRING3D_ALIGN_RIGHT:
+		dd_translatef(-lineWidth *fontKerning, 0, 0);
+		break;
+	}
+
+	for (int i = 0; i < lineWidth; i++) {
+		struct dd_meshTexture *m = &numbers[numberString[i] -48];
+
+		int previousProgram;
+		glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
+		glUseProgram(fontProgram);
+		GLint MatrixID = glGetUniformLocation(fontProgram, "matrix");
+		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+
+		dd_meshTexture_draw(m);
+
+		glUseProgram(previousProgram);
+
+		dd_translatef(fontKerning, 0, 0);
+	}
+
+	dd_matrix_pop();
 }
 
 void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
@@ -114,10 +168,10 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 		case DD_STRING3D_ALIGN_LEFT:
 			break;
 		case DD_STRING3D_ALIGN_CENTER:
-			dd_translatef(-lineWidth *0.5, 0, 0);
+			dd_translatef(-lineWidth *0.5 *fontKerning, 0, 0);
 			break;
 		case DD_STRING3D_ALIGN_RIGHT:
-			dd_translatef(-lineWidth, 0, 0);
+			dd_translatef(-lineWidth *fontKerning, 0, 0);
 			break;
 		}
 
@@ -135,7 +189,7 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 
 			glUseProgram(previousProgram);
 
-			dd_translatef(m->width +1, 0, 0);
+			dd_translatef((m->width+1) *fontKerning, 0, 0);
 		}
 		wordsTotal += lineWords;
 		dd_matrix_pop();
@@ -163,8 +217,6 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 	struct dd_word_mesh m;
 	struct dd_word_mesh *p;
 
-	int tries = 5;
-
 	char *t = text;
 
 	do {
@@ -180,11 +232,6 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 
 		dd_meshTexture_create(&p->m);
 		dd_meshTexture_setTexture(&p->m, &fontTexture);
-
-		// to-fix
-		//o->len = strlen(text);
-		o->len = 5;
-		p->width = 5;
 
 		// find characters until word end
 		char *t2 = t;
@@ -203,8 +250,8 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 			dd_meshColour_set_colour(&m2, 1, 1, 1);
 
 			// for each letter, create a mesh and position it
-			int offsetX = (t[i] -32) %14;
-			int offsetY = 6 -((t[i] -32) /14);
+			int offsetX = (t[i] -32) %fontColumns;
+			int offsetY = (fontColumns-1) -((t[i] -32) /fontColumns);
 			dd_meshTexture_set_primitive_texcoords(&m2,
 				((fontWidth /fontColumns) *offsetX),
 				(1.0 -fontHeight) +((fontHeight /fontRows) *offsetY),
@@ -212,7 +259,7 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 				(fontHeight /fontRows)
 			);
 
-			dd_meshTexture_combine(&p->m, &m2, 0.5 +characterNumber *1, 0, 0);
+			dd_meshTexture_combine(&p->m, &m2, fontKerning/2 +characterNumber *fontKerning, 0, 0);
 
 			// move to next character
 			characterNumber++;
@@ -223,4 +270,8 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 
 	} while (t[0] != '\0');
 
+}
+
+void dd_string3d_setKerning(float nkerning) {
+	fontKerning = nkerning;
 }
