@@ -1,17 +1,14 @@
-# For most projects, this workflow file will not need changing; you simply need
-# to commit it to your repository.
 #
-# You may wish to alter this file to override the set of languages analyzed,
-# or to provide custom queries or build logic.
+# This is a default document that for the most part works
 #
 name: "CodeQL"
 
 on:
   push:
-    branches: [ development ]
+    branches: [ develop ]
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ development ]
+    branches: [ develop ]
   schedule:
     - cron: '16 0 * * 3'
 

@@ -1,15 +1,15 @@
 name: Unit Tests
 
-# run only on active branched, and on pull requests for `development`
+# for now only run on `develop` and `master`
 on:
   push:
     branches:
-      - github
-      - development
-      - stable
+      - develop
+      - master
   pull_request:
     branches:
-      - development
+      - develop
+      - master
 
 # run dependencies, build project, test project
 jobs:
