@@ -6,7 +6,7 @@
 
 // struct sizes
 #define DD_STRUCT_TABLE_NAME_SIZE 100
-#define DD_STRUCT_TABLE_MEMBER_TOTAL 100
+#define DD_STRUCT_TABLE_MEMBER_TOTAL 150
 
 // struct members
 struct struct_table_entry_member {
