@@ -1,5 +1,5 @@
 Name:           avdl
-Version:        0.4.0
+Version:        0.4.1
 Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
@@ -38,6 +38,11 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 %doc /usr/share/man/man1/avdl.1.gz
 
 %changelog
+* Tue Jun 14 2022 Tom Tsagk <tomtsagk@darkdimension.org>
+- Switch text renderer to use bitmap fonts
+- Separate music and sound audio
+- Separate textures and meshes, to make them easier to manage.
+
 * Fri Feb 18 2022 Tom Tsagk <tomtsagk@darkdimension.org>
 - Fix bug that caused shaders to not render meshes on some hardware
 - Add save/load functionality for android too
