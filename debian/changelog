@@ -1,3 +1,10 @@
+avdl (0.4.1-1) focal; urgency=low
+
+  * Separate textures and meshes, to make them easier to manage.
+  * Separate music and sound audio
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Tue, 14 Jun 2022 22:35:00 +0100
+
 avdl (0.4.0-1) focal; urgency=low
 
   * Change `dd_string3d` to now render 2D bitmap fonts on 3D planes.
