@@ -1,6 +1,7 @@
 #include "dd_sound.h"
 #include "dd_log.h"
 #include <string.h>
+#include "dd_game.h"
 
 #if DD_PLATFORM_ANDROID
 #include <jni.h>
@@ -19,8 +20,8 @@ void dd_sound_create(struct dd_sound *o) {
 	o->stop = dd_sound_stop;
 
 	if (!dd_hasAudio) return;
-	#if DD_PLATFORM_ANDROID
 	o->filename[0] = '\0';
+	#if DD_PLATFORM_ANDROID
 	o->index = -1;
 	#else
 	o->sound = 0;
@@ -37,7 +38,17 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 	#if DD_PLATFORM_ANDROID
 	strcpy(o->filename, filename);
 	#else
-	o->sound = Mix_LoadWAV(filename);
+
+	#if defined(_WIN32) || defined(WIN32)
+	wcscpy(o->filenameW, avdl_getProjectLocation());
+	mbstowcs((o->filenameW +wcslen(o->filenameW)), filename, 400 -wcslen(o->filenameW));
+	//wprintf(L"add assetW: %lS\n", meshToLoad.filenameW);
+	#else
+	strcpy(o->filename, avdl_getProjectLocation());
+	strcat(o->filename, filename);
+	o->sound = Mix_LoadWAV(o->filename);
+	#endif
+
 	#endif
 }
 

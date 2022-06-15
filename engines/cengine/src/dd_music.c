@@ -17,8 +17,8 @@ void dd_music_create(struct dd_music *o) {
 	o->stop = dd_music_stop;
 
 	if (!dd_hasAudio) return;
-	#if DD_PLATFORM_ANDROID
 	o->filename[0] = '\0';
+	#if DD_PLATFORM_ANDROID
 	o->index = -1;
 	#else
 	o->music = 0;

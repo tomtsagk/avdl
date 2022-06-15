@@ -27,8 +27,9 @@ enum dd_audio_format {
  * meant for small-size sound effects
  */
 struct dd_sound {
+	char filename[400];
+	char filenameW[400];
 	#if DD_PLATFORM_ANDROID
-	char filename[100];
 	int index;
 	#else
 	Mix_Chunk *sound;
