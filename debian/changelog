@@ -1,3 +1,9 @@
+avdl (0.4.3-1) focal; urgency=low
+
+  * Fix no sfx bug for installed projects
+
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Wed, 15 Jun 2022 20:00:00 +0100
+
 avdl (0.4.2-1) focal; urgency=low
 
   * Fix no audio bug for installed projects

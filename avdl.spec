@@ -1,5 +1,5 @@
 Name:           avdl
-Version:        0.4.2
+Version:        0.4.3
 Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
@@ -40,6 +40,7 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 %changelog
 * Wed Jun 15 2022 Tom Tsagk <tomtsagk@darkdimension.org>
 - Fix no audio bug for installed projects
+- Fix no sfx bug for installed projects
 
 * Tue Jun 14 2022 Tom Tsagk <tomtsagk@darkdimension.org>
 - Switch text renderer to use bitmap fonts
