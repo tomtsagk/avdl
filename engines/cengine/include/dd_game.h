@@ -4,6 +4,10 @@
 #if DD_PLATFORM_NATIVE
 #include "dd_opengl.h"
 
+#ifndef PKG_LOCATION
+#define PKG_LOCATION ""
+#endif
+
 /* defines game-specific data that are used by the engine
  * but are configured from each individual game
  */

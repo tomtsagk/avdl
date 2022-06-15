@@ -19,8 +19,9 @@ extern int dd_hasAudio;
  * meant for background music
  */
 struct dd_music {
+	char filename[400];
+	char filenameW[400];
 	#if DD_PLATFORM_ANDROID
-	char filename[100];
 	int index;
 	#else
 	Mix_Music *music;
