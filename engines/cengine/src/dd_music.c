@@ -1,6 +1,7 @@
 #include "dd_music.h"
 #include "dd_log.h"
 #include <string.h>
+#include "dd_game.h"
 
 #if DD_PLATFORM_ANDROID
 #include <jni.h>
@@ -33,7 +34,17 @@ void dd_music_load(struct dd_music *o, const char *filename) {
 	#if DD_PLATFORM_ANDROID
 	strcpy(o->filename, filename);
 	#else
-	o->music = Mix_LoadMUS(filename);
+
+	#if defined(_WIN32) || defined(WIN32)
+	wcscpy(o->filenameW, avdl_getProjectLocation());
+	mbstowcs((o->filenameW +wcslen(o->filenameW)), filename, 400 -wcslen(o->filenameW));
+	//wprintf(L"add assetW: %lS\n", meshToLoad.filenameW);
+	#else
+	strcpy(o->filename, avdl_getProjectLocation());
+	strcat(o->filename, filename);
+	o->music = Mix_LoadMUS(o->filename);
+	#endif
+
 	#endif
 }
 

@@ -4,10 +4,6 @@
 #include "dd_log.h"
 #include "dd_game.h"
 
-#ifndef PKG_LOCATION
-#define PKG_LOCATION
-#endif
-
 void avdl_localisation_create(struct avdl_localisation *o) {
 	o->count = 0;
 	o->set = avdl_localisation_set;
