@@ -39,7 +39,11 @@ char *includePath = 0;
 char *installLocation = "";
 int installLocationDynamic = 0;
 char *saveLocation = "";
-char *additionalLibDirectory = 0;
+
+char *additionalIncludeDirectory[10];
+int totalIncludeDirectories = 0;
+char *additionalLibDirectory[10];
+int totalLibDirectories = 0;
 
 int create_android_directory(const char *androidDirName);
 
@@ -119,7 +123,7 @@ int main(int argc, char *argv[]) {
 
 	/* tweakable data
 	 */
-	int show_ast = 0;
+	//int show_ast = 0;
 	int show_struct_table = 0;
 	char filename[MAX_INPUT_FILES][100];
 	int input_file_total = 0;
@@ -152,7 +156,7 @@ int main(int argc, char *argv[]) {
 
 				// print abstract syntax tree
 				if (strcmp(argv[i], "--print-ast") == 0) {
-					show_ast = 1;
+					//show_ast = 1;
 				}
 				else
 				// print struct table
@@ -343,10 +347,32 @@ int main(int argc, char *argv[]) {
 				}
 			}
 			else
+			// add extra include paths
+			if (strcmp(argv[i], "-i") == 0) {
+				if (argc > i+1) {
+					if (totalIncludeDirectories >= 10) {
+						printf("avdl error: maximum 10 include directories allowed\n");
+						return -1;
+					}
+					additionalIncludeDirectory[totalIncludeDirectories] = argv[i+1];
+					totalIncludeDirectories++;
+					i++;
+				}
+				else {
+					printf("avdl error: include path is expected after `-i`\n");
+					return -1;
+				}
+			}
+			else
 			// add library path
 			if (strcmp(argv[i], "-L") == 0) {
 				if (argc > i+1) {
-					additionalLibDirectory = argv[i+1];
+					if (totalLibDirectories >= 10) {
+						printf("avdl error: maximum 10 library directories allowed\n");
+						return -1;
+					}
+					additionalLibDirectory[totalLibDirectories] = argv[i+1];
+					totalLibDirectories++;
 					i++;
 				}
 				else {
@@ -512,12 +538,12 @@ int main(int argc, char *argv[]) {
 			strcat(buffer, filename[i]);
 		}
 
-		if (additionalLibDirectory) {
-			strcat(buffer, " -L ");
-			strcat(buffer, additionalLibDirectory);
+		//strcat(buffer, " -O3 -lGL -lGLEW -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer");
+		strcat(buffer, " -O3 -w");
+		for (int i = 0; i < totalIncludeDirectories; i++) {
+			strcat(buffer, " -I ");
+			strcat(buffer, additionalIncludeDirectory[i]);
 		}
-
-		strcat(buffer, " -O3 -lGL -lGLEW -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer");
 		if (includePath) {
 			strcat(buffer, " -I ");
 			strcat(buffer, includePath);
@@ -754,6 +780,10 @@ int main(int argc, char *argv[]) {
 					strcat(compile_command, " -I");
 					strcat(compile_command, avdl_getProjectLocation());
 					strcat(compile_command, "/include");
+					for (int i = 0; i < totalIncludeDirectories; i++) {
+						strcat(buffer, " -I ");
+						strcat(buffer, additionalIncludeDirectory[i]);
+					}
 					if (system(compile_command) != 0) {
 						printf("error compiling cengine\n");
 						exit(-1);
@@ -789,9 +819,9 @@ int main(int argc, char *argv[]) {
 			strcat(buffer, "/");
 			strcat(buffer, gameName);
 
-			if (additionalLibDirectory) {
-				strcat(buffer, " -L");
-				strcat(buffer, additionalLibDirectory);
+			for (int i = 0; i < totalLibDirectories; i++) {
+				strcat(buffer, " -L ");
+				strcat(buffer, additionalLibDirectory[i]);
 			}
 
 			strcat(buffer, " -O3 -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
