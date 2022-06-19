@@ -781,8 +781,8 @@ int main(int argc, char *argv[]) {
 					strcat(compile_command, avdl_getProjectLocation());
 					strcat(compile_command, "/include");
 					for (int i = 0; i < totalIncludeDirectories; i++) {
-						strcat(buffer, " -I ");
-						strcat(buffer, additionalIncludeDirectory[i]);
+						strcat(compile_command, " -I ");
+						strcat(compile_command, additionalIncludeDirectory[i]);
 					}
 					if (system(compile_command) != 0) {
 						printf("error compiling cengine\n");
