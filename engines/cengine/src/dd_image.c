@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "dd_log.h"
 #include "avdl_assetManager.h"
+#include <errno.h>
 
 void dd_image_create(struct dd_image *o) {
 	o->tex = 0;
@@ -56,7 +57,7 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	#else
 	FILE *f = fopen(filename, "rb");
 	if (!f) {
-		dd_log("dd_image_load_bmp: error opening file: '%s'", filename);
+		dd_log("dd_image_load_bmp: error opening file: '%s': '%s'", filename, strerror(errno));
 		exit(-1);
 	}
 	#endif

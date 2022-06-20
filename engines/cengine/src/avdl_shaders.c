@@ -86,7 +86,7 @@ const int shader_glsl_versions_count = sizeof(shader_glsl_versions) /sizeof(char
  */
 const char *versionSource = "#version XXX YY\n";
 
-unsigned int create_shader(int type, const char *src) {
+unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 
 	/*
 	 * set up a copy of the source code, and try different versions of it
@@ -124,72 +124,76 @@ unsigned int create_shader(int type, const char *src) {
 	// potentially compile the actual glsl version first
 	//dd_log("glsl version: %s", glGetStringi(GL_SHADING_LANGUAGE_VERSION, 0));
 
-	// try all supported versions, until one works, or all fail
-	for (int i = 0; i < shader_glsl_versions_count; i++) {
-		newSource[ 9] = shader_glsl_versions[i][0];
-		newSource[10] = shader_glsl_versions[i][1];
-		newSource[11] = shader_glsl_versions[i][2];
+	// try with the given glsl version
+	int i = glslVersionIndex;
+	newSource[ 9] = shader_glsl_versions[i][0];
+	newSource[10] = shader_glsl_versions[i][1];
+	newSource[11] = shader_glsl_versions[i][2];
 
-		if (strlen(shader_glsl_versions[i]) >= 6) {
-			newSource[13] = shader_glsl_versions[i][4];
-			newSource[14] = shader_glsl_versions[i][5];
-		}
-		else {
-			newSource[13] = ' ';
-			newSource[14] = ' ';
-		}
+	if (strlen(shader_glsl_versions[i]) >= 6) {
+		newSource[13] = shader_glsl_versions[i][4];
+		newSource[14] = shader_glsl_versions[i][5];
+	}
+	else {
+		newSource[13] = ' ';
+		newSource[14] = ' ';
+	}
+
+	/*
+	 * create shader and compile it
+	 */
+	unsigned int sdr = glCreateShader(type);
+	GLenum err = glGetError();
+	if (!sdr || err != GL_NO_ERROR) {
+		dd_log("avdl: create_shader: error creating shader");
+		glDeleteShader(sdr);
+		free(newSource);
+		return 0;
+	}
+	glShaderSource(sdr, 1, &newSource2, 0);
+	if (glGetError() != GL_NO_ERROR) {
+		dd_log("avdl: create_shader: error getting shader source");
+		glDeleteShader(sdr);
+		free(newSource);
+		return 0;
+	}
+	glCompileShader(sdr);
+	if (glGetError() != GL_NO_ERROR) {
+		dd_log("avdl: create_shader: error compiling shader source");
+		glDeleteShader(sdr);
+		free(newSource);
 
 		/*
-		 * create shader and compile it
-		 */
-		unsigned int sdr = glCreateShader(type);
-		GLenum err = glGetError();
-		if (!sdr || err != GL_NO_ERROR) {
-			dd_log("avdl: create_shader: error creating shader");
-			return 0;
+		//Get compilation log
+		int logsz;
+		glGetShaderiv(sdr, GL_INFO_LOG_LENGTH, &logsz);
+		if (logsz > 1) {
+			char *buf = malloc(sizeof(char) *(logsz +1));
+			glGetShaderInfoLog(sdr, logsz, 0, buf);
+			buf[logsz] = 0;
+			dd_log("avdl: compilation of %s shader failed: %s",
+				type == GL_VERTEX_SHADER   ? "vertex" :
+				type == GL_FRAGMENT_SHADER ? "fragment" :
+				"<unknown>", buf);
+			free(buf);
 		}
-		glShaderSource(sdr, 1, &newSource2, 0);
-		if (glGetError() != GL_NO_ERROR) {
-			dd_log("avdl: create_shader: error getting shader source");
-			return 0;
-		}
-		glCompileShader(sdr);
-		if (glGetError() != GL_NO_ERROR) {
-			dd_log("avdl: create_shader: error compiling shader source");
+		*/
+		return 0;
+	}
 
-			/*
-			//Get compilation log
-			int logsz;
-			glGetShaderiv(sdr, GL_INFO_LOG_LENGTH, &logsz);
-			if (logsz > 1) {
-				char *buf = malloc(sizeof(char) *(logsz +1));
-				glGetShaderInfoLog(sdr, logsz, 0, buf);
-				buf[logsz] = 0;
-				dd_log("avdl: compilation of %s shader failed: %s",
-					type == GL_VERTEX_SHADER   ? "vertex" :
-					type == GL_FRAGMENT_SHADER ? "fragment" :
-					"<unknown>", buf);
-				free(buf);
-			}
-			*/
-			return 0;
-		}
+	//Check compilation status
+	int status;
+	glGetShaderiv(sdr, GL_COMPILE_STATUS, &status);
 
-		//Check compilation status
-		int status;
-		glGetShaderiv(sdr, GL_COMPILE_STATUS, &status);
-
-		//Compilation failed
-		if (!status)
-		{
-			//Delete shader and return nothing
-			glDeleteShader(sdr);
-			continue;
-		}
-		else {
-			free(newSource);
-			return sdr;
-		}
+	//Compilation failed
+	if (!status)
+	{
+		//Delete shader
+		glDeleteShader(sdr);
+	}
+	else {
+		free(newSource);
+		return sdr;
 	}
 	free(newSource);
 
@@ -261,17 +265,31 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 	// check input
 	if (!vfname || !ffname) return 0;
 
-	// create vertex shader
+	// attempt to create shaders in all versions, first one to succeeds is accepted
 	unsigned int vsdr = 0;
-	if ( !(vsdr = create_shader(GL_VERTEX_SHADER, vfname)) ) {
-		return 0;
+	unsigned int fsdr = 0;
+	for (int i = 0; i < shader_glsl_versions_count; i++) {
+
+		// create vertex shader
+		if ( !(vsdr = create_shader(GL_VERTEX_SHADER, vfname, i)) ) {
+			continue;
+		}
+
+		// create fragment shader
+		if ( !(fsdr = create_shader(GL_FRAGMENT_SHADER, ffname, i)) )
+		{
+			glDeleteShader(vsdr);
+			vsdr = 0;
+			continue;
+		}
+		else {
+			break;
+		}
 	}
 
-	// create fragment shader
-	unsigned int fsdr = 0;
-	if ( !(fsdr = create_shader(GL_FRAGMENT_SHADER, ffname)) )
-	{
-		glDeleteShader(vsdr);
+	if (!vsdr || !fsdr) {
+		dd_log("avdl: one or more shaders failed to compile: "
+			"vertex('%s') = %d - fragment('%s') = %d", vfname, vsdr, ffname, fsdr);
 		return 0;
 	}
 
