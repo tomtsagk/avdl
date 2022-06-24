@@ -564,6 +564,7 @@ int main(int argc, char *argv[]) {
 		// check if file is asset
 		if (strcmp(filename[i] +strlen(filename[i]) -4, ".ply") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".bmp") != 0
+		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".png") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".wav") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".ogg") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -5, ".json") != 0) {
@@ -824,7 +825,7 @@ int main(int argc, char *argv[]) {
 				strcat(buffer, additionalLibDirectory[i]);
 			}
 
-			strcat(buffer, " -O3 -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+			strcat(buffer, " -O3 -lm -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
 			//printf("link command: %s\n", buffer);
 			if (system(buffer)) {
 				printf("avdl: error linking files\n");

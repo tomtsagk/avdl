@@ -40,6 +40,7 @@ void struct_table_init() {
 	struct_table_push_member("set_primitive_texcoords", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("copyTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setTransparency", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_image", 0);
 	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("bind", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

@@ -27,7 +27,7 @@ struct dd_music {
 	Mix_Music *music;
 	#endif
 
-	void (*load)(struct dd_music *, const char *filename);
+	void (*load)(struct dd_music *, const char *filename, int type);
 	void (*clean)(struct dd_music *);
 	void (*play)(struct dd_music *);
 	void (*playLoop)(struct dd_music *, int loops);
@@ -35,7 +35,7 @@ struct dd_music {
 };
 
 void dd_music_create(struct dd_music *);
-void dd_music_load(struct dd_music *, const char *filename);
+void dd_music_load(struct dd_music *, const char *filename, int type);
 void dd_music_clean(struct dd_music *);
 void dd_music_play(struct dd_music *);
 void dd_music_playLoop(struct dd_music *, int loops);

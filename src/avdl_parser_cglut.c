@@ -23,6 +23,7 @@ static void print_command_for(FILE *fd, struct ast_node *n);
 static void print_command_multistring(FILE *fd, struct ast_node *n);
 static void print_command_return(FILE *fd, struct ast_node *n);
 static void print_command_groupStatements(FILE *fd, struct ast_node *n);
+static void print_command_asset(FILE *fd, struct ast_node *n);
 static void print_binaryOperation(FILE *fd, struct ast_node *n);
 static void print_identifierReference(FILE *fd, struct ast_node *n, int skipLast);
 static void print_identifier(FILE *fd, struct ast_node *n, int skipLast);
@@ -32,6 +33,18 @@ static void print_node(FILE *fd, struct ast_node *n);
 static int getIdentifierChainCount(struct ast_node *n);
 static struct ast_node *getIdentifierLast(struct ast_node *n);
 static struct ast_node *getIdentifierInChain(struct ast_node *n, int position);
+
+static void print_command_asset(FILE *fd, struct ast_node *n) {
+
+	if (n->node_type == AST_ASSET) {
+		for (unsigned int i = 0; i < n->children.elements; i++) {
+			if (i != 0) {
+				fprintf(fd, ", ");
+			}
+			print_node(fd, dd_da_get(&n->children, i));
+		}
+	}
+}
 
 static struct ast_node *getIdentifierInChain(struct ast_node *n, int position) {
 
@@ -631,6 +644,10 @@ static void print_node(FILE *fd, struct ast_node *n) {
 		}
 		case AST_STRING: {
 			fprintf(fd, "\"%s\"", n->lex);
+			break;
+		}
+		case AST_ASSET: {
+			print_command_asset(fd, n);
 			break;
 		}
 		case AST_INCLUDE:

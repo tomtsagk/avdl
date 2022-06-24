@@ -35,6 +35,8 @@ enum AST_NODE_TYPE {
 	AST_STRING,
 
 	AST_INCLUDE,
+
+	AST_ASSET,
 };
 
 // Struct for a single node

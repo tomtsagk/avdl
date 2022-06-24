@@ -26,7 +26,7 @@ void dd_music_create(struct dd_music *o) {
 
 }
 
-void dd_music_load(struct dd_music *o, const char *filename) {
+void dd_music_load(struct dd_music *o, const char *filename, int type) {
 	if (!dd_hasAudio) return;
 	if (strlen(filename) >= 100) {
 		dd_log("avdl: asset name can't be more than 100 characters: %s", filename);
