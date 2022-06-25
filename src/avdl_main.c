@@ -567,6 +567,7 @@ int main(int argc, char *argv[]) {
 		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".png") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".wav") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".ogg") != 0
+		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".mp3") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -5, ".json") != 0) {
 			continue;
 		}
