@@ -243,7 +243,7 @@ int dd_main(int argc, char *argv[]) {
 		}
 		// audio initialisation succeeded
 		else {
-			Mix_Init(MIX_INIT_MP3);
+			Mix_Init(MIX_INIT_OPUS);
 
 			// make sure there's at least 8 channels
 			dd_numberOfAudioChannels = Mix_AllocateChannels(-1);
