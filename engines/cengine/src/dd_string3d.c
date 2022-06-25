@@ -10,6 +10,7 @@ extern GLuint currentProgram;
 
 static int isActive = 0;
 static const char *fontname = 0;
+static int fonttype = 0;
 
 static int fontColumns = 1;
 static int fontRows = 1;
@@ -20,9 +21,10 @@ static float fontKerning = 1.0;
 
 struct dd_meshTexture numbers[10];
 
-void dd_string3d_activate(const char *src, float fColumns, float fRows, float fWidth, float fHeight) {
+void dd_string3d_activate(const char *src, int src_type, float fColumns, float fRows, float fWidth, float fHeight) {
 	isActive = 1;
 	fontname = src;
+	fonttype = src_type;
 
 	fontColumns = fColumns;
 	fontRows = fRows;
@@ -40,7 +42,7 @@ extern struct dd_matrix matPerspective;
 void dd_string3d_init() {
 
 	dd_image_create(&fontTexture);
-	dd_image_set(&fontTexture, fontname);
+	dd_image_set(&fontTexture, fontname, fonttype);
 
 	for (int i = 0; i < 10; i++) {
 		dd_meshTexture_create(&numbers[i]);

@@ -19,7 +19,7 @@ void dd_meshColour_draw(struct dd_meshColour *m);
 
 // functions to give the mesh its shape
 void dd_meshColour_set_primitive(struct dd_meshColour *m, enum dd_primitives shape);
-void dd_meshColour_load(struct dd_meshColour *m, const char *filename);
+void dd_meshColour_load(struct dd_meshColour *m, const char *filename, int type);
 
 void dd_meshColour_copy(struct dd_meshColour *dest, struct dd_meshColour *src);
 

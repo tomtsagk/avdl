@@ -43,7 +43,7 @@ void avdl_assetManager_init() {
 	desiredLoadedPercentage = 1.0;
 }
 
-void avdl_assetManager_add(void *object, int meshType, const char *assetname) {
+void avdl_assetManager_add(void *object, int meshType, const char *assetname, int type) {
 	if (lockLoading) {
 		return;
 	}
@@ -59,6 +59,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname) {
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
+	meshToLoad.type = type;
 	#if defined(_WIN32) || defined(WIN32)
 	wcscpy(meshToLoad.filenameW, avdl_getProjectLocation());
 	mbstowcs((meshToLoad.filenameW +wcslen(meshToLoad.filenameW)), assetname, 400 -wcslen(meshToLoad.filenameW));
@@ -291,7 +292,13 @@ void avdl_assetManager_loadAssets() {
 			#if defined(_WIN32) || defined(WIN32)
 			dd_image_load_bmp(mesh, m->filenameW);
 			#else
-			dd_image_load_bmp(mesh, m->filename);
+			if (m->type == AVDL_IMAGETYPE_BMP) {
+				dd_image_load_bmp(mesh, m->filename);
+			}
+			else
+			if (m->type == AVDL_IMAGETYPE_PNG) {
+				dd_image_load_png(mesh, m->filename);
+			}
 			#endif
 		}
 		// load mesh

@@ -17,23 +17,25 @@ void dd_meshTexture_create(struct dd_meshTexture *m) {
 	m->dirtyTextures = 0;
 	m->t = 0;
 	m->img = 0;
-	m->parent.parent.load = (void (*)(struct dd_mesh *, const char *filename)) dd_meshTexture_load;
+	m->hasTransparency = 0;
+	m->parent.parent.load = (void (*)(struct dd_mesh *, const char *filename, int type)) dd_meshTexture_load;
 	m->parent.parent.draw = (void (*)(struct dd_mesh *)) dd_meshTexture_draw;
 	m->parent.parent.clean = (void (*)(struct dd_mesh *)) dd_meshTexture_clean;
 	m->parent.parent.set_primitive = (void (*)(struct dd_mesh *, enum dd_primitives shape)) dd_meshTexture_set_primitive;
 	m->set_primitive_texcoords = dd_meshTexture_set_primitive_texcoords;
 	m->setTexture = dd_meshTexture_setTexture;
+	m->setTransparency = dd_meshTexture_setTransparency;
 	m->parent.parent.copy = (void (*)(struct dd_mesh *, struct dd_mesh *))  dd_meshTexture_copy;
 	m->parent.parent.combine = (void (*)(struct dd_mesh *, struct dd_mesh *, float x, float y, float z))  dd_meshTexture_combine;
 }
 
-void dd_meshTexture_load(struct dd_meshTexture *m, const char *filename) {
+void dd_meshTexture_load(struct dd_meshTexture *m, const char *filename, int type) {
 
 	// clean the mesh, if was dirty
 	dd_meshTexture_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHTEXTURE, filename);
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHTEXTURE, filename, type);
 
 }
 
@@ -77,6 +79,11 @@ void dd_meshTexture_set_primitive_texcoords(struct dd_meshTexture *m, float offs
 
 void dd_meshTexture_draw(struct dd_meshTexture *m) {
 
+	if (m->hasTransparency) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m->parent.parent.v);
 
@@ -114,6 +121,10 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 	if (m->t) glDisableVertexAttribArray(2);
 	if (m->parent.c) glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(0);
+
+	if (m->hasTransparency) {
+		glDisable(GL_BLEND);
+	}
 }
 
 void dd_meshTexture_copy(struct dd_meshTexture *dest, struct dd_meshTexture *src) {
@@ -146,4 +157,8 @@ void dd_meshTexture_combine(struct dd_meshTexture *dst, struct dd_meshTexture *s
 			}
 		}
 	}
+}
+
+void dd_meshTexture_setTransparency(struct dd_meshTexture *o, int transparency) {
+	o->hasTransparency = transparency;
 }

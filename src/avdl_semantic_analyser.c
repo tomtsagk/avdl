@@ -75,7 +75,8 @@ static struct ast_node *expect_command_for() {
 extern char *installLocation;
 extern int installLocationDynamic;
 static struct ast_node *expect_command_asset() {
-	struct ast_node *asset = expect_string();
+	struct ast_node *asset = ast_create(AST_ASSET);
+	ast_addChild(asset, expect_string());
 
 	/*
 	 * on android, a path to a file is truncated to the filename
@@ -122,8 +123,8 @@ static struct ast_node *expect_command_asset() {
 		*/
 	}
 
-	// waste the type for now
-	expect_identifier();
+	// add the type as sibling - currently only identifiers count
+	ast_addChild(asset, expect_identifier());
 
 	return asset;
 }

@@ -309,7 +309,7 @@ const char *avdl_shaderDefault_vertex =
 
 "void main() {\n"
 "	gl_Position = matrix *position;\n"
-"	outColour = vec4(colour.rgb, 1);\n"
+"	outColour = vec4(colour.rgb, 0);\n"
 "	outTexCoord  = texCoord;\n"
 "}\n"
 ;

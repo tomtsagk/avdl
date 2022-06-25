@@ -19,7 +19,7 @@ void dd_meshColour_create(struct dd_meshColour *m) {
 	m->parent.set_primitive = (void (*)(struct dd_mesh *, enum dd_primitives)) dd_meshColour_set_primitive;
 	m->parent.clean = (void (*)(struct dd_mesh *)) dd_meshColour_clean;
 	m->parent.draw = (void (*)(struct dd_mesh *)) dd_meshColour_draw;
-	m->parent.load = (void (*)(struct dd_mesh *, const char *filename)) dd_meshColour_load;
+	m->parent.load = (void (*)(struct dd_mesh *, const char *filename, int type)) dd_meshColour_load;
 	m->set_colour = (void (*)(struct dd_mesh *, float r, float g, float b)) dd_meshColour_set_colour;
 	m->parent.copy = (void (*)(struct dd_mesh *, struct dd_mesh *)) dd_meshColour_copy;
 	m->parent.combine = (void (*)(struct dd_mesh *, struct dd_mesh *, float x, float y, float z)) dd_meshColour_combine;
@@ -101,13 +101,13 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
  * load the mesh based on a string instead of a file,
  * used for specific platforms like Android
  */
-void dd_meshColour_load(struct dd_meshColour *m, const char *asset) {
+void dd_meshColour_load(struct dd_meshColour *m, const char *asset, int type) {
 
 	// clean the mesh, if was dirty
 	dd_meshColour_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHCOLOUR, asset);
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHCOLOUR, asset, type);
 }
 
 void dd_meshColour_copy(struct dd_meshColour *dest, struct dd_meshColour *src) {

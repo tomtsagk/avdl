@@ -112,13 +112,13 @@ void dd_mesh_draw(struct dd_mesh *m) {
 /*
  * add the mesh to be loaded from the asset manager
  */
-void dd_mesh_load(struct dd_mesh *m, const char *asset) {
+void dd_mesh_load(struct dd_mesh *m, const char *asset, int type) {
 
 	// clean the mesh, if was dirty
 	dd_mesh_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH, asset);
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH, asset, type);
 
 }
 
