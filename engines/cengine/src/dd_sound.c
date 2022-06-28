@@ -48,7 +48,7 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 	strcat(o->filename, filename);
 	o->sound = Mix_LoadWAV(o->filename);
 	if (!o->sound) {
-		dd_log("Error playing sound: '%s': %s", filename, Mix_GetError());
+		dd_log("avdl: error playing dd_sound: '%s': %s", filename, Mix_GetError());
 	}
 	#endif
 

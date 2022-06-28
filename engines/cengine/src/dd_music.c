@@ -44,7 +44,7 @@ void dd_music_load(struct dd_music *o, const char *filename, int type) {
 	strcat(o->filename, filename);
 	o->music = Mix_LoadMUS(o->filename);
 	if (!o->music) {
-		dd_log("Error playing music: '%s': %s", filename, Mix_GetError());
+		dd_log("avdl: error playing dd_music: '%s': %s", filename, Mix_GetError());
 	}
 	#endif
 
