@@ -43,6 +43,9 @@ void dd_music_load(struct dd_music *o, const char *filename, int type) {
 	strcpy(o->filename, avdl_getProjectLocation());
 	strcat(o->filename, filename);
 	o->music = Mix_LoadMUS(o->filename);
+	if (!o->music) {
+		dd_log("avdl: error playing dd_music: '%s': %s", filename, Mix_GetError());
+	}
 	#endif
 
 	#endif

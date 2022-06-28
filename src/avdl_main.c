@@ -567,6 +567,8 @@ int main(int argc, char *argv[]) {
 		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".png") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".wav") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".ogg") != 0
+		&&  strcmp(filename[i] +strlen(filename[i]) -4, ".mp3") != 0
+		&&  strcmp(filename[i] +strlen(filename[i]) -5, ".opus") != 0
 		&&  strcmp(filename[i] +strlen(filename[i]) -5, ".json") != 0) {
 			continue;
 		}
@@ -590,6 +592,7 @@ int main(int argc, char *argv[]) {
 
 			if (strcmp(filename[i] +strlen(filename[i]) -4, ".ply") == 0
 			||  strcmp(filename[i] +strlen(filename[i]) -4, ".ogg") == 0
+			||  strcmp(filename[i] +strlen(filename[i]) -5, ".opus") == 0
 			||  strcmp(filename[i] +strlen(filename[i]) -4, ".wav") == 0) {
 				assetDir = "raw";
 			}
@@ -638,6 +641,9 @@ int main(int argc, char *argv[]) {
 					character++;
 				}
 
+				// temporarily keep file endings the same
+				lastDot = -1;
+
 				// has slash ("dir/*")
 				if (lastSlash >= 0) {
 					lastSlash++;
@@ -649,7 +655,7 @@ int main(int argc, char *argv[]) {
 					}
 					// no file extention ("dir/file")
 					else {
-						int length = strlen(filename[i] +lastSlash) -lastSlash;
+						int length = strlen(filename[i] +lastSlash);
 						strncat(buffer, filename[i] +lastSlash, length);
 					}
 				}
@@ -665,12 +671,12 @@ int main(int argc, char *argv[]) {
 						strcat(buffer, filename[i]);
 					}
 				}
-				strcat(buffer, ".asset");
+				//strcat(buffer, ".asset");
 			}
 			else {
 				strcpy(buffer, filename[i]);
-				buffer[strlen(buffer) -4] = '\0';
-				strcat(buffer, ".asset");
+				//buffer[strlen(buffer) -4] = '\0';
+				//strcat(buffer, ".asset");
 			}
 		}
 
