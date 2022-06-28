@@ -26,13 +26,13 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 	wcscpy(obj.bufferW, avdl_getProjectLocation());
 	wcscat(obj.bufferW, L"assets/");
 	mbstowcs((obj.bufferW +wcslen(obj.bufferW)), keyGroupID, 1000 -wcslen(obj.bufferW));
-	wcscat(obj.bufferW, L".asset");
+	wcscat(obj.bufferW, L".json");
 	dd_json_initFile(&obj, obj.bufferW);
 	#else
 	strcpy(obj.buffer, avdl_getProjectLocation());
 	strcat(obj.buffer, "assets/");
 	strcat(obj.buffer, keyGroupID);
-	strcat(obj.buffer, ".asset");
+	strcat(obj.buffer, ".json");
 	dd_json_initFile(&obj, obj.buffer);
 	#endif
 
