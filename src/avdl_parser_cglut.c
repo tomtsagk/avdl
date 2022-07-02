@@ -281,11 +281,6 @@ static void print_command_function(FILE *fd, struct ast_node *n) {
 	}
 
 	fprintf(fd, "}\n");
-
-	// `dd_gameInit` is the "main" function, where everything begins
-	if (strcmp(funcname->lex, "dd_gameInit") == 0) {
-		fprintf(fd, "int main(int argc, char *argv[]) {dd_main(argc, argv);}\n");
-	}
 }
 
 static void print_command_classFunction(FILE *fd, struct ast_node *n) {

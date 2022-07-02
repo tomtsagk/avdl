@@ -45,6 +45,7 @@ HEADERS=$(widcard include/*.h)
 # engine files
 #
 ENGINE_FILES_SRC=$(wildcard engines/cengine/src/*.c)
+ENGINE_FILES_SRC_CPP=$(wildcard engines/cengine/src/*.cpp)
 ENGINE_FILES_HEADERS=$(wildcard engines/cengine/include/*.h)
 ENGINE_FILES_ANDROID=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=engine/%.h)\
 	$(ENGINE_FILES_SRC:engines/cengine/src/%.c=engine/%.c)
