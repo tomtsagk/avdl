@@ -115,8 +115,18 @@ Uint32 GameLoopTimer(Uint32 interval, void *param) {
 }
 #endif
 
+struct avdl_achievements *achievements = 0;
+
 int dd_main(int argc, char *argv[]) {
 
+	#ifdef AVDL_STEAM
+	if (!avdl_steam_init()) {
+		dd_log("avdl: error initialising steam");
+		return -1;
+	}
+	#endif
+
+	achievements = avdl_achievements_create();
 	avdl_initProjectLocation();
 	avdl_assetManager_init();
 
@@ -286,7 +296,7 @@ int dd_main(int argc, char *argv[]) {
 	// start the loop
 	int isRunning = 1;
 	SDL_Event event;
-	while (isRunning && SDL_WaitEvent(&event)) {
+	while (isRunning && SDL_WaitEvent(&event) && !dd_flag_exit) {
 		switch (event.type) {
 			case SDL_USEREVENT:
 				update();
@@ -323,11 +333,24 @@ int dd_main(int argc, char *argv[]) {
 	return 0;
 }
 
+// define main when not in unit tests or cpp mode
+#ifndef AVDL_UNIT_TEST
+#ifndef AVDL_STEAM
+int main(int argc, char *argv[]) {
+	return dd_main(argc, argv);
+}
+#endif
+#endif
+
 // clean leftovers
 void clean() {
+	dd_log("avdl: cleaning data");
 	if (!avdl_state_initialised) return;
 	avdl_state_initialised = 0;
 
+	avdl_steam_shutdown();
+
+	avdl_achievements_clean(achievements);
 	avdl_cleanProjectLocation();
 
 	if (cworld) {
@@ -354,6 +377,7 @@ void clean() {
 
 	//curl_global_cleanup();
 	#endif
+	dd_log("avdl: done cleaning data");
 }
 
 void dd_perspective(float *matrix, float fovyDegrees, float aspectRatio,
@@ -419,6 +443,10 @@ void update() {
 	if (!avdl_state_active) {
 		return;
 	}
+	#endif
+
+	#ifdef AVDL_STEAM
+	avdl_steam_update();
 	#endif
 
 	// a new world is signaled to be loaded
@@ -514,6 +542,16 @@ void update() {
 		cworld->update(cworld);
 	}
 
+	// asset loader will load any new assets
+	if (avdl_assetManager_hasAssetsToLoad() && !avdl_assetManager_isLoading()) {
+		avdl_assetManager_loadAll();
+	}
+
+	// prepare next frame
+	#if DD_PLATFORM_NATIVE
+	draw();
+	#endif
+
 	// close the game
 	if (dd_flag_exit) {
 		//clean();
@@ -540,18 +578,9 @@ void update() {
 			(*jvm)->DetachCurrentThread(jvm);
 		}
 		*/
-		exit(0);
+		//exit(0);
 	}
 
-	// asset loader will load any new assets
-	if (avdl_assetManager_hasAssetsToLoad() && !avdl_assetManager_isLoading()) {
-		avdl_assetManager_loadAll();
-	}
-
-	// prepare next frame
-	#if DD_PLATFORM_NATIVE
-	draw();
-	#endif
 }
 
 // constant draw - called only when it needs to

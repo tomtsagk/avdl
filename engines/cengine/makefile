@@ -25,6 +25,8 @@ DIRECTORIES=${DIRECTORY_BUILD} ${DIRECTORY_OBJ}
 #
 SRC=$(wildcard ${DIRECTORY_SRC}/*.c)
 OBJ=${SRC:${DIRECTORY_SRC}/%.c=${DIRECTORY_OBJ}/%.o}
+SRC_CPP=$(wildcard ${DIRECTORY_SRC}/*.cpp)
+OBJ_CPP=${SRC:${DIRECTORY_SRC}/%.cpp=${DIRECTORY_OBJ}/%.o}
 HEADERS=$(wildcard include/*.h)
 
 #
@@ -82,6 +84,7 @@ ${INSTALL_DIRS}:
 install: ${DIRECTORIES} ${INSTALL_DIRS} #${STATIC_OUT}
 	install -m644 ${HEADERS} ${DESTDIR}${prefix}/include
 	install -m644 ${SRC} ${DESTDIR}${prefix}/share/avdl/cengine
+	install -m644 ${SRC_CPP} ${DESTDIR}${prefix}/share/avdl/cengine
 	#install -m755 ${STATIC_OUT} ${DESTDIR}${prefix}/lib
 
 #

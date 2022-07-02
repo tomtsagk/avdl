@@ -26,5 +26,7 @@
 #include "avdl_assetManager.h"
 #include "avdl_particle_system.h"
 #include "avdl_localisation.h"
+#include "avdl_steam.h"
+#include "avdl_achievements.h"
 
 int dd_main(int argc, char *argv[]);
