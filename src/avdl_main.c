@@ -911,7 +911,10 @@ int main(int argc, char *argv[]) {
 				strcat(buffer, additionalLibDirectory[i]);
 			}
 
-			strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lsteam_api");
+			strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+			if (avdlSteamMode) {
+				strcat(buffer, " -lsteam_api ");
+			}
 			//printf("link command: %s\n", buffer);
 			if (system(buffer)) {
 				printf("avdl: error linking files\n");
