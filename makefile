@@ -75,6 +75,8 @@ TESTS_CENG_OUT=${TESTS_CENG_OBJ:%.o=%.out}
 
 TESTS_NAMES=${TESTS:tests/%.test.c=%}
 
+SAMPLES=$(wildcard samples/*)
+
 VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
 	--track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all -q
 
@@ -143,7 +145,13 @@ clean:
 #
 # simple tests, they are just compiled and run
 #
-test: ${TESTS_NAMES}
+test: ${TESTS_NAMES} ${SAMPLES}
+
+${SAMPLES}: ${EXECUTABLE}
+	@echo "Testing $@"
+	@${EXECUTABLE} -q $@/*.dd -o $@/game
+	@$@/game/game --verify -q
+
 ${TESTS_NAMES}:
 	@echo "Running tests on $@"
 	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} tests/$@.test.c src/*.c -DAVDL_UNIT_TEST -o $@.test.out -Wno-unused-variable -Wno-parentheses
@@ -203,4 +211,4 @@ ${DIRECTORIES} ${DIRECTORY_ALL}:
 ${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -c $< -o $@
 
-.PHONY: all tarball clean install test test-advance ${TESTS_NAMES}
+.PHONY: all tarball clean install test test-advance ${TESTS_NAMES} ${SAMPLES}

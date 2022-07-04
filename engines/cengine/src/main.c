@@ -117,18 +117,10 @@ Uint32 GameLoopTimer(Uint32 interval, void *param) {
 
 struct avdl_achievements *achievements = 0;
 
+int avdl_verify = 0;
+int avdl_quiet = 0;
+
 int dd_main(int argc, char *argv[]) {
-
-	#ifdef AVDL_STEAM
-	if (!avdl_steam_init()) {
-		dd_log("avdl: error initialising steam");
-		return -1;
-	}
-	#endif
-
-	achievements = avdl_achievements_create();
-	avdl_initProjectLocation();
-	avdl_assetManager_init();
 
 	/*
 	 * parse command line arguments
@@ -139,13 +131,36 @@ int dd_main(int argc, char *argv[]) {
 		if (strcmp(argv[i], "--avdl-save-dir") == 0) {
 			i++;
 			if (i >= argc) {
-				dd_log("please provide a save directory after \"--avdl-save-dir\"");
-				exit(-1);
+				dd_log("avdl: please provide a save directory after \"--avdl-save-dir\"");
+				return -1;
 			}
 			strcpy(avdl_data_saveDirectory, argv[i]);
 		}
+		else
+		// verify game, for testing reasons
+		if (strcmp(argv[i], "--verify") == 0) {
+			avdl_verify = 1;
+		}
+		else
+		// quiet mode
+		if (strcmp(argv[i], "-q") == 0) {
+			avdl_quiet = 1;
+		}
 
 	}
+
+	#ifdef AVDL_STEAM
+	if (!avdl_verify) {
+		if (!avdl_steam_init()) {
+			dd_log("avdl: error initialising steam");
+			return -1;
+		}
+	}
+	#endif
+
+	achievements = avdl_achievements_create();
+	avdl_initProjectLocation();
+	avdl_assetManager_init();
 
 	dd_clearcolor_r = 0;
 	dd_clearcolor_g = 0;
@@ -194,51 +209,59 @@ int dd_main(int argc, char *argv[]) {
 
 	#if DD_PLATFORM_NATIVE
 
-	// Initialise SDL window
-	int sdlError = SDL_Init(SDL_INIT_EVERYTHING);
-	if (sdlError) {
-		dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
-		return -1;
-	}
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	if (!avdl_verify) {
+		// Initialise SDL window
+		int sdlError = SDL_Init(SDL_INIT_EVERYTHING);
+		if (sdlError) {
+			dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
+			return -1;
+		}
+		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-	int width = dd_gameInitWindowWidth;
-	int height = dd_gameInitWindowHeight;
-	mainWindow = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED, width, height, flags);
-	if (mainWindow == NULL) {
-		dd_log("avdl: failed to create SDL2 window: %s\n", SDL_GetError());
-		return -1;
-	}
-	mainGLContext = SDL_GL_CreateContext(mainWindow);
-	if (mainGLContext == NULL) {
-		dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
-	}
-	handleResize(dd_window_width(), dd_window_height());
+		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+		int width = dd_gameInitWindowWidth;
+		int height = dd_gameInitWindowHeight;
+		mainWindow = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
+			SDL_WINDOWPOS_UNDEFINED, width, height, flags);
+		if (mainWindow == NULL) {
+			dd_log("avdl: failed to create SDL2 window: %s\n", SDL_GetError());
+			return -1;
+		}
+		mainGLContext = SDL_GL_CreateContext(mainWindow);
+		if (mainGLContext == NULL) {
+			dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
+		}
+		handleResize(dd_window_width(), dd_window_height());
 
-	// trigger an update event
-	timer = SDL_AddTimer(30, GameLoopTimer, 0);
+		// trigger an update event
+		timer = SDL_AddTimer(30, GameLoopTimer, 0);
 
-	// init opengl
-	GLenum glewError = glewInit();
-	if (glewError != GLEW_OK) {
-		dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
-		return -1;
+		// init opengl
+		GLenum glewError = glewInit();
+		if (glewError != GLEW_OK) {
+			dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
+			return -1;
+		}
 	}
 
 	#endif
 
-	avdl_engine_init_opengl();
+	if (!avdl_verify) {
+		avdl_engine_init_opengl();
 
-	/*
-	 * string3d initialisation for displaying text
-	 */
-	if (dd_string3d_isActive()) {
-		dd_string3d_init();
+		/*
+		 * string3d initialisation for displaying text
+		 */
+		if (dd_string3d_isActive()) {
+			dd_string3d_init();
+		}
 	}
 
 	#if DD_PLATFORM_NATIVE
+
+	if (avdl_verify) {
+		dd_hasAudio = 0;
+	}
 
 	// audio is meant to be active
 	if (dd_hasAudio) {
@@ -270,7 +293,7 @@ int dd_main(int argc, char *argv[]) {
 	} // init audio
 
 	// audio is off - display message about it
-	if (!dd_hasAudio) {
+	if (!dd_hasAudio && !avdl_verify) {
 		dd_log("Game will play without audio");
 	}
 
@@ -293,37 +316,66 @@ int dd_main(int argc, char *argv[]) {
 	onResume();
 	#if DD_PLATFORM_NATIVE
 
-	// start the loop
-	int isRunning = 1;
-	SDL_Event event;
-	while (isRunning && SDL_WaitEvent(&event) && !dd_flag_exit) {
-		switch (event.type) {
-			case SDL_USEREVENT:
-				update();
-				break;
-			case SDL_QUIT:
-				isRunning = 0;
-				break;
-			case SDL_WINDOWEVENT:
-				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-					handleResize(event.window.data1, event.window.data2);
-				}
-				break;
-			case SDL_MOUSEMOTION:
-				handlePassiveMotion(event.motion.x, event.motion.y);
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-				handleMousePress(0, 0, event.motion.x, event.motion.y);
-				break;
-			case SDL_MOUSEBUTTONUP:
-				handleMousePress(0, 1, event.motion.x, event.motion.y);
-				break;
-			case SDL_KEYDOWN:
-				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-					handleKeyboardPress(27, 0, 0);
-				}
-				break;
+	if (!avdl_verify) {
+		// start the loop
+		int isRunning = 1;
+		SDL_Event event;
+		while (isRunning && SDL_WaitEvent(&event) && !dd_flag_exit) {
+			switch (event.type) {
+				case SDL_USEREVENT:
+					update();
+					break;
+				case SDL_QUIT:
+					isRunning = 0;
+					break;
+				case SDL_WINDOWEVENT:
+					if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+						handleResize(event.window.data1, event.window.data2);
+					}
+					break;
+				case SDL_MOUSEMOTION:
+					handlePassiveMotion(event.motion.x, event.motion.y);
+					break;
+				case SDL_MOUSEBUTTONDOWN:
+					handleMousePress(0, 0, event.motion.x, event.motion.y);
+					break;
+				case SDL_MOUSEBUTTONUP:
+					handleMousePress(0, 1, event.motion.x, event.motion.y);
+					break;
+				case SDL_KEYDOWN:
+					if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+						handleKeyboardPress(27, 0, 0);
+					}
+					break;
+			}
 		}
+	}
+
+	if (avdl_verify) {
+
+		//avdl_assetManager_lockLoading();
+
+		// allocate new world and construct it
+		nworld = malloc(nworld_size);
+		nworld_constructor(nworld);
+
+		// from now on, new assets can be loaded again
+		//avdl_assetManager_unlockLoading();
+
+		// Apply the new world
+		cworld = nworld;
+		nworld = 0;
+
+		// notify the world that it has loaded assets
+		cworld->onload(cworld);
+
+		// resize the new world
+		if (cworld->resize) {
+			cworld->resize(cworld);
+		}
+
+		cworld->update(cworld);
+
 	}
 
 	clean();
@@ -344,12 +396,17 @@ int main(int argc, char *argv[]) {
 
 // clean leftovers
 void clean() {
-	dd_log("avdl: cleaning data");
+	if (!avdl_quiet) {
+		dd_log("avdl: cleaning data");
+	}
 	if (!avdl_state_initialised) return;
 	avdl_state_initialised = 0;
 
-	avdl_steam_shutdown();
-
+	#ifdef AVDL_STEAM
+	if (!avdl_verify) {
+		avdl_steam_shutdown();
+	}
+	#endif
 	avdl_achievements_clean(achievements);
 	avdl_cleanProjectLocation();
 
@@ -368,16 +425,20 @@ void clean() {
 	#endif
 
 	#if DD_PLATFORM_NATIVE
-	// destroy window
-	SDL_GL_DeleteContext(mainGLContext);
-	SDL_DestroyWindow(mainWindow);
+	if (!avdl_verify) {
+		// destroy window
+		SDL_GL_DeleteContext(mainGLContext);
+		SDL_DestroyWindow(mainWindow);
 
-	Mix_Quit();
-	SDL_Quit();
+		Mix_Quit();
+		SDL_Quit();
+	}
 
 	//curl_global_cleanup();
 	#endif
-	dd_log("avdl: done cleaning data");
+	if (!avdl_quiet) {
+		dd_log("avdl: done cleaning data");
+	}
 }
 
 void dd_perspective(float *matrix, float fovyDegrees, float aspectRatio,

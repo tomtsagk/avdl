@@ -43,8 +43,13 @@ void avdl_assetManager_init() {
 	desiredLoadedPercentage = 1.0;
 }
 
+extern int avdl_verify;
+
 void avdl_assetManager_add(void *object, int meshType, const char *assetname, int type) {
 	if (lockLoading) {
+		return;
+	}
+	if (avdl_verify) {
 		return;
 	}
 	//#if DD_PLATFORM_ANDROID

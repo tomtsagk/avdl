@@ -20,8 +20,8 @@
 (class SaveLoadWorld dd_world
 	(group
 
-	(function create (group))
-	(function clean (group))
+	(function void create (group))
+	(function void clean (group))
 
 	)
 )
@@ -29,7 +29,7 @@
 #
 # attempt to load the data, if it fails, save data instead
 #
-(class_function SaveLoadWorld create (group)
+(class_function SaveLoadWorld void create (group)
 	(group
 
 	# class to hold the data we want to either save or load
@@ -59,12 +59,12 @@
 	)
 ) # create
 
-(class_function SaveLoadWorld clean (group) (group))
+(class_function SaveLoadWorld void clean (group) (group))
 
 #
 # init function
 #
-(function dd_gameInit (group)
+(function void dd_gameInit (group)
 	(group
 
 	(dd_setGameTitle "Save Load - avdl")

@@ -49,6 +49,8 @@ int create_android_directory(const char *androidDirName);
 
 int avdlSteamMode = 0;
 
+int avdlQuietMode = 0;
+
 struct cengine_file_structure {
 	const char *main;
 	const char *steam;
@@ -194,7 +196,7 @@ int main(int argc, char *argv[]) {
 				// show version number
 				if (strcmp(argv[i], "--version") == 0) {
 					printf(PKG_NAME " v%s\n", PKG_VERSION);
-					return -1;
+					return 0;
 				}
 				else
 				// show pkg location
@@ -204,7 +206,7 @@ int main(int argc, char *argv[]) {
 					#else
 					printf("%s\n", avdl_getProjectLocation());
 					#endif
-					return -1;
+					return 0;
 				}
 				else
 				// grab a copy of the cengine
@@ -395,6 +397,11 @@ int main(int argc, char *argv[]) {
 					printf("avdl error: library path is expected after `-L`\n");
 					return -1;
 				}
+			}
+			else
+			// quiet mode
+			if (strcmp(argv[i], "-q") == 0) {
+				avdlQuietMode = 1;
 			}
 			// unknown single dash argument
 			else {
@@ -802,7 +809,9 @@ int main(int argc, char *argv[]) {
 			strcat(buffer, "_cache");
 			if (!is_dir(buffer)) {
 
-				printf("avdl: compiling cengine\n");
+				if (!avdlQuietMode) {
+					printf("avdl: compiling cengine\n");
+				}
 				dir_create(buffer);
 
 				char compile_command[DD_BUFFER_SIZE];
@@ -854,9 +863,13 @@ int main(int argc, char *argv[]) {
 						printf("error compiling cengine\n");
 						exit(-1);
 					}
-					printf("avdl: %d%%\n", (int)((float) (i+1)/cengine_files_total *100));
+					if (!avdlQuietMode) {
+						printf("avdl: %d%%\n", (int)((float) (i+1)/cengine_files_total *100));
+					}
 				}
-				printf("avdl: compiling cengine done\n");
+				if (!avdlQuietMode) {
+					printf("avdl: compiling cengine done\n");
+				}
 			}
 
 			// prepare link command
@@ -898,6 +911,11 @@ int main(int argc, char *argv[]) {
 					buffer[strlen(buffer)-1] = 'o';
 				}
 				strcat(buffer, " ");
+			}
+
+			// make sure output directory exists
+			if (!is_dir(outdir)) {
+				dir_create(outdir);
 			}
 
 			// output file

@@ -28,14 +28,11 @@
 	# 	* update : Fired once per frame
 	# 	* draw   : Fired every time a frame needs to be drawn.
 	#   		Typically once per frame, but could be less or more often.
-	# 	* clean  : This will automatically clean all resources
-	# 		used by the "HelloWorld" class, but temporarily it needs to
-	# 		be defined and declared as an empty function
 	#
-	(function void create (group))
-	(function void update (group))
-	(function void draw (group))
-	(function void clean (group))
+	(function void create ())
+	(function void update ())
+	(function void draw ())
+	(function void clean ())
 
 	)
 ) # HelloWorld class
@@ -43,7 +40,7 @@
 #
 # create function - initialise data
 #
-(class_function HelloWorld void create (group)
+(class_function HelloWorld void create ()
 	(group
 
 	# set the clear color to a dark gray
@@ -62,7 +59,7 @@
 #
 # update function - rotate the triangle infinitely
 #
-(class_function HelloWorld void update (group)
+(class_function HelloWorld void update ()
 	(group
 
 	(= this.rotation (+ this.rotation 1))
@@ -76,7 +73,7 @@
 #
 # draw function - draw the rotating triangle
 #
-(class_function HelloWorld void draw (group)
+(class_function HelloWorld void draw ()
 	(group
 
 	# move the triangle in front of the camera
@@ -104,7 +101,7 @@
 # This function is responsible for setting up the game,
 # and defining the "HelloWorld" as the first world to show up.
 #
-(function void dd_gameInit (group)
+(function void dd_gameInit ()
 	(group
 
 	# game's title - appears on the game's window
