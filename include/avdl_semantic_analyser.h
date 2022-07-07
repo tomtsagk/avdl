@@ -3,6 +3,6 @@
 
 #include "avdl_ast_node.h"
 
-void semanticAnalyser_convertToAst(struct ast_node *node, const char *filename);
+int semanticAnalyser_convertToAst(struct ast_node *node, const char *filename);
 
 #endif
