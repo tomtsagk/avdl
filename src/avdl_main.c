@@ -495,7 +495,9 @@ int main(int argc, char *argv[]) {
 		// initialise the parent node
 
 		game_node = ast_create(AST_GAME);
-		semanticAnalyser_convertToAst(game_node, filename[i]);
+		if (semanticAnalyser_convertToAst(game_node, filename[i]) != 0) {
+			return -1;
+		}
 
 		/*
 		 * if only transpiling, check output file

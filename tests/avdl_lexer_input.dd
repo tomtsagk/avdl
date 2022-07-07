@@ -1,0 +1,12 @@
+(def int x) # a normal command
+"test string" # strings
+[ # start of array
+] # end of array
+. # special dot
+12345 # integer
+123.45 # float
+-16 # negative int
+-11.43 # negative float
+== # special commands
+&&
+||

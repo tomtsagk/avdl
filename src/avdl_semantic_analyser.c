@@ -10,55 +10,55 @@
 #include "avdl_lexer.h"
 #include "avdl_platform.h"
 
-static struct ast_node *expect_command_definition();
-static struct ast_node *expect_command_classDefinition();
-static struct ast_node *expect_command_group();
-static struct ast_node *expect_command_functionDefinition();
-static struct ast_node *expect_command_classFunction();
-static struct ast_node *expect_identifier();
-static struct ast_node *expect_int();
-static struct ast_node *expect_float();
-static struct ast_node *expect_string();
-static struct ast_node *expect_command_binaryOperation();
-static struct ast_node *expect_command();
-static struct ast_node *expect_command_arg();
-static struct ast_node *expect_command_if();
-static struct ast_node *expect_command_include();
-static struct ast_node *expect_command_asset();
-static struct ast_node *expect_command_for();
-static struct ast_node *expect_command_multistring();
-static struct ast_node *expect_command_return();
-static void semantic_error(const char *msg, ...);
+static struct ast_node *expect_command_definition(struct avdl_lexer *l);
+static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l);
+static struct ast_node *expect_command_group(struct avdl_lexer *l);
+static struct ast_node *expect_command_functionDefinition(struct avdl_lexer *l);
+static struct ast_node *expect_command_classFunction(struct avdl_lexer *l);
+static struct ast_node *expect_identifier(struct avdl_lexer *l);
+static struct ast_node *expect_int(struct avdl_lexer *l);
+static struct ast_node *expect_float(struct avdl_lexer *l);
+static struct ast_node *expect_string(struct avdl_lexer *l);
+static struct ast_node *expect_command_binaryOperation(struct avdl_lexer *l, const char *binaryOperationLex);
+static struct ast_node *expect_command(struct avdl_lexer *l);
+static struct ast_node *expect_command_arg(struct avdl_lexer *l);
+static struct ast_node *expect_command_if(struct avdl_lexer *l);
+static struct ast_node *expect_command_include(struct avdl_lexer *l);
+static struct ast_node *expect_command_asset(struct avdl_lexer *l);
+static struct ast_node *expect_command_for(struct avdl_lexer *l);
+static struct ast_node *expect_command_multistring(struct avdl_lexer *l);
+static struct ast_node *expect_command_return(struct avdl_lexer *l);
+static void semantic_error(struct avdl_lexer *l, const char *msg, ...);
 
-static struct ast_node *expect_command_return() {
+static struct ast_node *expect_command_return(struct avdl_lexer *l) {
 	struct ast_node *returncmd = ast_create(AST_COMMAND_NATIVE);
 	ast_setValuei(returncmd, 0);
 	ast_setLex(returncmd, "return");
 
-	if (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
-		ast_addChild(returncmd, expect_command_arg());
+	if (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
+		ast_addChild(returncmd, expect_command_arg(l));
 	}
 
 	return returncmd;
 }
 
-static struct ast_node *expect_command_multistring() {
+static struct ast_node *expect_command_multistring(struct avdl_lexer *l) {
 	struct ast_node *multistringcmd = ast_create(AST_COMMAND_NATIVE);
 	ast_setValuei(multistringcmd, 0);
 	ast_setLex(multistringcmd, "multistring");
 
-	while (lexer_peek() == LEXER_TOKEN_STRING) {
-		ast_addChild(multistringcmd, expect_string());
+	while (avdl_lexer_peek(l) == LEXER_TOKEN_STRING) {
+		ast_addChild(multistringcmd, expect_string(l));
 	}
 
 	return multistringcmd;
 }
 
-static struct ast_node *expect_command_for() {
-	struct ast_node *definition = expect_command();
-	struct ast_node *condition = expect_command();
-	struct ast_node *step = expect_command();
-	struct ast_node *statements = expect_command();
+static struct ast_node *expect_command_for(struct avdl_lexer *l) {
+	struct ast_node *definition = expect_command(l);
+	struct ast_node *condition = expect_command(l);
+	struct ast_node *step = expect_command(l);
+	struct ast_node *statements = expect_command(l);
 
 	struct ast_node *forcmd = ast_create(AST_COMMAND_NATIVE);
 	ast_setValuei(forcmd, 0);
@@ -74,9 +74,9 @@ static struct ast_node *expect_command_for() {
 
 extern char *installLocation;
 extern int installLocationDynamic;
-static struct ast_node *expect_command_asset() {
+static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 	struct ast_node *asset = ast_create(AST_ASSET);
-	ast_addChild(asset, expect_string());
+	ast_addChild(asset, expect_string(l));
 
 	/*
 	 * on android, a path to a file is truncated to the filename
@@ -124,14 +124,14 @@ static struct ast_node *expect_command_asset() {
 	}
 
 	// add the type as sibling - currently only identifiers count
-	ast_addChild(asset, expect_identifier());
+	ast_addChild(asset, expect_identifier(l));
 
 	return asset;
 }
 
 extern char *saveLocation;
-static struct ast_node *expect_command_savefile() {
-	struct ast_node *savefile = expect_string();
+static struct ast_node *expect_command_savefile(struct avdl_lexer *l) {
+	struct ast_node *savefile = expect_string(l);
 
 	/*
 	 * on android, a path to a file is truncated to the filename
@@ -177,36 +177,36 @@ static struct ast_node *expect_command_savefile() {
 	return savefile;
 }
 
-static struct ast_node *expect_command_include() {
+static struct ast_node *expect_command_include(struct avdl_lexer *l) {
 	struct ast_node *include = ast_create(AST_INCLUDE);
 	ast_setValuei(include, 0);
-	struct ast_node *filename = expect_string();
+	struct ast_node *filename = expect_string(l);
 	ast_setLex(include, ast_getLex(filename));
 	ast_delete(filename);
 	return include;
 }
 
-static struct ast_node *expect_command_if() {
+static struct ast_node *expect_command_if(struct avdl_lexer *l) {
 
 	struct ast_node *ifcmd = ast_create(AST_COMMAND_NATIVE);
 	ast_setValuei(ifcmd, 0);
 	ast_setLex(ifcmd, "if");
 
-	while (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
-		ast_addChild(ifcmd, expect_command_arg());
+	while (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
+		ast_addChild(ifcmd, expect_command_arg(l));
 	}
 
 	return ifcmd;
 }
 
-static struct ast_node *expect_command_classFunction() {
+static struct ast_node *expect_command_classFunction(struct avdl_lexer *l) {
 
 	struct ast_node *classFunc = ast_create(AST_COMMAND_NATIVE);
 	ast_setValuei(classFunc, 0);
 	ast_setLex(classFunc, "class_function");
 
-	struct ast_node *classname = expect_identifier();
-	struct ast_node *function = expect_command_functionDefinition();
+	struct ast_node *classname = expect_identifier(l);
+	struct ast_node *function = expect_command_functionDefinition(l);
 
 	symtable_push();
 	struct entry *e = symtable_entryat(symtable_insert("this", DD_VARIABLE_TYPE_STRUCT));
@@ -227,7 +227,7 @@ static struct ast_node *expect_command_classFunction() {
 	}
 	//symtable_print();
 
-	struct ast_node *functionStatements = expect_command();
+	struct ast_node *functionStatements = expect_command(l);
 	symtable_pop();
 
 	ast_addChild(classFunc, classname);
@@ -237,15 +237,15 @@ static struct ast_node *expect_command_classFunction() {
 	return classFunc;
 }
 
-static struct ast_node *expect_command_functionDefinition() {
+static struct ast_node *expect_command_functionDefinition(struct avdl_lexer *l) {
 
 	struct ast_node *function = ast_create(AST_COMMAND_NATIVE);
 	ast_setValuei(function, 0);
 	ast_setLex(function, "function");
 
-	struct ast_node *returnType = expect_identifier();
-	struct ast_node *functionName = expect_identifier();
-	struct ast_node *args = expect_command();
+	struct ast_node *returnType = expect_identifier(l);
+	struct ast_node *functionName = expect_identifier(l);
+	struct ast_node *args = expect_command(l);
 
 	ast_addChild(function, returnType);
 	ast_addChild(function, functionName);
@@ -254,14 +254,14 @@ static struct ast_node *expect_command_functionDefinition() {
 	return function;
 }
 
-static struct ast_node *expect_command_group() {
+static struct ast_node *expect_command_group(struct avdl_lexer *l) {
 
 	struct ast_node *group = ast_create(AST_COMMAND_NATIVE);
 	ast_setValuei(group, 0);
 	ast_setLex(group, "group");
 
-	while (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
-		ast_addChild(group, expect_command_arg());
+	while (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
+		ast_addChild(group, expect_command_arg(l));
 	}
 
 	return group;
@@ -279,27 +279,27 @@ static struct ast_node *getIdentifierArrayNode(struct ast_node *n) {
 	return 0;
 }
 
-static struct ast_node *expect_command_classDefinition() {
+static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 
-	struct ast_node *classname = expect_identifier();
+	struct ast_node *classname = expect_identifier(l);
 
 	// subclass can be an identifier (name of the class) or `0` (no parent class)
 	struct ast_node *subclassname;
-	if (lexer_peek() == LEXER_TOKEN_IDENTIFIER) {
-		subclassname = expect_identifier();
+	if (avdl_lexer_peek(l) == LEXER_TOKEN_IDENTIFIER) {
+		subclassname = expect_identifier(l);
 	}
 	// no subclass for this class
 	else {
-		struct ast_node *n = expect_int();
+		struct ast_node *n = expect_int(l);
 		if (n->value != 0) {
-			semantic_error("subclass can either be an identifier or '0'");
+			semantic_error(l, "subclass can either be an identifier or '0'");
 		}
 		subclassname = ast_create(AST_EMPTY);
 		ast_setValuei(subclassname, 0);
 	}
 
 	symtable_push();
-	struct ast_node *definitions = expect_command();
+	struct ast_node *definitions = expect_command(l);
 
 	// add new struct to the struct table
 	int structIndex;
@@ -325,13 +325,13 @@ static struct ast_node *expect_command_classDefinition() {
 			if (arrayNode) {
 
 				if (arrayNode->children.elements == 0) {
-					semantic_error("array definition should have a value");
+					semantic_error(l, "array definition should have a value");
 				}
 
 				struct ast_node *arrayNum = dd_da_get(&arrayNode->children, 0);
 
 				if (arrayNum->node_type != AST_NUMBER) {
-					semantic_error("array definition should only be a number");
+					semantic_error(l, "array definition should only be a number");
 				}
 				struct_table_push_member_array(ast_getLex(name), dd_variable_type_convert(ast_getLex(type)), ast_getLex(type), arrayNum->value, e->isRef);
 			}
@@ -374,7 +374,7 @@ static struct ast_node *expect_command_classDefinition() {
 	return classDefinition;
 }
 
-static struct ast_node *expect_command_definition() {
+static struct ast_node *expect_command_definition(struct avdl_lexer *l) {
 
 	struct ast_node *definition = ast_create(AST_COMMAND_NATIVE);
 	ast_setValuei(definition, 0);
@@ -384,7 +384,7 @@ static struct ast_node *expect_command_definition() {
 	int isExtern = 0;
 
 	// optional modifiers
-	struct ast_node *optionalModifier = expect_identifier();
+	struct ast_node *optionalModifier = expect_identifier(l);
 	do {
 		if (strcmp(ast_getLex(optionalModifier), "ref") == 0) {
 			// apply modifier
@@ -392,7 +392,7 @@ static struct ast_node *expect_command_definition() {
 
 			// get new optional modifier
 			ast_delete(optionalModifier);
-			optionalModifier = expect_identifier();
+			optionalModifier = expect_identifier(l);
 		}
 		else
 		if (strcmp(ast_getLex(optionalModifier), "extern") == 0) {
@@ -401,7 +401,7 @@ static struct ast_node *expect_command_definition() {
 
 			// get new optional modifier
 			ast_delete(optionalModifier);
-			optionalModifier = expect_identifier();
+			optionalModifier = expect_identifier(l);
 		}
 		else {
 			break;
@@ -416,11 +416,11 @@ static struct ast_node *expect_command_definition() {
 	// check if primitive or struct
 	if (!dd_variable_type_isPrimitiveType(ast_getLex(type))
 	&&  !struct_table_exists(ast_getLex(type))) {
-		semantic_error("unrecognized type '%s'", ast_getLex(type));
+		semantic_error(l, "unrecognized type '%s'", ast_getLex(type));
 	}
 
 	// get variable name
-	struct ast_node *varname = expect_identifier();
+	struct ast_node *varname = expect_identifier(l);
 
 	// add newly defined variable to symbol table
 	struct entry *e = symtable_entryat(symtable_insert(ast_getLex(varname), dd_variable_type_convert(ast_getLex(type))));
@@ -434,75 +434,75 @@ static struct ast_node *expect_command_definition() {
 	ast_addChild(definition, type);
 	ast_addChild(definition, varname);
 
-	if (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
-		struct ast_node *initialValue = expect_command_arg();
+	if (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
+		struct ast_node *initialValue = expect_command_arg(l);
 		ast_addChild(definition, initialValue);
 	}
 
 	return definition;
 }
 
-static struct ast_node *expect_int() {
+static struct ast_node *expect_int(struct avdl_lexer *l) {
 
 	// confirm it's an integer
-	if (lexer_getNextToken() != LEXER_TOKEN_INT) {
-		semantic_error("expected integer instead of '%s'", lexer_getLexToken());
+	if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_INT) {
+		semantic_error(l, "expected integer instead of '%s'", avdl_lexer_getLexToken(l));
 	}
 
 	struct ast_node *integer = ast_create(AST_NUMBER);
-	ast_setValuei(integer, atoi(lexer_getLexToken()));
+	ast_setValuei(integer, atoi(avdl_lexer_getLexToken(l)));
 	return integer;
 }
 
-static struct ast_node *expect_float() {
+static struct ast_node *expect_float(struct avdl_lexer *l) {
 
 	// confirm it's a float
-	if (lexer_getNextToken() != LEXER_TOKEN_FLOAT) {
-		semantic_error("expected float instead of '%s'", lexer_getLexToken());
+	if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_FLOAT) {
+		semantic_error(l, "expected float instead of '%s'", avdl_lexer_getLexToken(l));
 	}
 
 	struct ast_node *f = ast_create(AST_FLOAT);
-	ast_setValuef(f, atof(lexer_getLexToken()));
+	ast_setValuef(f, atof(avdl_lexer_getLexToken(l)));
 	return f;
 }
 
-static struct ast_node *expect_string() {
+static struct ast_node *expect_string(struct avdl_lexer *l) {
 
 	// confirm it's a string
-	if (lexer_getNextToken() != LEXER_TOKEN_STRING) {
-		semantic_error("expected string instead of '%s'", lexer_getLexToken());
+	if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_STRING) {
+		semantic_error(l, "expected string instead of '%s'", avdl_lexer_getLexToken(l));
 	}
 
 	struct ast_node *str = ast_create(AST_STRING);
 	ast_setValuei(str, 0);
-	ast_setLex(str, lexer_getLexToken());
+	ast_setLex(str, avdl_lexer_getLexToken(l));
 	return str;
 }
 
-static struct ast_node *expect_command_binaryOperation(const char *binaryOperationLex) {
+static struct ast_node *expect_command_binaryOperation(struct avdl_lexer *l, const char *binaryOperationLex) {
 
 	struct ast_node *binaryOperation = ast_create(AST_COMMAND_NATIVE);
 	ast_setValuei(binaryOperation, 0);
 	ast_setLex(binaryOperation, binaryOperationLex);
 
-	while (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
-		ast_addChild(binaryOperation, expect_command_arg());
+	while (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
+		ast_addChild(binaryOperation, expect_command_arg(l));
 	}
 
 	return binaryOperation;
 }
 
-static struct ast_node *expect_identifier() {
+static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 
 	// confirm it's an identifier
-	if (lexer_getNextToken() != LEXER_TOKEN_IDENTIFIER) {
-		semantic_error("expected identifier instead of '%s'", lexer_getLexToken());
+	if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_IDENTIFIER) {
+		semantic_error(l, "expected identifier instead of '%s'", avdl_lexer_getLexToken(l));
 	}
 
 	// generate ast node for it
 	struct ast_node *identifier = ast_create(AST_IDENTIFIER);
 	ast_setValuei(identifier, 0);
-	ast_setLex(identifier, lexer_getLexToken());
+	ast_setLex(identifier, avdl_lexer_getLexToken(l));
 
 	struct entry *symEntry = symtable_lookupEntry(ast_getLex(identifier));
 	if (symEntry) {
@@ -511,48 +511,48 @@ static struct ast_node *expect_identifier() {
 	}
 
 	// does it have an array modifier?
-	if (lexer_peek() == LEXER_TOKEN_ARRAYSTART) {
-		lexer_getNextToken();
+	if (avdl_lexer_peek(l) == LEXER_TOKEN_ARRAYSTART) {
+		avdl_lexer_getNextToken(l);
 		struct ast_node *array = ast_create(AST_GROUP);
 		ast_setValuei(array, 0);
-		int token = lexer_peek();
+		int token = avdl_lexer_peek(l);
 		// integer as array modifier
 		if (token == LEXER_TOKEN_INT) {
-			ast_addChild(array, expect_int());
+			ast_addChild(array, expect_int(l));
 		}
 		else
 		// identifier as array modifier
 		if (token == LEXER_TOKEN_IDENTIFIER) {
-			ast_addChild(array, expect_identifier());
+			ast_addChild(array, expect_identifier(l));
 		}
 		else
 		// calculation as array modifier
 		if (token == LEXER_TOKEN_COMMANDSTART) {
-			lexer_getNextToken();
-			while (lexer_peek() == LEXER_TOKEN_COMMANDSTART) {
-				ast_addChild(array, expect_command());
+			avdl_lexer_getNextToken(l);
+			while (avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDSTART) {
+				ast_addChild(array, expect_command(l));
 			}
 		}
 		ast_addChild(identifier, array);
 
 		// end of array
-		if (lexer_getNextToken() != LEXER_TOKEN_ARRAYEND) {
-			semantic_error("expected end of array");
+		if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_ARRAYEND) {
+			semantic_error(l, "expected end of array");
 		}
 	}
 
 	// it has a period (myclass.myvar)
-	if (lexer_peek() == LEXER_TOKEN_PERIOD) {
-		lexer_getNextToken();
+	if (avdl_lexer_peek(l) == LEXER_TOKEN_PERIOD) {
+		avdl_lexer_getNextToken(l);
 
 		// identifiers that own objects have to be in the symbol table
 		if (!symEntry) {
-			semantic_error("identifier '%s' not a known symbol", ast_getLex(identifier));
+			semantic_error(l, "identifier '%s' not a known symbol", ast_getLex(identifier));
 		}
 
 		// identifiers that own objects have to be structs
 		if (symEntry->token != DD_VARIABLE_TYPE_STRUCT) {
-			semantic_error("identifier '%s' not a struct, so it can't own objects", ast_getLex(identifier));
+			semantic_error(l, "identifier '%s' not a struct, so it can't own objects", ast_getLex(identifier));
 		}
 
 		// add struct's members to new symbol table
@@ -577,7 +577,7 @@ static struct ast_node *expect_identifier() {
 		}
 
 		// get the owned object's name
-		struct ast_node *child = expect_identifier();
+		struct ast_node *child = expect_identifier(l);
 
 		// child not inside current symbol table - possibly belongs to a parent class
 		int childSymId = symtable_lookup(ast_getLex(child));
@@ -586,14 +586,14 @@ static struct ast_node *expect_identifier() {
 
 			// child not part of that struct, or any of its parent classes
 			if (parentDepth < 0) {
-				semantic_error("variable '%s' of class '%s' does not own object '%s'",
+				semantic_error(l, "variable '%s' of class '%s' does not own object '%s'",
 					ast_getLex(identifier), struct_table_get_name(symEntry->value), ast_getLex(child)
 				);
 			}
 			else
 			// child direct child of that class, but not in symbol table, this should never happen
 			if (parentDepth == 0) {
-				semantic_error("variable '%s' of class '%s' owns object '%s', but couldn't be found in the symbol table",
+				semantic_error(l, "variable '%s' of class '%s' owns object '%s', but couldn't be found in the symbol table",
 					ast_getLex(identifier), struct_table_get_name(symEntry->value), ast_getLex(child)
 				);
 			}
@@ -626,42 +626,42 @@ static struct ast_node *expect_identifier() {
 	return identifier;
 }
 
-static struct ast_node *expect_command_arg() {
+static struct ast_node *expect_command_arg(struct avdl_lexer *l) {
 
-	int token = lexer_peek();
+	int token = avdl_lexer_peek(l);
 	if (token == LEXER_TOKEN_INT) {
-		return expect_int();
+		return expect_int(l);
 	}
 	else
 	if (token == LEXER_TOKEN_FLOAT) {
-		return expect_float();
+		return expect_float(l);
 	}
 	else
 	if (token == LEXER_TOKEN_STRING) {
-		return expect_string();
+		return expect_string(l);
 	}
 	else
 	if (token == LEXER_TOKEN_COMMANDSTART) {
-		return expect_command();
+		return expect_command(l);
 	}
 	else
 	if (token == LEXER_TOKEN_IDENTIFIER) {
-		return expect_identifier();
+		return expect_identifier(l);
 	}
 	else {
-		lexer_getNextToken();
-		semantic_error("expected command argument instead of '%s'", lexer_getLexToken());
+		avdl_lexer_getNextToken(l);
+		semantic_error(l, "expected command argument instead of '%s'", avdl_lexer_getLexToken(l));
 	}
 
 	return 0;
 }
 
 // looks for the structure of a command: (cmdname arg1 arg2 .. argN)
-static struct ast_node *expect_command() {
+static struct ast_node *expect_command(struct avdl_lexer *l) {
 
 	// confirm that a command is expected
-	if (lexer_getNextToken() != LEXER_TOKEN_COMMANDSTART) {
-		semantic_error("expected the start of a command '(', instead of '%s'", lexer_getLexToken());
+	if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_COMMANDSTART) {
+		semantic_error(l, "expected the start of a command '(', instead of '%s'", avdl_lexer_getLexToken(l));
 	}
 
 	// get the command's name
@@ -669,14 +669,14 @@ static struct ast_node *expect_command() {
 	struct ast_node *cmdname;
 
 	// empty command is equivalent to `(group)`
-	if (lexer_peek() == LEXER_TOKEN_COMMANDEND) {
+	if (avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDEND) {
 		cmdname = ast_create(AST_IDENTIFIER);
 		ast_setValuei(cmdname, 0);
 		ast_setLex(cmdname, "group");
 	}
 	// otherwise, get command name
 	else {
-		cmdname = expect_identifier();
+		cmdname = expect_identifier(l);
 	}
 
 	// native command, special rules
@@ -684,34 +684,34 @@ static struct ast_node *expect_command() {
 
 		// native command can only be a name, no array modifiers or owning data
 		if (cmdname->children.elements > 0) {
-			semantic_error("native command name cannot have an array modifier, or own other data\n");
+			semantic_error(l, "native command name cannot have an array modifier, or own other data\n");
 		}
 
 		// based on the command, expect different data
 		if (strcmp(ast_getLex(cmdname), "def") == 0) {
-			cmd = expect_command_definition();
+			cmd = expect_command_definition(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "class") == 0) {
-			cmd = expect_command_classDefinition();
+			cmd = expect_command_classDefinition(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "group") == 0) {
-			cmd = expect_command_group();
+			cmd = expect_command_group(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "function") == 0) {
-			cmd = expect_command_functionDefinition();
+			cmd = expect_command_functionDefinition(l);
 
-			if (lexer_peek() == LEXER_TOKEN_COMMANDSTART) {
+			if (avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDSTART) {
 				// function statements
-				ast_addChild(cmd, expect_command());
+				ast_addChild(cmd, expect_command(l));
 			}
 
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "class_function") == 0) {
-			cmd = expect_command_classFunction();
+			cmd = expect_command_classFunction(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "=") == 0
@@ -727,43 +727,43 @@ static struct ast_node *expect_command() {
 		||  strcmp(ast_getLex(cmdname), "<=") == 0
 		||  strcmp(ast_getLex(cmdname), ">") == 0
 		||  strcmp(ast_getLex(cmdname), "<") == 0) {
-			cmd = expect_command_binaryOperation(ast_getLex(cmdname));
+			cmd = expect_command_binaryOperation(l, ast_getLex(cmdname));
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "echo") == 0) {
-			cmd = expect_command_group();
+			cmd = expect_command_group(l);
 			ast_setLex(cmd, "echo");
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "if") == 0) {
-			cmd = expect_command_if();
+			cmd = expect_command_if(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "include") == 0) {
-			cmd = expect_command_include();
+			cmd = expect_command_include(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "asset") == 0) {
-			cmd = expect_command_asset();
+			cmd = expect_command_asset(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "savefile") == 0) {
-			cmd = expect_command_savefile();
+			cmd = expect_command_savefile(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "for") == 0) {
-			cmd = expect_command_for();
+			cmd = expect_command_for(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "multistring") == 0) {
-			cmd = expect_command_multistring();
+			cmd = expect_command_multistring(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "return") == 0) {
-			cmd = expect_command_return();
+			cmd = expect_command_return(l);
 		}
 		else {
-			semantic_error("no rule to parse command '%s'", ast_getLex(cmdname));
+			semantic_error(l, "no rule to parse command '%s'", ast_getLex(cmdname));
 		}
 	}
 	// custom command, make sure it exists
@@ -779,50 +779,55 @@ static struct ast_node *expect_command() {
 		cmd->node_type = AST_COMMAND_CUSTOM;
 		ast_addChild(cmd, cmdname);
 
-		while (lexer_peek() != LEXER_TOKEN_COMMANDEND) {
-			ast_addChild(cmd, expect_command_arg());
+		while (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
+			ast_addChild(cmd, expect_command_arg(l));
 		}
 	}
 
 	// get the command's children
-	if (lexer_getNextToken() != LEXER_TOKEN_COMMANDEND) {
-		semantic_error("expected command end ')'");
+	if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_COMMANDEND) {
+		semantic_error(l, "expected command end ')'");
 	}
 
 	return cmd;
 }
 
-void semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) {
+int semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) {
 
 	struct_table_init();
 	symtable_init();
-	lexer_prepare(filename);
+
+	struct avdl_lexer l;
+	avdl_lexer_create(&l, filename);
 
 	struct ast_node *cmd;
-	while (lexer_peek() == LEXER_TOKEN_COMMANDSTART) {
-		cmd = expect_command();
+	while (avdl_lexer_peek(&l) == LEXER_TOKEN_COMMANDSTART) {
+		cmd = expect_command(&l);
 
 		if (cmd->node_type == AST_INCLUDE) {
-			lexer_addIncludedFile(ast_getLex(cmd));
+			if (avdl_lexer_addIncludedFile(&l, ast_getLex(cmd)) != 0) {
+				return -1;
+			}
 		}
 		else {
 			ast_addChild(node, cmd);
 		}
 	}
 
-	lexer_clean();
+	avdl_lexer_clean(&l);
+
+	return 0;
 }
 
-static void semantic_error(const char *msg, ...) {
+static void semantic_error(struct avdl_lexer *l, const char *msg, ...) {
 
 	va_list args;
 	va_start(args, msg);
 
-	printf("avdl syntax error:\n");
-	printf("%s:%d: ", lexer_getCurrentFilename(), lexer_getCurrentLinenumber());
+	printf("avdl: syntax error at %s:%d:%d\n", avdl_lexer_getCurrentFilename(l), avdl_lexer_getCurrentLinenumber(l), avdl_lexer_getCurrentCharacterNumber(l));
 	vprintf(msg, args);
 	printf("\n");
-	lexer_printCurrentLine();
+	avdl_lexer_printCurrentLine(l);
 
 	va_end(args);
 	exit(-1);

@@ -1,6 +1,9 @@
 #ifndef AVDL_LEXER_H
 #define AVDL_LEXER_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 /*
  * Lexer
  * responsible for reading source code
@@ -8,6 +11,25 @@
  *
  * it also supports push new (included) files
  */
+
+#define MAX_FILENAME_LENGTH 500
+
+struct parsing_point {
+	char tokenString[500];
+	int tokenId;
+	char filename[MAX_FILENAME_LENGTH];
+	int lineNumber;
+	int characterNumber;
+};
+
+struct file_properties {
+	FILE *f;
+	char filename[MAX_FILENAME_LENGTH];
+	int currentLineNumber;
+	int currentCharacterNumber;
+
+	struct parsing_point pointLastRead;
+};
 
 /*
  * all available tokens the lexer understands
@@ -28,32 +50,41 @@ enum lexer_tokens {
 	LEXER_TOKEN_FLOAT,
 };
 
+struct avdl_lexer {
+	int currentFile;
+	struct file_properties files[10];
+	struct parsing_point pointPrevious;
+	struct parsing_point pointCurrent;
+
+	char pastFiles[100][MAX_FILENAME_LENGTH];
+	int currentPastFile;
+};
+
 /*
- * `prepare` initialises the lexer towards the given filename.
+ * `create` initialises the lexer towards the given filename.
  * at some point `clean` should be called when the process is done.
  */
-void lexer_prepare(const char *filename);
-void lexer_clean();
+int avdl_lexer_create(struct avdl_lexer *, const char *filename);
+void avdl_lexer_clean(struct avdl_lexer *);
 
 /*
  * After initialisation, `getNextToken` will return the next
  * token.
- * In case it's not needed, `rewind` will go back one step, so
- * `getNextToken` will return the same token when called again.
  * `getLexToken` is to get the string that the token represents.
  *
  * peek is used to take a look at the next token, without
  * updating parsing position.
  */
-int lexer_getNextToken();
-int lexer_peek();
-const char *lexer_getLexToken();
+int avdl_lexer_getNextToken(struct avdl_lexer *);
+int avdl_lexer_peek(struct avdl_lexer *);
+const char *avdl_lexer_getLexToken(struct avdl_lexer *);
 
-const char *lexer_getCurrentFilename();
-int lexer_getCurrentLinenumber();
+const char *avdl_lexer_getCurrentFilename(struct avdl_lexer *);
+int avdl_lexer_getCurrentLinenumber(struct avdl_lexer *);
+int avdl_lexer_getCurrentCharacterNumber(struct avdl_lexer *);
 
-void lexer_printCurrentLine();
+void avdl_lexer_printCurrentLine(struct avdl_lexer *);
 
-void lexer_addIncludedFile(const char *includeFilename);
+int avdl_lexer_addIncludedFile(struct avdl_lexer *o, const char *includeFilename);
 
 #endif // lexer
