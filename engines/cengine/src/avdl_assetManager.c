@@ -66,13 +66,10 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	meshToLoad.meshType = meshType;
 	meshToLoad.type = type;
 	#if defined(_WIN32) || defined(WIN32)
-	wcscpy(meshToLoad.filenameW, avdl_getProjectLocation());
-	mbstowcs((meshToLoad.filenameW +wcslen(meshToLoad.filenameW)), assetname, 400 -wcslen(meshToLoad.filenameW));
-	//wprintf(L"add assetW: %lS\n", meshToLoad.filenameW);
+	strcpy(meshToLoad.filename, assetname);
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
 	strcat(meshToLoad.filename, assetname);
-	//printf("add asset: %s\n", assetname);
 	#endif
 	dd_da_add(&meshesToLoad, &meshToLoad);
 	//#endif
@@ -294,15 +291,6 @@ void avdl_assetManager_loadAssets() {
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
 			struct dd_image *mesh = m->object;
-			#if defined(_WIN32) || defined(WIN32)
-			if (m->type == AVDL_IMAGETYPE_BMP) {
-				dd_image_load_bmp(mesh, m->filenameW);
-			}
-			else
-			if (m->type == AVDL_IMAGETYPE_PNG) {
-				dd_image_load_png(mesh, m->filenameW);
-			}
-			#else
 			if (m->type == AVDL_IMAGETYPE_BMP) {
 				dd_image_load_bmp(mesh, m->filename);
 			}
@@ -310,7 +298,6 @@ void avdl_assetManager_loadAssets() {
 			if (m->type == AVDL_IMAGETYPE_PNG) {
 				dd_image_load_png(mesh, m->filename);
 			}
-			#endif
 		}
 		// load mesh
 		else {
@@ -319,11 +306,7 @@ void avdl_assetManager_loadAssets() {
 				struct dd_mesh *mesh = m->object;
 				dd_mesh_clean(mesh);
 				struct dd_loaded_mesh lm;
-				#if defined(_WIN32) || defined(WIN32)
-				dd_filetomesh(&lm, m->filenameW, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY);
-				#else
 				dd_filetomesh(&lm, m->filename, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY);
-				#endif
 				mesh->vcount = lm.vcount;
 				mesh->v = lm.v;
 				mesh->dirtyVertices = 1;
@@ -334,13 +317,8 @@ void avdl_assetManager_loadAssets() {
 				struct dd_meshColour *mesh = m->object;
 				dd_meshColour_clean(mesh);
 				struct dd_loaded_mesh lm;
-				#if defined(_WIN32) || defined(WIN32)
-				dd_filetomesh(&lm, m->filenameW,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
-				#else
 				dd_filetomesh(&lm, m->filename,
 					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
-				#endif
 				mesh->parent.vcount = lm.vcount;
 				mesh->parent.v = lm.v;
 				mesh->parent.dirtyVertices = 1;
@@ -353,15 +331,9 @@ void avdl_assetManager_loadAssets() {
 				struct dd_meshTexture *mesh = m->object;
 				dd_meshTexture_clean(mesh);
 				struct dd_loaded_mesh lm;
-				#if defined(_WIN32) || defined(WIN32)
-				dd_filetomesh(&lm, m->filenameW,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
-					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
-				#else
 				dd_filetomesh(&lm, m->filename,
 					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
 					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
-				#endif
 				mesh->parent.parent.vcount = lm.vcount;
 				mesh->parent.parent.v = lm.v;
 				mesh->parent.parent.dirtyVertices = 1;

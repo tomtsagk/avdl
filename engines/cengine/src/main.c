@@ -162,6 +162,13 @@ int dd_main(int argc, char *argv[]) {
 	avdl_initProjectLocation();
 	avdl_assetManager_init();
 
+	#if defined(_WIN32) || defined(WIN32)
+	if (_wchdir(avdl_getProjectLocation()) != 0) {
+		wprintf(L"avdl: failed to change directory: %lS", _wcserror(errno));
+		return -1;
+	}
+	#endif
+
 	dd_clearcolor_r = 0;
 	dd_clearcolor_g = 0;
 	dd_clearcolor_b = 0;
