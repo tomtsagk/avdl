@@ -23,15 +23,28 @@ void dd_image_create(struct dd_image *o) {
 	o->set = dd_image_set;
 }
 
+#if defined(WIN32) || defined(_WIN32)
+void dd_image_load_png(struct dd_image *img, const wchar_t *filename) {
+#else
 void dd_image_load_png(struct dd_image *img, const char *filename) {
+#endif
 
 	// check signature
+	#if defined(WIN32) || defined(_WIN32)
+	FILE *fp = _wfopen(filename, L"rb");
+	if (!fp)
+	{
+		wprintf(L"avdl: error opening asset file '%s'", filename);
+		return;
+	}
+	#else
 	FILE *fp = fopen(filename, "rb");
 	if (!fp)
 	{
-		dd_log("avdl: error opening asset file '%s': %s", filename, strerror(errno));
+		wprintf(L"avdl: dd_image_load_png: error opening file: '%s': %s", filename, strerror(errno));
 		return;
 	}
+	#endif
 	char header[9];
 	fread(header, 1, 8, fp);
 	header[8] = '\0';

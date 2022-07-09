@@ -295,7 +295,13 @@ void avdl_assetManager_loadAssets() {
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
 			struct dd_image *mesh = m->object;
 			#if defined(_WIN32) || defined(WIN32)
-			dd_image_load_bmp(mesh, m->filenameW);
+			if (m->type == AVDL_IMAGETYPE_BMP) {
+				dd_image_load_bmp(mesh, m->filenameW);
+			}
+			else
+			if (m->type == AVDL_IMAGETYPE_PNG) {
+				dd_image_load_png(mesh, m->filenameW);
+			}
 			#else
 			if (m->type == AVDL_IMAGETYPE_BMP) {
 				dd_image_load_bmp(mesh, m->filename);
