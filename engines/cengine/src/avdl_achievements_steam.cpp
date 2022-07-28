@@ -15,4 +15,13 @@ void avdl_achievements_set(struct avdl_achievements *o, const char *achievementI
 	if (!SteamUserStats()->SetAchievement(achievementId)) {
 		printf("avdl: failed to set steam achievement: '%s'\n", achievementId);
 	}
+	if (!SteamUserStats()->StoreStats()) {
+		printf("avdl: failed to upload steam achievement: '%s'\n", achievementId);
+	}
+}
+
+void avdl_achievements_unset(struct avdl_achievements *o, const char *achievementId) {
+	if (!SteamUserStats()->ClearAchievement(achievementId)) {
+		printf("avdl: failed to unset steam achievement: '%s'\n", achievementId);
+	}
 }
