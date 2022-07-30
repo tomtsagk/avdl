@@ -16,6 +16,7 @@ int  avdl_opengl_getContextId();
 #include <GL/glew.h>
 
 #if defined(_WIN32) || defined(WIN32)
+#define SDL_MAIN_HANDLED
 #include <SDL.h>
 #else
 #include <SDL2/SDL.h>
