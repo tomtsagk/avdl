@@ -84,7 +84,6 @@ VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
 # compile the package, together with all engines
 #
 all: ${EXECUTABLE}
-	${MAKE} -C ${CENGINE_PATH} all
 
 #
 # build the executable, depends on source files
@@ -113,7 +112,8 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	install ${EXECUTABLE} ${DESTDIR}${prefix}/bin/
 	install manual/avdl.1 ${DESTDIR}${prefix}/share/man/man1/
 	@# c engine
-	${MAKE} -C ${CENGINE_PATH} prefix="${prefix}" DESTDIR="${DESTDIR}" install
+	install -m644 ${ENGINE_FILES_HEADERS} ${DESTDIR}${prefix}/include
+	install -m644 ${ENGINE_FILES_SRC} ${ENGINE_FILES_SRC_CPP} ${DESTDIR}${prefix}/share/avdl/cengine
 	@# android engine
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
 	cp -r engines/cengine/src/*.c engines/cengine/include/*.h\
@@ -139,7 +139,6 @@ ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar:
 # clean all automatically generated files
 #
 clean:
-	${MAKE} -C ${CENGINE_PATH} clean
 	rm -rf build
 
 #
