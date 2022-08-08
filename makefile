@@ -208,7 +208,7 @@ ${DIRECTORIES} ${DIRECTORY_ALL}:
 #
 # compile .c source files
 #
-${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS} ${DIRECTORY_OBJ}
+${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS} | ${DIRECTORY_OBJ}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -c $< -o $@
 
 .PHONY: all tarball clean install test test-advance ${TESTS_NAMES} ${SAMPLES}
