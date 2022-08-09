@@ -54,6 +54,7 @@ ENGINE_FILES_ANDROID=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=engine/%
 # executable
 #
 EXECUTABLE=${DIRECTORY_EXE}/${PACKAGE_NAME}
+TARBALL=${PACKAGE_NAME}-${PACKAGE_VERSION}.tar
 
 #
 # c engine data
@@ -88,7 +89,7 @@ all: ${EXECUTABLE}
 #
 # build the executable, depends on source files
 #
-${EXECUTABLE}: ${DIRECTORY_ALL} ${OBJ}
+${EXECUTABLE}: ${OBJ} | ${DIRECTORY_EXE}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${OBJ} -o $@
 
 #
@@ -130,9 +131,8 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 #
 # create a tarball of all source files needed to compile this project
 #
-tarball: ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar
-
-${PACKAGE_NAME}-${PACKAGE_VERSION}.tar:
+tarball: ${TARBALL}
+${TARBALL}:
 	tar cf $@ src makefile engines include
 
 #
@@ -201,7 +201,7 @@ ${DIRECTORY_TESTS_DEPS}/%.o: src/%.c ${DIRECTORY_TESTS_DEPS}
 #
 # create needed directories
 #
-${DIRECTORIES} ${DIRECTORY_ALL}:
+${DIRECTORY_ALL}:
 	mkdir -p $@
 
 #
