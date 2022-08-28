@@ -578,8 +578,7 @@ int my_min(num1, num2) {
  */
 int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
-	//#if defined(_WIN32) || defined(WIN32)
-	#if 0
+	#if defined(_WIN32) || defined(WIN32)
 
 	//Open file and check error
 	FILE *f = fopen(path, "r");
@@ -632,7 +631,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		}
 	}
 
-	#define VERTEX_MAX 20000
+	#define VERTEX_MAX 50000
 
 	float vertexX[VERTEX_MAX];
 	float vertexY[VERTEX_MAX];
