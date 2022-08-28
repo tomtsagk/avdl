@@ -578,7 +578,8 @@ int my_min(num1, num2) {
  */
 int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
-	#if defined(_WIN32) || defined(WIN32)
+	//#if defined(_WIN32) || defined(WIN32)
+	#if 0
 
 	//Open file and check error
 	FILE *f = fopen(path, "r");
@@ -778,7 +779,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	FILE *f = fopen(path, "r");
 	if (!f)
 	{
-		dd_log("load_ply: error opening file: %s", path);
+		dd_log("load_ply: error opening file: %s: %s", path, strerror(errno));
 		return -1;
 	}
 
