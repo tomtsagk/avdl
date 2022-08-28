@@ -50,6 +50,8 @@ struct dd_json_object {
 	int length;
 	enum DD_JSON_TOKEN token;
 
+	int hasKey;
+
 };
 
 void dd_json_init(struct dd_json_object *o, char *json_string, int size);

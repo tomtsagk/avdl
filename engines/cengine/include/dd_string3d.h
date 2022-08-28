@@ -2,8 +2,9 @@
 #define DD_TEXT_H
 
 #include "avdl_cengine.h"
+#include "dd_image.h"
 
-void dd_string3d_activate(const char *src, float fColumns, float fRows, float fWidth, float fHeight);
+void dd_string3d_activate(const char *src, int src_type, float fColumns, float fRows, float fWidth, float fHeight);
 int dd_string3d_isActive();
 
 void dd_string3d_init();

@@ -26,7 +26,7 @@ void dd_music_create(struct dd_music *o) {
 
 }
 
-void dd_music_load(struct dd_music *o, const char *filename) {
+void dd_music_load(struct dd_music *o, const char *filename, int type) {
 	if (!dd_hasAudio) return;
 	if (strlen(filename) >= 100) {
 		dd_log("avdl: asset name can't be more than 100 characters: %s", filename);
@@ -36,14 +36,15 @@ void dd_music_load(struct dd_music *o, const char *filename) {
 	#else
 
 	#if defined(_WIN32) || defined(WIN32)
-	wcscpy(o->filenameW, avdl_getProjectLocation());
-	mbstowcs((o->filenameW +wcslen(o->filenameW)), filename, 400 -wcslen(o->filenameW));
-	//wprintf(L"add assetW: %lS\n", meshToLoad.filenameW);
+	strcpy(o->filename, filename);
 	#else
 	strcpy(o->filename, avdl_getProjectLocation());
 	strcat(o->filename, filename);
-	o->music = Mix_LoadMUS(o->filename);
 	#endif
+	o->music = Mix_LoadMUS(o->filename);
+	if (!o->music) {
+		dd_log("avdl: error playing dd_music: '%s': %s", filename, Mix_GetError());
+	}
 
 	#endif
 }

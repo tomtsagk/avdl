@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include "dd_log.h"
 #include "avdl_assetManager.h"
+#include <errno.h>
+#include <png.h>
 
 void dd_image_create(struct dd_image *o) {
 	o->tex = 0;
@@ -11,7 +13,9 @@ void dd_image_create(struct dd_image *o) {
 	o->pixels = 0;
 	o->pixelsb = 0;
 	o->assetName = 0;
+	o->assetType = 0;
 	o->openglContextId = -1;
+	o->pixelFormat = 0;
 
 	o->bind = dd_image_bind;
 	o->unbind = dd_image_unbind;
@@ -19,11 +23,118 @@ void dd_image_create(struct dd_image *o) {
 	o->set = dd_image_set;
 }
 
-#if defined(WIN32) || defined(_WIN32)
-void dd_image_load_bmp(struct dd_image *img, const wchar_t *filename) {
-#else
+void dd_image_load_png(struct dd_image *img, const char *filename) {
+
+	// check signature
+	FILE *fp = fopen(filename, "rb");
+	if (!fp) {
+		dd_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
+		return;
+	}
+	char header[9];
+	fread(header, 1, 8, fp);
+	header[8] = '\0';
+	int is_png = !png_sig_cmp(header, 0, 8);
+	if (!is_png)
+	{
+		dd_log("avdl: error reading asset file signature '%s'", filename);
+		fclose(fp);
+		return;
+	}
+
+	//png_set_sig_bytes_read();
+
+	// create struct pointer
+	//png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)user_error_ptr, user_error_fn, user_warning_fn);
+	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
+	if (!png_ptr) {
+		dd_log("avdl: error while parsing '%s'", filename);
+		fclose(fp);
+		return;
+	}
+
+	// create info pointer
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr) {
+		png_destroy_read_struct(&png_ptr, 0, 0);
+		fclose(fp);
+		dd_log("avdl: error while parsing '%s'", filename);
+		return;
+	}
+
+	png_init_io(png_ptr, fp);
+	png_set_sig_bytes(png_ptr, 8);
+	png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, 0);
+
+	png_uint_32 width;
+	png_uint_32 height;
+	int bit_depth;
+	int color_type;
+	int interlace_type;
+	int compression_type;
+	int filter_method;
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method);
+
+	//dd_log("%dx%d %d %d | %d %d %d", width, height, bit_depth, color_type, interlace_type, compression_type, filter_method);
+
+	img->pixelFormat = GL_RGB;
+	img->width = width;
+	img->height = height;
+	png_bytep *row_pointers = png_get_rows(png_ptr, info_ptr);
+	// grayscale images
+	if (color_type == PNG_COLOR_TYPE_GRAY) {
+		img->pixelFormat = GL_RGB;
+		img->pixels = malloc(sizeof(float) *img->width *img->height *3);
+		for (int x = 0; x < img->width ; x++)
+		for (int y = 0; y < img->height; y++) {
+			int ry = img->height-1 -y;
+			img->pixels[(y*width*3) +x*3+0] = row_pointers[ry][x]/ 255.0;
+			img->pixels[(y*width*3) +x*3+1] = row_pointers[ry][x]/ 255.0;
+			img->pixels[(y*width*3) +x*3+2] = row_pointers[ry][x]/ 255.0;
+		}
+	}
+	else
+	// RGB images
+	if (color_type == PNG_COLOR_TYPE_RGB) {
+		img->pixelFormat = GL_RGB;
+		img->pixels = malloc(sizeof(float) *img->width *img->height *3);
+		for (int x = 0; x < img->width ; x++)
+		for (int y = 0; y < img->height; y++) {
+			int ry = img->height-1 -y;
+			img->pixels[(y*width*3) +x*3+0] = row_pointers[ry][x*3+0]/ 255.0;
+			img->pixels[(y*width*3) +x*3+1] = row_pointers[ry][x*3+1]/ 255.0;
+			img->pixels[(y*width*3) +x*3+2] = row_pointers[ry][x*3+2]/ 255.0;
+		}
+	}
+	else
+	// RGBA images
+	if (color_type == PNG_COLOR_TYPE_RGBA) {
+		img->pixelFormat = GL_RGBA;
+		img->pixels = malloc(sizeof(float) *img->width *img->height *4);
+		for (int x = 0; x < img->width ; x++)
+		for (int y = 0; y < img->height; y++) {
+			int ry = img->height-1 -y;
+			img->pixels[(y*width*4) +x*4+0] = row_pointers[ry][x*4+0]/ 255.0;
+			img->pixels[(y*width*4) +x*4+1] = row_pointers[ry][x*4+1]/ 255.0;
+			img->pixels[(y*width*4) +x*4+2] = row_pointers[ry][x*4+2]/ 255.0;
+			img->pixels[(y*width*4) +x*4+3] = row_pointers[ry][x*4+3]/ 255.0;
+		}
+	}
+	// unsupported format
+	else {
+		fclose(fp);
+		png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+		dd_log("avdl: error while parsing '%s': unsupported format", filename);
+		return;
+	}
+
+	// clean-up
+	fclose(fp);
+	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+
+}
+
 void dd_image_load_bmp(struct dd_image *img, const char *filename) {
-#endif
 
 	#if DD_PLATFORM_ANDROID
 	#else
@@ -47,19 +158,11 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	} headerinfo;
 
 	// on Unix system, "r" is enough, on windows "rb" is needed
-	#if defined(WIN32) || defined(_WIN32)
-	FILE *f = _wfopen(filename, L"rb");
-	if (!f) {
-		wprintf(L"dd_image_load_bmp: error opening file: '%lS'", filename);
-		exit(-1);
-	}
-	#else
 	FILE *f = fopen(filename, "rb");
 	if (!f) {
-		dd_log("dd_image_load_bmp: error opening file: '%s'", filename);
+		dd_log("dd_image_load_bmp: error opening file: '%s': '%s'", filename, strerror(errno));
 		exit(-1);
 	}
-	#endif
 
 	fread(&header.type, sizeof(unsigned short int), 1, f);
 	fread(&header.size, sizeof(unsigned int), 1, f);
@@ -68,11 +171,7 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	fread(&header.offset, sizeof(unsigned int), 1, f);
 
 	if (fread(&headerinfo, sizeof(struct bmp_headerinfo), 1, f) != 1) {
-		#if defined(WIN32) || defined(_WIN32)
-		wprintf(L"dd_image_load_bmp: error reading info header: '%lS'", filename);
-		#else
 		dd_log("dd_image_load_bmp: error reading info header: '%s'", filename);
-		#endif
 	}
 
 	fseek(f, header.offset, SEEK_SET);
@@ -117,7 +216,7 @@ void dd_image_to_opengl(struct dd_image *img) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	#if DD_PLATFORM_NATIVE
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->width, img->height, 0, GL_RGB, GL_FLOAT, img->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, img->pixelFormat, img->width, img->height, 0, img->pixelFormat, GL_FLOAT, img->pixels);
 	#elif DD_PLATFORM_ANDROID
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, img->pixelsb);
@@ -165,7 +264,7 @@ void dd_image_bind(struct dd_image *o) {
 	else
 	if (o->assetName) {
 		o->tex = 0;
-		o->set(o, o->assetName);
+		o->set(o, o->assetName, o->assetType);
 	}
 }
 
@@ -175,8 +274,9 @@ void dd_image_unbind(struct dd_image *o) {
 	}
 }
 
-void dd_image_set(struct dd_image *o, const char *filename) {
+void dd_image_set(struct dd_image *o, const char *filename, int type) {
 	o->openglContextId = avdl_opengl_getContextId();
 	o->assetName = filename;
-	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename);
+	o->assetType = type;
+	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
 }

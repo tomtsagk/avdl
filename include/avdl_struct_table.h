@@ -20,7 +20,7 @@ struct struct_table_entry_member {
 // structs
 struct struct_table_entry {
 	char name[DD_STRUCT_TABLE_NAME_SIZE];
-	struct struct_table_entry_member members[100];
+	struct struct_table_entry_member members[DD_STRUCT_TABLE_MEMBER_TOTAL];
 	int member_total;
 	int parent;
 };

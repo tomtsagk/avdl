@@ -13,6 +13,7 @@ struct dd_meshToLoad {
 	int meshType;
 	char filename[400];
 	wchar_t filenameW[400];
+	int type;
 };
 
 extern struct dd_dynamic_array meshesToLoad;
@@ -22,7 +23,7 @@ void avdl_assetManager_init();
 void avdl_assetManager_clean();
 
 // add assets to load
-void avdl_assetManager_add(void *object, int meshType, const char *assetname);
+void avdl_assetManager_add(void *object, int meshType, const char *assetname, int type);
 void avdl_assetManager_loadAll();
 
 // getters

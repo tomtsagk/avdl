@@ -40,14 +40,15 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 	#else
 
 	#if defined(_WIN32) || defined(WIN32)
-	wcscpy(o->filenameW, avdl_getProjectLocation());
-	mbstowcs((o->filenameW +wcslen(o->filenameW)), filename, 400 -wcslen(o->filenameW));
-	//wprintf(L"add assetW: %lS\n", meshToLoad.filenameW);
+	strcpy(o->filename, filename);
 	#else
 	strcpy(o->filename, avdl_getProjectLocation());
 	strcat(o->filename, filename);
-	o->sound = Mix_LoadWAV(o->filename);
 	#endif
+	o->sound = Mix_LoadWAV(o->filename);
+	if (!o->sound) {
+		dd_log("avdl: error playing dd_sound: '%s': %s", filename, Mix_GetError());
+	}
 
 	#endif
 }

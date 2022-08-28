@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
 License:        GPLv3
-URL:            https://darkdimension.org/avdl.html
+URL:            https://darkdimension.org/avdl
 Source0:        https://github.com/tomtsagk/%{name}/archive/refs/tags/v%{version}.tar.gz
 
 BuildRequires:  make, gcc, glew-devel, SDL2-devel, SDL2_mixer-devel

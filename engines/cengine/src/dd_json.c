@@ -15,16 +15,10 @@ void dd_json_init(struct dd_json_object *o, char *json_string, int size) {
 	o->buffer[0] = '\0';
 
 	o->file = 0;
+
+	o->hasKey = 0;
 }
 
-#if defined(_WIN32) || defined(WIN32)
-void dd_json_initFile(struct dd_json_object *o, wchar_t *filename) {
-	o->file = _wfopen(filename, L"r");
-	if (!o->file) {
-		wprintf(L"avdl: error opening file '%lS': %lS\n", filename, _wcserror(errno));
-	}
-}
-#else
 void dd_json_initFile(struct dd_json_object *o, char *filename) {
 	o->file = fopen(filename, "r");
 	if (!o->file) {
@@ -32,8 +26,8 @@ void dd_json_initFile(struct dd_json_object *o, char *filename) {
 			filename, strerror(errno)
 		);
 	}
+	o->hasKey = 0;
 }
-#endif
 
 void dd_json_next(struct dd_json_object *o) {
 
@@ -43,13 +37,16 @@ void dd_json_next(struct dd_json_object *o) {
 		fscanf(o->file, "%200[ \t\n\r]", o->buffer);
 
 		// grab first character
-		long pos = ftell(o->file);
 		char nextChar;
 		fscanf(o->file, "%c", &nextChar);
 
 		switch (nextChar) {
 			// skip commas
 			case ',':
+				dd_json_next(o);
+				break;
+			case ':':
+				o->hasKey = 1;
 				dd_json_next(o);
 				break;
 			// start of array
@@ -80,33 +77,31 @@ void dd_json_next(struct dd_json_object *o) {
 				fscanf(o->file, "%*c");
 
 				// ignore whitespace
-				fscanf(o->file, "%*[ \t\n]");
-				pos = ftell(o->file);
-				fscanf(o->file, "%c", &nextChar);
+				fscanf(o->file, "%*[ \t\n\r]");
 
 				// key
-				if (nextChar == ':') {
+				if (!o->hasKey) {
 					o->token = DD_JSON_KEY;
 				}
 				// string
 				else {
 					o->token = DD_JSON_STRING;
-					fseek(o->file, pos, SEEK_SET);
+					o->hasKey = 0;
 				}
 				break;
 			// number or unknown
 			default:
 				// number
 				if (nextChar >= '0' && nextChar <= '9') {
-					fseek(o->file, pos, SEEK_SET);
 					int num;
 					fscanf(o->file, "%d", &num);
-					//o->buffer[o->length] = '\0';
 					o->token = DD_JSON_INT;
+					dd_log("not parsing numbers for now");
+					goto end_of_buffer;
 				}
 				// unknown
 				else {
-					//printf("unable to parse\n");
+					printf("unable to parse\n");
 					goto end_of_buffer;
 				}
 				break;
@@ -118,7 +113,7 @@ void dd_json_next(struct dd_json_object *o) {
 	// check for end of buffer
 	if (o->end >= o->str +o->size) {
 		end_of_buffer:
-		//printf("end of buffer\n");
+		printf("end of buffer\n");
 		o->start = o->str;
 		o->end = o->start;
 		o->length = 0;

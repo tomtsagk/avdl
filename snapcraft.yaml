@@ -23,7 +23,9 @@ parts:
         - libglew-dev
         - libsdl2-dev
         - libsdl2-mixer-dev
+        - libpng-dev
     stage-packages:
         - libglew-dev
         - libsdl2-dev
         - libsdl2-mixer-dev
+        - libpng-dev

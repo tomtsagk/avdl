@@ -45,6 +45,7 @@ HEADERS=$(widcard include/*.h)
 # engine files
 #
 ENGINE_FILES_SRC=$(wildcard engines/cengine/src/*.c)
+ENGINE_FILES_SRC_CPP=$(wildcard engines/cengine/src/*.cpp)
 ENGINE_FILES_HEADERS=$(wildcard engines/cengine/include/*.h)
 ENGINE_FILES_ANDROID=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=engine/%.h)\
 	$(ENGINE_FILES_SRC:engines/cengine/src/%.c=engine/%.c)
@@ -53,6 +54,7 @@ ENGINE_FILES_ANDROID=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=engine/%
 # executable
 #
 EXECUTABLE=${DIRECTORY_EXE}/${PACKAGE_NAME}
+TARBALL=${PACKAGE_NAME}-${PACKAGE_VERSION}.tar
 
 #
 # c engine data
@@ -74,6 +76,8 @@ TESTS_CENG_OUT=${TESTS_CENG_OBJ:%.o=%.out}
 
 TESTS_NAMES=${TESTS:tests/%.test.c=%}
 
+SAMPLES=$(wildcard samples/*)
+
 VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
 	--track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all -q
 
@@ -81,12 +85,11 @@ VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
 # compile the package, together with all engines
 #
 all: ${EXECUTABLE}
-	${MAKE} -C ${CENGINE_PATH} all
 
 #
 # build the executable, depends on source files
 #
-${EXECUTABLE}: ${DIRECTORY_ALL} ${OBJ}
+${EXECUTABLE}: ${OBJ} | ${DIRECTORY_EXE}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${OBJ} -o $@
 
 #
@@ -110,7 +113,8 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	install ${EXECUTABLE} ${DESTDIR}${prefix}/bin/
 	install manual/avdl.1 ${DESTDIR}${prefix}/share/man/man1/
 	@# c engine
-	${MAKE} -C ${CENGINE_PATH} prefix="${prefix}" DESTDIR="${DESTDIR}" install
+	install -m644 ${ENGINE_FILES_HEADERS} ${DESTDIR}${prefix}/include
+	install -m644 ${ENGINE_FILES_SRC} ${ENGINE_FILES_SRC_CPP} ${DESTDIR}${prefix}/share/avdl/cengine
 	@# android engine
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
 	cp -r engines/cengine/src/*.c engines/cengine/include/*.h\
@@ -127,22 +131,26 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 #
 # create a tarball of all source files needed to compile this project
 #
-tarball: ${PACKAGE_NAME}-${PACKAGE_VERSION}.tar
-
-${PACKAGE_NAME}-${PACKAGE_VERSION}.tar:
+tarball: ${TARBALL}
+${TARBALL}:
 	tar cf $@ src makefile engines include
 
 #
 # clean all automatically generated files
 #
 clean:
-	${MAKE} -C ${CENGINE_PATH} clean
 	rm -rf build
 
 #
 # simple tests, they are just compiled and run
 #
-test: ${TESTS_NAMES}
+test: ${TESTS_NAMES} ${SAMPLES}
+
+${SAMPLES}: ${EXECUTABLE}
+	@echo "Testing $@"
+	@${EXECUTABLE} -q $@/*.dd -o $@/game
+	@$@/game/game --verify -q
+
 ${TESTS_NAMES}:
 	@echo "Running tests on $@"
 	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} tests/$@.test.c src/*.c -DAVDL_UNIT_TEST -o $@.test.out -Wno-unused-variable -Wno-parentheses
@@ -165,7 +173,7 @@ ${DIRECTORY_COVERAGE}/lcov.info: ${TESTS_OUT} ${TESTS_CENG_OUT} ${DIRECTORY_COVE
 # test executables
 ${DIRECTORY_TESTS_CENG}/%.out: ${DIRECTORY_TESTS_CENG}/%.o ${TESTS_CENG_OBJ_DEPS}
 	@echo "Running cengine tests on $@"
-	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include --coverage -o $@ $^ -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include --coverage -o $@ $^ -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lpng -DDD_PLATFORM_NATIVE
 	@./$@
 	@# These fail on some systems, so disabled for now
 	@#valgrind ${VALGRIND_ARGS} ./$@
@@ -178,14 +186,14 @@ ${DIRECTORY_TESTS}/%.out: ${DIRECTORY_TESTS}/%.o ${TESTS_OBJ_DEPS}
 
 # test objects
 ${DIRECTORY_TESTS_CENG}/%.o: engines/cengine/tests/%.c ${DIRECTORY_TESTS_CENG}
-	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include -c --coverage -o $@ $< -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include -c --coverage -o $@ $< -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lpng -DDD_PLATFORM_NATIVE
 
 ${DIRECTORY_TESTS}/%.o: tests/%.c ${DIRECTORY_TESTS}
 	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage -c -o $@ $< -DAVDL_UNIT_TEST
 
 # test dependency objects
 ${DIRECTORY_TESTS_CENG_DEPS}/%.o: engines/cengine/src/%.c ${DIRECTORY_TESTS_CENG_DEPS}
-	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include -c --coverage -o $@ $< -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -DDD_PLATFORM_NATIVE
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include -c --coverage -o $@ $< -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lpng -DDD_PLATFORM_NATIVE
 
 ${DIRECTORY_TESTS_DEPS}/%.o: src/%.c ${DIRECTORY_TESTS_DEPS}
 	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage -c -o $@ $< -DAVDL_UNIT_TEST
@@ -193,13 +201,13 @@ ${DIRECTORY_TESTS_DEPS}/%.o: src/%.c ${DIRECTORY_TESTS_DEPS}
 #
 # create needed directories
 #
-${DIRECTORIES} ${DIRECTORY_ALL}:
+${DIRECTORY_ALL}:
 	mkdir -p $@
 
 #
 # compile .c source files
 #
-${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS}
+${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS} | ${DIRECTORY_OBJ}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -c $< -o $@
 
-.PHONY: all tarball clean install test test-advance ${TESTS_NAMES}
+.PHONY: all tarball clean install test test-advance ${TESTS_NAMES} ${SAMPLES}
