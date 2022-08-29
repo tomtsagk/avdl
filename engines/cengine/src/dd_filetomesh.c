@@ -631,16 +631,16 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		}
 	}
 
-	#define VERTEX_MAX 20000
+	#define VERTEX_MAX 150000
 
-	float vertexX[VERTEX_MAX];
-	float vertexY[VERTEX_MAX];
-	float vertexZ[VERTEX_MAX];
-	float vertexS[VERTEX_MAX];
-	float vertexT[VERTEX_MAX];
-	float vertexR[VERTEX_MAX];
-	float vertexG[VERTEX_MAX];
-	float vertexB[VERTEX_MAX];
+	float *vertexX = malloc(sizeof(float) *vertexNumber);
+	float *vertexY = malloc(sizeof(float) *vertexNumber);
+	float *vertexZ = malloc(sizeof(float) *vertexNumber);
+	float *vertexS = malloc(sizeof(float) *vertexNumber);
+	float *vertexT = malloc(sizeof(float) *vertexNumber);
+	float *vertexR = malloc(sizeof(float) *vertexNumber);
+	float *vertexG = malloc(sizeof(float) *vertexNumber);
+	float *vertexB = malloc(sizeof(float) *vertexNumber);
 
 	for (int i = 0; i < vertexNumber; i++) {
 
@@ -707,7 +707,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		}
 	}
 
-	int faceIndices[VERTEX_MAX *3];
+	int *faceIndices = malloc(sizeof(int) *faceNumber *3);
 
 	for (int i = 0; i < faceNumber; i++) {
 
@@ -770,8 +770,18 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 			m->t[i*2+1] = vertexT[faceIndices[i]];
 		}
 	}
-
+	fclose(f);
+	free(vertexX);
+	free(vertexY);
+	free(vertexZ);
+	free(vertexS);
+	free(vertexT);
+	free(vertexR);
+	free(vertexG);
+	free(vertexB);
+	free(faceIndices);
 	return 0;
+
 	#else
 
 	//Open file and check error
