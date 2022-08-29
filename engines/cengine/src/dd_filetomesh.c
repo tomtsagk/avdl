@@ -592,9 +592,9 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	int faceNumber = 0;
 
 	int line = 0;
-	char buff[1000];
+	char buff[1024];
 	char *p;
-	while (fgets(buff, 1000, f)) {
+	while (fgets(buff, 1024, f)) {
 		line++;
 		p = buff;
 
@@ -631,7 +631,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		}
 	}
 
-	#define VERTEX_MAX 50000
+	#define VERTEX_MAX 20000
 
 	float vertexX[VERTEX_MAX];
 	float vertexY[VERTEX_MAX];
