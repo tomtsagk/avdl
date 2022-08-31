@@ -133,7 +133,7 @@ void avdl_assetManager_loadAssets() {
 
 				int width = sizeValues[0];
 				int height = sizeValues[1];
-				GLubyte *pixelsb = malloc(sizeof(GLubyte) *width *height *3);
+				GLubyte *pixelsb = malloc(sizeof(GLubyte) *width *height *4);
 
 				/*
 				 * read pixels into a new array
@@ -146,9 +146,10 @@ void avdl_assetManager_loadAssets() {
 				for (int y = 0; y < height; y++) {
 					int index = ((y *width) +x);
 					int indexReverse = (((height -(y+1)) *width) +x);
-					pixelsb[indexReverse*3 +0] = (pixelValues[index] & 0x00FF0000) >> 16;
-					pixelsb[indexReverse*3 +1] = (pixelValues[index] & 0x0000FF00) >>  8;
-					pixelsb[indexReverse*3 +2] = (pixelValues[index] & 0x000000FF);
+					pixelsb[indexReverse*4 +0] = (pixelValues[index] & 0x00FF0000) >> 16;
+					pixelsb[indexReverse*4 +1] = (pixelValues[index] & 0x0000FF00) >>  8;
+					pixelsb[indexReverse*4 +2] = (pixelValues[index] & 0x000000FF);
+					pixelsb[indexReverse*4 +3] = (pixelValues[index] & 0xFF000000) >> 24;
 				}
 				}
 
