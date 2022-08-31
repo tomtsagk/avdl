@@ -622,7 +622,6 @@ void update() {
 
 	// close the game
 	if (dd_flag_exit) {
-		//clean();
 
 /*
 		JNIEnv *env;
@@ -646,7 +645,10 @@ void update() {
 			(*jvm)->DetachCurrentThread(jvm);
 		}
 		*/
-		//exit(0);
+		#if DD_PLATFORM_ANDROID
+		clean();
+		exit(0);
+		#endif
 	}
 
 }

@@ -377,7 +377,7 @@ public class AvdlActivity extends Activity {
 			resourceName, "raw", AvdlActivity.context.getPackageName()
 		);
 		if (id == 0) {
-			Log.w("avdl", "no resource id");
+			Log.w("avdl", "no resource id for " +resourceName);
 			return -1;
 		}
 

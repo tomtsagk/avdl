@@ -4,7 +4,11 @@
 #include "dd_log.h"
 #include "avdl_assetManager.h"
 #include <errno.h>
+
+#if DD_PLATFORM_ANDROID
+#else
 #include <png.h>
+#endif
 
 void dd_image_create(struct dd_image *o) {
 	o->tex = 0;
@@ -24,6 +28,9 @@ void dd_image_create(struct dd_image *o) {
 }
 
 void dd_image_load_png(struct dd_image *img, const char *filename) {
+
+	#if DD_PLATFORM_ANDROID
+	#else
 
 	// check signature
 	FILE *fp = fopen(filename, "rb");
@@ -132,6 +139,8 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	fclose(fp);
 	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
 
+	#endif
+
 }
 
 void dd_image_load_bmp(struct dd_image *img, const char *filename) {
@@ -219,7 +228,7 @@ void dd_image_to_opengl(struct dd_image *img) {
 	glTexImage2D(GL_TEXTURE_2D, 0, img->pixelFormat, img->width, img->height, 0, img->pixelFormat, GL_FLOAT, img->pixels);
 	#elif DD_PLATFORM_ANDROID
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img->width, img->height, 0, GL_RGB, GL_UNSIGNED_BYTE, img->pixelsb);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->width, img->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixelsb);
 	#endif
 
 	glBindTexture(GL_TEXTURE_2D, 0);
