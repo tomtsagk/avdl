@@ -1,3 +1,10 @@
+avdl (0.5.0-1) focal; urgency=low
+
+  * Add achievements
+  * Re-organise some files to make compilation simpler
+
+ -- Tom Tsagk <tomtsagk@afloofdev.com>  Wed, 31 Aug 2022 18:15:00 +0100
+
 avdl (0.4.3-1) focal; urgency=low
 
   * Fix no sfx bug for installed projects
