@@ -1,13 +1,13 @@
 Source: avdl
-Maintainer: Tom Tsagk <tomtsagk@darkdimension.org>
+Maintainer: Tom Tsagk <tomtsagk@afloofdev.com>
 Section: misc
 Priority: optional
 Standards-Version: 4.5.0
-Build-Depends: debhelper (>= 9), libglew-dev, libsdl2-dev, libsdl2-mixer-dev
+Build-Depends: debhelper (>= 9)
 
 Package: avdl
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, libglew-dev, libsdl2-dev, libsdl2-mixer-dev, libpng-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, libglew-dev, libsdl2-dev, libsdl2-mixer-dev, libpng-dev, libvorbis-dev, opus-tools, libopus0, libogg0, libopusfile0
 Description: Abstract video-game development language compiler
  A high level video game programming language.
  Games made with it are meant to be described in an abstract way

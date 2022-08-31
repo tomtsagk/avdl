@@ -1,14 +1,14 @@
 Name:           avdl
-Version:        0.4.3
+Version:        0.5.0
 Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
 License:        GPLv3
-URL:            https://darkdimension.org/avdl
+URL:            https://afloofdev.com/avdl
 Source0:        https://github.com/tomtsagk/%{name}/archive/refs/tags/v%{version}.tar.gz
 
 BuildRequires:  make, gcc, glew-devel, SDL2-devel, SDL2_mixer-devel
-Requires:       glew-devel, SDL2-devel, SDL2_mixer-devel
+Requires:       glew-devel, SDL2-devel, SDL2_mixer-devel, libpng-devel, libvorbis-devel, opus, opus-tools, libopusenc, libogg-devel, opusfile
 
 %description
 A compiler for the high level programming language with the same name.
@@ -38,6 +38,10 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 %doc /usr/share/man/man1/avdl.1.gz
 
 %changelog
+* Wed Aug 31 2022 Tom Tsagk <tomtsagk@afloofdev.com>
+- Add achievements
+- Re-organise some files to make compilation simpler
+
 * Wed Jun 15 2022 Tom Tsagk <tomtsagk@darkdimension.org>
 - Fix no audio bug for installed projects
 - Fix no sfx bug for installed projects
