@@ -100,7 +100,8 @@ INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/man/man1/ \
 	${DESTDIR}${prefix}/share/avdl/android \
 	${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine \
 	${DESTDIR}${prefix}/share/vim/vimfiles/syntax/ \
-	${DESTDIR}${prefix}/share/vim/vimfiles/ftdetect/
+	${DESTDIR}${prefix}/share/vim/vimfiles/ftdetect/ \
+	${DESTDIR}${prefix}/include
 
 ${INSTALL_DIRS}:
 	mkdir -p $@
