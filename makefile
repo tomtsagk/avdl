@@ -76,7 +76,7 @@ TESTS_CENG_OUT=${TESTS_CENG_OBJ:%.o=%.out}
 
 TESTS_NAMES=${TESTS:tests/%.test.c=%}
 
-SAMPLES=$(wildcard samples/*)
+#SAMPLES=$(wildcard samples/*)
 
 VALGRIND_ARGS=--error-exitcode=1 --tool=memcheck --leak-check=full \
 	--track-origins=yes --show-leak-kinds=all --errors-for-leak-kinds=all -q
