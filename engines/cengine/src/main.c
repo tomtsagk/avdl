@@ -353,6 +353,22 @@ int dd_main(int argc, char *argv[]) {
 					if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
 						handleKeyboardPress(27, 0, 0);
 					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_A) {
+						handleKeyboardPress(97, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_D) {
+						handleKeyboardPress(100, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_W) {
+						handleKeyboardPress(119, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_S) {
+						handleKeyboardPress(115, 0, 0);
+					}
 					break;
 			}
 		}

@@ -158,12 +158,11 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 		return 0;
 	}
 	glCompileShader(sdr);
-	if (glGetError() != GL_NO_ERROR) {
+	GLint sdrStatus;
+	glGetShaderiv(sdr, GL_COMPILE_STATUS, &sdrStatus);
+	if (glGetError() != GL_NO_ERROR || sdrStatus == GL_FALSE) {
 		dd_log("avdl: create_shader: error compiling shader source");
-		glDeleteShader(sdr);
-		free(newSource);
 
-		/*
 		//Get compilation log
 		int logsz;
 		glGetShaderiv(sdr, GL_INFO_LOG_LENGTH, &logsz);
@@ -177,7 +176,9 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 				"<unknown>", buf);
 			free(buf);
 		}
-		*/
+
+		glDeleteShader(sdr);
+		free(newSource);
 		return 0;
 	}
 
