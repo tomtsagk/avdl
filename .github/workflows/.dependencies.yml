@@ -1,0 +1,19 @@
+name: Build Dependencies
+
+on:
+  push:
+    branches:
+      - feature/build_dependencies
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: libpng - linux
+      run: |
+        - git clone git://git.code.sf.net/p/libpng/code libpng
+        cd libpng
+        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+        make -j6
+        make -j6 install
+        cd ..
