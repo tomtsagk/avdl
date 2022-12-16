@@ -47,8 +47,9 @@ jobs:
     - name: opusfile - linux
       run: |
         export PKG_CONFIG_PATH=${HOME}/AVDL_DEPENDENCIES
-        pkg-config --exists ogg
-        echo $?
+        echo "about to check ogg"
+        pkg-config --with-path="${HOME}/AVDL_DEPENDENCIES" --exists ogg
+        echo "done: " $?
         ls ${HOME}/AVDL_DEPENDENCIES
         git clone https://gitlab.xiph.org/xiph/opusfile.git opusfile
         cd opusfile
