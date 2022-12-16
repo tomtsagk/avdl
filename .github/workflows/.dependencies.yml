@@ -21,7 +21,7 @@ jobs:
         make -j6 install
         ./configure
         make -j6
-        make -j6 install
+        sudo make -j6 install
         cd ..
     - name: ogg - linux
       run: |
@@ -34,7 +34,7 @@ jobs:
         ./autogen.sh
         ./configure
         make -j6
-        make -j6 install
+        sudo make -j6 install
         cd ..
     - name: vorbis - linux
       run: |
@@ -46,7 +46,7 @@ jobs:
         make install
         ./configure
         make
-        make install
+        sudo make install
         cd ..
     - name: opus - linux
       run: |
@@ -59,7 +59,7 @@ jobs:
         ./autogen.sh
         ./configure
         make
-        make install
+        sudo make install
         cd ..
     - name: opusfile - linux
       run: |
@@ -70,7 +70,7 @@ jobs:
         ./autogen.sh
         ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
         make -j6
-        make -j6 install
+        sudo make -j6 install
         cd ..
     - name: sdl - linux
       run: |
