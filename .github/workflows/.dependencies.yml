@@ -11,7 +11,7 @@ jobs:
     steps:
     - name: libpng - linux
       run: |
-        - git clone git://git.code.sf.net/p/libpng/code libpng
+        git clone git://git.code.sf.net/p/libpng/code libpng
         cd libpng
         ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
         make -j6
