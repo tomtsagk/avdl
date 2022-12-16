@@ -17,6 +17,15 @@ jobs:
         make -j6
         make -j6 install
         cd ..
+    - name: ogg - linux
+      run: |
+        git clone https://gitlab.xiph.org/xiph/ogg.git ogg
+        cd ogg
+        ./autogen.sh
+        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+        make -j6
+        make -j6 install
+        cd ..
     - name: vorbis - linux
       run: |
         git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis
@@ -34,15 +43,6 @@ jobs:
         ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
         make
         make install
-        cd ..
-    - name: ogg - linux
-      run: |
-        git clone https://gitlab.xiph.org/xiph/ogg.git ogg
-        cd ogg
-        ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make -j6
-        make -j6 install
         cd ..
     - name: opusfile - linux
       run: |
