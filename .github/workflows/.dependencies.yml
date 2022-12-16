@@ -19,6 +19,9 @@ jobs:
         ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
         make -j6
         make -j6 install
+        ./configure
+        make -j6
+        make -j6 install
         cd ..
     - name: ogg - linux
       run: |
@@ -26,6 +29,10 @@ jobs:
         cd ogg
         ./autogen.sh
         ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+        make -j6
+        make -j6 install
+        ./autogen.sh
+        ./configure
         make -j6
         make -j6 install
         cd ..
@@ -37,6 +44,9 @@ jobs:
         ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
         make
         make install
+        ./configure
+        make
+        make install
         cd ..
     - name: opus - linux
       run: |
@@ -46,13 +56,14 @@ jobs:
         ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
         make
         make install
+        ./autogen.sh
+        ./configure
+        make
+        make install
         cd ..
     - name: opusfile - linux
       run: |
         export PKG_CONFIG_PATH=${HOME}/AVDL_DEPENDENCIES
-        echo "about to check ogg"
-        pkg-config --with-path="${HOME}/AVDL_DEPENDENCIES" --exists ogg
-        echo "done: " $?
         ls ${HOME}/AVDL_DEPENDENCIES
         git clone https://gitlab.xiph.org/xiph/opusfile.git opusfile
         cd opusfile
