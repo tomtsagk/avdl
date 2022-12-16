@@ -44,6 +44,11 @@ jobs:
         ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
         make
         make install
+        cd ..
+    - name: vorbis2 - linux
+      run: |
+        git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis2
+        cd vorbis2
         ./autogen.sh
         ./configure
         make
