@@ -123,9 +123,10 @@ jobs:
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* avdl_dependencies_linux
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* avdl_dependencies_linux
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* avdl_dependencies_linux
-        zip --symlinks "avdl_dependencies_linux.zip" -r avdl_dependencies_linux/*
+        #zip --symlinks "avdl_dependencies_linux.zip" -r avdl_dependencies_linux/*
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_linux
-        path: avdl_dependencies_linux.zip
+        path: avdl_dependencies_linux
+          #path: avdl_dependencies_linux.zip
