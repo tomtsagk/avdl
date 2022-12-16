@@ -11,7 +11,7 @@ jobs:
     steps:
     - name: update
       run: |
-         sudo apt update && sudo apt install -y gcc pkg-config
+         sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev
     - name: libpng - linux
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
