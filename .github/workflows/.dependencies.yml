@@ -9,6 +9,9 @@ jobs:
   build-dependencies:
     runs-on: ubuntu-latest
     steps:
+    - name: update
+      run: |
+         sudo apt update && sudo apt install -y gcc pkg-config
     - name: libpng - linux
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
