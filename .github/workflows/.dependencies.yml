@@ -12,7 +12,9 @@ jobs:
     - name: prepare
       run: |
         mkdir ${HOME}/AVDL_DEPENDENCIES
-        export PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"${HOME}/AVDL_DEPENDENCIES"
+        echo ${PKG_CONFIG_PATH}
+        PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"${HOME}/AVDL_DEPENDENCIES"
+        echo "path after: " ${PKG_CONFIG_PATH}
     - name: libpng - linux
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
