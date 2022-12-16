@@ -10,6 +10,10 @@
 int   dd_math_rand (int   to);
 float dd_math_randf(float to);
 
+
+int dd_math_randPseudo(int to);
+int dd_math_randPseudoSetSeed(int seed);
+
 /*
  * Eases
  *
