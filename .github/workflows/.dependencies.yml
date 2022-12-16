@@ -113,3 +113,19 @@ jobs:
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
+    - name: zip
+      run: |
+        mkdir avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2-2.0.so* avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2_mixer-2.0.so* avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* avdl_dependencies_linux
+        zip --symlinks "avdl_dependencies_linux.zip" -r avdl_dependencies_linux/*
+    - name: upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: avdl_dependencies_linux
+        path: avdl_dependencies_linux.zip
