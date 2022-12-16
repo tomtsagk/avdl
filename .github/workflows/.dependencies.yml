@@ -9,12 +9,6 @@ jobs:
   build-dependencies:
     runs-on: ubuntu-latest
     steps:
-    - name: prepare
-      run: |
-        mkdir ${HOME}/AVDL_DEPENDENCIES
-        echo ${PKG_CONFIG_PATH}
-        PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:"${HOME}/AVDL_DEPENDENCIES"
-        echo "path after: " ${PKG_CONFIG_PATH}
     - name: libpng - linux
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
@@ -53,6 +47,7 @@ jobs:
     - name: opusfile - linux
       run: |
         export PKG_CONFIG_PATH=${HOME}/AVDL_DEPENDENCIES
+        ls ${HOME}/AVDL_DEPENDENCIES
         git clone https://gitlab.xiph.org/xiph/opusfile.git opusfile
         cd opusfile
         ./autogen.sh
