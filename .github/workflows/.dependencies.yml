@@ -44,6 +44,7 @@ jobs:
         ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
         make
         make install
+        ./autogen.sh
         ./configure
         make
         sudo make install
