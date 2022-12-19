@@ -1,4 +1,4 @@
-name: Build Dependencies
+name: Create Build
 
 on:
   push:
@@ -6,10 +6,10 @@ on:
       - feature/build_dependencies
 
 jobs:
-  build-dependencies:
+  build:
     runs-on: ubuntu-latest
     steps:
-    - name: update
+    - name: update packages
       run: |
          sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev
     - name: libpng - linux
@@ -126,7 +126,7 @@ jobs:
 #      run: |
 #        wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
 #        unzip glew-2.2.0-win32.zip
-    - name: zip
+    - name: collect_dependencies
       run: |
         mkdir ${HOME}/avdl_dependencies_linux
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* ${HOME}/avdl_dependencies_linux
@@ -136,15 +136,15 @@ jobs:
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* ${HOME}/avdl_dependencies_linux
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* ${HOME}/avdl_dependencies_linux
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* ${HOME}/avdl_dependencies_linux
-    - name: init avdl
+    - name: init_avdl
       uses: actions/checkout@v1
-    - name: build & install avdl
+    - name: build & package avdl
       run: |
         make -j6 prefix=AVDL_BUILD/ CC=gcc
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
         mkdir AVDL_BUILD/dependencies
         cp ${HOME}/avdl_dependencies_linux/* AVDL_BUILD/dependencies
-    - name: upload artifact
+    - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
         name: avdl_build
