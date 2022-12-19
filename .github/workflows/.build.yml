@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - master
+      - feature/improve_github_builds
   pull_request:
     branches:
       - develop
@@ -134,13 +135,16 @@ jobs:
     - name: collect_dependencies
       run: |
         mkdir ${HOME}/avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* ${HOME}/avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2-2.0.so* ${HOME}/avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2_mixer-2.0.so* ${HOME}/avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* ${HOME}/avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* ${HOME}/avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* ${HOME}/avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* ${HOME}/avdl_dependencies_linux
+        mkdir ${HOME}/avdl_dependencies_linux/include
+        mkdir ${HOME}/avdl_dependencies_linux/lib
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* ${HOME}/avdl_dependencies_linux/lib
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2-2.0.so* ${HOME}/avdl_dependencies_linux/lib
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2_mixer-2.0.so* ${HOME}/avdl_dependencies_linux/lib
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* ${HOME}/avdl_dependencies_linux/lib
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* ${HOME}/avdl_dependencies_linux/lib
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* ${HOME}/avdl_dependencies_linux/lib
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* ${HOME}/avdl_dependencies_linux/lib
+        cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* ${HOME}/avdl_dependencies_linux/include
     - name: init_avdl
       uses: actions/checkout@v1
     - name: build & package avdl
@@ -148,7 +152,7 @@ jobs:
         make -j6 prefix=AVDL_BUILD/ CC=gcc
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
         mkdir AVDL_BUILD/dependencies
-        cp ${HOME}/avdl_dependencies_linux/* AVDL_BUILD/dependencies
+        cp -r ${HOME}/avdl_dependencies_linux/* AVDL_BUILD/dependencies
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
