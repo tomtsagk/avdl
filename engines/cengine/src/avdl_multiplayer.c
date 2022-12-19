@@ -13,7 +13,7 @@ void avdl_multiplayer_clean(struct avdl_multiplayer *o) {
 
 void avdl_multiplayer_createLobby(struct avdl_multiplayer *o, enum avdl_multiplayer_lobbytype type, int maxPlayers, void (*callback)(int)) {
 	if (callback) {
-		callback();
+		callback(0);
 	}
 }
 
