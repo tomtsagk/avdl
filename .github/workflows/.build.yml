@@ -3,7 +3,12 @@ name: Create Build
 on:
   push:
     branches:
-      - feature/build_dependencies
+      - develop
+      - master
+  pull_request:
+    branches:
+      - develop
+      - master
 
 jobs:
   build:
