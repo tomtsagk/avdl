@@ -128,14 +128,14 @@ jobs:
 #        unzip glew-2.2.0-win32.zip
     - name: zip
       run: |
-        mkdir avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2-2.0.so* avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2_mixer-2.0.so* avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* avdl_dependencies_linux
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* avdl_dependencies_linux
+        mkdir ${HOME}/avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* ${HOME}/avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2-2.0.so* ${HOME}/avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2_mixer-2.0.so* ${HOME}/avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* ${HOME}/avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* ${HOME}/avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* ${HOME}/avdl_dependencies_linux
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* ${HOME}/avdl_dependencies_linux
     - name: init avdl
       uses: actions/checkout@v1
     - name: build & install avdl
@@ -143,7 +143,7 @@ jobs:
         make -j6 prefix=${HOME}/AVDL_BUILD/ CC=gcc
         make -j6 prefix=${HOME}/AVDL_BUILD/ CC=gcc install
         mkdir ${HOME}/AVDL_BUILD/dependencies
-        cp avdl_dependencies_linux/* ${HOME}/AVDL_BUILD/
+        cp ${HOME}/avdl_dependencies_linux/* ${HOME}/AVDL_BUILD/dependencies
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
