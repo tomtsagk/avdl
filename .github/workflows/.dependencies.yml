@@ -113,6 +113,19 @@ jobs:
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
+#    - name: sdl - windows
+#      run: |
+#        mkdir ${HOME}/AVDL_DEPENDENCIES/windows
+#        wget https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
+#        unzip SDL2-devel-2.0.22-VC.zip
+#    - name: sdl_mixer - windows
+#      run: |
+#        wget https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
+#        unzip SDL2_mixer-devel-2.6.0-VC.zip
+#    - name: glew - windows
+#      run: |
+#        wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
+#        unzip glew-2.2.0-win32.zip
     - name: zip
       run: |
         mkdir avdl_dependencies_linux
@@ -123,10 +136,16 @@ jobs:
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* avdl_dependencies_linux
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* avdl_dependencies_linux
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* avdl_dependencies_linux
-        #zip --symlinks "avdl_dependencies_linux.zip" -r avdl_dependencies_linux/*
+    - name: init avdl
+      uses: actions/checkout@v1
+    - name: build & install avdl
+      run: |
+        make -j6 prefix=${HOME}/AVDL_BUILD/ CC=gcc
+        make -j6 prefix=${HOME}/AVDL_BUILD/ CC=gcc install
+        mkdir ${HOME}/AVDL_BUILD/dependencies
+        cp avdl_dependencies_linux/* ${HOME}/AVDL_BUILD/
     - name: upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: avdl_dependencies_linux
-        path: avdl_dependencies_linux
-          #path: avdl_dependencies_linux.zip
+        name: avdl_build
+        path: ${HOME}/AVDL_BUILD
