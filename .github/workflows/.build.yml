@@ -145,6 +145,7 @@ jobs:
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* ${HOME}/avdl_dependencies_linux/lib
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* ${HOME}/avdl_dependencies_linux/lib
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* ${HOME}/avdl_dependencies_linux/include
+        ls ${HOME}/avdl_dependencies_linux/lib/
     - name: init_avdl
       uses: actions/checkout@v1
     - name: build & package avdl
