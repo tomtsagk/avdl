@@ -43,12 +43,12 @@ jobs:
     - name: sdl - windows
       shell: bash
       run: |
-        wget https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
+        curl https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip > SDL2-devel-2.0.22-VC.zip
         unzip SDL2-devel-2.0.22-VC.zip
     - name: sdl_mixer - windows
       shell: bash
       run: |
-        wget https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
+        curl https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip > SDL2_mixer-devel-2.6.0-VC.zip
         unzip SDL2_mixer-devel-2.6.0-VC.zip
     - name: glew - windows
       shell: bash
