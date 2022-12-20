@@ -208,6 +208,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [dependencies_windows, dependencies_linux]
     steps:
+    - name: get_dependencies
+      uses: actions/download-artifact@v3
+      with:
+        name: avdl_dependencies_linux
+    - name: get_dependencies
+      uses: actions/download-artifact@v3
+      with:
+        name: avdl_dependencies_windows
     - name: init_avdl
       uses: actions/checkout@v1
     - name: build & package avdl
@@ -216,6 +224,7 @@ jobs:
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
         mkdir AVDL_BUILD/dependencies
         cp -r avdl_dependencies_linux/* AVDL_BUILD/dependencies
+        cp -r avdl_dependencies_windows/* AVDL_BUILD/dependencies
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
