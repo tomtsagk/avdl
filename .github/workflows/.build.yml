@@ -206,21 +206,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [dependencies_windows, dependencies_linux]
     steps:
-#    - name: update packages
-#      run: |
-#         sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev unzip
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_linux
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_windows
-#    - name: init_avdl
-#      uses: actions/checkout@v1
     - name: build & package avdl
       run: |
-#        make -j6 prefix=AVDL_BUILD/ CC=gcc
-#        make -j6 prefix=AVDL_BUILD/ CC=gcc install
         ls -R
         mkdir AVDL_BUILD/dependencies
         unzip avdl_dependencies_linux.zip
@@ -231,3 +224,10 @@ jobs:
       with:
         name: avdl_build
         path: AVDL_BUILD
+#    - name: update packages
+#      run: |
+#         sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev unzip
+#    - name: init_avdl
+#      uses: actions/checkout@v1
+#        make -j6 prefix=AVDL_BUILD/ CC=gcc
+#        make -j6 prefix=AVDL_BUILD/ CC=gcc install
