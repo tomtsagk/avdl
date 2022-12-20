@@ -17,6 +17,7 @@ jobs:
     steps:
     # zlib
     - name: zlib
+      shell: bash
       run: |
         wget http://www.zlib.net/zlib-1.2.12.tar.gz
         tar xf zlib-1.2.12.tar.gz
