@@ -177,7 +177,7 @@ jobs:
         cd ${HOME}/glew_windows
         wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
         unzip glew-2.2.0-win32.zip
-        cd
+        cd ${HOME}
     - name: collect_dependencies
       run: |
         ls ${HOME}/sdl_windows
