@@ -220,9 +220,11 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_linux
+        path: dependencies
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_windows
+        path: dependencies
     - name: build & package avdl
       run: |
         ls -R
