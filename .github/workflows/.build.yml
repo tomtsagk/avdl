@@ -191,12 +191,12 @@ jobs:
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* avdl_dependencies_linux/lib
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* avdl_dependencies_linux/lib
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/sdl_windows/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/sdl_windows/lib/* avdl_dependencies_linux/lib
-        cp -d -r ${HOME}/sdl_mixer_windows/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/sdl_mixer_windows/lib/* avdl_dependencies_linux/lib
-        cp -d -r ${HOME}/glew_windows/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/glew_windows/lib/* avdl_dependencies_linux/lib
+        cp -d -r sdl_windows/include/* avdl_dependencies_linux/include
+        cp -d -r sdl_windows/lib/* avdl_dependencies_linux/lib
+        cp -d -r sdl_mixer_windows/include/* avdl_dependencies_linux/include
+        cp -d -r sdl_mixer_windows/lib/* avdl_dependencies_linux/lib
+        cp -d -r glew_windows/include/* avdl_dependencies_linux/include
+        cp -d -r glew_windows/lib/* avdl_dependencies_linux/lib
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
