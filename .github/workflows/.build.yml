@@ -211,11 +211,11 @@ jobs:
     - name: get_dependencies
       uses: actions/download-artifact@v3
       with:
-        name: avdl_dependencies_linux
+        name: avdl_dependencies_linux.zip
     - name: get_dependencies
       uses: actions/download-artifact@v3
       with:
-        name: avdl_dependencies_windows
+        name: avdl_dependencies_windows.zip
     - name: init_avdl
       uses: actions/checkout@v1
     - name: build & package avdl
