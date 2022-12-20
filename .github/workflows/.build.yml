@@ -46,7 +46,7 @@ jobs:
         mkdir avdl_dependencies_windows
         cp -r "C:/Program Files/zlib" avdl_dependencies_windows
         cp -r "C:/Program Files/libpng" avdl_dependencies_windows
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_windows
         path: avdl_dependencies_windows
@@ -198,7 +198,7 @@ jobs:
         cp -d -r ${HOME}/sdl_mixer_windows/SDL2_mixer-2.6.0/lib/* avdl_dependencies_linux/lib
         cp -d -r ${HOME}/glew_windows/glew-2.2.0/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/glew_windows/glew-2.2.0/lib/* avdl_dependencies_linux/lib
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_linux
         path: avdl_dependencies_linux
@@ -206,12 +206,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [dependencies_windows, dependencies_linux]
     steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_linux
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
-        name: avdl_dependencies_windows.zip
+        name: avdl_dependencies_windows
     - name: init_avdl
       uses: actions/checkout@v1
     - name: build & package avdl
@@ -221,7 +221,7 @@ jobs:
         mkdir AVDL_BUILD/dependencies
         cp -r avdl_dependencies_linux/* AVDL_BUILD/dependencies
         cp -r avdl_dependencies_windows/* AVDL_BUILD/dependencies
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: avdl_build
         path: AVDL_BUILD
