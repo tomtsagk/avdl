@@ -177,21 +177,13 @@ jobs:
         cd ${HOME}/glew_windows
         wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
         unzip glew-2.2.0-win32.zip
-        cd ${HOME}
+        cd
     - name: collect_dependencies
       run: |
         ls ${HOME}/sdl_windows
         mkdir avdl_dependencies_linux
         mkdir avdl_dependencies_linux/include
         mkdir avdl_dependencies_linux/lib
-#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* avdl_dependencies_linux/lib
-#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2-2.0.so* avdl_dependencies_linux/lib
-#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2_mixer-2.0.so* avdl_dependencies_linux/lib
-#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* avdl_dependencies_linux/lib
-#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* avdl_dependencies_linux/lib
-#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* avdl_dependencies_linux/lib
-#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* avdl_dependencies_linux/lib
-#        cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/sdl_windows/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/sdl_windows/lib/* avdl_dependencies_linux/lib
         cp -d -r ${HOME}/sdl_mixer_windows/include/* avdl_dependencies_linux/include
@@ -220,3 +212,12 @@ jobs:
 #      with:
 #        name: avdl_build
 #        path: AVDL_BUILD
+#
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2-2.0.so* avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2_mixer-2.0.so* avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* avdl_dependencies_linux/lib
+#        cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/include
