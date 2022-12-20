@@ -224,9 +224,11 @@ jobs:
         make -j6 prefix=AVDL_BUILD/ CC=gcc
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
         ls -R
+        echo "A"
+        ls -R ${HOME}
         mkdir AVDL_BUILD/dependencies
-        unzip avdl_dependencies_linux.zip
-        unzip avdl_dependencies_windows.zip
+        unzip ${HOME}/avdl_dependencies_linux.zip
+        unzip ${HOME}/avdl_dependencies_windows.zip
         cp -r avdl_dependencies_linux/* AVDL_BUILD/dependencies
         cp -r avdl_dependencies_windows/* AVDL_BUILD/dependencies
     - uses: actions/upload-artifact@v3
