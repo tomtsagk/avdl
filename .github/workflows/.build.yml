@@ -209,6 +209,8 @@ jobs:
     - name: update packages
       run: |
          sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev unzip
+    - name: init_avdl
+      uses: actions/checkout@v1
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_linux
@@ -217,10 +219,9 @@ jobs:
       with:
         name: avdl_dependencies_windows
         path: AVDL_BUILD/dependencies
-    - name: init_avdl
-      uses: actions/checkout@v1
     - name: build & package avdl
       run: |
+        ls -R
         make -j6 prefix=AVDL_BUILD/ CC=gcc
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
     - uses: actions/upload-artifact@v3
