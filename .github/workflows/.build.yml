@@ -202,7 +202,7 @@ jobs:
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
-        name: linux_dependencies
+        name: avdl_dependencies_linux
         path: avdl_dependencies_linux
   build:
     runs-on: ubuntu-latest
