@@ -40,20 +40,19 @@ jobs:
         cmake --build . --config Release
         cmake --install .
         cd ../../
-
-##    - name: sdl - windows
-##      run: |
-##        mkdir ${HOME}/AVDL_DEPENDENCIES/windows
-##        wget https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
-##        unzip SDL2-devel-2.0.22-VC.zip
-##    - name: sdl_mixer - windows
-##      run: |
-##        wget https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
-##        unzip SDL2_mixer-devel-2.6.0-VC.zip
-##    - name: glew - windows
-##      run: |
-##        wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
-##        unzip glew-2.2.0-win32.zip
+    - name: sdl - windows
+      run: |
+        mkdir ${HOME}/AVDL_DEPENDENCIES/windows
+        wget https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
+        unzip SDL2-devel-2.0.22-VC.zip
+    - name: sdl_mixer - windows
+      run: |
+        wget https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
+        unzip SDL2_mixer-devel-2.6.0-VC.zip
+    - name: glew - windows
+      run: |
+        wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
+        unzip glew-2.2.0-win32.zip
 #    runs-on: ubuntu-latest
 #    steps:
 #    - name: update packages
