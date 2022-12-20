@@ -212,9 +212,11 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_linux
+        path: ${HOME}
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_windows
+        path: ${HOME}
     - name: init_avdl
       uses: actions/checkout@v1
     - name: build & package avdl
