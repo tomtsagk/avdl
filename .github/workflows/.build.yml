@@ -13,149 +13,187 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
-    - name: update packages
+    # zlib
+    - name: zlib
       run: |
-         sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev
-    - name: libpng - linux
+        wget http://www.zlib.net/zlib-1.2.12.tar.gz
+        tar xf zlib-1.2.12.tar.gz
+        cd zlib-1.2.12
+        mkdir build
+        cd build
+        cmake ../ .
+        cmake --build . --config Release
+        cmake --install .
+        cd ../../
+
+    # libpng
+    - name: libpng
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
         cd libpng
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make -j6
-        make -j6 install
-        ./configure
-        make -j6
-        sudo make -j6 install
-        cd ..
-    - name: ogg - linux
-      run: |
-        git clone https://gitlab.xiph.org/xiph/ogg.git ogg
-        cd ogg
-        ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make -j6
-        make -j6 install
-        ./autogen.sh
-        ./configure
-        make -j6
-        sudo make -j6 install
-        cd ..
-    - name: vorbis - linux
-      run: |
-        git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis
-        cd vorbis
-        ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make
-        make install
-        cd ..
-    - name: vorbis2 - linux
-      run: |
-        git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis2
-        cd vorbis2
-        ./autogen.sh
-        ./configure
-        make
-        sudo make install
-        cd ..
-    - name: opus - linux
-      run: |
-        git clone https://gitlab.xiph.org/xiph/opus.git opus
-        cd opus
-        ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make
-        make install
-        ./autogen.sh
-        ./configure
-        make
-        sudo make install
-        cd ..
-    - name: opusfile - linux
-      run: |
-        export PKG_CONFIG_PATH=${HOME}/AVDL_DEPENDENCIES
-        ls ${HOME}/AVDL_DEPENDENCIES
-        git clone https://gitlab.xiph.org/xiph/opusfile.git opusfile
-        cd opusfile
-        ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make -j6
-        sudo make -j6 install
-        cd ..
-    - name: sdl - linux
-      run: |
-        export C_INCLUDE_PATH=${HOME}/AVDL_DEPENDENCIES/include
-        export LIBRARY_PATH=${HOME}/AVDL_DEPENDENCIES/lib:${HOME}/AVDL_DEPENDENCIES/lib64
-        git clone https://github.com/libsdl-org/SDL SDL
-        cd SDL
-        git checkout release-2.0.20
         mkdir build
         cd build
-        ../configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make -j6
-        make -j6 install
-        cd ../..
-    - name: sdl_mixer - linux
-      run: |
-        git clone https://github.com/libsdl-org/SDL_mixer SDL_mixer
-        cd SDL_mixer
-        git checkout release-2.0.4
-        mkdir build
-        cd build
-        ../configure --prefix=${HOME}/AVDL_DEPENDENCIES --enable-music-ogg-vorbis
-        make -j6
-        make -j6 install
-        cd ../..
-    - name: glew - linux
-      run: |
-        git clone https://github.com/nigels-com/glew glew
-        cd glew
-        git checkout glew-2.2.0
-        cd auto
-        make
-        cd ..
-        make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
-        make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
-        cd ..
-#    - name: sdl - windows
+        cmake ../ .
+        cmake --build . --config Release
+        cmake --install .
+        cd ../../
+
+##    - name: sdl - windows
+##      run: |
+##        mkdir ${HOME}/AVDL_DEPENDENCIES/windows
+##        wget https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
+##        unzip SDL2-devel-2.0.22-VC.zip
+##    - name: sdl_mixer - windows
+##      run: |
+##        wget https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
+##        unzip SDL2_mixer-devel-2.6.0-VC.zip
+##    - name: glew - windows
+##      run: |
+##        wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
+##        unzip glew-2.2.0-win32.zip
+#    runs-on: ubuntu-latest
+#    steps:
+#    - name: update packages
 #      run: |
-#        mkdir ${HOME}/AVDL_DEPENDENCIES/windows
-#        wget https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
-#        unzip SDL2-devel-2.0.22-VC.zip
-#    - name: sdl_mixer - windows
+#         sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev
+#    - name: libpng - linux
 #      run: |
-#        wget https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
-#        unzip SDL2_mixer-devel-2.6.0-VC.zip
-#    - name: glew - windows
+#        git clone git://git.code.sf.net/p/libpng/code libpng
+#        cd libpng
+#        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+#        make -j6
+#        make -j6 install
+#        ./configure
+#        make -j6
+#        sudo make -j6 install
+#        cd ..
+#    - name: ogg - linux
 #      run: |
-#        wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
-#        unzip glew-2.2.0-win32.zip
-    - name: collect_dependencies
-      run: |
-        mkdir ${HOME}/avdl_dependencies_linux
-        mkdir ${HOME}/avdl_dependencies_linux/include
-        mkdir ${HOME}/avdl_dependencies_linux/lib
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* ${HOME}/avdl_dependencies_linux/lib
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2-2.0.so* ${HOME}/avdl_dependencies_linux/lib
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2_mixer-2.0.so* ${HOME}/avdl_dependencies_linux/lib
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* ${HOME}/avdl_dependencies_linux/lib
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* ${HOME}/avdl_dependencies_linux/lib
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* ${HOME}/avdl_dependencies_linux/lib
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* ${HOME}/avdl_dependencies_linux/lib
-        cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* ${HOME}/avdl_dependencies_linux/include
-        ls ${HOME}/avdl_dependencies_linux/lib/
-    - name: init_avdl
-      uses: actions/checkout@v1
-    - name: build & package avdl
-      run: |
-        make -j6 prefix=AVDL_BUILD/ CC=gcc
-        make -j6 prefix=AVDL_BUILD/ CC=gcc install
-        mkdir AVDL_BUILD/dependencies
-        cp -r ${HOME}/avdl_dependencies_linux/* AVDL_BUILD/dependencies
-    - name: upload_artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: avdl_build
-        path: AVDL_BUILD
+#        git clone https://gitlab.xiph.org/xiph/ogg.git ogg
+#        cd ogg
+#        ./autogen.sh
+#        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+#        make -j6
+#        make -j6 install
+#        ./autogen.sh
+#        ./configure
+#        make -j6
+#        sudo make -j6 install
+#        cd ..
+#    - name: vorbis - linux
+#      run: |
+#        git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis
+#        cd vorbis
+#        ./autogen.sh
+#        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+#        make
+#        make install
+#        cd ..
+#    - name: vorbis2 - linux
+#      run: |
+#        git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis2
+#        cd vorbis2
+#        ./autogen.sh
+#        ./configure
+#        make
+#        sudo make install
+#        cd ..
+#    - name: opus - linux
+#      run: |
+#        git clone https://gitlab.xiph.org/xiph/opus.git opus
+#        cd opus
+#        ./autogen.sh
+#        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+#        make
+#        make install
+#        ./autogen.sh
+#        ./configure
+#        make
+#        sudo make install
+#        cd ..
+#    - name: opusfile - linux
+#      run: |
+#        export PKG_CONFIG_PATH=${HOME}/AVDL_DEPENDENCIES
+#        git clone https://gitlab.xiph.org/xiph/opusfile.git opusfile
+#        cd opusfile
+#        ./autogen.sh
+#        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+#        make -j6
+#        sudo make -j6 install
+#        cd ..
+#    - name: sdl - linux
+#      run: |
+#        export C_INCLUDE_PATH=${HOME}/AVDL_DEPENDENCIES/include
+#        export LIBRARY_PATH=${HOME}/AVDL_DEPENDENCIES/lib:${HOME}/AVDL_DEPENDENCIES/lib64
+#        git clone https://github.com/libsdl-org/SDL SDL
+#        cd SDL
+#        git checkout release-2.0.20
+#        mkdir build
+#        cd build
+#        ../configure --prefix=${HOME}/AVDL_DEPENDENCIES
+#        make -j6
+#        make -j6 install
+#        cd ../..
+#    - name: sdl_mixer - linux
+#      run: |
+#        git clone https://github.com/libsdl-org/SDL_mixer SDL_mixer
+#        cd SDL_mixer
+#        git checkout release-2.0.4
+#        mkdir build
+#        cd build
+#        ../configure --prefix=${HOME}/AVDL_DEPENDENCIES --enable-music-ogg-vorbis
+#        make -j6
+#        make -j6 install
+#        cd ../..
+#    - name: glew - linux
+#      run: |
+#        git clone https://github.com/nigels-com/glew glew
+#        cd glew
+#        git checkout glew-2.2.0
+#        cd auto
+#        make
+#        cd ..
+#        make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
+#        make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
+#        cd ..
+##    - name: sdl - windows
+##      run: |
+##        mkdir ${HOME}/AVDL_DEPENDENCIES/windows
+##        wget https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
+##        unzip SDL2-devel-2.0.22-VC.zip
+##    - name: sdl_mixer - windows
+##      run: |
+##        wget https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
+##        unzip SDL2_mixer-devel-2.6.0-VC.zip
+##    - name: glew - windows
+##      run: |
+##        wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
+##        unzip glew-2.2.0-win32.zip
+#    - name: collect_dependencies
+#      run: |
+#        mkdir ${HOME}/avdl_dependencies_linux
+#        mkdir ${HOME}/avdl_dependencies_linux/include
+#        mkdir ${HOME}/avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* ${HOME}/avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2-2.0.so* ${HOME}/avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2_mixer-2.0.so* ${HOME}/avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* ${HOME}/avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* ${HOME}/avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* ${HOME}/avdl_dependencies_linux/lib
+#        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* ${HOME}/avdl_dependencies_linux/lib
+#        cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* ${HOME}/avdl_dependencies_linux/include
+#    - name: init_avdl
+#      uses: actions/checkout@v1
+#    - name: build & package avdl
+#      run: |
+#        make -j6 prefix=AVDL_BUILD/ CC=gcc
+#        make -j6 prefix=AVDL_BUILD/ CC=gcc install
+#        mkdir AVDL_BUILD/dependencies
+#        cp -r ${HOME}/avdl_dependencies_linux/* AVDL_BUILD/dependencies
+#    - name: upload_artifact
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: avdl_build
+#        path: AVDL_BUILD
