@@ -180,16 +180,17 @@ jobs:
         cd
     - name: collect_dependencies
       run: |
-        ls ${HOME}/sdl_windows
+        ls ${HOME}/sdl_mixer_windows
+        ls ${HOME}/glew_windows
         mkdir avdl_dependencies_linux
         mkdir avdl_dependencies_linux/include
         mkdir avdl_dependencies_linux/lib
-        cp -d -r ${HOME}/sdl_windows/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/sdl_windows/lib/* avdl_dependencies_linux/lib
-        cp -d -r ${HOME}/sdl_mixer_windows/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/sdl_mixer_windows/lib/* avdl_dependencies_linux/lib
-        cp -d -r ${HOME}/glew_windows/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/glew_windows/lib/* avdl_dependencies_linux/lib
+        cp -d -r ${HOME}/sdl_windows/SDL2-2.0.22/include/* avdl_dependencies_linux/include
+        cp -d -r ${HOME}/sdl_windows/SDL2-2.0.22/lib/* avdl_dependencies_linux/lib
+        cp -d -r ${HOME}/sdl_mixer_windows/SDL2_mixer-2.6.0/include/* avdl_dependencies_linux/include
+        cp -d -r ${HOME}/sdl_mixer_windows/SDL2_mixer-2.6.0/lib/* avdl_dependencies_linux/lib
+        cp -d -r ${HOME}/glew_windows/glew-2.2.0/include/* avdl_dependencies_linux/include
+        cp -d -r ${HOME}/glew_windows/glew-2.2.0/lib/* avdl_dependencies_linux/lib
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
