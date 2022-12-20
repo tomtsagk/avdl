@@ -43,7 +43,6 @@ jobs:
     - name: sdl - windows
       shell: bash
       run: |
-        mkdir ${HOME}/AVDL_DEPENDENCIES/windows
         wget https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
         unzip SDL2-devel-2.0.22-VC.zip
     - name: sdl_mixer - windows
