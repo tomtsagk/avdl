@@ -55,7 +55,7 @@ jobs:
     steps:
     - name: update packages
       run: |
-         sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev
+         sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev libasound2-dev libpulse-dev
     - name: libpng - linux
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
