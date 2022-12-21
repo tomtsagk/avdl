@@ -219,7 +219,7 @@ int dd_main(int argc, char *argv[]) {
 	if (!avdl_verify) {
 		// Initialise SDL window
 		int sdlError = SDL_Init(SDL_INIT_EVERYTHING);
-		if (sdlError) {
+		if (sdlError < 0) {
 			dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
 			return -1;
 		}
