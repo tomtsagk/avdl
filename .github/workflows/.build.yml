@@ -62,6 +62,8 @@ jobs:
          sudo apt install -y build-essential libxmu-dev libxi-dev libgl-dev
          # opus
          sudo apt install -y libssl-dev
+         # read opus files
+         sudo apt install -y libopusfile-dev
     - name: libpng - linux
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
