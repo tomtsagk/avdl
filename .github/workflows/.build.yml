@@ -239,5 +239,5 @@ jobs:
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
     - uses: actions/upload-artifact@v3
       with:
-        name: avdl_build
+        name: avdl_build_linux
         path: AVDL_BUILD
