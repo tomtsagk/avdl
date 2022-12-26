@@ -186,6 +186,8 @@ jobs:
         unzip glew-2.2.0-win32.zip
         cd
     - name: collect_dependencies
+      env:
+        steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
       run: |
         ls ${HOME}/sdl_mixer_windows
         ls ${HOME}/glew_windows
@@ -206,7 +208,7 @@ jobs:
         cp -d -r ${HOME}/sdl_mixer_windows/SDL2_mixer-2.6.0/lib/* avdl_dependencies_linux/lib
         cp -d -r ${HOME}/glew_windows/glew-2.2.0/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/glew_windows/glew-2.2.0/lib/* avdl_dependencies_linux/lib
-        wget ${STEAMWORKS_API_LINK} --quiet
+        wget ${steamworks_api_link} --quiet
         unzip steamworks_sdk.zip
         mv sdk avdl_dependencies_linux/steamworks
     - uses: actions/upload-artifact@v3
