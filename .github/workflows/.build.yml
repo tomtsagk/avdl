@@ -15,11 +15,13 @@ jobs:
   dependencies_windows:
     runs-on: windows-latest
     steps:
+    - name: get_zlib
+      run: |
+        C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-1.2.13.tar.gz
     # zlib
     - name: zlib
       shell: bash
       run: |
-        curl http://www.zlib.net/zlib-1.2.13.tar.gz > zlib-1.2.13.tar.gz
         tar xf zlib-1.2.13.tar.gz
         cd zlib-1.2.13
         mkdir build
