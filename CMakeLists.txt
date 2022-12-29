@@ -23,11 +23,14 @@ install(TARGETS avdl DESTINATION bin)
 
 # cengine
 install(FILES
+	engines/cengine/src/avdl_achievements.c
 	engines/cengine/src/avdl_assetManager.c
 	engines/cengine/src/avdl_data.c
 	engines/cengine/src/avdl_localisation.c
+	engines/cengine/src/avdl_multiplayer.c
 	engines/cengine/src/avdl_particle_system.c
 	engines/cengine/src/avdl_shaders.c
+	engines/cengine/src/avdl_steam.c
 	engines/cengine/src/dd_dynamic_array.c
 	engines/cengine/src/dd_filetomesh.c
 	engines/cengine/src/dd_fov.c
@@ -42,6 +45,7 @@ install(FILES
 	engines/cengine/src/dd_meshColour.c
 	engines/cengine/src/dd_meshTexture.c
 	engines/cengine/src/dd_mouse.c
+	engines/cengine/src/dd_music.c
 	engines/cengine/src/dd_opengl.c
 	engines/cengine/src/dd_sound.c
 	engines/cengine/src/dd_string3d.c
