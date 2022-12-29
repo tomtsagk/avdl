@@ -247,14 +247,6 @@ jobs:
     steps:
     - name: init_avdl
       uses: actions/checkout@v1
-    - uses: actions/download-artifact@v3
-      with:
-        name: avdl_dependencies_linux
-        path: AVDL_BUILD/dependencies
-    - uses: actions/download-artifact@v3
-      with:
-        name: avdl_dependencies_windows
-        path: AVDL_BUILD/dependencies
     - name: compile
       shell: bash
       run: |
@@ -264,6 +256,14 @@ jobs:
         cmake --build . --config Release
         cmake --install .
         cd ..
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_dependencies_linux
+        path: build/AVDL_BUILD/dependencies
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_dependencies_windows
+        path: build/AVDL_BUILD/dependencies
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_build_windows
