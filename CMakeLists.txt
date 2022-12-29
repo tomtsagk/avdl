@@ -57,12 +57,15 @@ install(FILES
 	share/avdl/cengine
 )
 install(FILES
+	engines/cengine/include/avdl_achievements.h
 	engines/cengine/include/avdl_assetManager.h
 	engines/cengine/include/avdl_cengine.h
 	engines/cengine/include/avdl_data.h
 	engines/cengine/include/avdl_localisation.h
+	engines/cengine/include/avdl_multiplayer.h
 	engines/cengine/include/avdl_particle_system.h
 	engines/cengine/include/avdl_shaders.h
+	engines/cengine/include/avdl_steam.h
 	engines/cengine/include/dd_async_call.h
 	engines/cengine/include/dd_dynamic_array.h
 	engines/cengine/include/dd_filetomesh.h
@@ -74,10 +77,11 @@ install(FILES
 	engines/cengine/include/dd_log.h
 	engines/cengine/include/dd_math.h
 	engines/cengine/include/dd_matrix.h
-	engines/cengine/include/dd_mesh.h
 	engines/cengine/include/dd_meshColour.h
+	engines/cengine/include/dd_mesh.h
 	engines/cengine/include/dd_meshTexture.h
 	engines/cengine/include/dd_mouse.h
+	engines/cengine/include/dd_music.h
 	engines/cengine/include/dd_opengl.h
 	engines/cengine/include/dd_sound.h
 	engines/cengine/include/dd_string3d.h
