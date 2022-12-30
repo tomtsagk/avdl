@@ -31,9 +31,10 @@ install(FILES
 	engines/cengine/src/avdl_multiplayer.c
 	engines/cengine/src/avdl_multiplayer_steam.cpp
 	engines/cengine/src/avdl_particle_system.c
+	engines/cengine/src/avdl_steam_cpp.cpp
+	engines/cengine/src/avdl_particle_system.c
 	engines/cengine/src/avdl_shaders.c
 	engines/cengine/src/avdl_steam.c
-	engines/cengine/src/avdl_steam_cpp.cpp
 	engines/cengine/src/dd_dynamic_array.c
 	engines/cengine/src/dd_filetomesh.c
 	engines/cengine/src/dd_fov.c
@@ -81,8 +82,8 @@ install(FILES
 	engines/cengine/include/dd_log.h
 	engines/cengine/include/dd_math.h
 	engines/cengine/include/dd_matrix.h
-	engines/cengine/include/dd_mesh.h
 	engines/cengine/include/dd_meshColour.h
+	engines/cengine/include/dd_mesh.h
 	engines/cengine/include/dd_meshTexture.h
 	engines/cengine/include/dd_mouse.h
 	engines/cengine/include/dd_music.h
