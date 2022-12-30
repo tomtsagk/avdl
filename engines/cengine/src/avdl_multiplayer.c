@@ -41,6 +41,7 @@ void avdl_multiplayer_sendMessage_internal(struct avdl_multiplayer *o, int playe
 }
 
 int avdl_multiplayer_receiveMessages(struct avdl_multiplayer *o) {
+	return 0;
 }
 
 void avdl_multiplayer_leaveLobby(struct avdl_multiplayer *o, void (*callback)(void)) {
