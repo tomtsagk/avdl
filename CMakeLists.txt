@@ -23,11 +23,17 @@ install(TARGETS avdl DESTINATION bin)
 
 # cengine
 install(FILES
+	engines/cengine/src/avdl_achievements.c
+	engines/cengine/src/avdl_achievements_steam.cpp
 	engines/cengine/src/avdl_assetManager.c
 	engines/cengine/src/avdl_data.c
 	engines/cengine/src/avdl_localisation.c
+	engines/cengine/src/avdl_multiplayer.c
+	engines/cengine/src/avdl_multiplayer_steam.cpp
 	engines/cengine/src/avdl_particle_system.c
 	engines/cengine/src/avdl_shaders.c
+	engines/cengine/src/avdl_steam.c
+	engines/cengine/src/avdl_steam_cpp.cpp
 	engines/cengine/src/dd_dynamic_array.c
 	engines/cengine/src/dd_filetomesh.c
 	engines/cengine/src/dd_fov.c
@@ -42,6 +48,7 @@ install(FILES
 	engines/cengine/src/dd_meshColour.c
 	engines/cengine/src/dd_meshTexture.c
 	engines/cengine/src/dd_mouse.c
+	engines/cengine/src/dd_music.c
 	engines/cengine/src/dd_opengl.c
 	engines/cengine/src/dd_sound.c
 	engines/cengine/src/dd_string3d.c
@@ -49,16 +56,20 @@ install(FILES
 	engines/cengine/src/dd_vec4.c
 	engines/cengine/src/dd_world.c
 	engines/cengine/src/main.c
+	engines/cengine/src/main_cpp.cpp
 	DESTINATION
 	share/avdl/cengine
 )
 install(FILES
+	engines/cengine/include/avdl_achievements.h
 	engines/cengine/include/avdl_assetManager.h
 	engines/cengine/include/avdl_cengine.h
 	engines/cengine/include/avdl_data.h
 	engines/cengine/include/avdl_localisation.h
+	engines/cengine/include/avdl_multiplayer.h
 	engines/cengine/include/avdl_particle_system.h
 	engines/cengine/include/avdl_shaders.h
+	engines/cengine/include/avdl_steam.h
 	engines/cengine/include/dd_async_call.h
 	engines/cengine/include/dd_dynamic_array.h
 	engines/cengine/include/dd_filetomesh.h
@@ -74,6 +85,7 @@ install(FILES
 	engines/cengine/include/dd_meshColour.h
 	engines/cengine/include/dd_meshTexture.h
 	engines/cengine/include/dd_mouse.h
+	engines/cengine/include/dd_music.h
 	engines/cengine/include/dd_opengl.h
 	engines/cengine/include/dd_sound.h
 	engines/cengine/include/dd_string3d.h
