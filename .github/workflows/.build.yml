@@ -277,11 +277,11 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: avdl_build_linux
-        path: avdl_build_linux
+#        path: avdl_build_linux
     - uses: actions/download-artifact@v3
       with:
         name: avdl_build_windows
-        path: avdl_build_windows
+#        path: avdl_build_windows
     - name: release
       uses: actions/create-release@v1
       id: create_release
