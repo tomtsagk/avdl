@@ -277,11 +277,16 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: avdl_build_linux
-#        path: avdl_build_linux
+        path: avdl_build_linux
     - uses: actions/download-artifact@v3
       with:
         name: avdl_build_windows
-#        path: avdl_build_windows
+        path: avdl_build_windows
+    - name: zip packages
+      run: |
+         sudo apt update && sudo apt install -y zip
+         zip avdl_build_linux.zip avdl_build_linux -r
+         zip avdl_build_windows.zip avdl_build_windows -r
     - name: release
       uses: actions/create-release@v1
       id: create_release
