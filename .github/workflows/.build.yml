@@ -302,7 +302,7 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: avdl_build_linux
         asset_name: avdl_build_linux.zip
-#        asset_content_type: application/gzip
+        asset_content_type: application/gzip
     - name: upload windows artifact
       uses: actions/upload-release-asset@v1
       env:
@@ -311,4 +311,4 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: avdl_build_windows
         asset_name: avdl_build_windows.zip
-#        asset_content_type: application/gzip
+        asset_content_type: application/gzip
