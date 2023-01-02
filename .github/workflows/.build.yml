@@ -16,6 +16,8 @@ env:
   SDL_VERSION_WINDOWS: 2.0.22
   SDL_MIXER_VERSION_LINUX: 2.0.4
   SDL_MIXER_VERSION_WINDOWS: 2.6.0
+  GLEW_VERSION_LINUX: 2.2.0
+  GLEW_VERSION_WINDOWS: 2.2.0
 
 jobs:
   dependencies_windows:
@@ -26,13 +28,13 @@ jobs:
         C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-1.2.13.tar.gz
         C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-$env:SDL_VERSION_WINDOWS/SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
         C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-$env:SDL_MIXER_VERSION_WINDOWS/SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
-        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-$env:GLEW_VERSION_WINDOWS/glew-$env:GLEW_VERSION_WINDOWS-win32.zip
         mkdir "C:/Program Files/avdl_sdl2"
         mkdir "C:/Program Files/avdl_sdl2_mixer"
         mkdir "C:/Program Files/avdl_glew"
         mv SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip "C:/Program Files/avdl_sdl2"
         mv SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip "C:/Program Files/avdl_sdl2_mixer"
-        mv glew-2.2.0-win32.zip "C:/Program Files/avdl_glew"
+        mv glew-$env:GLEW_VERSION_WINDOWS-win32.zip "C:/Program Files/avdl_glew"
     # zlib
     - name: zlib
       shell: bash
@@ -73,7 +75,7 @@ jobs:
     - name: glew - windows
       run: |
         cd "C:/Program Files/avdl_glew"
-        unzip glew-2.2.0-win32.zip
+        unzip glew-$env:GLEW_VERSION_WINDOWS-win32.zip
         cd
     - name: package
       shell: bash
@@ -87,8 +89,8 @@ jobs:
         cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/lib
         cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/include
         cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/lib
-        cp -r "C:/Program Files/avdl_glew/glew-2.2.0/include/"* avdl_dependencies_windows/include
-        cp -r "C:/Program Files/avdl_glew/glew-2.2.0/lib/"* avdl_dependencies_windows/lib
+        cp -r "C:/Program Files/avdl_glew/glew-${GLEW_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/include
+        cp -r "C:/Program Files/avdl_glew/glew-${GLEW_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/lib
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_windows
@@ -211,7 +213,7 @@ jobs:
       run: |
         git clone https://github.com/nigels-com/glew glew
         cd glew
-        git checkout glew-2.2.0
+        git checkout glew-${GLEW_VERSION_LINUX}
         cd auto
         make
         cd ..
