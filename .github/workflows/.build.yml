@@ -18,6 +18,7 @@ env:
   SDL_MIXER_VERSION_WINDOWS: 2.6.0
   GLEW_VERSION_LINUX: 2.2.0
   GLEW_VERSION_WINDOWS: 2.2.0
+  ZLIB_VERSION_WINDOWS: 1.2.13
 
 jobs:
   dependencies_windows:
@@ -25,7 +26,7 @@ jobs:
     steps:
     - name: get_dependencies
       run: |
-        C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-1.2.13.tar.gz
+        C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-$env:ZLIB_VERSION_WINDOWS.tar.gz
         C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-$env:SDL_VERSION_WINDOWS/SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
         C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-$env:SDL_MIXER_VERSION_WINDOWS/SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
         C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-$env:GLEW_VERSION_WINDOWS/glew-$env:GLEW_VERSION_WINDOWS-win32.zip
@@ -39,8 +40,8 @@ jobs:
     - name: zlib
       shell: bash
       run: |
-        tar xf zlib-1.2.13.tar.gz
-        cd zlib-1.2.13
+        tar xf zlib-${ZLIB_VERSION_WINDOWS}.tar.gz
+        cd zlib-${ZLIB_VERSION_WINDOWS}
         mkdir build
         cd build
         cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/zlib"
