@@ -24,6 +24,10 @@ jobs:
         C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-1.2.13.tar.gz
         C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
         C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
+        mkdir "C:/Program Files/avdl_sdl2"
+        mkdir "C:/Program Files/avdl_sdl2_mixer"
+        mv SDL2-devel-2.0.22-VC.zip "C:/Program Files/avdl_sdl2"
+        mv SDL2_mixer-devel-2.6.0-VC.zip "C:/Program Files/avdl_sdl2_mixer"
     # zlib
     - name: zlib
       shell: bash
@@ -51,17 +55,13 @@ jobs:
     # sdl
     - name: sdl - windows
       run: |
-        mkdir ${HOME}/sdl_windows
-        mv SDL2-devel-2.0.22-VC.zip ${HOME}/sdl_windows
-        cd ${HOME}/sdl_windows
+        cd "C:/Program Files/avdl_sdl2"
         unzip SDL2-devel-2.0.22-VC.zip
         cd
     # sdl_mixer
     - name: sdl_mixer - windows
       run: |
-        mkdir ${HOME}/sdl_mixer_windows
-        mv SDL2_mixer-devel-2.6.0-VC.zip ${HOME}/sdl_mixer_windows
-        cd ${HOME}/sdl_mixer_windows
+        cd "C:/Program Files/avdl_sdl2_mixer"
         unzip SDL2_mixer-devel-2.6.0-VC.zip
         cd
     - name: package
@@ -70,10 +70,10 @@ jobs:
         mkdir avdl_dependencies_windows
         cp -r "C:/Program Files/zlib" avdl_dependencies_windows
         cp -r "C:/Program Files/libpng" avdl_dependencies_windows
-        cp -r SDL2-2.0.22/include/* avdl_dependencies_windows/include
-        cp -r SDL2-2.0.22/lib/* avdl_dependencies_windows/lib
-        cp -r SDL2_mixer-2.6.0/include/* avdl_dependencies_windows/include
-        cp -r SDL2_mixer-2.6.0/lib/* avdl_dependencies_windows/lib
+        cp -r "C:/Program Files/avdL_sdl2/SDL2-2.0.22/include/"* avdl_dependencies_windows/include
+        cp -r "C:/Program Files/avdl_sdl2/SDL2-2.0.22/lib/"* avdl_dependencies_windows/lib
+        cp -r "C:/Program FIles/avdl_sdl2_mixer/SDL2_mixer-2.6.0/include/"* avdl_dependencies_windows/include
+        cp -r "C:/Program FIles/avdl_sdl2_mixer/SDL2_mixer-2.6.0/lib/"* avdl_dependencies_windows/lib
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_windows
@@ -211,16 +211,18 @@ jobs:
         wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
         unzip glew-2.2.0-win32.zip
         cd
-    - name: collect_dependencies
+    - name: steamworks
       env:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
+      run: |
+        wget ${steamworks_api_link} --quiet
+        unzip steamworks_sdk.zip
+        mv sdk avdl_dependencies_linux/steamworks
+    - name: collect_dependencies
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/glew_windows/glew-2.2.0/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/glew_windows/glew-2.2.0/lib/* avdl_dependencies_linux/lib
-        wget ${steamworks_api_link} --quiet
-        unzip steamworks_sdk.zip
-        mv sdk avdl_dependencies_linux/steamworks
         ls avdl_dependencies_linux/lib
         ls -lh avdl_dependencies_linux/lib
     - uses: actions/upload-artifact@v3
