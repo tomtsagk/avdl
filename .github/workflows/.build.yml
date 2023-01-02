@@ -86,6 +86,7 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/libpng.so avdl_dependencies_linux/lib
     - name: ogg - linux
       run: |
         git clone https://gitlab.xiph.org/xiph/ogg.git ogg
@@ -99,6 +100,7 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/libogg.so avdl_dependencies_linux/lib
     - name: vorbis - linux
       run: |
         git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis
@@ -130,6 +132,7 @@ jobs:
         make
         sudo make install
         cd ..
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/libopus.so avdl_dependencies_linux/lib
     - name: opusfile - linux
       run: |
         export PKG_CONFIG_PATH=${HOME}/AVDL_DEPENDENCIES
@@ -140,6 +143,7 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/libopusfile.so avdl_dependencies_linux/lib
     - name: sdl - linux
       run: |
         export C_INCLUDE_PATH=${HOME}/AVDL_DEPENDENCIES/include
@@ -177,6 +181,7 @@ jobs:
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
+        cp -d ${HOME}/AVDL_DEPENDENCIES/lib64/libGLEW.so avdl_dependencies_linux/lib
     - name: sdl - windows
       run: |
         mkdir ${HOME}/sdl_windows
@@ -202,18 +207,8 @@ jobs:
       env:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
       run: |
-        #mkdir avdl_dependencies_linux
-        #mkdir avdl_dependencies_linux/include
-        #mkdir avdl_dependencies_linux/lib
-        #ls ${HOME}/AVDL_DEPENDENCIES/lib*/lib*
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* avdl_dependencies_linux/lib
-        #cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* avdl_dependencies_linux/lib
-        cp ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so avdl_dependencies_linux/lib
-        #cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* avdl_dependencies_linux/lib
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libogg.so avdl_dependencies_linux/lib
-        #cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* avdl_dependencies_linux/lib
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libopusfile.so avdl_dependencies_linux/lib
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* avdl_dependencies_linux/lib
+        #cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* avdl_dependencies_linux/lib
+        #cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* avdl_dependencies_linux/lib
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/sdl_windows/SDL2-2.0.22/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/sdl_windows/SDL2-2.0.22/lib/* avdl_dependencies_linux/lib
@@ -224,6 +219,7 @@ jobs:
         wget ${steamworks_api_link} --quiet
         unzip steamworks_sdk.zip
         mv sdk avdl_dependencies_linux/steamworks
+        ls avdl_dependencies_linux/lib
         ls -lh avdl_dependencies_linux/lib
     - uses: actions/upload-artifact@v3
       with:
