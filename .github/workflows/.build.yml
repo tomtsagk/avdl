@@ -70,6 +70,10 @@ jobs:
         mkdir avdl_dependencies_windows
         cp -r "C:/Program Files/zlib" avdl_dependencies_windows
         cp -r "C:/Program Files/libpng" avdl_dependencies_windows
+        cp -r SDL2-2.0.22/include/* avdl_dependencies_windows/include
+        cp -r SDL2-2.0.22/lib/* avdl_dependencies_windows/lib
+        cp -r SDL2_mixer-2.6.0/include/* avdl_dependencies_windows/include
+        cp -r SDL2_mixer-2.6.0/lib/* avdl_dependencies_windows/lib
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_windows
@@ -200,20 +204,20 @@ jobs:
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
         cp ${HOME}/AVDL_DEPENDENCIES/lib64/libGLEW.so avdl_dependencies_linux/lib
-    - name: sdl - windows
-      run: |
-        mkdir ${HOME}/sdl_windows
-        cd ${HOME}/sdl_windows
-        wget https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
-        unzip SDL2-devel-2.0.22-VC.zip
-        cd
-    - name: sdl_mixer - windows
-      run: |
-        mkdir ${HOME}/sdl_mixer_windows
-        cd ${HOME}/sdl_mixer_windows
-        wget https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
-        unzip SDL2_mixer-devel-2.6.0-VC.zip
-        cd
+#    - name: sdl - windows
+#      run: |
+#        mkdir ${HOME}/sdl_windows
+#        cd ${HOME}/sdl_windows
+#        wget https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
+#        unzip SDL2-devel-2.0.22-VC.zip
+#        cd
+#    - name: sdl_mixer - windows
+#      run: |
+#        mkdir ${HOME}/sdl_mixer_windows
+#        cd ${HOME}/sdl_mixer_windows
+#        wget https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
+#        unzip SDL2_mixer-devel-2.6.0-VC.zip
+#        cd
     - name: glew - windows
       run: |
         mkdir ${HOME}/glew_windows
@@ -226,10 +230,10 @@ jobs:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/sdl_windows/SDL2-2.0.22/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/sdl_windows/SDL2-2.0.22/lib/* avdl_dependencies_linux/lib
-        cp -d -r ${HOME}/sdl_mixer_windows/SDL2_mixer-2.6.0/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/sdl_mixer_windows/SDL2_mixer-2.6.0/lib/* avdl_dependencies_linux/lib
+#        cp -d -r ${HOME}/sdl_windows/SDL2-2.0.22/include/* avdl_dependencies_linux/include
+#        cp -d -r ${HOME}/sdl_windows/SDL2-2.0.22/lib/* avdl_dependencies_linux/lib
+#        cp -d -r ${HOME}/sdl_mixer_windows/SDL2_mixer-2.6.0/include/* avdl_dependencies_linux/include
+#        cp -d -r ${HOME}/sdl_mixer_windows/SDL2_mixer-2.6.0/lib/* avdl_dependencies_linux/lib
         cp -d -r ${HOME}/glew_windows/glew-2.2.0/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/glew_windows/glew-2.2.0/lib/* avdl_dependencies_linux/lib
         wget ${steamworks_api_link} --quiet
