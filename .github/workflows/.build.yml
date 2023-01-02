@@ -19,9 +19,11 @@ jobs:
   dependencies_windows:
     runs-on: windows-latest
     steps:
-    - name: get_zlib
+    - name: get_dependencies
       run: |
         C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-1.2.13.tar.gz
+        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
     # zlib
     - name: zlib
       shell: bash
@@ -46,6 +48,22 @@ jobs:
         cmake --build . --config Release
         cmake --install .
         cd ../../
+    # sdl
+    - name: sdl - windows
+      run: |
+        mkdir ${HOME}/sdl_windows
+        mv SDL2-devel-2.0.22-VC.zip ${HOME}/sdl_windows
+        cd ${HOME}/sdl_windows
+        unzip SDL2-devel-2.0.22-VC.zip
+        cd
+    # sdl_mixer
+    - name: sdl_mixer - windows
+      run: |
+        mkdir ${HOME}/sdl_mixer_windows
+        mv SDL2_mixer-devel-2.6.0-VC.zip ${HOME}/sdl_mixer_windows
+        cd ${HOME}/sdl_mixer_windows
+        unzip SDL2_mixer-devel-2.6.0-VC.zip
+        cd
     - name: package
       shell: bash
       run: |
