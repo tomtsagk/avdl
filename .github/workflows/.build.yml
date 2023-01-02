@@ -61,13 +61,13 @@ jobs:
     - name: sdl - windows
       run: |
         cd "C:/Program Files/avdl_sdl2"
-        unzip SDL2-devel-2.0.22-VC.zip
+        unzip SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
         cd
     # sdl_mixer
     - name: sdl_mixer - windows
       run: |
         cd "C:/Program Files/avdl_sdl2_mixer"
-        unzip SDL2_mixer-devel-2.6.0-VC.zip
+        unzip SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
         cd
     # glew
     - name: glew - windows
@@ -83,10 +83,10 @@ jobs:
         mkdir avdl_dependencies_windows/lib
         cp -r "C:/Program Files/zlib" avdl_dependencies_windows
         cp -r "C:/Program Files/libpng" avdl_dependencies_windows
-        cp -r "C:/Program Files/avdL_sdl2/SDL2-2.0.22/include/"* avdl_dependencies_windows/include
-        cp -r "C:/Program Files/avdl_sdl2/SDL2-2.0.22/lib/"* avdl_dependencies_windows/lib
-        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-2.6.0/include/"* avdl_dependencies_windows/include
-        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-2.6.0/lib/"* avdl_dependencies_windows/lib
+        cp -r "C:/Program Files/avdL_sdl2/SDL2-$env:SDL_VERSION_WINDOWS/include/"* avdl_dependencies_windows/include
+        cp -r "C:/Program Files/avdl_sdl2/SDL2-$env:SDL_VERSION_WINDOWS/lib/"* avdl_dependencies_windows/lib
+        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-$env:SDL_MIXER_VERSION_WINDOWS/include/"* avdl_dependencies_windows/include
+        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-$env:SDL_MIXER_VERSION_WINDOWS/lib/"* avdl_dependencies_windows/lib
         cp -r "C:/Program Files/avdl_glew/glew-2.2.0/include/"* avdl_dependencies_windows/include
         cp -r "C:/Program Files/avdl_glew/glew-2.2.0/lib/"* avdl_dependencies_windows/lib
     - uses: actions/upload-artifact@v3
