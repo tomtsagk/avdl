@@ -937,7 +937,7 @@ int main(int argc, char *argv[]) {
 			if (avdlSteamMode) {
 				strcat(buffer, " -lsteam_api ");
 			}
-			//printf("link command: %s\n", buffer);
+			printf("link command: %s\n", buffer);
 			if (system(buffer)) {
 				printf("avdl: error linking files\n");
 				exit(-1);
