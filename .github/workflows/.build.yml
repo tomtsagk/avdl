@@ -24,10 +24,13 @@ jobs:
         C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-1.2.13.tar.gz
         C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
         C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
         mkdir "C:/Program Files/avdl_sdl2"
         mkdir "C:/Program Files/avdl_sdl2_mixer"
+        mkdir "C:/Program Files/avdl_glew"
         mv SDL2-devel-2.0.22-VC.zip "C:/Program Files/avdl_sdl2"
         mv SDL2_mixer-devel-2.6.0-VC.zip "C:/Program Files/avdl_sdl2_mixer"
+        mv glew-2.2.0-win32.zip "C:/Program Files/avdl_glew"
     # zlib
     - name: zlib
       shell: bash
@@ -64,6 +67,12 @@ jobs:
         cd "C:/Program Files/avdl_sdl2_mixer"
         unzip SDL2_mixer-devel-2.6.0-VC.zip
         cd
+    # glew
+    - name: glew - windows
+      run: |
+        cd "C:/Program Files/avdl_glew"
+        unzip glew-2.2.0-win32.zip
+        cd
     - name: package
       shell: bash
       run: |
@@ -74,8 +83,10 @@ jobs:
         cp -r "C:/Program Files/libpng" avdl_dependencies_windows
         cp -r "C:/Program Files/avdL_sdl2/SDL2-2.0.22/include/"* avdl_dependencies_windows/include
         cp -r "C:/Program Files/avdl_sdl2/SDL2-2.0.22/lib/"* avdl_dependencies_windows/lib
-        cp -r "C:/Program FIles/avdl_sdl2_mixer/SDL2_mixer-2.6.0/include/"* avdl_dependencies_windows/include
-        cp -r "C:/Program FIles/avdl_sdl2_mixer/SDL2_mixer-2.6.0/lib/"* avdl_dependencies_windows/lib
+        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-2.6.0/include/"* avdl_dependencies_windows/include
+        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-2.6.0/lib/"* avdl_dependencies_windows/lib
+        cp -r "C:/Program Files/avdl_glew/glew-2.2.0/include/"* avdl_dependencies_windows/include
+        cp -r "C:/Program Files/avdl_glew/glew-2.2.0/lib/"* avdl_dependencies_windows/lib
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_windows
@@ -206,25 +217,21 @@ jobs:
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
         cp ${HOME}/AVDL_DEPENDENCIES/lib64/libGLEW.so avdl_dependencies_linux/lib
-    - name: glew - windows
-      run: |
-        mkdir ${HOME}/glew_windows
-        cd ${HOME}/glew_windows
-        wget https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
-        unzip glew-2.2.0-win32.zip
-        cd
     - name: steamworks
       env:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
       run: |
         wget ${steamworks_api_link} --quiet
         unzip steamworks_sdk.zip
-        mv sdk avdl_dependencies_linux/steamworks
+        mv sdk/redistributable_bin/linux64/libsteam_api.so avdl_dependencies_linux/lib
+        mv sdk/redistributable_bin/steam_api.dll avdl_dependencies_linux/lib
+        mv sdk/redistributable_bin/steam_api.lib avdl_dependencies_linux/lib
+        mv sdk/redistributable_bin/win64/steam_api64.dll avdl_dependencies_linux/lib
+        mv sdk/redistributable_bin/win64/steam_api64.lib avdl_dependencies_linux/lib
+        mv sdk/public/steam/*.h avdl_dependencies_linux/include
     - name: collect_dependencies
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/glew_windows/glew-2.2.0/include/* avdl_dependencies_linux/include
-        cp -d -r ${HOME}/glew_windows/glew-2.2.0/lib/* avdl_dependencies_linux/lib
         ls avdl_dependencies_linux/lib
         ls -lh avdl_dependencies_linux/lib
     - uses: actions/upload-artifact@v3
