@@ -143,7 +143,7 @@ jobs:
         ../configure --prefix=${HOME}/AVDL_DEPENDENCIES
         make -j6
         make -j6 install
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2-2.0.so.0 ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2.so
+        #cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2-2.0.so.0 ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2.so
         cd ../..
     - name: sdl_mixer - linux
       run: |
@@ -155,7 +155,7 @@ jobs:
         ../configure --prefix=${HOME}/AVDL_DEPENDENCIES --enable-music-ogg-vorbis
         make -j6
         make -j6 install
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2_mixer-2.0.so.0 ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2_mixer.so
+        #cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2_mixer-2.0.so.0 ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2_mixer.so
         cd ../..
     - name: glew - linux
       run: |
@@ -198,6 +198,7 @@ jobs:
         mkdir avdl_dependencies_linux
         mkdir avdl_dependencies_linux/include
         mkdir avdl_dependencies_linux/lib
+        ls ${HOME}/AVDL_DEPENDENCIES/lib*/lib*
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* avdl_dependencies_linux/lib
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2-2.0.so* avdl_dependencies_linux/lib
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libSDL2_mixer-2.0.so* avdl_dependencies_linux/lib
