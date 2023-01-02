@@ -24,10 +24,14 @@ install(TARGETS avdl DESTINATION bin)
 # cengine
 install(FILES
 	engines/cengine/src/avdl_achievements.c
+	engines/cengine/src/avdl_achievements_steam.cpp
 	engines/cengine/src/avdl_assetManager.c
 	engines/cengine/src/avdl_data.c
 	engines/cengine/src/avdl_localisation.c
 	engines/cengine/src/avdl_multiplayer.c
+	engines/cengine/src/avdl_multiplayer_steam.cpp
+	engines/cengine/src/avdl_particle_system.c
+	engines/cengine/src/avdl_steam_cpp.cpp
 	engines/cengine/src/avdl_particle_system.c
 	engines/cengine/src/avdl_shaders.c
 	engines/cengine/src/avdl_steam.c
@@ -53,6 +57,7 @@ install(FILES
 	engines/cengine/src/dd_vec4.c
 	engines/cengine/src/dd_world.c
 	engines/cengine/src/main.c
+	engines/cengine/src/main_cpp.cpp
 	DESTINATION
 	share/avdl/cengine
 )
