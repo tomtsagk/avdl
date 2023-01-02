@@ -21,81 +21,6 @@ env:
   ZLIB_VERSION_WINDOWS: 1.2.13
 
 jobs:
-  dependencies_windows:
-    runs-on: windows-latest
-    steps:
-    - name: get_dependencies
-      run: |
-        C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-$env:ZLIB_VERSION_WINDOWS.tar.gz
-        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-$env:SDL_VERSION_WINDOWS/SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
-        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-$env:SDL_MIXER_VERSION_WINDOWS/SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
-        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-$env:GLEW_VERSION_WINDOWS/glew-$env:GLEW_VERSION_WINDOWS-win32.zip
-        mkdir "C:/Program Files/avdl_sdl2"
-        mkdir "C:/Program Files/avdl_sdl2_mixer"
-        mkdir "C:/Program Files/avdl_glew"
-        mv SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip "C:/Program Files/avdl_sdl2"
-        mv SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip "C:/Program Files/avdl_sdl2_mixer"
-        mv glew-$env:GLEW_VERSION_WINDOWS-win32.zip "C:/Program Files/avdl_glew"
-    # zlib
-    - name: zlib
-      shell: bash
-      run: |
-        tar xf zlib-${ZLIB_VERSION_WINDOWS}.tar.gz
-        cd zlib-${ZLIB_VERSION_WINDOWS}
-        mkdir build
-        cd build
-        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/zlib"
-        cmake --build . --config Release
-        cmake --install .
-        cd ../../
-    # libpng
-    - name: libpng
-      shell: bash
-      run: |
-        git clone git://git.code.sf.net/p/libpng/code libpng
-        cd libpng
-        mkdir build
-        cd build
-        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/libpng"
-        cmake --build . --config Release
-        cmake --install .
-        cd ../../
-    # sdl
-    - name: sdl - windows
-      run: |
-        cd "C:/Program Files/avdl_sdl2"
-        unzip SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
-        cd
-    # sdl_mixer
-    - name: sdl_mixer - windows
-      run: |
-        cd "C:/Program Files/avdl_sdl2_mixer"
-        unzip SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
-        cd
-    # glew
-    - name: glew - windows
-      run: |
-        cd "C:/Program Files/avdl_glew"
-        unzip glew-$env:GLEW_VERSION_WINDOWS-win32.zip
-        cd
-    - name: package
-      shell: bash
-      run: |
-        mkdir avdl_dependencies_windows
-        mkdir avdl_dependencies_windows/include
-        mkdir avdl_dependencies_windows/lib
-        cp -r "C:/Program Files/zlib" avdl_dependencies_windows
-        cp -r "C:/Program Files/libpng" avdl_dependencies_windows
-        cp -r "C:/Program Files/avdL_sdl2/SDL2-${SDL_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/include
-        cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/lib
-        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/include
-        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/lib
-        cp -r "C:/Program Files/avdl_glew/glew-${GLEW_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/include
-        cp -r "C:/Program Files/avdl_glew/glew-${GLEW_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/lib
-    - uses: actions/upload-artifact@v3
-      with:
-        name: avdl_dependencies_windows
-        path: avdl_dependencies_windows
   dependencies_linux:
     runs-on: ubuntu-latest
     steps:
@@ -243,6 +168,81 @@ jobs:
       with:
         name: avdl_dependencies_linux
         path: avdl_dependencies_linux
+  dependencies_windows:
+    runs-on: windows-latest
+    steps:
+    - name: get_dependencies
+      run: |
+        C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-$env:ZLIB_VERSION_WINDOWS.tar.gz
+        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-$env:SDL_VERSION_WINDOWS/SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-$env:SDL_MIXER_VERSION_WINDOWS/SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-$env:GLEW_VERSION_WINDOWS/glew-$env:GLEW_VERSION_WINDOWS-win32.zip
+        mkdir "C:/Program Files/avdl_sdl2"
+        mkdir "C:/Program Files/avdl_sdl2_mixer"
+        mkdir "C:/Program Files/avdl_glew"
+        mv SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip "C:/Program Files/avdl_sdl2"
+        mv SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip "C:/Program Files/avdl_sdl2_mixer"
+        mv glew-$env:GLEW_VERSION_WINDOWS-win32.zip "C:/Program Files/avdl_glew"
+    # zlib
+    - name: zlib
+      shell: bash
+      run: |
+        tar xf zlib-${ZLIB_VERSION_WINDOWS}.tar.gz
+        cd zlib-${ZLIB_VERSION_WINDOWS}
+        mkdir build
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/zlib"
+        cmake --build . --config Release
+        cmake --install .
+        cd ../../
+    # libpng
+    - name: libpng
+      shell: bash
+      run: |
+        git clone git://git.code.sf.net/p/libpng/code libpng
+        cd libpng
+        mkdir build
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/libpng"
+        cmake --build . --config Release
+        cmake --install .
+        cd ../../
+    # sdl
+    - name: sdl - windows
+      run: |
+        cd "C:/Program Files/avdl_sdl2"
+        unzip SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
+        cd
+    # sdl_mixer
+    - name: sdl_mixer - windows
+      run: |
+        cd "C:/Program Files/avdl_sdl2_mixer"
+        unzip SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
+        cd
+    # glew
+    - name: glew - windows
+      run: |
+        cd "C:/Program Files/avdl_glew"
+        unzip glew-$env:GLEW_VERSION_WINDOWS-win32.zip
+        cd
+    - name: package
+      shell: bash
+      run: |
+        mkdir avdl_dependencies_windows
+        mkdir avdl_dependencies_windows/include
+        mkdir avdl_dependencies_windows/lib
+        cp -r "C:/Program Files/zlib" avdl_dependencies_windows
+        cp -r "C:/Program Files/libpng" avdl_dependencies_windows
+        cp -r "C:/Program Files/avdL_sdl2/SDL2-${SDL_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/include
+        cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/lib
+        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/include
+        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/lib
+        cp -r "C:/Program Files/avdl_glew/glew-${GLEW_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/include
+        cp -r "C:/Program Files/avdl_glew/glew-${GLEW_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/lib
+    - uses: actions/upload-artifact@v3
+      with:
+        name: avdl_dependencies_windows
+        path: avdl_dependencies_windows
   build_linux:
     runs-on: ubuntu-latest
     needs: [dependencies_windows, dependencies_linux]
