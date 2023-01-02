@@ -287,7 +287,7 @@ jobs:
          sudo apt update && sudo apt install -y zip
          zip avdl_build_linux.zip avdl_build_linux -r
          zip avdl_build_windows.zip avdl_build_windows -r
-    - name: release
+    - name: create release
       uses: actions/create-release@v1
       id: create_release
       with:
@@ -304,8 +304,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
-        #upload_url: ${{ steps.create_release.outputs.upload_url }}
-        upload_url: https://github.com/tomtsagk/avdl/release/tag/v0.5.0
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: avdl_build_linux.zip
         asset_name: avdl_build_linux.zip
         asset_content_type: application/gzip
@@ -314,8 +313,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
-        #upload_url: ${{ steps.create_release.outputs.upload_url }}
-        upload_url: https://github.com/tomtsagk/avdl/release/tag/v0.5.0
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: avdl_build_windows.zip
         asset_name: avdl_build_windows.zip
         asset_content_type: application/gzip
