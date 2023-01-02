@@ -200,8 +200,8 @@ jobs:
         mkdir avdl_dependencies_linux/lib
         ls ${HOME}/AVDL_DEPENDENCIES/lib*/lib*
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* avdl_dependencies_linux/lib
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2.so avdl_dependencies_linux/lib
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2_mixer.so avdl_dependencies_linux/lib
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2.so avdl_dependencies_linux/lib
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2_mixer.so avdl_dependencies_linux/lib
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* avdl_dependencies_linux/lib
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* avdl_dependencies_linux/lib
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* avdl_dependencies_linux/lib
@@ -216,6 +216,7 @@ jobs:
         wget ${steamworks_api_link} --quiet
         unzip steamworks_sdk.zip
         mv sdk avdl_dependencies_linux/steamworks
+        ls avdl_dependencies_linux
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_linux
