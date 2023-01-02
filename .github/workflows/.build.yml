@@ -114,20 +114,20 @@ jobs:
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
         cd libpng
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+        ./configure --prefix=AVDL_DEPENDENCIES
         make -j6
         make -j6 install
         ./configure
         make -j6
         sudo make -j6 install
         cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libpng.so avdl_dependencies_linux/lib
+        cp AVDL_DEPENDENCIES/lib/libpng.so avdl_dependencies_linux/lib
     - name: ogg - linux
       run: |
         git clone https://gitlab.xiph.org/xiph/ogg.git ogg
         cd ogg
         ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+        ./configure --prefix=AVDL_DEPENDENCIES
         make -j6
         make -j6 install
         ./autogen.sh
@@ -135,13 +135,13 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libogg.so avdl_dependencies_linux/lib
+        cp AVDL_DEPENDENCIES/lib/libogg.so avdl_dependencies_linux/lib
     - name: vorbis - linux
       run: |
         git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis
         cd vorbis
         ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+        ./configure --prefix=AVDL_DEPENDENCIES
         make
         make install
         cd ..
@@ -159,7 +159,7 @@ jobs:
         git clone https://gitlab.xiph.org/xiph/opus.git opus
         cd opus
         ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+        ./configure --prefix=AVDL_DEPENDENCIES
         make
         make install
         ./autogen.sh
@@ -167,32 +167,32 @@ jobs:
         make
         sudo make install
         cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libopus.so avdl_dependencies_linux/lib
+        cp AVDL_DEPENDENCIES/lib/libopus.so avdl_dependencies_linux/lib
     - name: opusfile - linux
       run: |
-        export PKG_CONFIG_PATH=${HOME}/AVDL_DEPENDENCIES
+        export PKG_CONFIG_PATH=AVDL_DEPENDENCIES
         git clone https://gitlab.xiph.org/xiph/opusfile.git opusfile
         cd opusfile
         ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
+        ./configure --prefix=AVDL_DEPENDENCIES
         make -j6
         sudo make -j6 install
         cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libopusfile.so avdl_dependencies_linux/lib
+        cp AVDL_DEPENDENCIES/lib/libopusfile.so avdl_dependencies_linux/lib
     - name: sdl - linux
       run: |
-        export C_INCLUDE_PATH=${HOME}/AVDL_DEPENDENCIES/include
-        export LIBRARY_PATH=${HOME}/AVDL_DEPENDENCIES/lib:${HOME}/AVDL_DEPENDENCIES/lib64
+        export C_INCLUDE_PATH=AVDL_DEPENDENCIES/include
+        export LIBRARY_PATH=AVDL_DEPENDENCIES/lib:AVDL_DEPENDENCIES/lib64
         git clone https://github.com/libsdl-org/SDL SDL
         cd SDL
         git checkout release-$SDL_VERSION
         mkdir build
         cd build
-        ../configure --prefix=${HOME}/AVDL_DEPENDENCIES
+        ../configure --prefix=AVDL_DEPENDENCIES
         make -j6
         make -j6 install
         cd ../..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2.so avdl_dependencies_linux/lib
+        cp AVDL_DEPENDENCIES/lib/libSDL2.so avdl_dependencies_linux/lib
     - name: sdl_mixer - linux
       run: |
         git clone https://github.com/libsdl-org/SDL_mixer SDL_mixer
@@ -200,11 +200,11 @@ jobs:
         git checkout release-$SDL_MIXER_VERSION
         mkdir build
         cd build
-        ../configure --prefix=${HOME}/AVDL_DEPENDENCIES --enable-music-ogg-vorbis
+        ../configure --prefix=AVDL_DEPENDENCIES --enable-music-ogg-vorbis
         make -j6
         make -j6 install
         cd ../..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2_mixer.so avdl_dependencies_linux/lib
+        cp AVDL_DEPENDENCIES/lib/libSDL2_mixer.so avdl_dependencies_linux/lib
     - name: glew - linux
       run: |
         git clone https://github.com/nigels-com/glew glew
@@ -213,10 +213,10 @@ jobs:
         cd auto
         make
         cd ..
-        make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
-        make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
+        make GLEW_DEST=AVDL_DEPENDENCIES
+        make GLEW_DEST=AVDL_DEPENDENCIES install
         cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib64/libGLEW.so avdl_dependencies_linux/lib
+        cp AVDL_DEPENDENCIES/lib64/libGLEW.so avdl_dependencies_linux/lib
     - name: steamworks
       env:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
@@ -231,7 +231,7 @@ jobs:
         mv sdk/public/steam/*.h avdl_dependencies_linux/include
     - name: collect_dependencies
       run: |
-        cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/include
+        cp -d -r AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/include
         ls avdl_dependencies_linux/lib
         ls -lh avdl_dependencies_linux/lib
     - uses: actions/upload-artifact@v3
