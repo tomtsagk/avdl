@@ -181,7 +181,7 @@ jobs:
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
-        cp -d ${HOME}/AVDL_DEPENDENCIES/lib64/libGLEW.so avdl_dependencies_linux/lib
+        cp ${HOME}/AVDL_DEPENDENCIES/lib64/libGLEW.so avdl_dependencies_linux/lib
     - name: sdl - windows
       run: |
         mkdir ${HOME}/sdl_windows
@@ -207,8 +207,6 @@ jobs:
       env:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
       run: |
-        #cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* avdl_dependencies_linux/lib
-        #cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libpng*.so* avdl_dependencies_linux/lib
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/sdl_windows/SDL2-2.0.22/include/* avdl_dependencies_linux/include
         cp -d -r ${HOME}/sdl_windows/SDL2-2.0.22/lib/* avdl_dependencies_linux/lib
