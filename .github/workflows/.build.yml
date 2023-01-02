@@ -68,6 +68,8 @@ jobs:
       shell: bash
       run: |
         mkdir avdl_dependencies_windows
+        mkdir avdl_dependencies_windows/include
+        mkdir avdl_dependencies_windows/lib
         cp -r "C:/Program Files/zlib" avdl_dependencies_windows
         cp -r "C:/Program Files/libpng" avdl_dependencies_windows
         cp -r "C:/Program Files/avdL_sdl2/SDL2-2.0.22/include/"* avdl_dependencies_windows/include
