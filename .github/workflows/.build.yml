@@ -304,7 +304,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        #upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: https://github.com/tomtsagk/avdl/release/tag/v0.5.0
         asset_path: avdl_build_linux.zip
         asset_name: avdl_build_linux.zip
         asset_content_type: application/gzip
@@ -313,7 +314,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        #upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: https://github.com/tomtsagk/avdl/release/tag/v0.5.0
         asset_path: avdl_build_windows.zip
         asset_name: avdl_build_windows.zip
         asset_content_type: application/gzip
