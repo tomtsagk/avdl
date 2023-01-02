@@ -70,6 +70,11 @@ jobs:
          sudo apt install -y libssl-dev
          # read opus files
          sudo apt install -y libopusfile-dev
+    - name: prepare directories
+      run: |
+        mkdir avdl_dependencies_linux
+        mkdir avdl_dependencies_linux/include
+        mkdir avdl_dependencies_linux/lib
     - name: libpng - linux
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
@@ -148,6 +153,7 @@ jobs:
         make -j6
         make -j6 install
         cd ../..
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2.so avdl_dependencies_linux/lib
     - name: sdl_mixer - linux
       run: |
         git clone https://github.com/libsdl-org/SDL_mixer SDL_mixer
@@ -159,6 +165,7 @@ jobs:
         make -j6
         make -j6 install
         cd ../..
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2_mixer.so avdl_dependencies_linux/lib
     - name: glew - linux
       run: |
         git clone https://github.com/nigels-com/glew glew
@@ -195,13 +202,11 @@ jobs:
       env:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
       run: |
-        mkdir avdl_dependencies_linux
-        mkdir avdl_dependencies_linux/include
-        mkdir avdl_dependencies_linux/lib
-        ls ${HOME}/AVDL_DEPENDENCIES/lib*/lib*
+        #mkdir avdl_dependencies_linux
+        #mkdir avdl_dependencies_linux/include
+        #mkdir avdl_dependencies_linux/lib
+        #ls ${HOME}/AVDL_DEPENDENCIES/lib*/lib*
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libGLEW.so* avdl_dependencies_linux/lib
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2.so avdl_dependencies_linux/lib
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2_mixer.so avdl_dependencies_linux/lib
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopus.so* avdl_dependencies_linux/lib
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libogg.so* avdl_dependencies_linux/lib
         cp -d ${HOME}/AVDL_DEPENDENCIES/lib*/libopusfile.so* avdl_dependencies_linux/lib
@@ -216,7 +221,7 @@ jobs:
         wget ${steamworks_api_link} --quiet
         unzip steamworks_sdk.zip
         mv sdk avdl_dependencies_linux/steamworks
-        ls avdl_dependencies_linux
+        ls avdl_dependencies_linux/lib
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_linux
