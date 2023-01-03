@@ -272,7 +272,7 @@ jobs:
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
     - uses: actions/upload-artifact@v3
       with:
-        name: avdl_${{ github.ref }}_linux
+        name: avdl_build_linux
         path: AVDL_BUILD
   build_windows:
     runs-on: windows-latest
@@ -299,7 +299,7 @@ jobs:
         path: build/AVDL_BUILD/dependencies
     - uses: actions/upload-artifact@v3
       with:
-        name: avdl_${{ github.ref }}_windows
+        name: avdl_build_windows
         path: build/AVDL_BUILD
   create_release:
     runs-on: ubuntu-latest
@@ -307,11 +307,11 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_${{ github.ref }}_linux
+        name: avdl_build_linux
         path: avdl_build_linux
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_${{ github.ref }}_windows
+        name: avdl_build_windows
         path: avdl_build_windows
     - name: zip packages
       run: |
@@ -338,7 +338,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: avdl_build_linux.zip
-        asset_name: avdl_build_linux.zip
+        asset_name: avdl_${{ github.ref }}_linux.zip
         asset_content_type: application/gzip
     - name: upload windows artifact
       uses: actions/upload-release-asset@v1
@@ -347,5 +347,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: avdl_build_windows.zip
-        asset_name: avdl_build_windows.zip
+        asset_name: avdl_${{ github.ref }}_windows.zip
         asset_content_type: application/gzip
