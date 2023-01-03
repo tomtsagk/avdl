@@ -159,10 +159,10 @@ jobs:
         mv sdk/redistributable_bin/steam_api.lib avdl_dependencies_linux/linux/lib
         mv sdk/redistributable_bin/win64/steam_api64.dll avdl_dependencies_linux/linux/lib
         mv sdk/redistributable_bin/win64/steam_api64.lib avdl_dependencies_linux/linux/lib
-        mv sdk/public/steam/*.h avdl_dependencies_linux/linux/include
+        cp sdk/public/steam/*.h avdl_dependencies_linux/linux/include
         mkdir avdl_dependencies_linux/windows
         mkdir avdl_dependencies_linux/windows/include
-        cp avdl_dependencies_linux/linux/include avdl_dependencies_linux/windows/include
+        cp sdk/public/steam/*.h avdl_dependencies_linux/windows/include
     - name: collect_dependencies
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/linux/include
