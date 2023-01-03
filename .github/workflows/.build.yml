@@ -155,10 +155,10 @@ jobs:
         wget ${steamworks_api_link} --quiet
         unzip steamworks_sdk.zip
         mv sdk/redistributable_bin/linux64/libsteam_api.so avdl_dependencies_linux/linux/lib
-        mv sdk/redistributable_bin/steam_api.dll avdl_dependencies_linux/linux/lib
-        mv sdk/redistributable_bin/steam_api.lib avdl_dependencies_linux/linux/lib
-        mv sdk/redistributable_bin/win64/steam_api64.dll avdl_dependencies_linux/linux/lib
-        mv sdk/redistributable_bin/win64/steam_api64.lib avdl_dependencies_linux/linux/lib
+        mv sdk/redistributable_bin/steam_api.dll avdl_dependencies_linux/windows/lib
+        mv sdk/redistributable_bin/steam_api.lib avdl_dependencies_linux/windows/lib
+        mv sdk/redistributable_bin/win64/steam_api64.dll avdl_dependencies_linux/windows/lib
+        mv sdk/redistributable_bin/win64/steam_api64.lib avdl_dependencies_linux/windows/lib
         cp sdk/public/steam/*.h avdl_dependencies_linux/linux/include
         mkdir avdl_dependencies_linux/windows
         mkdir avdl_dependencies_linux/windows/include
@@ -166,8 +166,6 @@ jobs:
     - name: collect_dependencies
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/linux/include
-        ls avdl_dependencies_linux/linux/lib
-        ls -lh avdl_dependencies_linux/linux/lib
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_linux
@@ -267,7 +265,6 @@ jobs:
         path: AVDL_BUILD/dependencies
     - name: build & package avdl
       run: |
-        ls -R
         make -j6 prefix=AVDL_BUILD/ CC=gcc
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
     - uses: actions/upload-artifact@v3
