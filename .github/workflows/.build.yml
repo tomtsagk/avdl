@@ -299,7 +299,7 @@ jobs:
         path: build/AVDL_BUILD/dependencies
     - uses: actions/upload-artifact@v3
       with:
-        name: avdl_build_windows
+        name: avdl_${{ github.ref }}_windows
         path: build/AVDL_BUILD
   create_release:
     runs-on: ubuntu-latest
@@ -307,11 +307,11 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_linux
+        name: avdl_${{ github.ref }}_linux
         path: avdl_build_linux
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_windows
+        name: avdl_${{ github.ref }}_windows
         path: avdl_build_windows
     - name: zip packages
       run: |
@@ -325,8 +325,8 @@ jobs:
       with:
         draft: true
         prerelease: false
-#        release_name: ${{ steps.version.outputs.version }}
-        release_name: test_release
+        release_name: ${{ steps.version.outputs.version }}
+#        release_name: test_release
         tag_name: ${{ github.ref }}
 #        body_path: CHANGELOG.md
       env:
