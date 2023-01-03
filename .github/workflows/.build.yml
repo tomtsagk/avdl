@@ -6,6 +6,8 @@ on:
       - develop
       - master
       - feature/improve_github_builds
+    tags:
+      "v[0-9]+.[0-9]+.[0-9]+"
   pull_request:
     branches:
       - develop
@@ -270,7 +272,7 @@ jobs:
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
     - uses: actions/upload-artifact@v3
       with:
-        name: avdl_build_linux
+        name: avdl_${{ github.ref }}_linux
         path: AVDL_BUILD
   build_windows:
     runs-on: windows-latest
@@ -317,6 +319,7 @@ jobs:
          zip avdl_build_linux.zip avdl_build_linux -r
          zip avdl_build_windows.zip avdl_build_windows -r
     - name: create release
+      if: ${{ github.ref_type == 'tag' }}
       uses: actions/create-release@v1
       id: create_release
       with:
