@@ -302,6 +302,7 @@ jobs:
         name: avdl_build_windows
         path: build/AVDL_BUILD
   create_release:
+    if: ${{ github.ref_type == 'tag' }}
     runs-on: ubuntu-latest
     needs: [build_linux, build_windows]
     steps:
