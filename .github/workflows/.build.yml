@@ -41,6 +41,9 @@ jobs:
         mkdir avdl_dependencies_linux/linux
         mkdir avdl_dependencies_linux/linux/lib
         mkdir avdl_dependencies_linux/linux/include
+        mkdir avdl_dependencies_linux/windows
+        mkdir avdl_dependencies_linux/windows/lib
+        mkdir avdl_dependencies_linux/windows/include
     - name: libpng - linux
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
@@ -160,8 +163,6 @@ jobs:
         mv sdk/redistributable_bin/win64/steam_api64.dll avdl_dependencies_linux/windows/lib
         mv sdk/redistributable_bin/win64/steam_api64.lib avdl_dependencies_linux/windows/lib
         cp sdk/public/steam/*.h avdl_dependencies_linux/linux/include
-        mkdir avdl_dependencies_linux/windows
-        mkdir avdl_dependencies_linux/windows/include
         cp sdk/public/steam/*.h avdl_dependencies_linux/windows/include
     - name: collect_dependencies
       run: |
