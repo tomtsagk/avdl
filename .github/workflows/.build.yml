@@ -320,7 +320,6 @@ jobs:
          zip avdl_build_linux.zip avdl_build_linux -r
          zip avdl_build_windows.zip avdl_build_windows -r
     - name: create release
-      if: ${{ github.ref_type == 'tag' }}
       uses: actions/create-release@v1
       id: create_release
       with:
@@ -333,7 +332,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
     - name: upload linux artifact
-      if: ${{ github.ref_type == 'tag' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -343,7 +341,6 @@ jobs:
         asset_name: avdl_${{ github.ref }}_linux.zip
         asset_content_type: application/gzip
     - name: upload windows artifact
-      if: ${{ github.ref_type == 'tag' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ github.token }}
