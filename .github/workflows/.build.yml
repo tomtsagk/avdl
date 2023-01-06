@@ -156,8 +156,8 @@ jobs:
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
         cp ${HOME}/AVDL_DEPENDENCIES/lib64/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib
-        ln -s avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
-        ln -s avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_LINKER_NAME}
+        #ln -s avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
+        #ln -s avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_LINKER_NAME}
     - name: steamworks
       env:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
@@ -175,11 +175,10 @@ jobs:
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/linux/include
         ls avdl_dependencies_linux/linux/lib
-        tar czf avdl_dependencies_linux.tar.gz avdl_dependencies_linux
     - uses: actions/upload-artifact@v3
       with:
-        name: avdl_dependencies_linux.tar.gz
-        path: avdl_dependencies_linux.tar.gz
+        name: avdl_dependencies_linux
+        path: avdl_dependencies_linux
   dependencies_windows:
     runs-on: windows-latest
     steps:
@@ -267,22 +266,16 @@ jobs:
       uses: actions/checkout@v1
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_dependencies_linux.tar.gz
+        name: avdl_dependencies_linux
         path: AVDL_BUILD/dependencies
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_windows
         path: AVDL_BUILD/dependencies
-    - name: prepare dependencies
-      run: |
-        cd AVDL_BUILD/dependencies
-        tar xzf avdl_dependencies_linux.tar.gz
-        rm avdl_dependencies_linux.tar.gz
     - name: build & package avdl
       run: |
         make -j6 prefix=AVDL_BUILD/ CC=gcc
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
-        ls AVDL_BUILD/dependencies
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_build_linux
@@ -304,18 +297,12 @@ jobs:
         cd ..
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_dependencies_linux.tar.gz
+        name: avdl_dependencies_linux
         path: build/AVDL_BUILD/dependencies
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_windows
         path: build/AVDL_BUILD/dependencies
-    - name: prepare dependencies
-      shell: bash
-      run: |
-        cd build/AVDL_BUILD/dependencies
-        tar xzf avdl_dependencies_linux.tar.gz
-        rm avdl_dependencies_linux.tar.gz
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_build_windows
