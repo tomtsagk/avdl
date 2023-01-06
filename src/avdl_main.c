@@ -934,7 +934,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			//strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
-			strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -l:libGLEW.so.2.2.0");
+			strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -l:libGLEW.so.2.2");
 			if (avdlSteamMode) {
 				strcat(buffer, " -lsteam_api ");
 			}
