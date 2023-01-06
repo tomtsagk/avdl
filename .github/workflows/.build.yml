@@ -175,10 +175,11 @@ jobs:
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/linux/include
         ls avdl_dependencies_linux/linux/lib
+        tar cf avdl_dependencies_linux.tar avdl_dependencies_linux
     - uses: actions/upload-artifact@v3
       with:
-        name: avdl_dependencies_linux
-        path: avdl_dependencies_linux
+        name: avdl_dependencies_linux.tar
+        path: avdl_dependencies_linux.tar
   dependencies_windows:
     runs-on: windows-latest
     steps:
@@ -266,7 +267,7 @@ jobs:
       uses: actions/checkout@v1
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_dependencies_linux
+        name: avdl_dependencies_linux.tar
         path: AVDL_BUILD/dependencies
     - uses: actions/download-artifact@v3
       with:
@@ -276,6 +277,7 @@ jobs:
       run: |
         make -j6 prefix=AVDL_BUILD/ CC=gcc
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
+        ls AVDL_BUILD/dependencies
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_build_linux
@@ -297,7 +299,7 @@ jobs:
         cd ..
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_dependencies_linux
+        name: avdl_dependencies_linux.tar
         path: build/AVDL_BUILD/dependencies
     - uses: actions/download-artifact@v3
       with:
