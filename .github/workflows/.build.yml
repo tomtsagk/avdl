@@ -175,11 +175,11 @@ jobs:
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/linux/include
         ls avdl_dependencies_linux/linux/lib
-        tar cf avdl_dependencies_linux.tar avdl_dependencies_linux
+        tar czf avdl_dependencies_linux.tar.gz avdl_dependencies_linux
     - uses: actions/upload-artifact@v3
       with:
-        name: avdl_dependencies_linux.tar
-        path: avdl_dependencies_linux.tar
+        name: avdl_dependencies_linux.tar.gz
+        path: avdl_dependencies_linux.tar.gz
   dependencies_windows:
     runs-on: windows-latest
     steps:
@@ -267,12 +267,17 @@ jobs:
       uses: actions/checkout@v1
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_dependencies_linux.tar
+        name: avdl_dependencies_linux.tar.gz
         path: AVDL_BUILD/dependencies
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_windows
         path: AVDL_BUILD/dependencies
+    - name: prepare dependencies
+      run: |
+        cd AVDL_BUILD/dependencies
+        tar xzf avdl_dependencies_linux.tar.gz
+        rm avdl_dependencies_linux.tar.gz
     - name: build & package avdl
       run: |
         make -j6 prefix=AVDL_BUILD/ CC=gcc
@@ -299,12 +304,18 @@ jobs:
         cd ..
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_dependencies_linux.tar
+        name: avdl_dependencies_linux.tar.gz
         path: build/AVDL_BUILD/dependencies
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_windows
         path: build/AVDL_BUILD/dependencies
+    - name: prepare dependencies
+      shell: bash
+      run: |
+        cd build/AVDL_BUILD/dependencies
+        tar xzf avdl_dependencies_linux.tar.gz
+        rm avdl_dependencies_linux.tar.gz
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_build_windows
