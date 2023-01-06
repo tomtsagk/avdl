@@ -20,8 +20,8 @@ env:
   SDL_MIXER_VERSION_WINDOWS: 2.6.0
   GLEW_VERSION_LINUX: 2.2.0
   GLEW_VERSION_LINUX_LINKER_NAME: libGLEW.so
-  GLEW_VERSION_LINUX_SONAME: libGLEW.so.2
-  GLEW_VERSION_LINUX_REAL_NAME: libGLEW.so.2.2
+  GLEW_VERSION_LINUX_SONAME: libGLEW.so.2.2
+  GLEW_VERSION_LINUX_REAL_NAME: libGLEW.so.2.2.0
   GLEW_VERSION_WINDOWS: 2.2.0
   ZLIB_VERSION_WINDOWS: 1.2.13
 
@@ -156,7 +156,7 @@ jobs:
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
         ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib64/
-        cp ${HOME}/AVDL_DEPENDENCIES/lib64/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib
+        cp ${HOME}/AVDL_DEPENDENCIES/lib64/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
         #ln -s avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
         #ln -s avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_LINKER_NAME}
     - name: steamworks
