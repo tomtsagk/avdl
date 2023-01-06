@@ -18,7 +18,13 @@ env:
   SDL_VERSION_WINDOWS: 2.0.22
   SDL_MIXER_VERSION_LINUX: 2.0.4
   SDL_MIXER_VERSION_WINDOWS: 2.6.0
-  GLEW_VERSION_LINUX: 2.2.0
+  GLEW_VERSION_LINUX_MAJOR: 2
+  GLEW_VERSION_LINUX_MINOR: 2
+  GLEW_VERSION_LINUX_PATCH: 0
+  GLEW_VERSION_LINUX: ${GLEW_VERSION_LINUX_MAJOR}.${GLEW_VERSION_LINUX_MINOR}.${GLEW_VERSION_LINUX_PATCH}
+  GLEW_VERSION_LINUX_LINKER_NAME: libGLEW.so
+  GLEW_VERSION_LINUX_SONAME: ${GLEW_VERSION_LINUX_LINKER_NAME}.${GLEW_VERSION_LINUX_MAJOR}
+  GLEW_VERSION_LINUX_REAL_NAME: ${GLEW_VERSION_LINUX_SONAME}.${GLEW_VERSION_LINUX_MINOR}
   GLEW_VERSION_WINDOWS: 2.2.0
   ZLIB_VERSION_WINDOWS: 1.2.13
 
@@ -152,7 +158,9 @@ jobs:
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib64/libGLEW.so avdl_dependencies_linux/linux/lib
+        cp ${HOME}/AVDL_DEPENDENCIES/lib64/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib
+        ln -s avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
+        ln -s avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_LINKER_NAME}
     - name: steamworks
       env:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
@@ -169,6 +177,7 @@ jobs:
     - name: collect_dependencies
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/linux/include
+        ls avdl_dependencies_linux/linux/lib
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_linux
