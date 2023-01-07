@@ -98,6 +98,7 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
+        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${PNG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${PNG_VERSION_LINUX_SONAME}
     - name: ogg - linux
       run: |
@@ -113,6 +114,7 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
+        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${OGG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OGG_VERSION_LINUX_SONAME}
     - name: vorbis - linux
       run: |
@@ -124,6 +126,7 @@ jobs:
         make
         make install
         cd ..
+        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${VORBIS_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${VORBIS_VERSION_LINUX_SONAME}
     - name: vorbis2 - linux
       run: |
@@ -149,8 +152,8 @@ jobs:
         make
         sudo make install
         cd ..
+        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${OPUS_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OPUS_VERSION_LINUX_SONAME}
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/${OPUSFILE_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OPUSFILE_VERSION_LINUX_SONAME}
     - name: opusfile - linux
       run: |
         export PKG_CONFIG_PATH=${HOME}/AVDL_DEPENDENCIES
@@ -161,7 +164,8 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libopusfile.so avdl_dependencies_linux/linux/lib
+        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/${OPUSFILE_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OPUSFILE_VERSION_LINUX_SONAME}
     - name: sdl - linux
       run: |
         export C_INCLUDE_PATH=${HOME}/AVDL_DEPENDENCIES/include
@@ -175,6 +179,7 @@ jobs:
         make -j6
         make -j6 install
         cd ../..
+        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${SDL_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_VERSION_LINUX_SONAME}
     - name: sdl_mixer - linux
       run: |
@@ -187,6 +192,7 @@ jobs:
         make -j6
         make -j6 install
         cd ../..
+        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${SDL_MIXER_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_MIXER_VERSION_LINUX_SONAME}
     - name: glew - linux
       run: |
