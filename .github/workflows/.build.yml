@@ -64,7 +64,8 @@ env:
 
 jobs:
   dependencies_linux:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - name: update packages
       run: |
