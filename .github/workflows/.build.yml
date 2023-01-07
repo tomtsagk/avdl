@@ -15,8 +15,14 @@ on:
 
 env:
   SDL_VERSION_LINUX: 2.0.20
+  SDL_VERSION_LINUX_LINKER_NAME: libSDL2.so
+  SDL_VERSION_LINUX_SONAME: libSDL2-2.0.so.0
+  SDL_VERSION_LINUX_REAL_NAME: libSDL2-2.0.so.0.18.2
   SDL_VERSION_WINDOWS: 2.0.22
   SDL_MIXER_VERSION_LINUX: 2.0.4
+  SDL_MIXER_VERSION_LINUX_LINKER_NAME: libSDL2_mixer.so
+  SDL_MIXER_VERSION_LINUX_SONAME: libSDL2_mixer-2.0.so.0
+  SDL_MIXER_VERSION_LINUX_REAL_NAME: libSDL2_mixer-2.0.so.0.2.2
   SDL_MIXER_VERSION_WINDOWS: 2.6.0
   GLEW_VERSION_LINUX: 2.2.0
   GLEW_VERSION_LINUX_LINKER_NAME: libGLEW.so
@@ -131,7 +137,7 @@ jobs:
         make -j6
         make -j6 install
         cd ../..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2.so avdl_dependencies_linux/linux/lib
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/${SDL_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_VERSION_LINUX_SONAME}
     - name: sdl_mixer - linux
       run: |
         git clone https://github.com/libsdl-org/SDL_mixer SDL_mixer
@@ -143,7 +149,7 @@ jobs:
         make -j6
         make -j6 install
         cd ../..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/libSDL2_mixer.so avdl_dependencies_linux/linux/lib
+        cp ${HOME}/AVDL_DEPENDENCIES/lib/${SDL_MIXER_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_MIXER_VERSION_LINUX_SONAME}
     - name: glew - linux
       run: |
         git clone https://github.com/nigels-com/glew glew
@@ -157,8 +163,6 @@ jobs:
         cd ..
         ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib64/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
-        #ln -s avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
-        #ln -s avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_LINKER_NAME}
     - name: steamworks
       env:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
