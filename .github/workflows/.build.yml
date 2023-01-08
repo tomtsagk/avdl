@@ -306,7 +306,7 @@ jobs:
         name: avdl_dependencies_windows
         path: avdl_dependencies_windows
   build_linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [dependencies_windows, dependencies_linux]
     steps:
     - name: update packages
@@ -359,7 +359,7 @@ jobs:
         path: build/AVDL_BUILD
   create_release:
     if: ${{ github.ref_type == 'tag' }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     needs: [build_linux, build_windows]
     steps:
     - uses: actions/download-artifact@v3
