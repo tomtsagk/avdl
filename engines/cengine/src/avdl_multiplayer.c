@@ -41,6 +41,7 @@ void avdl_multiplayer_sendMessage_internal(struct avdl_multiplayer *o, int playe
 }
 
 int avdl_multiplayer_receiveMessages(struct avdl_multiplayer *o) {
+	return 0;
 }
 
 void avdl_multiplayer_leaveLobby(struct avdl_multiplayer *o, void (*callback)(void)) {
@@ -81,4 +82,14 @@ int avdl_multiplayer_getFriendCount(struct avdl_multiplayer *o) {
 
 const char *avdl_multiplayer_getFriendNameIndex(struct avdl_multiplayer *o, int index) {
 	return "";
+}
+
+void *avdl_multiplayer_getMessageData(struct avdl_multiplayer *o) {
+	return 0;
+}
+
+void avdl_multiplayer_sendMessageToHost_internal(struct avdl_multiplayer *o, void *data, size_t dataSize) {
+}
+
+void avdl_multiplayer_releaseMessage(struct avdl_multiplayer *o) {
 }

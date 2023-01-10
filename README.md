@@ -20,19 +20,19 @@ These are games made by me, using `avdl`, to get an idea of what
 the language can do.
 
 * Rue -
-[Itch.io](https://darkdimension.itch.io/rue.html) |
+[Itch.io](https://afloofdev.itch.io/rue.html) |
 [GameJolt](https://gamejolt.com/games/rue/632453) |
 [Google Play](https://play.google.com/store/apps/details?id=org.darkdimension.rue)
 
 * The king is gone -
 [Steam](https://store.steampowered.com/app/1468820/) |
-[Itch.io](https://darkdimension.itch.io/the-king-is-gone) |
+[Itch.io](https://afloofdev.itch.io/the-king-is-gone) |
 [GameJolt](https://gamejolt.com/games/the-king-is-gone/518056) |
 [Google Play](https://play.google.com/store/apps/details?id=org.darkdimension.the_king_is_gone)
 
 * Shuffled Nightmares -
 [Steam](https://store.steampowered.com/app/1289510/) |
-[Itch.io](https://darkdimension.itch.io/shuffled-nightmares) |
+[Itch.io](https://afloofdev.itch.io/shuffled-nightmares) |
 [GameJolt](https://gamejolt.com/games/shuffled_nightmares/484001) |
 [Google Play](https://play.google.com/store/apps/details?id=org.darkdimension.shuffled_nightmares)
 
@@ -142,7 +142,7 @@ value like below:
 ## Documentation
 
 There is a new tutorial that explains the basics here:
-[https://darkdimension.org/avdl.html](https://darkdimension.org/avdl.html)
+[https://afloofdev.com/avdl.html](https://afloofdev.com/avdl.html)
 
 For how to use `avdl` through the command line, together
 with arguments, see the man page at `manual/avdl.1`. You can do
