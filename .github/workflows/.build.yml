@@ -295,7 +295,7 @@ jobs:
         mkdir avdl_dependencies_windows/windows/lib
         cp -r "C:/Program Files/zlib" avdl_dependencies_windows/windows
         cp -r "C:/Program Files/libpng" avdl_dependencies_windows/windows
-        cp -r "C:/Program Files/avdL_sdl2/SDL2-${SDL_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
+        cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
         cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/windows/lib
         cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
         cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/windows/lib
