@@ -50,6 +50,7 @@ int create_android_directory(const char *androidDirName);
 int avdlSteamMode = 0;
 
 int avdlQuietMode = 0;
+int avdlStandalone = 0;
 
 struct cengine_file_structure {
 	const char *main;
@@ -87,6 +88,7 @@ struct cengine_file_structure cengine_files[] = {
 	{"avdl_steam.c", "avdl_steam_cpp.cpp"},
 	{0, "main_cpp.cpp"},
 	{"avdl_achievements.c", "avdl_achievements_steam.cpp"},
+	{"avdl_multiplayer.c", "avdl_multiplayer_steam.cpp"},
 };
 unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(struct cengine_file_structure);
 
@@ -122,6 +124,7 @@ char *cengine_headers[] = {
 	"dd_vec4.h",
 	"dd_world.h",
 	"avdl_achievements.h",
+	"avdl_multiplayer.h",
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 
@@ -319,6 +322,10 @@ int main(int argc, char *argv[]) {
 				else
 				if (strcmp(argv[i], "--steam") == 0) {
 					avdlSteamMode = 1;
+				}
+				else
+				if (strcmp(argv[i], "--standalone") == 0) {
+					avdlStandalone = 1;
 				}
 				// unknown double dash argument
 				else {
@@ -931,11 +938,17 @@ int main(int argc, char *argv[]) {
 				strcat(buffer, additionalLibDirectory[i]);
 			}
 
-			strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+			if (avdlStandalone) {
+				strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libopus.so.0 -l:libopusfile.so.0 -l:libpng16.so.16 -w -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
+			}
+			else {
+				strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+			}
+
 			if (avdlSteamMode) {
 				strcat(buffer, " -lsteam_api ");
 			}
-			//printf("link command: %s\n", buffer);
+			printf("link command: %s\n", buffer);
 			if (system(buffer)) {
 				printf("avdl: error linking files\n");
 				exit(-1);

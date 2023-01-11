@@ -218,8 +218,9 @@ int dd_main(int argc, char *argv[]) {
 
 	if (!avdl_verify) {
 		// Initialise SDL window
-		int sdlError = SDL_Init(SDL_INIT_EVERYTHING);
-		if (sdlError) {
+		//int sdlError = SDL_Init(SDL_INIT_EVERYTHING);
+		int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+		if (sdlError < 0) {
 			dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
 			return -1;
 		}
@@ -352,6 +353,22 @@ int dd_main(int argc, char *argv[]) {
 				case SDL_KEYDOWN:
 					if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
 						handleKeyboardPress(27, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_A) {
+						handleKeyboardPress(97, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_D) {
+						handleKeyboardPress(100, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_W) {
+						handleKeyboardPress(119, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_S) {
+						handleKeyboardPress(115, 0, 0);
 					}
 					break;
 			}

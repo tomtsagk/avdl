@@ -8,6 +8,20 @@ float dd_math_dec2rad(float dec) { return dec *3.14 /180; }
 int dd_math_rand(int to) { return rand() %to; }
 float dd_math_randf(float to) { return ((float) rand() /(float) RAND_MAX) *to; }
 
+static unsigned int pseudo_seed = 100;
+
+int dd_math_randPseudoSetSeed(int seed) {
+	pseudo_seed = seed;
+}
+
+int dd_math_randPseudo(int to) {
+	int a = 1103515245;
+	int c = 12345;
+	int m = 1000000;
+	pseudo_seed = (a *pseudo_seed +c) %m;
+	return pseudo_seed %to;
+}
+
 //float dd_math_tan(float val) {return tan(val);}
 
 float dd_math_ease_catmullrom(float t, float p0, float p1, float p2, float p3) {

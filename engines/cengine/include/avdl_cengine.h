@@ -28,5 +28,6 @@
 #include "avdl_localisation.h"
 #include "avdl_steam.h"
 #include "avdl_achievements.h"
+#include "avdl_multiplayer.h"
 
 int dd_main(int argc, char *argv[]);

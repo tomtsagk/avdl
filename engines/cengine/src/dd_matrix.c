@@ -233,10 +233,10 @@ void dd_matrix_print(struct dd_matrix *m) {
 	int i;
 	for (i = 0; i < 16; i += 4) {
 		dd_log("%f %f %f %f",
-			m->cell[(i *4) +0],
-			m->cell[(i *4) +1],
-			m->cell[(i *4) +2],
-			m->cell[(i *4) +3]
+			m->cell[(i) +0],
+			m->cell[(i) +1],
+			m->cell[(i) +2],
+			m->cell[(i) +3]
 		);
 
 		if ((i -3) % 4 == 0) {
