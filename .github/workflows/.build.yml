@@ -63,10 +63,16 @@ env:
 
 jobs:
   dependencies_linux:
-    #runs-on: ubuntu-latest
     runs-on: ubuntu-20.04
     steps:
+    - name: cache
+      id: cache
+      uses: actions/cache@v3
+      with:
+        key: avdl_dependencies_linux_v0
+        path: avdl_dependencies_linux
     - name: update packages
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
          sudo apt update && sudo apt install -y gcc pkg-config ca-certificates
          # sdl and sdl_mixer deps
@@ -78,6 +84,7 @@ jobs:
          # read opus files
          sudo apt install -y libopusfile-dev
     - name: prepare directories
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         mkdir avdl_dependencies_linux
         mkdir avdl_dependencies_linux/linux
@@ -87,6 +94,7 @@ jobs:
         mkdir avdl_dependencies_linux/windows/lib
         mkdir avdl_dependencies_linux/windows/include
     - name: libpng - linux
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
         cd libpng
@@ -101,6 +109,7 @@ jobs:
         ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${PNG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${PNG_VERSION_LINUX_SONAME}
     - name: ogg - linux
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         git clone https://gitlab.xiph.org/xiph/ogg.git ogg
         cd ogg
@@ -117,6 +126,7 @@ jobs:
         ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${OGG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OGG_VERSION_LINUX_SONAME}
     - name: vorbis - linux
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis
         cd vorbis
@@ -129,6 +139,7 @@ jobs:
         ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${VORBIS_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${VORBIS_VERSION_LINUX_SONAME}
     - name: vorbis2 - linux
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis2
         cd vorbis2
@@ -139,6 +150,7 @@ jobs:
         sudo make install
         cd ..
     - name: opus - linux
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         git clone https://gitlab.xiph.org/xiph/opus.git opus
         cd opus
@@ -155,6 +167,7 @@ jobs:
         ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${OPUS_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OPUS_VERSION_LINUX_SONAME}
     - name: opusfile - linux
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         export PKG_CONFIG_PATH=${HOME}/AVDL_DEPENDENCIES
         git clone https://gitlab.xiph.org/xiph/opusfile.git opusfile
@@ -167,6 +180,7 @@ jobs:
         ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${OPUSFILE_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OPUSFILE_VERSION_LINUX_SONAME}
     - name: sdl - linux
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         export C_INCLUDE_PATH=${HOME}/AVDL_DEPENDENCIES/include
         export LIBRARY_PATH=${HOME}/AVDL_DEPENDENCIES/lib:${HOME}/AVDL_DEPENDENCIES/lib64
@@ -182,6 +196,7 @@ jobs:
         ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${SDL_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_VERSION_LINUX_SONAME}
     - name: sdl_mixer - linux
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         git clone https://github.com/libsdl-org/SDL_mixer SDL_mixer
         cd SDL_mixer
@@ -195,6 +210,7 @@ jobs:
         ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${SDL_MIXER_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_MIXER_VERSION_LINUX_SONAME}
     - name: glew - linux
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         git clone https://github.com/nigels-com/glew glew
         cd glew
@@ -208,6 +224,7 @@ jobs:
         ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib64/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
     - name: steamworks
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       env:
         steamworks_api_link: ${{ secrets.STEAMWORKS_API_LINK }}
       run: |
@@ -221,6 +238,7 @@ jobs:
         cp sdk/public/steam/*.h avdl_dependencies_linux/linux/include
         cp sdk/public/steam/*.h avdl_dependencies_linux/windows/include
     - name: collect_dependencies
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/linux/include
         ls avdl_dependencies_linux/linux/lib
@@ -231,7 +249,14 @@ jobs:
   dependencies_windows:
     runs-on: windows-latest
     steps:
+    - name: cache
+      id: cache
+      uses: actions/cache@v3
+      with:
+        key: avdl_dependencies_windows_v0
+        path: avdl_dependencies_windows
     - name: get_dependencies
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-$env:ZLIB_VERSION_WINDOWS.tar.gz
         C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-$env:SDL_VERSION_WINDOWS/SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
@@ -245,6 +270,7 @@ jobs:
         mv glew-$env:GLEW_VERSION_WINDOWS-win32.zip "C:/Program Files/avdl_glew"
     # zlib
     - name: zlib
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       shell: bash
       run: |
         tar xf zlib-${ZLIB_VERSION_WINDOWS}.tar.gz
@@ -257,6 +283,7 @@ jobs:
         cd ../../
     # libpng
     - name: libpng
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       shell: bash
       run: |
         git clone git://git.code.sf.net/p/libpng/code libpng
@@ -269,23 +296,27 @@ jobs:
         cd ../../
     # sdl
     - name: sdl - windows
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         cd "C:/Program Files/avdl_sdl2"
         unzip SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
         cd
     # sdl_mixer
     - name: sdl_mixer - windows
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         cd "C:/Program Files/avdl_sdl2_mixer"
         unzip SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
         cd
     # glew
     - name: glew - windows
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         cd "C:/Program Files/avdl_glew"
         unzip glew-$env:GLEW_VERSION_WINDOWS-win32.zip
         cd
     - name: package
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       shell: bash
       run: |
         mkdir avdl_dependencies_windows
@@ -393,7 +424,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: avdl_build_linux.zip
-        asset_name: avdl_${{ github.ref }}_linux.zip
+        asset_name: avdl_${{ github.ref_name }}_linux.zip
         asset_content_type: application/gzip
     - name: upload windows artifact
       uses: actions/upload-release-asset@v1
@@ -402,5 +433,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: avdl_build_windows.zip
-        asset_name: avdl_${{ github.ref }}_windows.zip
+        asset_name: avdl_${{ github.ref_name }}_windows.zip
         asset_content_type: application/gzip
