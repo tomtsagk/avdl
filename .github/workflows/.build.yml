@@ -75,6 +75,7 @@ jobs:
     - if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       name: cache_success
       continue-on-error: true
+      run: echo "cache success"
     - name: update packages
       run: |
          sudo apt update && sudo apt install -y gcc pkg-config ca-certificates
