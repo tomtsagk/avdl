@@ -73,9 +73,9 @@ jobs:
         key: avdl_dependencies_linux_v0
         path: avdl_dependencies_linux
     - if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      name: cache_success
+      name: cache
       continue-on-error: true
-      run: echo "cache success"
+      run: echo "cache fail - generating new cache"
     - name: update packages
       run: |
          sudo apt update && sudo apt install -y gcc pkg-config ca-certificates
