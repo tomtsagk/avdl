@@ -64,7 +64,6 @@ env:
 
 jobs:
   dependencies_linux:
-    #runs-on: ubuntu-latest
     runs-on: ubuntu-20.04
     steps:
     - name: cache
@@ -248,179 +247,192 @@ jobs:
       with:
         name: avdl_dependencies_linux
         path: avdl_dependencies_linux
-#  dependencies_windows:
-#    runs-on: windows-latest
-#    steps:
-#    - name: get_dependencies
-#      run: |
-#        C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-$env:ZLIB_VERSION_WINDOWS.tar.gz
-#        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-$env:SDL_VERSION_WINDOWS/SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
-#        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-$env:SDL_MIXER_VERSION_WINDOWS/SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
-#        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-$env:GLEW_VERSION_WINDOWS/glew-$env:GLEW_VERSION_WINDOWS-win32.zip
-#        mkdir "C:/Program Files/avdl_sdl2"
-#        mkdir "C:/Program Files/avdl_sdl2_mixer"
-#        mkdir "C:/Program Files/avdl_glew"
-#        mv SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip "C:/Program Files/avdl_sdl2"
-#        mv SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip "C:/Program Files/avdl_sdl2_mixer"
-#        mv glew-$env:GLEW_VERSION_WINDOWS-win32.zip "C:/Program Files/avdl_glew"
-#    # zlib
-#    - name: zlib
-#      shell: bash
-#      run: |
-#        tar xf zlib-${ZLIB_VERSION_WINDOWS}.tar.gz
-#        cd zlib-${ZLIB_VERSION_WINDOWS}
-#        mkdir build
-#        cd build
-#        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/zlib"
-#        cmake --build . --config Release
-#        cmake --install .
-#        cd ../../
-#    # libpng
-#    - name: libpng
-#      shell: bash
-#      run: |
-#        git clone git://git.code.sf.net/p/libpng/code libpng
-#        cd libpng
-#        mkdir build
-#        cd build
-#        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/libpng"
-#        cmake --build . --config Release
-#        cmake --install .
-#        cd ../../
-#    # sdl
-#    - name: sdl - windows
-#      run: |
-#        cd "C:/Program Files/avdl_sdl2"
-#        unzip SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
-#        cd
-#    # sdl_mixer
-#    - name: sdl_mixer - windows
-#      run: |
-#        cd "C:/Program Files/avdl_sdl2_mixer"
-#        unzip SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
-#        cd
-#    # glew
-#    - name: glew - windows
-#      run: |
-#        cd "C:/Program Files/avdl_glew"
-#        unzip glew-$env:GLEW_VERSION_WINDOWS-win32.zip
-#        cd
-#    - name: package
-#      shell: bash
-#      run: |
-#        mkdir avdl_dependencies_windows
-#        mkdir avdl_dependencies_windows/windows
-#        mkdir avdl_dependencies_windows/windows/include
-#        mkdir avdl_dependencies_windows/windows/lib
-#        cp -r "C:/Program Files/zlib" avdl_dependencies_windows/windows
-#        cp -r "C:/Program Files/libpng" avdl_dependencies_windows/windows
-#        cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
-#        cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/windows/lib
-#        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
-#        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/windows/lib
-#        cp -r "C:/Program Files/avdl_glew/glew-${GLEW_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
-#        cp -r "C:/Program Files/avdl_glew/glew-${GLEW_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/windows/lib
-#    - uses: actions/upload-artifact@v3
-#      with:
-#        name: avdl_dependencies_windows
-#        path: avdl_dependencies_windows
-#  build_linux:
-#    runs-on: ubuntu-20.04
-#    needs: [dependencies_windows, dependencies_linux]
-#    steps:
-#    - name: update packages
-#      run: |
-#         sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev unzip
-#    - name: init_avdl
-#      uses: actions/checkout@v1
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: avdl_dependencies_linux
-#        path: AVDL_BUILD/dependencies
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: avdl_dependencies_windows
-#        path: AVDL_BUILD/dependencies
-#    - name: build & package avdl
-#      run: |
-#        make -j6 prefix=AVDL_BUILD/ CC=gcc
-#        make -j6 prefix=AVDL_BUILD/ CC=gcc install
-#    - uses: actions/upload-artifact@v3
-#      with:
-#        name: avdl_build_linux
-#        path: AVDL_BUILD
-#  build_windows:
-#    runs-on: windows-latest
-#    needs: [dependencies_windows, dependencies_linux]
-#    steps:
-#    - name: init_avdl
-#      uses: actions/checkout@v1
-#    - name: compile
-#      shell: bash
-#      run: |
-#        mkdir build
-#        cd build
-#        cmake ../ . -DCMAKE_INSTALL_PREFIX="AVDL_BUILD"
-#        cmake --build . --config Release
-#        cmake --install .
-#        cd ..
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: avdl_dependencies_linux
-#        path: build/AVDL_BUILD/dependencies
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: avdl_dependencies_windows
-#        path: build/AVDL_BUILD/dependencies
-#    - uses: actions/upload-artifact@v3
-#      with:
-#        name: avdl_build_windows
-#        path: build/AVDL_BUILD
-#  create_release:
-#    if: ${{ github.ref_type == 'tag' }}
-#    runs-on: ubuntu-20.04
-#    needs: [build_linux, build_windows]
-#    steps:
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: avdl_build_linux
-#        path: avdl_build_linux
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: avdl_build_windows
-#        path: avdl_build_windows
-#    - name: zip packages
-#      run: |
-#         sudo apt update && sudo apt install -y zip
-#         zip avdl_build_linux.zip avdl_build_linux -r
-#         zip avdl_build_windows.zip avdl_build_windows -r
-#    - name: create release
-#      uses: actions/create-release@v1
-#      id: create_release
-#      with:
-#        draft: true
-#        prerelease: false
-#        release_name: ${{ steps.version.outputs.version }}
-##        release_name: test_release
-#        tag_name: ${{ github.ref }}
-##        body_path: CHANGELOG.md
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
-#    - name: upload linux artifact
-#      uses: actions/upload-release-asset@v1
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
-#      with:
-#        upload_url: ${{ steps.create_release.outputs.upload_url }}
-#        asset_path: avdl_build_linux.zip
-#        asset_name: avdl_${{ github.ref }}_linux.zip
-#        asset_content_type: application/gzip
-#    - name: upload windows artifact
-#      uses: actions/upload-release-asset@v1
-#      env:
-#        GITHUB_TOKEN: ${{ github.token }}
-#      with:
-#        upload_url: ${{ steps.create_release.outputs.upload_url }}
-#        asset_path: avdl_build_windows.zip
-#        asset_name: avdl_${{ github.ref }}_windows.zip
-#        asset_content_type: application/gzip
+  dependencies_windows:
+    runs-on: windows-latest
+    steps:
+    - name: cache
+      id: cache
+      uses: actions/cache@v3
+      with:
+        key: avdl_dependencies_windows_v0
+        path: avdl_dependencies_windows
+    - name: get_dependencies
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        C:\msys64\usr\bin\wget.exe -q http://www.zlib.net/zlib-$env:ZLIB_VERSION_WINDOWS.tar.gz
+        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-$env:SDL_VERSION_WINDOWS/SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-$env:SDL_MIXER_VERSION_WINDOWS/SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-$env:GLEW_VERSION_WINDOWS/glew-$env:GLEW_VERSION_WINDOWS-win32.zip
+        mkdir "C:/Program Files/avdl_sdl2"
+        mkdir "C:/Program Files/avdl_sdl2_mixer"
+        mkdir "C:/Program Files/avdl_glew"
+        mv SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip "C:/Program Files/avdl_sdl2"
+        mv SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip "C:/Program Files/avdl_sdl2_mixer"
+        mv glew-$env:GLEW_VERSION_WINDOWS-win32.zip "C:/Program Files/avdl_glew"
+    # zlib
+    - name: zlib
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: |
+        tar xf zlib-${ZLIB_VERSION_WINDOWS}.tar.gz
+        cd zlib-${ZLIB_VERSION_WINDOWS}
+        mkdir build
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/zlib"
+        cmake --build . --config Release
+        cmake --install .
+        cd ../../
+    # libpng
+    - name: libpng
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: |
+        git clone git://git.code.sf.net/p/libpng/code libpng
+        cd libpng
+        mkdir build
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/libpng"
+        cmake --build . --config Release
+        cmake --install .
+        cd ../../
+    # sdl
+    - name: sdl - windows
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        cd "C:/Program Files/avdl_sdl2"
+        unzip SDL2-devel-$env:SDL_VERSION_WINDOWS-VC.zip
+        cd
+    # sdl_mixer
+    - name: sdl_mixer - windows
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        cd "C:/Program Files/avdl_sdl2_mixer"
+        unzip SDL2_mixer-devel-$env:SDL_MIXER_VERSION_WINDOWS-VC.zip
+        cd
+    # glew
+    - name: glew - windows
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        cd "C:/Program Files/avdl_glew"
+        unzip glew-$env:GLEW_VERSION_WINDOWS-win32.zip
+        cd
+    - name: package
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: |
+        mkdir avdl_dependencies_windows
+        mkdir avdl_dependencies_windows/windows
+        mkdir avdl_dependencies_windows/windows/include
+        mkdir avdl_dependencies_windows/windows/lib
+        cp -r "C:/Program Files/zlib" avdl_dependencies_windows/windows
+        cp -r "C:/Program Files/libpng" avdl_dependencies_windows/windows
+        cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
+        cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/windows/lib
+        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
+        cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/windows/lib
+        cp -r "C:/Program Files/avdl_glew/glew-${GLEW_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
+        cp -r "C:/Program Files/avdl_glew/glew-${GLEW_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/windows/lib
+    - uses: actions/upload-artifact@v3
+      with:
+        name: avdl_dependencies_windows
+        path: avdl_dependencies_windows
+  build_linux:
+    runs-on: ubuntu-20.04
+    needs: [dependencies_windows, dependencies_linux]
+    steps:
+    - name: update packages
+      run: |
+         sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev unzip
+    - name: init_avdl
+      uses: actions/checkout@v1
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_dependencies_linux
+        path: AVDL_BUILD/dependencies
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_dependencies_windows
+        path: AVDL_BUILD/dependencies
+    - name: build & package avdl
+      run: |
+        make -j6 prefix=AVDL_BUILD/ CC=gcc
+        make -j6 prefix=AVDL_BUILD/ CC=gcc install
+    - uses: actions/upload-artifact@v3
+      with:
+        name: avdl_build_linux
+        path: AVDL_BUILD
+  build_windows:
+    runs-on: windows-latest
+    needs: [dependencies_windows, dependencies_linux]
+    steps:
+    - name: init_avdl
+      uses: actions/checkout@v1
+    - name: compile
+      shell: bash
+      run: |
+        mkdir build
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="AVDL_BUILD"
+        cmake --build . --config Release
+        cmake --install .
+        cd ..
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_dependencies_linux
+        path: build/AVDL_BUILD/dependencies
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_dependencies_windows
+        path: build/AVDL_BUILD/dependencies
+    - uses: actions/upload-artifact@v3
+      with:
+        name: avdl_build_windows
+        path: build/AVDL_BUILD
+  create_release:
+    if: ${{ github.ref_type == 'tag' }}
+    runs-on: ubuntu-20.04
+    needs: [build_linux, build_windows]
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_linux
+        path: avdl_build_linux
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_windows
+        path: avdl_build_windows
+    - name: zip packages
+      run: |
+         sudo apt update && sudo apt install -y zip
+         zip avdl_build_linux.zip avdl_build_linux -r
+         zip avdl_build_windows.zip avdl_build_windows -r
+    - name: create release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: true
+        prerelease: false
+        release_name: ${{ steps.version.outputs.version }}
+#        release_name: test_release
+        tag_name: ${{ github.ref }}
+#        body_path: CHANGELOG.md
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+    - name: upload linux artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: avdl_build_linux.zip
+        asset_name: avdl_${{ github.ref }}_linux.zip
+        asset_content_type: application/gzip
+    - name: upload windows artifact
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: avdl_build_windows.zip
+        asset_name: avdl_${{ github.ref }}_windows.zip
+        asset_content_type: application/gzip
