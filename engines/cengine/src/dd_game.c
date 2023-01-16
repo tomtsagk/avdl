@@ -74,6 +74,13 @@ void dd_fullscreenToggle() {
 	#endif
 }
 
+int dd_canFullscreenToggle() {
+#if DD_PLATFORM_ANDROID
+	return 0;
+#endif
+	return 1;
+}
+
 #if defined(_WIN32) || defined(WIN32)
 wchar_t dynamicProjectLocationW[1000];
 
