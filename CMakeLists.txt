@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 
 # set the project name
-project(avdl VERSION 0.6.8)
+project(avdl VERSION 0.6.9)
 
 # add the executable
 add_executable(avdl
