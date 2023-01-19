@@ -647,7 +647,8 @@ int main(int argc, char *argv[]) {
 				assetDir = "raw";
 			}
 			else
-			if (strcmp(filename[i] +strlen(filename[i]) -4, ".bmp") == 0) {
+			if (strcmp(filename[i] +strlen(filename[i]) -4, ".bmp") == 0
+			||  strcmp(filename[i] +strlen(filename[i]) -4, ".png") == 0) {
 				assetDir = "drawable";
 			}
 			else {
