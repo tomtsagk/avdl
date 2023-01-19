@@ -77,6 +77,7 @@ extern int installLocationDynamic;
 static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 	struct ast_node *asset = ast_create(AST_ASSET);
 	ast_addChild(asset, expect_string(l));
+	struct ast_node *assetName = ast_getChild(asset, 0);
 
 	/*
 	 * on android, a path to a file is truncated to the filename
@@ -86,7 +87,7 @@ static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 	 */
 	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
 		char buffer[500];
-		strcpy(buffer, ast_getLex(asset));
+		strcpy(buffer, ast_getLex(assetName));
 
 		char *lastSlash = buffer;
 		char *p = buffer;
@@ -107,7 +108,7 @@ static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 		}
 		lastDot[0] = '\0';
 
-		ast_setLex(asset, lastSlash);
+		ast_setLex(assetName, lastSlash);
 	}
 	else
 	// on linux and windows, attach the custom install location as the asset's prefix
