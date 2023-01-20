@@ -8,11 +8,11 @@ android {
 	ndkVersion '25.1.8937393'
 
 	defaultConfig {
-		applicationId 'com.company.appname'
+		applicationId '%AVDL_PACKAGE_NAME%'
 		minSdkVersion 18
 		targetSdkVersion 31
-		versionCode  1
-		versionName  "1.0.0"
+		versionCode  %AVDL_VERSION_CODE%
+		versionName  "%AVDL_VERSION_NAME%"
 	}
 	buildTypes {
 		release {
@@ -39,14 +39,7 @@ android {
 	applicationVariants.all { variant ->
 		// assign different version code for each output
 		variant.outputs.each { output ->
-			if (output.getFilter(OutputFile.ABI) == null) {
-				output.versionCodeOverride = defaultConfig.versionCode
-			}
-			else {
-				output.versionCodeOverride =
-					project.ext.versionCodes.get(output.getFilter(OutputFile.ABI)) * 100000000 +
-								defaultConfig.versionCode
-			}
+			output.versionCodeOverride = defaultConfig.versionCode
 		}
 	}
 }

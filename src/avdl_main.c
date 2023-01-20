@@ -145,10 +145,17 @@ int main(int argc, char *argv[]) {
 	char filename[MAX_INPUT_FILES][100];
 	int input_file_total = 0;
 	char *outname = 0;
-	char *gameName = "game";
+	char *gameName = "avdl_game";
 	char *gameVersion = "0.0.0";
 	char *gameRevision = "0";
 	int getCengine = 0;
+
+	// android versioning
+	char *gameVersionCode = "0";
+	char *gamePackageName = "com.company.appname";
+	char *gameIconFlat = 0;
+	char *gameIconForeground = 0;
+	char *gameIconBackground = 0;
 
 	/*
 	 * phases
@@ -265,6 +272,61 @@ int main(int argc, char *argv[]) {
 					}
 					else {
 						printf("avdl error: '%s' expects a version string\n", argv[i]);
+						return -1;
+					}
+				}
+				else
+				if (strcmp(argv[i], "--game-version-code") == 0) {
+					if (argc > i+1) {
+						gameVersionCode = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects a version code string\n", argv[i]);
+						return -1;
+					}
+				}
+				else
+				if (strcmp(argv[i], "--game-package-name") == 0) {
+					if (argc > i+1) {
+						gamePackageName = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects a package name string\n", argv[i]);
+						return -1;
+					}
+				}
+				else
+				if (strcmp(argv[i], "--game-icon") == 0) {
+					if (argc > i+1) {
+						gameIconFlat = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects an icon string\n", argv[i]);
+						return -1;
+					}
+				}
+				else
+				if (strcmp(argv[i], "--game-icon-foreground") == 0) {
+					if (argc > i+1) {
+						gameIconForeground = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects an icon string\n", argv[i]);
+						return -1;
+					}
+				}
+				else
+				if (strcmp(argv[i], "--game-icon-background") == 0) {
+					if (argc > i+1) {
+						gameIconBackground = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects an icon string\n", argv[i]);
 						return -1;
 					}
 				}
@@ -800,6 +862,44 @@ int main(int argc, char *argv[]) {
 
 			// add in the avdl-compiled source files
 			file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt", "%AVDL_GAME_FILES%", buffer);
+			close(outDir);
+
+			// handle versioning
+			strcpy(buffer, androidDir);
+			strcat(buffer, "/app/");
+			outDir = open(buffer, O_DIRECTORY);
+			file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", gamePackageName);
+			file_replace(outDir, "build.gradle.in2", outDir, "build.gradle.in3", "%AVDL_VERSION_CODE%", gameVersionCode);
+			file_replace(outDir, "build.gradle.in3", outDir, "build.gradle", "%AVDL_VERSION_NAME%", gameVersion);
+			close(outDir);
+
+			if (gameIconFlat) {
+				strcpy(buffer, androidDir);
+				strcat(buffer, "/app/src/main/res/drawable/");
+				strcat(buffer, gameIconFlat);
+				file_copy(gameIconFlat, buffer, 0);
+			}
+
+			if (gameIconForeground) {
+				strcpy(buffer, androidDir);
+				strcat(buffer, "/app/src/main/res/drawable/");
+				strcat(buffer, gameIconForeground);
+				file_copy(gameIconForeground, buffer, 0);
+			}
+
+			if (gameIconBackground) {
+				strcpy(buffer, androidDir);
+				strcat(buffer, "/app/src/main/res/drawable/");
+				strcat(buffer, gameIconBackground);
+				file_copy(gameIconBackground, buffer, 0);
+			}
+
+			// project name
+			strcpy(buffer, androidDir);
+			strcat(buffer, "/app/src/main/res/values/");
+			outDir = open(buffer, O_DIRECTORY);
+			file_replace(outDir, "strings.xml.in", outDir, "strings.xml", "%AVDL_PROJECT_NAME%", gameName);
+			close(outDir);
 			#endif
 		}
 		else {
