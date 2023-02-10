@@ -32,10 +32,12 @@ void avdl_multiplayer_leaveLobby(struct avdl_multiplayer *o, void (*callback)(vo
 void avdl_multiplayer_confirmLobby(struct avdl_multiplayer *o);
 void avdl_multiplayer_confirmLobby2(struct avdl_multiplayer *o, int numberOfPlayers, unsigned long *playerIdentities, unsigned long *host);
 
+#define avdl_multiplayer_sendMessageToPlayer(o, playerIndex, data, class) avdl_multiplayer_sendMessageToPlayer_internal(o, playerIndex, data, sizeof(struct class))
+void avdl_multiplayer_sendMessageToPlayer_internal(struct avdl_multiplayer *o, int playerIndex, void *data, size_t dataSize);
+#define avdl_multiplayer_sendMessage(o, data, class) avdl_multiplayer_sendMessage_internal(o, data, sizeof(struct class))
+void avdl_multiplayer_sendMessage_internal(struct avdl_multiplayer *o, void *data, size_t dataSize);
 #define avdl_multiplayer_sendMessageToAllPlayers(o, data, class) avdl_multiplayer_sendMessageToAllPlayers_internal(o, data, sizeof(struct class))
 void avdl_multiplayer_sendMessageToAllPlayers_internal(struct avdl_multiplayer *o, void *data, size_t dataSize);
-#define avdl_multiplayer_sendMessage(o, playerIndex, data, class) avdl_multiplayer_sendMessage_internal(o, playerIndex, data, sizeof(struct class))
-void avdl_multiplayer_sendMessage_internal(struct avdl_multiplayer *o, int playerIndex, void *data, size_t dataSize);
 #define avdl_multiplayer_sendMessageToHost(o, data, class) avdl_multiplayer_sendMessageToHost_internal(o, data, sizeof(struct class))
 void avdl_multiplayer_sendMessageToHost_internal(struct avdl_multiplayer *o, void *data, size_t dataSize);
 int avdl_multiplayer_getLobbyMemberCurrent(struct avdl_multiplayer *o, int index);
@@ -59,6 +61,8 @@ const char *avdl_multiplayer_getSelfName(struct avdl_multiplayer *o);
 int avdl_multiplayer_getFriendCount(struct avdl_multiplayer *o);
 const char *avdl_multiplayer_getFriendNameIndex(struct avdl_multiplayer *o, int index);
 //unsigned long int avdl_multiplayer_getFriendIndex(struct avdl_multiplayer *o);
+
+const char *avdl_multiplayer_getPlayerNameByIndex(struct avdl_multiplayer *o, int index);
 
 #ifdef __cplusplus
 }

@@ -5,6 +5,7 @@
 
 static CSteamID slobbyId;
 static CSteamID lobbyMembers[10];
+static char lobbyMembersName[10][20];
 static int lobbyMembersCount = 0;
 static int isInGame = 0;
 static SteamNetworkingMessage_t *msg;
@@ -61,6 +62,7 @@ class CLobbyListManager {
 			isInLobby = 1;
 			lobbyId = lobby->m_ulSteamIDLobby;
 			slobbyId = lobby->m_ulSteamIDLobby;
+			host = SteamMatchmaking()->GetLobbyOwner(slobbyId);
 			printf("avdl: lobbyid: %u\n", slobbyId);
 			//printf("avdl: lobbyid str: %s\n", slobbyId.Render());
 			printf("lobby creation was successful with id: %d\n", lobbyId);
@@ -102,6 +104,7 @@ class CLobbyListManager {
 		}
 		isInLobby = 1;
 		slobbyId = lobby->m_ulSteamIDLobby;
+		host = SteamMatchmaking()->GetLobbyOwner(slobbyId);
 		printf("avdl: lobbyid: %u\n", slobbyId);
 		//printf("avdl: lobbyid str: %s\n", slobbyId.Render());
 		// lobby id
@@ -177,6 +180,7 @@ class CLobbyListManager {
 	}
 
 	STEAM_CALLBACK( CLobbyListManager, OnMessageRequestReceived, SteamNetworkingMessagesSessionRequest_t );
+	STEAM_CALLBACK( CLobbyListManager, OnPersonaStateChange, PersonaStateChange_t );
 
 	//void OnMessageRequestReceived(SteamNetworkingMessagesSessionRequest_t *t);
 };
@@ -184,6 +188,12 @@ class CLobbyListManager {
 void CLobbyListManager::OnMessageRequestReceived(SteamNetworkingMessagesSessionRequest_t *t) {
 	printf("avdl: message request received and will be accepted\n");
 	SteamNetworkingMessages()->AcceptSessionWithUser( t->m_identityRemote );
+}
+
+void CLobbyListManager::OnPersonaStateChange(PersonaStateChange_t *t) {
+	printf("avdl: persona state change\n");
+	printf("avdl: persona user name: %s\n", SteamFriends()->GetFriendPersonaName(t->m_ulSteamID));
+	//SteamNetworkingMessages()->AcceptSessionWithUser( t->m_identityRemote );
 }
 
 static CLobbyListManager *m = 0;
@@ -265,7 +275,7 @@ int avdl_multiplayer_getLobbyMemberCurrent(struct avdl_multiplayer *o, int index
 	*/
 
 	if (!isInGame) {
-		printf("avdl: lobbyid: %u\n", slobbyId);
+		//printf("avdl: lobbyid: %u\n", slobbyId);
 		return SteamMatchmaking()->GetNumLobbyMembers(slobbyId);
 	}
 	else {
@@ -376,7 +386,16 @@ void avdl_multiplayer_sendMessageToAllPlayers_internal(struct avdl_multiplayer *
 	}
 }
 
-void avdl_multiplayer_sendMessage_internal(struct avdl_multiplayer *o, int playerIndex, void *data, size_t dataSize) {
+void avdl_multiplayer_sendMessage_internal(struct avdl_multiplayer *o, void *data, size_t dataSize) {
+	if (avdl_multiplayer_isHost(0)) {
+		avdl_multiplayer_sendMessageToAllPlayers_internal(o, data, dataSize);
+	}
+	else {
+		avdl_multiplayer_sendMessageToHost_internal(o, data, dataSize);
+	}
+}
+
+void avdl_multiplayer_sendMessageToPlayer_internal(struct avdl_multiplayer *o, int playerIndex, void *data, size_t dataSize) {
 
 	int members;
 	if (!isInGame) {
@@ -550,6 +569,10 @@ void avdl_multiplayer_leaveLobby(struct avdl_multiplayer *o, void (*callback)(vo
 
 void avdl_multiplayer_confirmLobby(struct avdl_multiplayer *o) {
 
+	for (int i = 0; i < avdl_multiplayer_getLobbyMemberCurrent(o, 0); i++) {
+		strcpy(lobbyMembersName[i], avdl_multiplayer_getPlayerNameByIndex(o, i));
+	}
+
 	int members = SteamMatchmaking()->GetNumLobbyMembers(slobbyId);
 	printf("avdl: Members when confirming lobby: %d\n", members);
 
@@ -579,11 +602,17 @@ void avdl_multiplayer_confirmLobby(struct avdl_multiplayer *o) {
 	}
 	host = SteamMatchmaking()->GetLobbyOwner(slobbyId);
 	printf("avdl: setting host: %d\n", host);
-	avdl_multiplayer_leaveLobby(o, 0);
+	//avdl_multiplayer_leaveLobby(o, 0);
+	SteamMatchmaking()->SetLobbyJoinable(slobbyId, false);
 }
 
 int avdl_multiplayer_isHost(struct avdl_multiplayer *o) {
-	return host != k_steamIDNil && host == SteamUser()->GetSteamID();
+	if (!isInGame) {
+		return SteamMatchmaking()->GetLobbyOwner(slobbyId) == SteamUser()->GetSteamID();
+	}
+	else {
+		return host != k_steamIDNil && host == SteamUser()->GetSteamID();
+	}
 }
 
 void avdl_multiplayer_getPlayerId(struct avdl_multiplayer *o, int index, struct avdl_multiplayer_identity *identity) {
@@ -616,6 +645,12 @@ void avdl_multiplayer_getHostId(struct avdl_multiplayer *o, struct avdl_multipla
 
 void avdl_multiplayer_confirmLobby2(struct avdl_multiplayer *o, int numberOfPlayers, unsigned long *playerIdentities, unsigned long *hostId) {
 
+	/*
+	for (int i = 0; i < avdl_multiplayer_getLobbyMemberCurrent(o, 0); i++) {
+		//strcpy(lobbyMembersName[i], avdl_multiplayer_getPlayerNameByIndex(o, i));
+	}
+	*/
+
 	int members = lobbyMembersCount;
 	printf("avdl: Members when confirming lobby: %d\n", members);
 
@@ -624,7 +659,6 @@ void avdl_multiplayer_confirmLobby2(struct avdl_multiplayer *o, int numberOfPlay
 		return;
 	}
 
-	isInGame = 1;
 	lobbyMembersCount = 0;
 	for (int i = 0; i < members; i++) {
 		printf("avdl: confirm id: %d\n", i);
@@ -643,7 +677,18 @@ void avdl_multiplayer_confirmLobby2(struct avdl_multiplayer *o, int numberOfPlay
 		*/
 		lobbyMembers[lobbyMembersCount] = id;
 		lobbyMembersCount++;
+
+		// save lobby names
+		// get name of self
+		if (SteamUser()->GetSteamID() == id) {
+			strcpy(lobbyMembersName[i], avdl_multiplayer_getSelfName(o));
+		}
+		// get name of another user
+		else {
+			strcpy(lobbyMembersName[i], SteamFriends()->GetFriendPersonaName(id));
+		}
 	}
+	isInGame = 1;
 	host.SetFromUint64(*hostId);
 	printf("avdl: setting host: %d\n", host);
 	printf("avdl: setting hostId: %d\n", *hostId);
@@ -669,7 +714,36 @@ const char *avdl_multiplayer_getFriendNameIndex(struct avdl_multiplayer *o, int 
 		return "";
 	}
 	CSteamID friendId = SteamFriends()->GetFriendByIndex(index, k_EFriendFlagImmediate);
-	const char *friendName = SteamFriends()->GetFriendPersonaName(friendId);
-	printf("avdl: friend name: %s\n", friendName);
+	//const char *friendName = SteamFriends()->GetFriendPersonaName(friendId);
+	//printf("avdl: friend name: %s\n", friendName);
 	return SteamFriends()->GetFriendPersonaName(friendId);
+}
+
+const char *avdl_multiplayer_getPlayerNameByIndex(struct avdl_multiplayer *o, int index) {
+	/*
+	CSteamID playerId = SteamMatchmaking()->GetLobbyMemberByIndex(slobbyId, index);
+	SteamFriends()->RequestUserInformation(playerId, true);
+	*/
+	//printf("avdl: self id / lobby member id: %d /%d\n", SteamUser()->GetSteamID(), lobbyMembers[index]);
+	//printf("avdl: getting player name by index: %d /%d\n", index, avdl_multiplayer_getLobbyMemberCurrent(0, 0));
+	if (index < avdl_multiplayer_getLobbyMemberCurrent(0, 0)) {
+		if (!isInGame) {
+		
+			// get name of self
+			CSteamID playerId = SteamMatchmaking()->GetLobbyMemberByIndex(slobbyId, index);
+			if (SteamUser()->GetSteamID() == playerId) {
+				return avdl_multiplayer_getSelfName(0);
+			}
+			// get name of another user
+			else {
+				//printf("avdl: user name: %s\n", SteamFriends()->GetFriendPersonaName(SteamMatchmaking()->GetLobbyMemberByIndex(slobbyId, index)));
+				return SteamFriends()->GetFriendPersonaName(SteamMatchmaking()->GetLobbyMemberByIndex(slobbyId, index));
+			}
+
+		}
+		else {
+			return lobbyMembersName[index];
+		}
+	}
+	return "";
 }
