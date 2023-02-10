@@ -37,7 +37,7 @@ int avdl_multiplayer_getLobbyMemberLimit(struct avdl_multiplayer *o, int index) 
 	return 0;
 }
 
-void avdl_multiplayer_sendMessage_internal(struct avdl_multiplayer *o, int playerIndex, void *data, size_t dataSize) {
+void avdl_multiplayer_sendMessage_internal(struct avdl_multiplayer *o, void *data, size_t dataSize) {
 }
 
 int avdl_multiplayer_receiveMessages(struct avdl_multiplayer *o) {
