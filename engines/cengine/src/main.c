@@ -226,7 +226,7 @@ int dd_main(int argc, char *argv[]) {
 		}
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP;
 		int width = dd_gameInitWindowWidth;
 		int height = dd_gameInitWindowHeight;
 		mainWindow = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
@@ -351,6 +351,7 @@ int dd_main(int argc, char *argv[]) {
 					handleMousePress(0, 1, event.motion.x, event.motion.y);
 					break;
 				case SDL_KEYDOWN:
+					// temporary keyboard controls
 					if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
 						handleKeyboardPress(27, 0, 0);
 					}
@@ -369,6 +370,30 @@ int dd_main(int argc, char *argv[]) {
 					else
 					if (event.key.keysym.scancode == SDL_SCANCODE_S) {
 						handleKeyboardPress(115, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+						handleKeyboardPress(32, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
+						handleKeyboardPress(13, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+						handleKeyboardPress(1, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_UP) {
+						handleKeyboardPress(2, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
+						handleKeyboardPress(3, 0, 0);
+					}
+					else
+					if (event.key.keysym.scancode == SDL_SCANCODE_DOWN) {
+						handleKeyboardPress(4, 0, 0);
 					}
 					break;
 			}
@@ -420,9 +445,11 @@ int main(int argc, char *argv[]) {
 
 // clean leftovers
 void clean() {
+	/*
 	if (!avdl_quiet) {
 		dd_log("avdl: cleaning data");
 	}
+	*/
 	if (!avdl_state_initialised) return;
 	avdl_state_initialised = 0;
 
@@ -460,9 +487,11 @@ void clean() {
 
 	//curl_global_cleanup();
 	#endif
+	/*
 	if (!avdl_quiet) {
 		dd_log("avdl: done cleaning data");
 	}
+	*/
 }
 
 void dd_perspective(float *matrix, float fovyDegrees, float aspectRatio,

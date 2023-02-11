@@ -210,7 +210,7 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 	 */
 	FILE *f = _wfopen(finalLoc, L"r");
 	if (!f) {
-		wprintf(L"avdl: error opening file '%lS': %lS\n", finalLoc, _wcserror(errno));
+		//wprintf(L"avdl: error opening file '%lS': %lS\n", finalLoc, _wcserror(errno));
 		free(finalLoc);
 		CoTaskMemFree(path);
 		return -1;
@@ -257,9 +257,11 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 	 */
 	FILE *f = fopen(buffer, "r");
 	if (!f) {
+		/*
 		dd_log("avdl: error opening file '%s': %s",
 			buffer, strerror(errno)
 		);
+		*/
 		return -1;
 	}
 
