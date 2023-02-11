@@ -27,6 +27,8 @@ struct dd_music {
 	Mix_Music *music;
 	#endif
 
+	int volume;
+
 	void (*load)(struct dd_music *, const char *filename, int type);
 	void (*clean)(struct dd_music *);
 	void (*play)(struct dd_music *);
@@ -41,7 +43,7 @@ void dd_music_play(struct dd_music *);
 void dd_music_playLoop(struct dd_music *, int loops);
 void dd_music_stop(struct dd_music *);
 
-void avdl_music_setVolume(int volume);
-int avdl_music_getVolume();
+void avdl_music_setVolume(struct dd_music *, int volume);
+int avdl_music_getVolume(struct dd_music *);
 
 #endif

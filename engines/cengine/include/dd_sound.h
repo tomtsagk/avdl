@@ -36,6 +36,8 @@ struct dd_sound {
 	#endif
 	int playingChannel;
 
+	int volume;
+
 	void (*load)(struct dd_sound *, const char *filename, enum dd_audio_format format);
 	void (*clean)(struct dd_sound *);
 	void (*play)(struct dd_sound *);
@@ -50,7 +52,7 @@ void dd_sound_play(struct dd_sound *);
 void dd_sound_playLoop(struct dd_sound *, int loops);
 void dd_sound_stop(struct dd_sound *);
 
-void avdl_sound_setVolume(int volume);
-int avdl_sound_getVolume();
+void avdl_sound_setVolume(struct dd_sound *, int volume);
+int avdl_sound_getVolume(struct dd_sound *);
 
 #endif
