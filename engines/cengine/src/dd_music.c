@@ -9,7 +9,7 @@ extern jclass *clazz;
 extern JavaVM *jvm;
 #endif
 
-int avdl_music_volume;
+int avdl_music_volume = 100;
 
 void dd_music_create(struct dd_music *o) {
 	o->load = dd_music_load;
@@ -25,8 +25,6 @@ void dd_music_create(struct dd_music *o) {
 	#else
 	o->music = 0;
 	#endif
-
-	avdl_music_volume = 100;
 
 }
 

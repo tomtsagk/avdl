@@ -12,7 +12,7 @@ extern JavaVM *jvm;
 int dd_hasAudio = 1;
 int dd_numberOfAudioChannels = 0;
 
-int avdl_sound_volume;
+int avdl_sound_volume = 100;
 
 void dd_sound_create(struct dd_sound *o) {
 	o->load = dd_sound_load;
@@ -28,8 +28,6 @@ void dd_sound_create(struct dd_sound *o) {
 	#else
 	o->sound = 0;
 	#endif
-
-	avdl_sound_volume = 100;
 
 	o->playingChannel = -1;
 }
