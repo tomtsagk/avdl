@@ -9,6 +9,8 @@ extern jclass *clazz;
 extern JavaVM *jvm;
 #endif
 
+int avdl_music_volume;
+
 void dd_music_create(struct dd_music *o) {
 	o->load = dd_music_load;
 	o->clean = dd_music_clean;
@@ -23,6 +25,8 @@ void dd_music_create(struct dd_music *o) {
 	#else
 	o->music = 0;
 	#endif
+
+	avdl_music_volume = 100;
 
 }
 
@@ -62,6 +66,7 @@ void dd_music_clean(struct dd_music *o) {
 
 void dd_music_play(struct dd_music *o) {
 	if (!dd_hasAudio) return;
+	if (avdl_music_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
 	JNIEnv *env;
 	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
@@ -91,6 +96,7 @@ void dd_music_play(struct dd_music *o) {
 
 void dd_music_playLoop(struct dd_music *o, int loops) {
 	if (!dd_hasAudio) return;
+	if (avdl_music_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
 	JNIEnv *env;
 	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
@@ -151,18 +157,19 @@ void dd_music_stop(struct dd_music *o) {
 
 void avdl_music_setVolume(int volume) {
 	if (!dd_hasAudio) return;
-	#if DD_PLATFORM_ANDROID
-	#else
 	if (volume < 0) volume = 0;
 	if (volume > 100) volume = 100;
-	Mix_VolumeMusic((volume /100.0) *MIX_MAX_VOLUME);
+	avdl_music_volume = volume;
+	#if DD_PLATFORM_ANDROID
+	#else
+	Mix_VolumeMusic((avdl_music_volume /100.0) *MIX_MAX_VOLUME);
 	#endif
 }
 
 int avdl_music_getVolume() {
 	if (!dd_hasAudio) return 0;
 	#if DD_PLATFORM_ANDROID
-	return 0;
+	return avdl_music_volume;
 	#else
 	int volume = Mix_VolumeMusic(-1);
 	return ((float) volume /MIX_MAX_VOLUME) *100;

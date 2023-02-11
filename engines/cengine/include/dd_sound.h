@@ -16,6 +16,8 @@
 extern int dd_hasAudio;
 extern int dd_numberOfAudioChannels;
 
+extern int avdl_sound_volume;
+
 /*
  * support audio formats
  */

@@ -14,6 +14,7 @@
 #endif
 
 extern int dd_hasAudio;
+extern int avdl_music_volume;
 
 /* music element
  * meant for background music
