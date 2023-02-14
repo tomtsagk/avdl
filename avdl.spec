@@ -1,5 +1,5 @@
 Name:           avdl
-Version:        0.5.0
+Version:        0.7.2
 Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
@@ -38,6 +38,11 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 %doc /usr/share/man/man1/avdl.1.gz
 
 %changelog
+* Tue Feb 14 2023 Tom Tsagk <tomtsagk@afloofdev.com>
+- Improve online functionality
+- Automate builds
+- Improve android builds
+
 * Wed Aug 31 2022 Tom Tsagk <tomtsagk@afloofdev.com>
 - Add achievements
 - Re-organise some files to make compilation simpler
