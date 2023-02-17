@@ -21,6 +21,30 @@
 #include <unistd.h>
 #endif
 
+// default build:
+// dynamic (re-locateable)
+// shared dependencies (not standalone)
+//
+// options to do static build (installed in a directory like /usr)
+// options to do static dependencies (included in the build with a shell `project.sh` file)
+int AVDL_BUILD_LOCATION_DYNAMIC = 1;
+int AVDL_BUILD_LOCATION_STATIC = 2;
+int avdl_build_location = AVDL_BUILD_LOCATION_DYNAMIC;
+
+int AVDL_BUILD_DEPENDENCIES_DYNAMIC = 1;
+int AVDL_BUILD_DEPENDENCIES_STATIC = 2;
+int avdl_build_dependencies = AVDL_BUILD_DEPENDENCIES_DYNAMIC;
+
+// Test terminal colours
+#define RED   "\x1B[31m"
+#define GRN   "\x1B[32m"
+#define YEL   "\x1B[33m"
+#define BLU   "\x1B[34m"
+#define MAG   "\x1B[35m"
+#define CYN   "\x1B[36m"
+#define WHT   "\x1B[37m"
+#define RESET "\x1B[0m"
+
 const char cache_dir[] = ".avdl_cache/";
 
 extern float parsing_float;
@@ -162,6 +186,10 @@ int main(int argc, char *argv[]) {
 	printf("~ Project Details end ~\n");
 	printf("\n");
 
+	if (!is_dir(".avdl_cache")) {
+		dir_create(".avdl_cache");
+	}
+
 	// from `.dd` to `.c`
 	if ( avdl_transpile(&avdl_settings) != 0) {
 		printf("avdl: error transpiling project\n");
@@ -192,7 +220,7 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	printf("avdl project compiled successfully at avdl_build\n");
+	printf("avdl project " BLU "\"%s\"" RESET " compiled successfully at " BLU "./avdl_build/" RESET "\n", avdl_settings.project_name);
 
 	return 0;
 
@@ -1174,7 +1202,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 	includePath = "include/";
 
 	int files_transpiled = 0;
-	printf("avdl: transpiling - 0%%\r");
+	printf("avdl: transpiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
 	struct dirent *dir;
@@ -1255,12 +1283,12 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 		files_transpiled++;
-		printf("avdl: transpiling - %d%%\r", (int)((float) (files_transpiled)/files_to_transpile *100));
+		printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (files_transpiled)/files_to_transpile *100));
 		fflush(stdout);
 	}
 	closedir(d);
 
-	printf("avdl: transpiling - 100%%\n");
+	printf("avdl: transpiling - " GRN "100%%" RESET "\n");
 	fflush(stdout);
 
 	return 0;
@@ -1287,7 +1315,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 	}
 
 	int files_compiled = 0;
-	printf("avdl: compiling - 0%%\r");
+	printf("avdl: compiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
 	struct dirent *dir;
@@ -1377,11 +1405,11 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		}
 
 		files_compiled++;
-		printf("avdl: compiling - %d%%\r", (int)((float) (files_compiled)/files_to_compile *100));
+		printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (files_compiled)/files_to_compile *100));
 		fflush(stdout);
 	}
 	closedir(d);
-	printf("avdl: compiling - 100%%\n");
+	printf("avdl: compiling - " GRN "100%%" RESET "\n");
 	fflush(stdout);
 //	/*
 //	 * compile all given `.c` files to `.o` files
@@ -1453,7 +1481,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		dir_create(buffer);
 	}
 
-	printf("avdl: compiling cengine - 0%%\r");
+	printf("avdl: compiling cengine - " RED "0%%" RESET "\r");
 	fflush(stdout);
 	char compile_command[DD_BUFFER_SIZE];
 	for (int i = 0; i < cengine_files_total; i++) {
@@ -1526,7 +1554,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		// skip files already compiled
 		if ( access(buffer, F_OK) == 0 ) {
 			//printf("skipping: %s\n", buffer);
-			printf("avdl: compiling cengine - %d%%\r", (int)((float) (i+1)/cengine_files_total *100));
+			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/cengine_files_total *100));
 			fflush(stdout);
 			continue;
 		}
@@ -1537,12 +1565,12 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 ////		if (!avdlQuietMode) {
-			printf("avdl: compiling cengine - %d%%\r", (int)((float) (i+1)/cengine_files_total *100));
+			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/cengine_files_total *100));
 			fflush(stdout);
 ////		}
 	}
 ////	if (!avdlQuietMode) {
-		printf("avdl: compiling cengine - 100%%\n");
+		printf("avdl: compiling cengine - " GRN "100%%" RESET "\n");
 ////	}
 
 	return 0;
@@ -1550,11 +1578,14 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 int avdl_link(struct AvdlSettings *avdl_settings) {
 
-	printf("avdl: linking everything together\n");
+	printf("avdl: creating executable - " YEL "..." RESET "\r");
 
 	// link the final executable
 
-	char *outdir = "avdl_build/";
+	char *outdir = "avdl_build/bin/";
+	if (!is_dir("avdl_build")) {
+		dir_create("avdl_build");
+	}
 	if (!is_dir(outdir)) {
 		dir_create(outdir);
 	}
@@ -1804,12 +1835,158 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		close(outDir);
 		#endif
 	}
-		*/
-	printf("avdl: linking done\n");
+	*/
+
+	// .sh file is needed for standalone builds and/or included dependencies
+	if (avdl_build_location == AVDL_BUILD_LOCATION_DYNAMIC) {
+		// project.sh runs ./bin/project
+	}
+	else {
+		// no .sh file
+	}
+
+	if (avdl_build_dependencies == AVDL_BUILD_DEPENDENCIES_DYNAMIC) {
+		// no .sh
+	}
+	else {
+		// project.sh references ./dependencies/
+	}
+
+	// make a `.sh` file to link executable with dependencies
+	int fd = open("avdl_build/rue.sh", O_RDWR | O_CREAT, 0777);
+	if (fd == -1) {
+		printf("avdl error: Unable to open '%s': %s\n", "avdl_build/rue.sh", strerror(errno));
+		return -1;
+	}
+
+	FILE *fsh = fdopen(fd, "w");
+	if (!fsh) {
+		printf("avdl error: Unable to open fd '%s': %s\n", "avdl_build/rue.sh", strerror(errno));
+		return -1;
+	}
+
+	fprintf(fsh, "LD_LIBRARY_PATH=./dependencies/ ./bin/avdl_game");
+	fclose(fsh);
+
+	printf("avdl: creating executable - " GRN "done" RESET "\n");
 	return 0;
 }
 
 // handle assets and put them in the final build
-int avdl_assets(struct AvdlSettings *) {
+int avdl_assets(struct AvdlSettings *avdl_settings) {
+
+	int assets_to_handle = Avdl_FileOp_GetNumberOfFiles(avdl_settings->asset_dir);
+
+	char *outdir = "avdl_build/assets/";
+
+	if (!is_dir("avdl_build")) {
+		dir_create("avdl_build");
+	}
+
+	if (!is_dir("avdl_build/assets/")) {
+		dir_create("avdl_build/assets/");
+	}
+
+	// open source directory
+	int src_dir = open(avdl_settings->asset_dir, O_DIRECTORY);
+	if (!src_dir) {
+		printf("avdl error: Unable to open '%s': %s\n", avdl_settings->asset_dir, strerror(errno));
+		return -1;
+	}
+
+	// open destination directory
+	int dst_dir = open(outdir, O_DIRECTORY);
+	if (!dst_dir) {
+		printf("avdl error: Unable to open '%s': %s\n", outdir, strerror(errno));
+		close(src_dir);
+		return -1;
+	}
+
+	/*
+	 * start reading all files from source directory
+	 */
+	DIR *d = opendir(avdl_settings->asset_dir);
+	if (!d) {
+		printf("avdl error: Unable to open source directory '%s': %s\n", avdl_settings->asset_dir, strerror(errno));
+		return -1;
+	}
+
+	int assets_handled = 0;
+	printf("avdl: assets - " RED "0%%" RESET "\r");
+	fflush(stdout);
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+
+		// ignore `.` and `..`
+		if (strcmp(dir->d_name, ".") == 0
+		||  strcmp(dir->d_name, "..") == 0) {
+			continue;
+		}
+
+		// skip non-regular files (like directories)
+		struct stat statbuf;
+		if (fstatat(src_dir, dir->d_name, &statbuf, 0) != 0) {
+			printf("avdl error: Unable to stat file '%s/%s': %s\n", avdl_settings->asset_dir, dir->d_name, strerror(errno));
+			close(src_dir);
+			close(dst_dir);
+			closedir(d);
+			return -1;
+		}
+
+		// is directory - skip - maybe recursive compilation at some point?
+		if (S_ISDIR(statbuf.st_mode)) {
+			//printf("avdl skipping directory: %s\n", dir->d_name);
+			continue;
+		}
+		else
+		// is regular file - do nothing
+		if (S_ISREG(statbuf.st_mode)) {
+		}
+		// not supporting other file types - skip
+		else {
+			//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+			continue;
+		}
+
+		// skip files already transpiled (check last modified)
+		strcpy(buffer, dir->d_name);
+		if ( faccessat(dst_dir, buffer, F_OK, 0) == 0 ) {
+			struct stat statbuf2;
+			if (fstatat(dst_dir, buffer, &statbuf2, 0) != 0) {
+				printf("avdl error: Unable to stat file '%s/%s': %s\n", outdir, dir->d_name, strerror(errno));
+				continue;
+			}
+
+			// transpiled file is same or newer (?) - skip transpilation
+			if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
+				//printf("avdl asset file not modified, skipping handling of '%s'\n", dir->d_name);
+				continue;
+			}
+			/*
+			printf("Last file src modification: %s\n", ctime(&statbuf.st_mtime));
+			printf("Last file dst modification: %s\n", ctime(&statbuf2.st_mtime));
+			*/
+
+		}
+		//printf("handling %s\n", dir->d_name);
+
+		/*
+		 * Currently assets are just copy-pasted,
+		 * however on a future version there will be more fine
+		 * control of editing files to supported formats
+		 * and throwing errors on unsupported formats.
+		 */
+		file_copy_at(src_dir, dir->d_name, dst_dir, dir->d_name, 0);
+
+		assets_handled++;
+		printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (assets_handled)/assets_to_handle *100));
+		fflush(stdout);
+	}
+	closedir(d);
+
+	printf("avdl: assets - " GRN "100%%" RESET "\n");
+	fflush(stdout);
+
 	return 0;
 }
