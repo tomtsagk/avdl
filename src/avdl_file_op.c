@@ -312,7 +312,7 @@ int dir_createat(int dir_at, const char *filename) {
 	}
 	else {
 		printf("avdl error: cannot create directories on specific locations on windows yet\n");
-		return 0;
+		return -1;
 	}
 	#else
 	mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
@@ -342,4 +342,44 @@ int is_dir(const char *filename) {
 	}
 	#endif
 	return 0;
+}
+
+int Avdl_FileOp_GetNumberOfFiles(const char *directory) {
+
+	// only handle directories
+	if (!is_dir(directory)) {
+		printf("avdl error: not a directory: %s\n", directory);
+		return -1;
+	}
+
+	// open source directory
+	int src_dir = open(directory, O_DIRECTORY);
+	if (!src_dir) {
+		printf("avdl error: Unable to open '%s': %s\n", directory, strerror(errno));
+		return -1;
+	}
+
+	DIR *d = opendir(directory);
+	if (!d) {
+		printf("avdl error: Unable to open directory '%s': %s\n", directory, strerror(errno));
+		return -1;
+	}
+
+	int files = 0;
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+		struct stat statbuf;
+		//if ( stat(dir->d_name, &statbuf) != 0 ) {
+		if ( fstatat(src_dir, dir->d_name, &statbuf, 0) != 0 ) {
+			printf("avdl error: Unable to stat directory '%s': %s\n", directory, strerror(errno));
+			return -1;
+		}
+
+		if (S_ISREG(statbuf.st_mode)) {
+			files++;
+		}
+	}
+
+	return files;
 }

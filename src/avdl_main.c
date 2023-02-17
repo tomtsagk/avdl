@@ -5,6 +5,7 @@
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <dirent.h>
 
 #include "avdl_struct_table.h"
 #include "avdl_commands.h"
@@ -19,6 +20,8 @@
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
 #endif
+
+const char cache_dir[] = ".avdl_cache/";
 
 extern float parsing_float;
 
@@ -128,12 +131,70 @@ char *cengine_headers[] = {
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 
+// compiler steps
+int avdl_transpile(struct AvdlSettings *);
+int avdl_compile(struct AvdlSettings *);
+int avdl_compile_cengine(struct AvdlSettings *);
+int avdl_link(struct AvdlSettings *);
+int avdl_assets(struct AvdlSettings *);
+
 // init data, parse, exit
 #ifdef AVDL_UNIT_TEST
 int avdl_main(int argc, char *argv[]) {
 #else
 int main(int argc, char *argv[]) {
 #endif
+
+	// project settings
+	struct AvdlSettings avdl_settings;
+	AvdlSettings_Create(&avdl_settings);
+	AvdlSettings_SetFromFile(&avdl_settings, "app.avdl");
+
+	/*
+	printf("looking for source files in: %s\n", avdl_settings.src_dir);
+	printf("looking for asset files in: %s\n", avdl_settings.asset_dir);
+	*/
+	printf("~ Project Details ~\n");
+	printf("Project Name: %s\n", avdl_settings.project_name);
+	printf("Version: %d (%s)-%d\n", avdl_settings.version_code, avdl_settings.version_name, avdl_settings.revision);
+	printf("Icon: %s\n", avdl_settings.icon_path);
+	printf("Package: %s\n", avdl_settings.package);
+	printf("~ Project Details end ~\n");
+	printf("\n");
+
+	// from `.dd` to `.c`
+	if ( avdl_transpile(&avdl_settings) != 0) {
+		printf("avdl: error transpiling project\n");
+		return -1;
+	}
+
+	// from `.c` to `.o`
+	if ( avdl_compile(&avdl_settings) != 0) {
+		printf("avdl: error compiling project\n");
+		return -1;
+	}
+
+	// cengine
+	if ( avdl_compile_cengine(&avdl_settings) != 0) {
+		printf("avdl: error compiling cengine\n");
+		return -1;
+	}
+
+	// combine all `.o` to executable
+	if ( avdl_link(&avdl_settings) != 0) {
+		printf("avdl: error linking project\n");
+		return -1;
+	}
+
+	// handle assets
+	if ( avdl_assets(&avdl_settings) != 0) {
+		printf("avdl: error handling project assets\n");
+		return -1;
+	}
+
+	printf("avdl project compiled successfully at avdl_build\n");
+
+	return 0;
 
 	avdl_platform_initialise();
 	avdl_initProjectLocation();
@@ -1078,5 +1139,677 @@ int create_android_directory(const char *androidDirName) {
 	}
 	#endif
 
+	return 0;
+}
+
+int avdl_transpile(struct AvdlSettings *avdl_settings) {
+
+	int files_to_transpile = Avdl_FileOp_GetNumberOfFiles(avdl_settings->src_dir);
+
+	// open source directory
+	int src_dir = open(avdl_settings->src_dir, O_DIRECTORY);
+	if (!src_dir) {
+		printf("avdl error: Unable to open '%s': %s\n", avdl_settings->src_dir, strerror(errno));
+		return -1;
+	}
+
+	// open destination directory
+	int dst_dir = open(cache_dir, O_DIRECTORY);
+	if (!dst_dir) {
+		printf("avdl error: Unable to open '%s': %s\n", cache_dir, strerror(errno));
+		close(src_dir);
+		return -1;
+	}
+
+	/*
+	 * start reading all files from source directory
+	 */
+	DIR *d = opendir(avdl_settings->src_dir);
+	if (!d) {
+		printf("avdl error: Unable to open source directory '%s': %s\n", avdl_settings->src_dir, strerror(errno));
+		return -1;
+	}
+
+	// TODO: Handle this
+	includePath = "include/";
+
+	int files_transpiled = 0;
+	printf("avdl: transpiling - 0%%\r");
+	fflush(stdout);
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+
+		// ignore `.` and `..`
+		if (strcmp(dir->d_name, ".") == 0
+		||  strcmp(dir->d_name, "..") == 0) {
+			continue;
+		}
+
+		// skip non-regular files (like directories)
+		struct stat statbuf;
+		if (fstatat(src_dir, dir->d_name, &statbuf, 0) != 0) {
+			printf("avdl error: Unable to stat file '%s/%s': %s\n", avdl_settings->src_dir, dir->d_name, strerror(errno));
+			close(src_dir);
+			close(dst_dir);
+			closedir(d);
+			return -1;
+		}
+
+		// is directory - skip - maybe recursive compilation at some point?
+		if (S_ISDIR(statbuf.st_mode)) {
+			printf("avdl skipping directory: %s\n", dir->d_name);
+			continue;
+		}
+		else
+		// is regular file - do nothing
+		if (S_ISREG(statbuf.st_mode)) {
+		}
+		// not supporting other file types - skip
+		else {
+			printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+			continue;
+		}
+
+		// skip files already transpiled (check last modified)
+		strcpy(buffer, dir->d_name);
+		strcat(buffer, ".c");
+		if ( faccessat(dst_dir, buffer, F_OK, 0) == 0 ) {
+			struct stat statbuf2;
+			if (fstatat(dst_dir, buffer, &statbuf2, 0) != 0) {
+				printf("avdl error: Unable to stat file '%s/%s': %s\n", cache_dir, dir->d_name, strerror(errno));
+				continue;
+			}
+
+			// transpiled file is same or newer (?) - skip transpilation
+			if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
+				//printf("avdl src file not modified, skipping transpilation of '%s'\n", dir->d_name);
+				continue;
+			}
+			/*
+			printf("Last file src modification: %s\n", ctime(&statbuf.st_mtime));
+			printf("Last file dst modification: %s\n", ctime(&statbuf2.st_mtime));
+			*/
+
+		}
+		//printf("transpiling %s\n", dir->d_name);
+
+		included_files_num = 0;
+
+		// initialise the parent node
+
+		strcpy(buffer, avdl_settings->src_dir);
+		strcat(buffer, dir->d_name);
+		game_node = ast_create(AST_GAME);
+		if (semanticAnalyser_convertToAst(game_node, buffer) != 0) {
+			printf("avdl failed to do semantic analysis\n");
+			return -1;
+		}
+
+		// write results in cache
+		strcpy(buffer, cache_dir);
+		strcat(buffer, dir->d_name);
+		strcat(buffer, ".c");
+		if (transpile_cglut(buffer, game_node) != 0) {
+			printf("avdl: transpilation failed: %s -> %s\n", dir->d_name, buffer);
+			return -1;
+		}
+		files_transpiled++;
+		printf("avdl: transpiling - %d%%\r", (int)((float) (files_transpiled)/files_to_transpile *100));
+		fflush(stdout);
+	}
+	closedir(d);
+
+	printf("avdl: transpiling - 100%%\n");
+	fflush(stdout);
+
+	return 0;
+}
+
+int avdl_compile(struct AvdlSettings *avdl_settings) {
+
+	int files_to_compile = Avdl_FileOp_GetNumberOfFiles(avdl_settings->src_dir);
+
+	// open cache directory
+	int src_dir = open(cache_dir, O_DIRECTORY);
+	if (!src_dir) {
+		printf("avdl error: Unable to open '%s': %s\n", cache_dir, strerror(errno));
+		return -1;
+	}
+
+	/*
+	 * start reading all files from source directory
+	 */
+	DIR *d = opendir(cache_dir);
+	if (!d) {
+		printf("avdl error: Unable to open source directory '%s': %s\n", avdl_settings->src_dir, strerror(errno));
+		return -1;
+	}
+
+	int files_compiled = 0;
+	printf("avdl: compiling - 0%%\r");
+	fflush(stdout);
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+
+		// ignore `.` and `..`
+		if (strcmp(dir->d_name, ".") == 0
+		||  strcmp(dir->d_name, "..") == 0) {
+			continue;
+		}
+
+		// skip non-regular files (like directories)
+		struct stat statbuf;
+		if (fstatat(src_dir, dir->d_name, &statbuf, 0) != 0) {
+			printf("avdl error: Unable to stat file '%s/%s': %s\n", avdl_settings->src_dir, dir->d_name, strerror(errno));
+			close(src_dir);
+			closedir(d);
+			return -1;
+		}
+
+		// is regular file - do nothing
+		if (S_ISREG(statbuf.st_mode)) {
+		}
+		// not supporting other file types - skip
+		else {
+			//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+			continue;
+		}
+
+		// skip non-`.c` files
+		if (strcmp(dir->d_name +strlen(dir->d_name) -2, ".c") != 0) {
+			continue;
+		}
+
+		// skip files already compiled (check last modified)
+		strcpy(buffer, dir->d_name);
+		strcat(buffer, ".o");
+		if ( faccessat(src_dir, buffer, F_OK, 0) == 0 ) {
+			struct stat statbuf2;
+			if (fstatat(src_dir, buffer, &statbuf2, 0) != 0) {
+				printf("avdl error: Unable to stat file '%s/%s': %s\n", cache_dir, dir->d_name, strerror(errno));
+				continue;
+			}
+
+			// compiled file is same or newer (?) - skip compilation
+			if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
+				//printf("avdl src file not modified, skipping compilation of '%s'\n", dir->d_name);
+				continue;
+			}
+			/*
+			printf("Last file src modification: %s\n", ctime(&statbuf.st_mtime));
+			printf("Last file dst modification: %s\n", ctime(&statbuf2.st_mtime));
+			*/
+
+		}
+
+		//printf("compiling %s\n", dir->d_name);
+
+		// compile
+		strcpy(buffer, "gcc -O3 -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
+		//strcat(buffer, gameVersion);
+		strcat(buffer, "0.0.0");
+		strcat(buffer, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
+		//strcat(buffer, gameRevision);
+		strcat(buffer, "0");
+		strcat(buffer, "\\\"\" -c -w ");
+		//strcat(buffer, filename[i]);
+		strcat(buffer, cache_dir);
+		strcat(buffer, dir->d_name);
+		strcat(buffer, " -o ");
+		strcat(buffer, cache_dir);
+		strcat(buffer, dir->d_name);
+		strcat(buffer, ".o");
+		for (int i = 0; i < totalIncludeDirectories; i++) {
+			strcat(buffer, " -I ");
+			strcat(buffer, additionalIncludeDirectory[i]);
+		}
+		strcat(buffer, " -I include ");
+//		if (includePath) {
+//			strcat(buffer, " -I ");
+//			strcat(buffer, includePath);
+//		}
+		//printf("avdl command: %s\n", buffer);
+		if (system(buffer)) {
+			printf("avdl: error compiling file: %s\n", dir->d_name);
+			return -1;
+		}
+
+		files_compiled++;
+		printf("avdl: compiling - %d%%\r", (int)((float) (files_compiled)/files_to_compile *100));
+		fflush(stdout);
+	}
+	closedir(d);
+	printf("avdl: compiling - 100%%\n");
+	fflush(stdout);
+//	/*
+//	 * compile all given `.c` files to `.o` files
+//	 */
+//	for (int i = 0; i < input_file_total && compile; i++) {
+//
+//		// check if file is meant to be compiled, or is already compiled
+//		if (strcmp(filename[i] +strlen(filename[i]) -2, ".c") != 0) {
+//			continue;
+//		}
+//
+//		//printf("compiling: %s\n", filename[i]);
+//
+//		/*
+//		 * on android, object files are the same as `.c` source files
+//		 * for now
+//		 */
+//		if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+//			strcpy(buffer, filename[i]);
+//			filename[i][strlen(filename[i]) -1] = 'o';
+//			file_copy(buffer, filename[i], 0);
+//			continue;
+//		}
+//
+//		// compile
+//		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
+//		strcat(buffer, gameVersion);
+//		strcat(buffer, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
+//		strcat(buffer, gameRevision);
+//		strcat(buffer, "\\\"\" -c -w ");
+//		strcat(buffer, filename[i]);
+//		strcat(buffer, " -o ");
+//		if (outname && !link) {
+//			strcat(buffer, outname);
+//		}
+//		else {
+//			filename[i][strlen(filename[i]) -1] = 'o';
+//			strcat(buffer, filename[i]);
+//		}
+//
+//		//strcat(buffer, " -O3 -lGL -lGLEW -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer");
+//		strcat(buffer, " -O3 -w");
+//		for (int i = 0; i < totalIncludeDirectories; i++) {
+//			strcat(buffer, " -I ");
+//			strcat(buffer, additionalIncludeDirectory[i]);
+//		}
+//		if (includePath) {
+//			strcat(buffer, " -I ");
+//			strcat(buffer, includePath);
+//		}
+//		//printf("command: %s\n", buffer);
+//		if (system(buffer)) {
+//			printf("avdl: error compiling file: %s\n", filename[i]);
+//			exit(-1);
+//		}
+//	}
+	return 0;
+}
+
+int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
+
+	/*
+	 * if not available, compile `cengine` and cache it
+	 */
+	char *outdir = ".avdl_cache/";
+	strcpy(buffer, outdir);
+	strcat(buffer, "cengine/");
+	if (!is_dir(buffer)) {
+		dir_create(buffer);
+	}
+
+	printf("avdl: compiling cengine - 0%%\r");
+	fflush(stdout);
+	char compile_command[DD_BUFFER_SIZE];
+	for (int i = 0; i < cengine_files_total; i++) {
+
+		strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
+//		if (avdlSteamMode && cengine_files[i].steam) {
+//			printf("cengine steam file: %s\n", cengine_files[i].steam);
+//			strcpy(compile_command, "g++ -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
+//		}
+//		else
+		if (cengine_files[i].main) {
+			//printf("cengine file: %s\n", cengine_files[i].main);
+			//strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
+			strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+		}
+		// no file available for current settings
+		else {
+			continue;
+		}
+
+//		strcat(compile_command, installLocation);
+//		strcat(compile_command, "\\\" ");
+
+		// include the source file
+		strcat(compile_command, avdl_getProjectLocation());
+		strcat(compile_command, "/share/avdl/cengine/");
+//		if (avdlSteamMode && cengine_files[i].steam) {
+//			strcat(compile_command, cengine_files[i].steam);
+//		}
+//		else
+		if (cengine_files[i].main) {
+			strcat(compile_command, cengine_files[i].main);
+		}
+		else {
+			continue;
+		}
+//
+//		if (avdlSteamMode) {
+//			strcat(compile_command, " -DAVDL_STEAM ");
+//		}
+		strcat(compile_command, " -o ");
+		//strcat(compile_command, buffer);
+		//strcat(compile_command, "/");
+//		if (avdlSteamMode && cengine_files[i].steam) {
+//			strcat(compile_command, cengine_files[i].steam);
+//			compile_command[strlen(compile_command)-3] = 'o';
+//			compile_command[strlen(compile_command)-2] = '\0';
+//		}
+//		else {
+			strcpy(buffer, outdir);
+			strcat(buffer, "cengine/");
+			strcat(buffer, cengine_files[i].main);
+			//strcat(compile_command, cengine_files[i].main);
+			buffer[strlen(buffer)-1] = 'o';
+			//compile_command[strlen(compile_command)-1] = 'o';
+//		}
+		strcat(compile_command, buffer);
+
+		// cengine headers
+		strcat(compile_command, " -I");
+		strcat(compile_command, avdl_getProjectLocation());
+		strcat(compile_command, "/include");
+
+		// should cengine allow the inclusion of extra directories?
+//		for (int i = 0; i < totalIncludeDirectories; i++) {
+//			strcat(compile_command, " -I ");
+//			strcat(compile_command, additionalIncludeDirectory[i]);
+//		}
+//
+		// skip files already compiled
+		if ( access(buffer, F_OK) == 0 ) {
+			//printf("skipping: %s\n", buffer);
+			printf("avdl: compiling cengine - %d%%\r", (int)((float) (i+1)/cengine_files_total *100));
+			fflush(stdout);
+			continue;
+		}
+
+		//printf("cengine compile command: %s\n", compile_command);
+		if (system(compile_command) != 0) {
+			printf("error compiling cengine\n");
+			return -1;
+		}
+////		if (!avdlQuietMode) {
+			printf("avdl: compiling cengine - %d%%\r", (int)((float) (i+1)/cengine_files_total *100));
+			fflush(stdout);
+////		}
+	}
+////	if (!avdlQuietMode) {
+		printf("avdl: compiling cengine - 100%%\n");
+////	}
+
+	return 0;
+}
+
+int avdl_link(struct AvdlSettings *avdl_settings) {
+
+	printf("avdl: linking everything together\n");
+
+	// link the final executable
+
+	char *outdir = "avdl_build/";
+	if (!is_dir(outdir)) {
+		dir_create(outdir);
+	}
+
+	// prepare link command
+////	if (avdlSteamMode) {
+////		strcpy(buffer, "g++ -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+////	}
+////	else {
+		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+////	}
+
+	// add game files to link
+////			for (int i = 0; i < input_file_total; i++) {
+////				strcat(buffer, filename[i]);
+////				strcat(buffer, " ");
+////			}
+	// open source directory
+	int src_dir = open(avdl_settings->src_dir, O_DIRECTORY);
+	if (!src_dir) {
+		printf("avdl error: Unable to open '%s': %s\n", avdl_settings->src_dir, strerror(errno));
+		return -1;
+	}
+
+	// open destination directory
+	int dst_dir = open(outdir, O_DIRECTORY);
+	if (!dst_dir) {
+		printf("avdl error: Unable to open '%s': %s\n", outdir, strerror(errno));
+		close(src_dir);
+		return -1;
+	}
+
+	/*
+	 * start reading all files from source directory
+	 */
+	DIR *d = opendir(avdl_settings->src_dir);
+	if (!d) {
+		printf("avdl error: Unable to open source directory '%s': %s\n", avdl_settings->src_dir, strerror(errno));
+		return -1;
+	}
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+
+		// ignore `.` and `..`
+		if (strcmp(dir->d_name, ".") == 0
+		||  strcmp(dir->d_name, "..") == 0) {
+			continue;
+		}
+
+		// skip non-regular files (like directories)
+		struct stat statbuf;
+		if (fstatat(src_dir, dir->d_name, &statbuf, 0) != 0) {
+			printf("avdl error: Unable to stat file '%s/%s': %s\n", avdl_settings->src_dir, dir->d_name, strerror(errno));
+			close(src_dir);
+			close(dst_dir);
+			closedir(d);
+			return -1;
+		}
+
+		// is regular file - do nothing
+		if (S_ISREG(statbuf.st_mode)) {
+			strcat(buffer, ".avdl_cache/");
+			strcat(buffer, dir->d_name);
+			strcat(buffer, ".c.o ");
+		}
+		// not supporting other file types - skip
+		else {
+			//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+			continue;
+		}
+
+		/*
+		// skip files already transpiled (check last modified)
+		strcpy(buffer, dir->d_name);
+		strcat(buffer, ".c");
+		if ( faccessat(dst_dir, buffer, F_OK, 0) == 0 ) {
+			struct stat statbuf2;
+			if (fstatat(dst_dir, buffer, &statbuf2, 0) != 0) {
+				printf("avdl error: Unable to stat file '%s/%s': %s\n", cache_dir, dir->d_name, strerror(errno));
+				continue;
+			}
+
+			// transpiled file is same or newer (?) - skip transpilation
+			if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
+				//printf("avdl src file not modified, skipping transpilation of '%s'\n", dir->d_name);
+				continue;
+			}
+			printf("Last file src modification: %s\n", ctime(&statbuf.st_mtime));
+			printf("Last file dst modification: %s\n", ctime(&statbuf2.st_mtime));
+
+		}
+	*/
+	}
+
+	// add cengine files to link
+	char tempDir[DD_BUFFER_SIZE];
+	strcpy(tempDir, ".avdl_cache/cengine/");
+	for (int i = 0; i < cengine_files_total; i++) {
+////		if (avdlSteamMode && cengine_files[i].steam) {
+////		}
+////		else
+		if (cengine_files[i].main) {
+		}
+		else {
+			continue;
+		}
+		strcat(buffer, tempDir);
+		strcat(buffer, "/");
+////		if (avdlSteamMode && cengine_files[i].steam) {
+////			strcat(buffer, cengine_files[i].steam);
+////			buffer[strlen(buffer)-3] = 'o';
+////			buffer[strlen(buffer)-2] = '\0';
+////		}
+////		else {
+			strcat(buffer, cengine_files[i].main);
+			buffer[strlen(buffer)-1] = 'o';
+////		}
+		strcat(buffer, " ");
+	}
+
+	// output file
+	strcat(buffer, "-o ");
+	strcat(buffer, outdir);
+	strcat(buffer, "/");
+	//strcat(buffer, gameName);
+	strcat(buffer, "avdl_game");
+
+////	for (int i = 0; i < totalLibDirectories; i++) {
+////		strcat(buffer, " -L ");
+////		strcat(buffer, additionalLibDirectory[i]);
+////	}
+
+////	if (avdlStandalone) {
+////		strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libopus.so.0 -l:libopusfile.so.0 -l:libpng16.so.16 -w -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
+////	}
+////	else {
+		strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+////	}
+
+////	if (avdlSteamMode) {
+////		strcat(buffer, " -lsteam_api ");
+////	}
+	//printf("link command: %s\n", buffer);
+	if (system(buffer)) {
+		printf("avdl: error linking files\n");
+		return -1;
+	}
+			/*
+	// on android put all object files in an android project
+	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+		#else
+		char *androidDir;
+		if (outname) {
+			androidDir = outname;
+		}
+		else {
+			androidDir = "android";
+		}
+
+		if (create_android_directory(androidDir) < 0) {
+			printf("avdl: error while linking\n");
+			return -1;
+		}
+
+		// put all object files to android
+		strcpy(buffer, androidDir);
+		strcat(buffer, "/app/src/main/cpp/game/");
+		dir_create(buffer);
+
+		// in the destination, remove directory ("/something/myfile.c" -> "myfile.c")
+		for (int i = 0; i < input_file_total; i++) {
+			strcpy(buffer, androidDir);
+			strcat(buffer, "/app/src/main/cpp/game/");
+			char *rawFilename = filename[i];
+			char *temp;
+			while ((temp = strstr(rawFilename, "/"))) {
+				rawFilename = temp+1;
+			}
+			strncat(buffer, rawFilename, 99);
+			strcat(buffer, ".c");
+			file_copy(filename[i], buffer, 0);
+		}
+
+		// folder to edit
+		strcpy(buffer, androidDir);
+		strcat(buffer, "/app/src/main/cpp/");
+		int outDir = open(buffer, O_DIRECTORY);
+		if (!outDir) {
+			printf("avdl: can't open %s: %s\n", buffer, strerror(errno));
+			return -1;
+		}
+
+		// files to swap in
+		buffer[0] = '\0';
+		for (int i = 0; i < input_file_total; i++) {
+			strcat(buffer, "game/");
+			char *rawFilename = filename[i];
+			char *temp;
+			while ((temp = strstr(rawFilename, "/"))) {
+				rawFilename = temp+1;
+			}
+			strcat(buffer, rawFilename);
+			strcat(buffer, ".c ");
+		}
+
+		// add in the avdl-compiled source files
+		file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt", "%AVDL_GAME_FILES%", buffer);
+		close(outDir);
+
+		// handle versioning
+		strcpy(buffer, androidDir);
+		strcat(buffer, "/app/");
+		outDir = open(buffer, O_DIRECTORY);
+		file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", gamePackageName);
+		file_replace(outDir, "build.gradle.in2", outDir, "build.gradle.in3", "%AVDL_VERSION_CODE%", gameVersionCode);
+		file_replace(outDir, "build.gradle.in3", outDir, "build.gradle", "%AVDL_VERSION_NAME%", gameVersion);
+		close(outDir);
+
+		if (gameIconFlat) {
+			strcpy(buffer, androidDir);
+			strcat(buffer, "/app/src/main/res/drawable/");
+			strcat(buffer, gameIconFlat);
+			file_copy(gameIconFlat, buffer, 0);
+		}
+
+		if (gameIconForeground) {
+			strcpy(buffer, androidDir);
+			strcat(buffer, "/app/src/main/res/drawable/");
+			strcat(buffer, gameIconForeground);
+			file_copy(gameIconForeground, buffer, 0);
+		}
+
+		if (gameIconBackground) {
+			strcpy(buffer, androidDir);
+			strcat(buffer, "/app/src/main/res/drawable/");
+			strcat(buffer, gameIconBackground);
+			file_copy(gameIconBackground, buffer, 0);
+		}
+
+		// project name
+		strcpy(buffer, androidDir);
+		strcat(buffer, "/app/src/main/res/values/");
+		outDir = open(buffer, O_DIRECTORY);
+		file_replace(outDir, "strings.xml.in", outDir, "strings.xml", "%AVDL_PROJECT_NAME%", gameName);
+		close(outDir);
+		#endif
+	}
+		*/
+	printf("avdl: linking done\n");
+	return 0;
+}
+
+// handle assets and put them in the final build
+int avdl_assets(struct AvdlSettings *) {
 	return 0;
 }

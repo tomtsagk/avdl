@@ -33,4 +33,32 @@
 
 #endif
 
+/*
+ * Compiler settings on how to compile a game
+ */
+struct AvdlSettings {
+
+	// where to look for source files
+	char src_dir[100];
+
+	// where to look for assets
+	char asset_dir[100];
+
+	// name of the project
+	char project_name[100];
+
+	// versioning
+	int version_code;
+	char version_name[100];
+	int revision;
+
+	// icon
+	char icon_path[100];
+
+	char package[100];
+};
+
+void AvdlSettings_Create(struct AvdlSettings *);
+void AvdlSettings_SetFromFile(struct AvdlSettings *, char *filename);
+
 #endif

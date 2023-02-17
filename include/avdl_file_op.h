@@ -13,4 +13,6 @@ int dir_create(const char *filename);
 int dir_createat(int dir_at, const char *filename);
 int is_dir(const char *filename);
 
+int Avdl_FileOp_GetNumberOfFiles(const char *directory);
+
 #endif
