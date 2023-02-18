@@ -1337,7 +1337,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	strcat(buffer3, "\\\"\" -c -w ");
 	// cengine headers
 	strcat(buffer3, " -I ");
-	strcat(buffer3, cengine_path);
+	strcat(buffer3, avdl_project_path);
 	strcat(buffer3, "/include ");
 	//strcat(buffer, filename[i]);
 	strcat(buffer3, buffer);
