@@ -570,6 +570,7 @@ jobs:
         cp -r ../AVDL_BUILD/share/avdl/cengine/*.c ../AVDL_BUILD/include/*.h cengine
         mkdir build
         ../AVDL_BUILD/bin/avdl.exe -t
+        ls -R
         cp .avdl_cache/*.c src/
         for i in src/*.c; do mv $i ${i/.dd.c/.c}; done
         cd build
