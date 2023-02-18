@@ -1596,7 +1596,7 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 		}
 
 	}
-	//printf("transpiling %s\n", buffer);
+	printf("transpiling %s to %s\n", buffer, buffer2);
 
 	included_files_num = 0;
 
