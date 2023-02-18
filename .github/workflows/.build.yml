@@ -459,12 +459,15 @@ jobs:
         cd ..
     - name: compile_rue
       run: |
-        echo "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-        pwd
-        ls -R avdl_build_linux
         cd rue
         ../avdl_build_linux/bin/avdl -i ../avdl_build_linux/dependencies/linux/include -L ../avdl_build_linux/dependencies/linux/lib --standalone
-        #make AVDL_BIN="AVDL_BUILD/bin/avdl" COMPILER_CUSTOM_FLAGS="-i AVDL_BUILD/include -i AVDL_BUILD/dependencies/linux/include --standalone" LINKER_CUSTOM_FLAGS="-L AVDL_BUILD/dependencies/linux/lib --standalone" assetdir=
+        mkdir avdl_build/dependencies
+        cp ../avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
+    - name: upload_artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_build_linux
+        path: avdl_build
   # Windows
   rue_build_windows:
     runs-on: windows-latest
