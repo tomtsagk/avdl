@@ -1490,10 +1490,10 @@ int main(int argc, char *argv[]) {
 			}
 
 			if (avdlStandalone) {
-				strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libopus.so.0 -l:libopusfile.so.0 -l:libpng16.so.16 -w -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
+				strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libopus.so.0 -l:libopusfile.so.0 -l:libpng16.so.16 -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
 			}
 			else {
-				strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+				strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
 			}
 
 			if (avdlSteamMode) {
@@ -1983,10 +1983,10 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 
 	if (avdlStandalone) {
-		strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libopus.so.0 -l:libopusfile.so.0 -l:libpng16.so.16 -w -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
+		strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libopus.so.0 -l:libopusfile.so.0 -l:libpng16.so.16 -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
 	}
 	else {
-		strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+		strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
 	}
 
 ////	if (avdlSteamMode) {

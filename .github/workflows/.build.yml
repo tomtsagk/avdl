@@ -463,7 +463,7 @@ jobs:
         pwd
         ls -R avdl_build_linux
         cd rue
-        ../avdl_build_linux/bin/avdl -i ../avdl_build_linux/dependencies/linux/include -L AVDL_BUILD/dependencies/linux/lib --standalone
+        ../avdl_build_linux/bin/avdl -i ../avdl_build_linux/dependencies/linux/include -L ../avdl_build_linux/dependencies/linux/lib --standalone
         #make AVDL_BIN="AVDL_BUILD/bin/avdl" COMPILER_CUSTOM_FLAGS="-i AVDL_BUILD/include -i AVDL_BUILD/dependencies/linux/include --standalone" LINKER_CUSTOM_FLAGS="-L AVDL_BUILD/dependencies/linux/lib --standalone" assetdir=
   # Windows
   rue_build_windows:
