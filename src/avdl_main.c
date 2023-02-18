@@ -1705,7 +1705,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 //		strcat(buffer, " -I ");
 //		strcat(buffer, includePath);
 //	}
-	printf("avdl compile command: %s\n", buffer3);
+	//printf("avdl compile command: %s\n", buffer3);
 	if (system(buffer3)) {
 		printf("avdl: error compiling file: %s\n", buffer3);
 		return -1;
@@ -1805,12 +1805,12 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		strcat(compile_command, avdl_project_path);
 		strcat(compile_command, "/include");
 
-		// should cengine allow the inclusion of extra directories?
-//		for (int i = 0; i < totalIncludeDirectories; i++) {
-//			strcat(compile_command, " -I ");
-//			strcat(compile_command, additionalIncludeDirectory[i]);
-//		}
-//
+		// cengine extra directories (mostly for custom dependencies)
+		for (int i = 0; i < totalIncludeDirectories; i++) {
+			strcat(compile_command, " -I ");
+			strcat(compile_command, additionalIncludeDirectory[i]);
+		}
+
 		// skip files already compiled
 		if ( Avdl_FileOp_DoesFileExist(buffer) ) {
 			//printf("skipping: %s\n", buffer);
@@ -1819,7 +1819,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			continue;
 		}
 
-		printf("cengine compile command: %s\n", compile_command);
+		//printf("cengine compile command: %s\n", compile_command);
 		if (system(compile_command) != 0) {
 			printf("error compiling cengine\n");
 			return -1;
