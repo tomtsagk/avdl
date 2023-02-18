@@ -1331,6 +1331,8 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	strcat(buffer3, buffer);
 	strcat(buffer3, " -o ");
 	strcat(buffer3, buffer2);
+	strcat(buffer3, " -I ");
+	strcat(buffer3, cengine_path);
 	for (int i = 0; i < totalIncludeDirectories; i++) {
 		strcat(buffer3, " -I ");
 		strcat(buffer3, additionalIncludeDirectory[i]);
