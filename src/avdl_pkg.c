@@ -91,12 +91,20 @@ const char *avdl_pkg_GetProjectPath() {
 			return 0;
 		}
 
+		char slash;
+		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+		slash = '\\';
+		#else
+		slash = '/';
+		#endif
+
+
 		// lose last two files (so `/directory/bin/avdl` becomes `/directory/`)
 		char *p = buffer2 +length -1;
 		char *lastSlash = 0;
 		char *secondToLastSlash = 0;
 		while (p >= buffer2) {
-			if (p[0] == '/') {
+			if (p[0] == slash) {
 				if (!lastSlash) {
 					lastSlash = p;
 				}
