@@ -5,7 +5,10 @@
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
+
+//#if AVDL_IS_OS(AVDL_OS_LINUX)
 #include <dirent.h>
+//#endif
 
 #include "avdl_struct_table.h"
 #include "avdl_commands.h"
@@ -197,6 +200,7 @@ int main(int argc, char *argv[]) {
 	printf("Version: %d (%s)-%d\n", avdl_settings.version_code, avdl_settings.version_name, avdl_settings.revision);
 	printf("Icon: %s\n", avdl_settings.icon_path);
 	printf("Package: %s\n", avdl_settings.package);
+	printf("CEngine location in: %s\n", cengine_path);
 	printf("~ Project Details end ~\n");
 	printf("\n");
 
