@@ -1,10 +1,13 @@
 #include "avdl_settings.h"
-#include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+
+#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
+#include <unistd.h>
+#endif
 
 void AvdlSettings_Create(struct AvdlSettings *o) {
 	strncpy(o->src_dir, "src/", 99);
