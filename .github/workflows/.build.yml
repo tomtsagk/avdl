@@ -361,33 +361,33 @@ jobs:
       with:
         name: avdl_build_linux
         path: AVDL_BUILD
-#  build_windows:
-#    runs-on: windows-latest
-#    needs: [dependencies_windows, dependencies_linux]
-#    steps:
-#    - name: init_avdl
-#      uses: actions/checkout@v1
-#    - name: compile
-#      shell: bash
-#      run: |
-#        mkdir build
-#        cd build
-#        cmake ../ . -DCMAKE_INSTALL_PREFIX="AVDL_BUILD"
-#        cmake --build . --config Release
-#        cmake --install .
-#        cd ..
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: avdl_dependencies_linux
-#        path: build/AVDL_BUILD/dependencies
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: avdl_dependencies_windows
-#        path: build/AVDL_BUILD/dependencies
-#    - uses: actions/upload-artifact@v3
-#      with:
-#        name: avdl_build_windows
-#        path: build/AVDL_BUILD
+  build_windows:
+    runs-on: windows-latest
+    needs: [dependencies_windows, dependencies_linux]
+    steps:
+    - name: init_avdl
+      uses: actions/checkout@v1
+    - name: compile
+      shell: bash
+      run: |
+        mkdir build
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="AVDL_BUILD"
+        cmake --build . --config Release
+        cmake --install .
+        cd ..
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_dependencies_linux
+        path: build/AVDL_BUILD/dependencies
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_dependencies_windows
+        path: build/AVDL_BUILD/dependencies
+    - uses: actions/upload-artifact@v3
+      with:
+        name: avdl_build_windows
+        path: build/AVDL_BUILD
   create_release:
     if: ${{ github.ref_type == 'tag' }}
     runs-on: ubuntu-20.04

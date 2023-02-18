@@ -15,4 +15,7 @@ int is_dir(const char *filename);
 
 int Avdl_FileOp_GetNumberOfFiles(const char *directory);
 
+// for each file in given directory, call function
+int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(const char *, const char*, int, int));
+
 #endif

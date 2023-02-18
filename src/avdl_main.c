@@ -6,10 +6,6 @@
 #include <errno.h>
 #include <fcntl.h>
 
-//#if AVDL_IS_OS(AVDL_OS_LINUX)
-#include <dirent.h>
-//#endif
-
 #include "avdl_struct_table.h"
 #include "avdl_commands.h"
 #include "avdl_file_op.h"
@@ -1188,123 +1184,92 @@ int create_android_directory(const char *androidDirName) {
 	return 0;
 }
 
+// Handles files to be transpiled
+int transpile_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
+
+	// ignore `.` and `..`
+	if (strcmp(filename, ".") == 0
+	||  strcmp(filename, "..") == 0) {
+		return 0;
+	}
+
+	// src file full path
+	strcpy(buffer, dirname);
+	strcat(buffer, filename);
+
+	// dst file full path
+	char buffer2[1024];
+	strcpy(buffer2, cache_dir);
+	strcat(buffer2, filename);
+	strcat(buffer2, ".c");
+
+	// check file type
+	struct stat statbuf;
+	if (stat(buffer, &statbuf) != 0) {
+		printf("avdl error: Unable to stat file '%s': %s\n", buffer, strerror(errno));
+		return -1;
+	}
+
+	// is directory - skip - maybe recursive compilation at some point?
+	if (S_ISDIR(statbuf.st_mode)) {
+		printf("avdl skipping directory: %s\n", buffer);
+		return 0;
+	}
+	else
+	// is regular file - do nothing
+	if (S_ISREG(statbuf.st_mode)) {
+	}
+	// not supporting other file types - skip
+	else {
+		printf("avdl error: Unsupported file type '%s' - skip\n", buffer);
+		return 0;
+	}
+
+	// skip files already transpiled (check last modified)
+	if ( access(buffer2, F_OK) == 0 ) {
+		struct stat statbuf2;
+		if (stat(buffer2, &statbuf2) != 0) {
+			printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));
+			return -1;
+		}
+
+		// transpiled file is same or newer (?) - skip transpilation
+		if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
+			//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", buffer, buffer2);
+			return 0;
+		}
+
+	}
+	//printf("transpiling %s\n", buffer);
+
+	included_files_num = 0;
+
+	// initialise the parent node
+	game_node = ast_create(AST_GAME);
+	if (semanticAnalyser_convertToAst(game_node, buffer) != 0) {
+		printf("avdl failed to do semantic analysis\n");
+		return -1;
+	}
+
+	// write results to destination file
+	if (transpile_cglut(buffer2, game_node) != 0) {
+		printf("avdl: transpilation failed: %s -> %s\n", buffer, buffer2);
+		return -1;
+	}
+	printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
+
+	return 0;
+}
+
 int avdl_transpile(struct AvdlSettings *avdl_settings) {
-
-	int files_to_transpile = Avdl_FileOp_GetNumberOfFiles(avdl_settings->src_dir);
-
-	// open source directory
-	int src_dir = open(avdl_settings->src_dir, O_DIRECTORY);
-	if (!src_dir) {
-		printf("avdl error: Unable to open '%s': %s\n", avdl_settings->src_dir, strerror(errno));
-		return -1;
-	}
-
-	// open destination directory
-	int dst_dir = open(cache_dir, O_DIRECTORY);
-	if (!dst_dir) {
-		printf("avdl error: Unable to open '%s': %s\n", cache_dir, strerror(errno));
-		close(src_dir);
-		return -1;
-	}
-
-	/*
-	 * start reading all files from source directory
-	 */
-	DIR *d = opendir(avdl_settings->src_dir);
-	if (!d) {
-		printf("avdl error: Unable to open source directory '%s': %s\n", avdl_settings->src_dir, strerror(errno));
-		return -1;
-	}
 
 	// TODO: Handle this
 	includePath = "include/";
 
-	int files_transpiled = 0;
 	printf("avdl: transpiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
-	struct dirent *dir;
-	while ((dir = readdir(d)) != NULL) {
-
-		// ignore `.` and `..`
-		if (strcmp(dir->d_name, ".") == 0
-		||  strcmp(dir->d_name, "..") == 0) {
-			continue;
-		}
-
-		// skip non-regular files (like directories)
-		struct stat statbuf;
-		if (fstatat(src_dir, dir->d_name, &statbuf, 0) != 0) {
-			printf("avdl error: Unable to stat file '%s/%s': %s\n", avdl_settings->src_dir, dir->d_name, strerror(errno));
-			close(src_dir);
-			close(dst_dir);
-			closedir(d);
-			return -1;
-		}
-
-		// is directory - skip - maybe recursive compilation at some point?
-		if (S_ISDIR(statbuf.st_mode)) {
-			printf("avdl skipping directory: %s\n", dir->d_name);
-			continue;
-		}
-		else
-		// is regular file - do nothing
-		if (S_ISREG(statbuf.st_mode)) {
-		}
-		// not supporting other file types - skip
-		else {
-			printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
-			continue;
-		}
-
-		// skip files already transpiled (check last modified)
-		strcpy(buffer, dir->d_name);
-		strcat(buffer, ".c");
-		if ( faccessat(dst_dir, buffer, F_OK, 0) == 0 ) {
-			struct stat statbuf2;
-			if (fstatat(dst_dir, buffer, &statbuf2, 0) != 0) {
-				printf("avdl error: Unable to stat file '%s/%s': %s\n", cache_dir, dir->d_name, strerror(errno));
-				continue;
-			}
-
-			// transpiled file is same or newer (?) - skip transpilation
-			if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
-				//printf("avdl src file not modified, skipping transpilation of '%s'\n", dir->d_name);
-				continue;
-			}
-			/*
-			printf("Last file src modification: %s\n", ctime(&statbuf.st_mtime));
-			printf("Last file dst modification: %s\n", ctime(&statbuf2.st_mtime));
-			*/
-
-		}
-		//printf("transpiling %s\n", dir->d_name);
-
-		included_files_num = 0;
-
-		// initialise the parent node
-
-		strcpy(buffer, avdl_settings->src_dir);
-		strcat(buffer, dir->d_name);
-		game_node = ast_create(AST_GAME);
-		if (semanticAnalyser_convertToAst(game_node, buffer) != 0) {
-			printf("avdl failed to do semantic analysis\n");
-			return -1;
-		}
-
-		// write results in cache
-		strcpy(buffer, cache_dir);
-		strcat(buffer, dir->d_name);
-		strcat(buffer, ".c");
-		if (transpile_cglut(buffer, game_node) != 0) {
-			printf("avdl: transpilation failed: %s -> %s\n", dir->d_name, buffer);
-			return -1;
-		}
-		files_transpiled++;
-		printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (files_transpiled)/files_to_transpile *100));
-		fflush(stdout);
-	}
-	closedir(d);
+	Avdl_FileOp_ForFileInDirectory(avdl_settings->src_dir, transpile_file);
 
 	printf("avdl: transpiling - " GRN "100%%" RESET "\n");
 	fflush(stdout);
@@ -1312,178 +1277,105 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 	return 0;
 }
 
+int compile_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
+
+	// ignore `.` and `..`
+	if (strcmp(filename, ".") == 0
+	||  strcmp(filename, "..") == 0) {
+		return 0;
+	}
+
+	// src file full path
+	strcpy(buffer, dirname);
+	strcat(buffer, filename);
+
+	// dst file full path
+	char buffer2[1024];
+	strcpy(buffer2, buffer);
+	strcat(buffer2, ".o");
+
+	// skip non-regular files (like directories)
+	struct stat statbuf;
+	if ( stat(buffer, &statbuf) != 0 ) {
+		printf("avdl error: Unable to stat file '%s': %s\n", buffer, strerror(errno));
+		return -1;
+	}
+
+	// is regular file - do nothing
+	if (S_ISREG(statbuf.st_mode)) {
+	}
+	// not supporting other file types - skip
+	else {
+		//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+		return 0;
+	}
+
+	// skip non-`.c` files
+	if (strcmp(buffer +strlen(buffer) -2, ".c") != 0) {
+		return 0;
+	}
+
+	// skip files already compiled (check last modified)
+	if ( access(buffer2, F_OK) == 0 ) {
+		struct stat statbuf2;
+		if (stat(buffer2, &statbuf2) != 0) {
+			printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));
+			return -1;
+		}
+
+		// compiled file is same or newer (?) - skip compilation
+		if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
+			//printf("avdl src file not modified, skipping compilation of '%s'\n", dir->d_name);
+			return 0;
+		}
+	}
+
+	//printf("compiling %s\n", dir->d_name);
+
+	char buffer3[1024];
+	// compile
+	strcpy(buffer3, "gcc -O3 -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
+	//strcat(buffer, gameVersion);
+	strcat(buffer3, "0.0.0");
+	strcat(buffer3, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
+	//strcat(buffer, gameRevision);
+	strcat(buffer3, "0");
+	strcat(buffer3, "\\\"\" -c -w ");
+	//strcat(buffer, filename[i]);
+	strcat(buffer3, buffer);
+	strcat(buffer3, " -o ");
+	strcat(buffer3, buffer2);
+	for (int i = 0; i < totalIncludeDirectories; i++) {
+		strcat(buffer3, " -I ");
+		strcat(buffer3, additionalIncludeDirectory[i]);
+	}
+	strcat(buffer3, " -I include ");
+//	if (includePath) {
+//		strcat(buffer, " -I ");
+//		strcat(buffer, includePath);
+//	}
+	//printf("avdl compile command: %s\n", buffer3);
+	if (system(buffer3)) {
+		printf("avdl: error compiling file: %s\n", buffer3);
+		return -1;
+	}
+
+	printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
+	fflush(stdout);
+
+	return 0;
+}
+
 int avdl_compile(struct AvdlSettings *avdl_settings) {
 
-	int files_to_compile = Avdl_FileOp_GetNumberOfFiles(avdl_settings->src_dir);
-
-	// open cache directory
-	int src_dir = open(cache_dir, O_DIRECTORY);
-	if (!src_dir) {
-		printf("avdl error: Unable to open '%s': %s\n", cache_dir, strerror(errno));
-		return -1;
-	}
-
-	/*
-	 * start reading all files from source directory
-	 */
-	DIR *d = opendir(cache_dir);
-	if (!d) {
-		printf("avdl error: Unable to open source directory '%s': %s\n", avdl_settings->src_dir, strerror(errno));
-		return -1;
-	}
-
-	int files_compiled = 0;
 	printf("avdl: compiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
-	struct dirent *dir;
-	while ((dir = readdir(d)) != NULL) {
+	Avdl_FileOp_ForFileInDirectory(cache_dir, compile_file);
 
-		// ignore `.` and `..`
-		if (strcmp(dir->d_name, ".") == 0
-		||  strcmp(dir->d_name, "..") == 0) {
-			continue;
-		}
-
-		// skip non-regular files (like directories)
-		struct stat statbuf;
-		if (fstatat(src_dir, dir->d_name, &statbuf, 0) != 0) {
-			printf("avdl error: Unable to stat file '%s/%s': %s\n", avdl_settings->src_dir, dir->d_name, strerror(errno));
-			close(src_dir);
-			closedir(d);
-			return -1;
-		}
-
-		// is regular file - do nothing
-		if (S_ISREG(statbuf.st_mode)) {
-		}
-		// not supporting other file types - skip
-		else {
-			//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
-			continue;
-		}
-
-		// skip non-`.c` files
-		if (strcmp(dir->d_name +strlen(dir->d_name) -2, ".c") != 0) {
-			continue;
-		}
-
-		// skip files already compiled (check last modified)
-		strcpy(buffer, dir->d_name);
-		strcat(buffer, ".o");
-		if ( faccessat(src_dir, buffer, F_OK, 0) == 0 ) {
-			struct stat statbuf2;
-			if (fstatat(src_dir, buffer, &statbuf2, 0) != 0) {
-				printf("avdl error: Unable to stat file '%s/%s': %s\n", cache_dir, dir->d_name, strerror(errno));
-				continue;
-			}
-
-			// compiled file is same or newer (?) - skip compilation
-			if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
-				//printf("avdl src file not modified, skipping compilation of '%s'\n", dir->d_name);
-				continue;
-			}
-			/*
-			printf("Last file src modification: %s\n", ctime(&statbuf.st_mtime));
-			printf("Last file dst modification: %s\n", ctime(&statbuf2.st_mtime));
-			*/
-
-		}
-
-		//printf("compiling %s\n", dir->d_name);
-
-		// compile
-		strcpy(buffer, "gcc -O3 -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
-		//strcat(buffer, gameVersion);
-		strcat(buffer, "0.0.0");
-		strcat(buffer, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
-		//strcat(buffer, gameRevision);
-		strcat(buffer, "0");
-		strcat(buffer, "\\\"\" -c -w ");
-		//strcat(buffer, filename[i]);
-		strcat(buffer, cache_dir);
-		strcat(buffer, dir->d_name);
-		strcat(buffer, " -o ");
-		strcat(buffer, cache_dir);
-		strcat(buffer, dir->d_name);
-		strcat(buffer, ".o");
-		for (int i = 0; i < totalIncludeDirectories; i++) {
-			strcat(buffer, " -I ");
-			strcat(buffer, additionalIncludeDirectory[i]);
-		}
-		strcat(buffer, " -I include ");
-//		if (includePath) {
-//			strcat(buffer, " -I ");
-//			strcat(buffer, includePath);
-//		}
-		//printf("avdl command: %s\n", buffer);
-		if (system(buffer)) {
-			printf("avdl: error compiling file: %s\n", dir->d_name);
-			return -1;
-		}
-
-		files_compiled++;
-		printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (files_compiled)/files_to_compile *100));
-		fflush(stdout);
-	}
-	closedir(d);
 	printf("avdl: compiling - " GRN "100%%" RESET "\n");
 	fflush(stdout);
-//	/*
-//	 * compile all given `.c` files to `.o` files
-//	 */
-//	for (int i = 0; i < input_file_total && compile; i++) {
-//
-//		// check if file is meant to be compiled, or is already compiled
-//		if (strcmp(filename[i] +strlen(filename[i]) -2, ".c") != 0) {
-//			continue;
-//		}
-//
-//		//printf("compiling: %s\n", filename[i]);
-//
-//		/*
-//		 * on android, object files are the same as `.c` source files
-//		 * for now
-//		 */
-//		if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
-//			strcpy(buffer, filename[i]);
-//			filename[i][strlen(filename[i]) -1] = 'o';
-//			file_copy(buffer, filename[i], 0);
-//			continue;
-//		}
-//
-//		// compile
-//		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
-//		strcat(buffer, gameVersion);
-//		strcat(buffer, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
-//		strcat(buffer, gameRevision);
-//		strcat(buffer, "\\\"\" -c -w ");
-//		strcat(buffer, filename[i]);
-//		strcat(buffer, " -o ");
-//		if (outname && !link) {
-//			strcat(buffer, outname);
-//		}
-//		else {
-//			filename[i][strlen(filename[i]) -1] = 'o';
-//			strcat(buffer, filename[i]);
-//		}
-//
-//		//strcat(buffer, " -O3 -lGL -lGLEW -lavdl-cengine -lm -w -lSDL2 -lSDL2_mixer");
-//		strcat(buffer, " -O3 -w");
-//		for (int i = 0; i < totalIncludeDirectories; i++) {
-//			strcat(buffer, " -I ");
-//			strcat(buffer, additionalIncludeDirectory[i]);
-//		}
-//		if (includePath) {
-//			strcat(buffer, " -I ");
-//			strcat(buffer, includePath);
-//		}
-//		//printf("command: %s\n", buffer);
-//		if (system(buffer)) {
-//			printf("avdl: error compiling file: %s\n", filename[i]);
-//			exit(-1);
-//		}
-//	}
+
 	return 0;
 }
 
@@ -1616,6 +1508,61 @@ static int create_executable_file(const char *filename, const char *content) {
 	return 0;
 }
 
+int add_object_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
+
+	// ignore `.` and `..`
+	if (strcmp(filename, ".") == 0
+	||  strcmp(filename, "..") == 0) {
+		return 0;
+	}
+
+	char buffer2[1024];
+	strcpy(buffer2, dirname);
+	strcat(buffer2, filename);
+
+	// skip non-regular files (like directories)
+	struct stat statbuf;
+	if (stat(buffer2, &statbuf) != 0) {
+		printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));
+		return -1;
+	}
+
+	// is regular file - add to link command
+	if (S_ISREG(statbuf.st_mode)) {
+		strcat(buffer, ".avdl_cache/");
+		strcat(buffer, filename);
+		strcat(buffer, ".c.o ");
+	}
+	// not supporting other file types - skip
+	else {
+		//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+		return 0;
+	}
+
+	/*
+	// skip files already transpiled (check last modified)
+	strcpy(buffer, dir->d_name);
+	strcat(buffer, ".c");
+	if ( faccessat(dst_dir, buffer, F_OK, 0) == 0 ) {
+		struct stat statbuf2;
+		if (fstatat(dst_dir, buffer, &statbuf2, 0) != 0) {
+			printf("avdl error: Unable to stat file '%s/%s': %s\n", cache_dir, dir->d_name, strerror(errno));
+			continue;
+		}
+
+		// transpiled file is same or newer (?) - skip transpilation
+		if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
+			//printf("avdl src file not modified, skipping transpilation of '%s'\n", dir->d_name);
+			continue;
+		}
+		printf("Last file src modification: %s\n", ctime(&statbuf.st_mtime));
+		printf("Last file dst modification: %s\n", ctime(&statbuf2.st_mtime));
+
+	}
+	*/
+	return 0;
+}
+
 int avdl_link(struct AvdlSettings *avdl_settings) {
 
 	printf("avdl: creating executable - " YEL "..." RESET "\r");
@@ -1643,83 +1590,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 ////				strcat(buffer, filename[i]);
 ////				strcat(buffer, " ");
 ////			}
-	// open source directory
-	int src_dir = open(avdl_settings->src_dir, O_DIRECTORY);
-	if (!src_dir) {
-		printf("avdl error: Unable to open '%s': %s\n", avdl_settings->src_dir, strerror(errno));
-		return -1;
-	}
-
-	// open destination directory
-	int dst_dir = open(outdir, O_DIRECTORY);
-	if (!dst_dir) {
-		printf("avdl error: Unable to open '%s': %s\n", outdir, strerror(errno));
-		close(src_dir);
-		return -1;
-	}
-
-	/*
-	 * start reading all files from source directory
-	 */
-	DIR *d = opendir(avdl_settings->src_dir);
-	if (!d) {
-		printf("avdl error: Unable to open source directory '%s': %s\n", avdl_settings->src_dir, strerror(errno));
-		return -1;
-	}
-
-	struct dirent *dir;
-	while ((dir = readdir(d)) != NULL) {
-
-		// ignore `.` and `..`
-		if (strcmp(dir->d_name, ".") == 0
-		||  strcmp(dir->d_name, "..") == 0) {
-			continue;
-		}
-
-		// skip non-regular files (like directories)
-		struct stat statbuf;
-		if (fstatat(src_dir, dir->d_name, &statbuf, 0) != 0) {
-			printf("avdl error: Unable to stat file '%s/%s': %s\n", avdl_settings->src_dir, dir->d_name, strerror(errno));
-			close(src_dir);
-			close(dst_dir);
-			closedir(d);
-			return -1;
-		}
-
-		// is regular file - do nothing
-		if (S_ISREG(statbuf.st_mode)) {
-			strcat(buffer, ".avdl_cache/");
-			strcat(buffer, dir->d_name);
-			strcat(buffer, ".c.o ");
-		}
-		// not supporting other file types - skip
-		else {
-			//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
-			continue;
-		}
-
-		/*
-		// skip files already transpiled (check last modified)
-		strcpy(buffer, dir->d_name);
-		strcat(buffer, ".c");
-		if ( faccessat(dst_dir, buffer, F_OK, 0) == 0 ) {
-			struct stat statbuf2;
-			if (fstatat(dst_dir, buffer, &statbuf2, 0) != 0) {
-				printf("avdl error: Unable to stat file '%s/%s': %s\n", cache_dir, dir->d_name, strerror(errno));
-				continue;
-			}
-
-			// transpiled file is same or newer (?) - skip transpilation
-			if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
-				//printf("avdl src file not modified, skipping transpilation of '%s'\n", dir->d_name);
-				continue;
-			}
-			printf("Last file src modification: %s\n", ctime(&statbuf.st_mtime));
-			printf("Last file dst modification: %s\n", ctime(&statbuf2.st_mtime));
-
-		}
-	*/
-	}
+	Avdl_FileOp_ForFileInDirectory(avdl_settings->src_dir, add_object_file);
 
 	// add cengine files to link
 	char tempDir[DD_BUFFER_SIZE];
@@ -1922,12 +1793,78 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	return 0;
 }
 
-// handle assets and put them in the final build
-int avdl_assets(struct AvdlSettings *avdl_settings) {
+int asset_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
 
-	int assets_to_handle = Avdl_FileOp_GetNumberOfFiles(avdl_settings->asset_dir);
+	// ignore `.` and `..`
+	if (strcmp(filename, ".") == 0
+	||  strcmp(filename, "..") == 0) {
+		return 0;
+	}
+
+	// src file
+	strcpy(buffer, dirname);
+	strcat(buffer, filename);
 
 	char *outdir = "avdl_build/assets/";
+
+	// dst file
+	char buffer2[1024];
+	strcpy(buffer2, outdir);
+	strcat(buffer2, filename);
+
+	// skip non-regular files (like directories)
+	struct stat statbuf;
+	if (stat(buffer, &statbuf) != 0) {
+		printf("avdl error: Unable to stat file '%s': %s\n", buffer, strerror(errno));
+		return -1;
+	}
+
+	// is directory - skip - maybe recursive compilation at some point?
+	if (S_ISDIR(statbuf.st_mode)) {
+		//printf("avdl skipping directory: %s\n", dir->d_name);
+		return 0;
+	}
+	else
+	// is regular file - do nothing
+	if (S_ISREG(statbuf.st_mode)) {
+	}
+	// not supporting other file types - skip
+	else {
+		//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+		return 0;
+	}
+
+	// skip files already transpiled (check last modified)
+	if ( access(buffer2, F_OK) == 0 ) {
+		struct stat statbuf2;
+		if (stat(buffer2, &statbuf2) != 0) {
+			printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));
+			return -1;
+		}
+
+		// transpiled file is same or newer (?) - skip transpilation
+		if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
+			//printf("avdl asset file not modified, skipping handling of '%s'\n", dir->d_name);
+			return 0;
+		}
+	}
+	//printf("handling %s\n", dir->d_name);
+
+	/*
+	 * Currently assets are just copy-pasted,
+	 * however on a future version there will be more fine
+	 * control of editing files to supported formats
+	 * and throwing errors on unsupported formats.
+	 */
+	file_copy(buffer, buffer2, 0);
+
+	printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
+	fflush(stdout);
+	return 0;
+}
+
+// handle assets and put them in the final build
+int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 	if (!is_dir("avdl_build")) {
 		dir_create("avdl_build");
@@ -1937,103 +1874,10 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		dir_create("avdl_build/assets/");
 	}
 
-	// open source directory
-	int src_dir = open(avdl_settings->asset_dir, O_DIRECTORY);
-	if (!src_dir) {
-		printf("avdl error: Unable to open '%s': %s\n", avdl_settings->asset_dir, strerror(errno));
-		return -1;
-	}
-
-	// open destination directory
-	int dst_dir = open(outdir, O_DIRECTORY);
-	if (!dst_dir) {
-		printf("avdl error: Unable to open '%s': %s\n", outdir, strerror(errno));
-		close(src_dir);
-		return -1;
-	}
-
-	/*
-	 * start reading all files from source directory
-	 */
-	DIR *d = opendir(avdl_settings->asset_dir);
-	if (!d) {
-		printf("avdl error: Unable to open source directory '%s': %s\n", avdl_settings->asset_dir, strerror(errno));
-		return -1;
-	}
-
-	int assets_handled = 0;
 	printf("avdl: assets - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
-	struct dirent *dir;
-	while ((dir = readdir(d)) != NULL) {
-
-		// ignore `.` and `..`
-		if (strcmp(dir->d_name, ".") == 0
-		||  strcmp(dir->d_name, "..") == 0) {
-			continue;
-		}
-
-		// skip non-regular files (like directories)
-		struct stat statbuf;
-		if (fstatat(src_dir, dir->d_name, &statbuf, 0) != 0) {
-			printf("avdl error: Unable to stat file '%s/%s': %s\n", avdl_settings->asset_dir, dir->d_name, strerror(errno));
-			close(src_dir);
-			close(dst_dir);
-			closedir(d);
-			return -1;
-		}
-
-		// is directory - skip - maybe recursive compilation at some point?
-		if (S_ISDIR(statbuf.st_mode)) {
-			//printf("avdl skipping directory: %s\n", dir->d_name);
-			continue;
-		}
-		else
-		// is regular file - do nothing
-		if (S_ISREG(statbuf.st_mode)) {
-		}
-		// not supporting other file types - skip
-		else {
-			//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
-			continue;
-		}
-
-		// skip files already transpiled (check last modified)
-		strcpy(buffer, dir->d_name);
-		if ( faccessat(dst_dir, buffer, F_OK, 0) == 0 ) {
-			struct stat statbuf2;
-			if (fstatat(dst_dir, buffer, &statbuf2, 0) != 0) {
-				printf("avdl error: Unable to stat file '%s/%s': %s\n", outdir, dir->d_name, strerror(errno));
-				continue;
-			}
-
-			// transpiled file is same or newer (?) - skip transpilation
-			if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
-				//printf("avdl asset file not modified, skipping handling of '%s'\n", dir->d_name);
-				continue;
-			}
-			/*
-			printf("Last file src modification: %s\n", ctime(&statbuf.st_mtime));
-			printf("Last file dst modification: %s\n", ctime(&statbuf2.st_mtime));
-			*/
-
-		}
-		//printf("handling %s\n", dir->d_name);
-
-		/*
-		 * Currently assets are just copy-pasted,
-		 * however on a future version there will be more fine
-		 * control of editing files to supported formats
-		 * and throwing errors on unsupported formats.
-		 */
-		file_copy_at(src_dir, dir->d_name, dst_dir, dir->d_name, 0);
-
-		assets_handled++;
-		printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (assets_handled)/assets_to_handle *100));
-		fflush(stdout);
-	}
-	closedir(d);
+	Avdl_FileOp_ForFileInDirectory(avdl_settings->asset_dir, asset_file);
 
 	printf("avdl: assets - " GRN "100%%" RESET "\n");
 	fflush(stdout);

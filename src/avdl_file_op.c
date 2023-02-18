@@ -370,7 +370,6 @@ int Avdl_FileOp_GetNumberOfFiles(const char *directory) {
 	struct dirent *dir;
 	while ((dir = readdir(d)) != NULL) {
 		struct stat statbuf;
-		//if ( stat(dir->d_name, &statbuf) != 0 ) {
 		if ( fstatat(src_dir, dir->d_name, &statbuf, 0) != 0 ) {
 			printf("avdl error: Unable to stat directory '%s': %s\n", directory, strerror(errno));
 			return -1;
@@ -382,4 +381,27 @@ int Avdl_FileOp_GetNumberOfFiles(const char *directory) {
 	}
 
 	return files;
+}
+
+int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(const char *dirname, const char *filename, int, int)) {
+
+	int files_to_handle = Avdl_FileOp_GetNumberOfFiles(dirname);
+	int files_handled = 0;
+
+	/*
+	 * start reading all files from source directory
+	 */
+	DIR *d = opendir(dirname);
+	if (!d) {
+		printf("avdl error: Unable to open directory '%s': %s\n", dirname, strerror(errno));
+		return -1;
+	}
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+		files_handled++;
+		handle_function(dirname, dir->d_name, files_handled, files_to_handle);
+	}
+
+	return 0;
 }
