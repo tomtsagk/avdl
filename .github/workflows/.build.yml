@@ -568,12 +568,10 @@ jobs:
         mkdir cengine
         cp -r AVDL_BUILD/share/avdl/cengine/*.c AVDL_BUILD/include/*.h cengine
         mkdir build
-        #../avdl_build_linux/bin/avdl -i ../avdl_build_linux/dependencies/linux/include -L ../avdl_build_linux/dependencies/linux/lib --standalone --steam
         AVDL_BUILD/bin/avdl.exe -t
         cp .avdl_cache/*.c src/
         for i in src/*.c; do mv $i ${i/.dd.c/.c}; done
-#        for i in src/*.dd; do AVDL_BUILD/bin/avdl.exe -t -I include/ $i -o ${i/.dd/.c}; echo $i; done
-#        cd build
+        cd build
         cmake ../ . -DCMAKE_INSTALL_PREFIX="RUE_BUILD"
         cmake --build . --config Release
         cmake --install .
