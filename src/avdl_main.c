@@ -1330,7 +1330,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	// cengine headers
 	strcat(buffer3, " -I");
 	strcat(buffer3, cengine_path);
-	strcat(buffer3, "/include");
+	strcat(buffer3, "/include ");
 	//strcat(buffer, filename[i]);
 	strcat(buffer3, buffer);
 	strcat(buffer3, " -o ");
