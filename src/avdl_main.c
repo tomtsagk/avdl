@@ -1328,7 +1328,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	strcat(buffer3, "0");
 	strcat(buffer3, "\\\"\" -c -w ");
 	// cengine headers
-	strcat(buffer3, " -I");
+	strcat(buffer3, " -I ");
 	strcat(buffer3, cengine_path);
 	strcat(buffer3, "/include ");
 	//strcat(buffer, filename[i]);
@@ -1344,7 +1344,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 //		strcat(buffer, " -I ");
 //		strcat(buffer, includePath);
 //	}
-	//printf("avdl compile command: %s\n", buffer3);
+	printf("avdl compile command: %s\n", buffer3);
 	if (system(buffer3)) {
 		printf("avdl: error compiling file: %s\n", buffer3);
 		return -1;
@@ -1458,7 +1458,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			continue;
 		}
 
-		//printf("cengine compile command: %s\n", compile_command);
+		printf("cengine compile command: %s\n", compile_command);
 		if (system(compile_command) != 0) {
 			printf("error compiling cengine\n");
 			return -1;
