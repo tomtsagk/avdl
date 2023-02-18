@@ -437,3 +437,24 @@ jobs:
         asset_path: avdl_build_windows.zip
         asset_name: avdl_${{ github.ref_name }}_windows.zip
         asset_content_type: application/gzip
+  # Linux
+  rue_build_linux:
+    runs-on: ubuntu-20.04
+    needs: [build_linux]
+    steps:
+    - name: update packages
+      run: |
+         sudo apt update && sudo apt install -y gcc libgl1-mesa-dev
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_linux
+        path: avdl_build_linux
+    - name: get_rue
+      run: |
+        ls -R
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout feature/consume_avdl_makefile
+    - name: compile_rue
+      run: |
+        ../avdl_build_linux/bind/avdl
