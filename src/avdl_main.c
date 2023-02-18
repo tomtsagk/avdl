@@ -1331,8 +1331,6 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	strcat(buffer3, buffer);
 	strcat(buffer3, " -o ");
 	strcat(buffer3, buffer2);
-	strcat(buffer3, " -I ");
-	strcat(buffer3, cengine_path);
 	for (int i = 0; i < totalIncludeDirectories; i++) {
 		strcat(buffer3, " -I ");
 		strcat(buffer3, additionalIncludeDirectory[i]);
@@ -1439,7 +1437,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 		// cengine headers
 		strcat(compile_command, " -I");
-		strcat(compile_command, avdl_getProjectLocation());
+		strcat(compile_command, cengine_path);
 		strcat(compile_command, "/include");
 
 		// should cengine allow the inclusion of extra directories?
