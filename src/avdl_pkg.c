@@ -18,6 +18,7 @@ char *avdl_pkg_location_path = 0;
 int avdl_pkg_dependencies_type = AVDL_PKG_DEPENDENCIES_TYPE_DYNAMIC;
 
 static char buffer[1024];
+static char buffer2[1024];
 
 const char *avdl_pkg_GetCenginePath() {
 
@@ -75,7 +76,7 @@ const char *avdl_pkg_GetCenginePath() {
 const char *avdl_pkg_GetProjectPath() {
 
 	if (avdl_pkg_location_type == AVDL_PKG_LOCATION_TYPE_FIXED) {
-		strcpy(buffer, avdl_pkg_location_path);
+		strcpy(buffer2, avdl_pkg_location_path);
 	}
 	else
 	if (avdl_pkg_location_type == AVDL_PKG_LOCATION_TYPE_DYNAMIC) {
@@ -83,7 +84,7 @@ const char *avdl_pkg_GetProjectPath() {
 		// get path of binary
 		int length = wai_getExecutablePath(NULL, 0, NULL);
 		if (length < 400) {
-			wai_getExecutablePath(buffer, length, 0);
+			wai_getExecutablePath(buffer2, length, 0);
 		}
 		else {
 			printf("too long path of cengine\n");
@@ -91,10 +92,10 @@ const char *avdl_pkg_GetProjectPath() {
 		}
 
 		// lose last two files (so `/directory/bin/avdl` becomes `/directory/`)
-		char *p = buffer +length -1;
+		char *p = buffer2 +length -1;
 		char *lastSlash = 0;
 		char *secondToLastSlash = 0;
-		while (p >= buffer) {
+		while (p >= buffer2) {
 			if (p[0] == '/') {
 				if (!lastSlash) {
 					lastSlash = p;
@@ -121,7 +122,8 @@ const char *avdl_pkg_GetProjectPath() {
 		printf("avdl error: unknown pkg location type: %d\n", avdl_pkg_location_type);
 		return 0;
 	}
-	return buffer;
+	printf("project location %s\n", buffer2);
+	return buffer2;
 }
 
 int avdl_pkg_IsDynamicLocation() {
