@@ -1327,6 +1327,10 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	//strcat(buffer, gameRevision);
 	strcat(buffer3, "0");
 	strcat(buffer3, "\\\"\" -c -w ");
+	// cengine headers
+	strcat(compile_command, " -I");
+	strcat(compile_command, cengine_path);
+	strcat(compile_command, "/include");
 	//strcat(buffer, filename[i]);
 	strcat(buffer3, buffer);
 	strcat(buffer3, " -o ");
