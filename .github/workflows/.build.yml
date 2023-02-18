@@ -650,7 +650,7 @@ jobs:
       run: |
         cd rue
         mkdir cengine
-        cp -r ../AVDL_BUILD/share/avdl/cengine/*.c ../AVDL_BUILD/include/*.h cengine
+        cp -r ../AVDL_BUILD/share/avdl/cengine/*.c ../AVDL_BUILD/share/avdl/cengine/*.cpp ../AVDL_BUILD/include/*.h cengine
         mkdir build
         ../AVDL_BUILD/bin/avdl.exe -t
         cp .avdl_cache/*.c src/
