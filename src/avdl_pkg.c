@@ -71,3 +71,19 @@ const char *avdl_pkg_GetCenginePath() {
 	strcat(buffer, "/share/avdl/cengine/");
 	return buffer;
 }
+
+int avdl_pkg_IsDynamicLocation() {
+	return avdl_pkg_location_type = AVDL_PKG_LOCATION_TYPE_DYNAMIC;
+}
+
+int avdl_pkg_IsFixedLocation() {
+	return avdl_pkg_location_type = AVDL_PKG_LOCATION_TYPE_FIXED;
+}
+
+int avdl_pkg_IsDynamicDependencies() {
+	return avdl_pkg_dependencies_type = AVDL_PKG_DEPENDENCIES_TYPE_DYNAMIC;
+}
+
+int avdl_pkg_IsFixedDependencies() {
+	return avdl_pkg_dependencies_type = AVDL_PKG_DEPENDENCIES_TYPE_FIXED;
+}
