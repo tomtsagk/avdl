@@ -391,8 +391,8 @@ jobs:
   create_release:
     if: ${{ github.ref_type == 'tag' }}
     runs-on: ubuntu-20.04
-#    needs: [build_linux, build_windows]
-    needs: [build_linux]
+    needs: [build_linux, build_windows]
+#    needs: [build_linux]
     steps:
     - uses: actions/download-artifact@v3
       with:

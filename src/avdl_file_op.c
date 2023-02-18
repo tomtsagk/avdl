@@ -346,6 +346,9 @@ int is_dir(const char *filename) {
 
 int Avdl_FileOp_GetNumberOfFiles(const char *directory) {
 
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 0;
+	#else
 	// only handle directories
 	if (!is_dir(directory)) {
 		printf("avdl error: not a directory: %s\n", directory);
@@ -381,9 +384,14 @@ int Avdl_FileOp_GetNumberOfFiles(const char *directory) {
 	}
 
 	return files;
+	#endif
 }
 
 int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(const char *dirname, const char *filename, int, int)) {
+
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 0;
+	#else
 
 	int files_to_handle = Avdl_FileOp_GetNumberOfFiles(dirname);
 	int files_handled = 0;
@@ -404,4 +412,5 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 	}
 
 	return 0;
+	#endif
 }
