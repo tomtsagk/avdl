@@ -451,10 +451,11 @@ jobs:
         path: avdl_build_linux
     - name: get_rue
       run: |
-        ls -R
+        chmod +x avdl_build_linux/bin/avdl
         git clone https://github.com/tomtsagk/rue rue
         cd rue
         git checkout feature/consume_avdl_makefile
+        cd ..
     - name: compile_rue
       run: |
         cd rue
