@@ -457,6 +457,5 @@ jobs:
         git checkout feature/consume_avdl_makefile
     - name: compile_rue
       run: |
-        ls -R
         cd rue
         ../avdl_build_linux/bin/avdl
