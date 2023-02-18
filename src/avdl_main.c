@@ -1514,7 +1514,7 @@ int add_object_file(const char *dirname, const char *filename, int fileIndex, in
 	}
 
 	// is regular file - add to link command
-	if (S_ISREG(statbuf.st_mode)) {
+	if (Avdl_FileOp_IsRegStat(statbuf)) {
 		strcat(buffer, ".avdl_cache/");
 		strcat(buffer, filename);
 		strcat(buffer, ".c.o ");
