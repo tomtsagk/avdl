@@ -1051,7 +1051,7 @@ int main(int argc, char *argv[]) {
 						compile_command[strlen(compile_command)-1] = 'o';
 					}
 					strcat(compile_command, " -I");
-					strcat(compile_command, avdl_getProjectLocation());
+					strcat(compile_command, cengine_path);
 					strcat(compile_command, "/include");
 					for (int i = 0; i < totalIncludeDirectories; i++) {
 						strcat(compile_command, " -I ");
