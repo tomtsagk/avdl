@@ -158,6 +158,359 @@ int avdl_main(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
 #endif
 
+	// parse arguments
+	for (int i = 1; i < argc; i++) {
+
+		// dash argument
+		if (strlen(argv[i]) > 0 && argv[i][0] == '-') {
+
+			// double dash argument
+			if (strlen(argv[i]) > 1 && argv[i][1] == '-') {
+
+				// print abstract syntax tree
+				if (strcmp(argv[i], "--print-ast") == 0) {
+					//show_ast = 1;
+				}
+				else
+				// print struct table
+				if (strcmp(argv[i], "--print-struct-table") == 0) {
+					//show_struct_table = 1;
+				}
+				else
+				// compiling for windows
+				if (strcmp(argv[i], "--windows") == 0) {
+					//avdl_platform_set(AVDL_PLATFORM_WINDOWS);
+				}
+				else
+				// compiling for linux
+				if (strcmp(argv[i], "--linux") == 0) {
+					//avdl_platform_set(AVDL_PLATFORM_LINUX);
+				}
+				else
+				// compiling for android
+				if (strcmp(argv[i], "--android") == 0) {
+					//avdl_platform_set(AVDL_PLATFORM_ANDROID);
+				}
+				else
+				// show version number
+				if (strcmp(argv[i], "--version") == 0) {
+					printf(PKG_NAME " v%s\n", PKG_VERSION);
+					return 0;
+				}
+				else
+				// show pkg location
+				if (strcmp(argv[i], "--get-pkg-location") == 0) {
+					/*
+					#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+					wprintf(L"%lS\n", avdl_getProjectLocation());
+					#else
+					printf("%s\n", avdl_getProjectLocation());
+					#endif
+					*/
+					return 0;
+				}
+				else
+				// grab a copy of the cengine
+				if (strcmp(argv[i], "--get-cengine") == 0) {
+					//getCengine = 1;
+				}
+				else
+				// custom install location
+				if (strcmp(argv[i], "--install-loc") == 0) {
+					/*
+					if (argc > i+1) {
+						installLocation = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: --install-loc expects a path\n");
+						return -1;
+					}
+					*/
+				}
+				else
+				// dynamic install location
+				if (strcmp(argv[i], "--install-loc-dynamic") == 0) {
+					//installLocationDynamic = 1;
+				}
+				else
+				// custom save location
+				if (strcmp(argv[i], "--save-loc") == 0) {
+					/*
+					if (argc > i+1) {
+						saveLocation = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: %s expects a path\n", argv[i]);
+						return -1;
+					}
+					*/
+				}
+				else
+				if (strcmp(argv[i], "--game-version") == 0) {
+					/*
+					if (argc > i+1) {
+						gameVersion = argv[i+1];
+
+						// confirm format, only digits and '.' allowed
+						for (int j = 0; j < strlen(gameVersion); j++) {
+							if ((gameVersion[j] >= '0' && gameVersion[j] <= '9')
+							||  gameVersion[j] == '.') {
+								continue;
+							}
+
+							printf("avdl error: '%s' argument can only contain digits and '.'\n", argv[i]);
+							return -1;
+						}
+
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects a version string\n", argv[i]);
+						return -1;
+					}
+					*/
+				}
+				else
+				if (strcmp(argv[i], "--game-version-code") == 0) {
+					/*
+					if (argc > i+1) {
+						gameVersionCode = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects a version code string\n", argv[i]);
+						return -1;
+					}
+					*/
+				}
+				else
+				if (strcmp(argv[i], "--game-package-name") == 0) {
+					/*
+					if (argc > i+1) {
+						gamePackageName = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects a package name string\n", argv[i]);
+						return -1;
+					}
+					*/
+				}
+				else
+				if (strcmp(argv[i], "--game-icon") == 0) {
+					/*
+					if (argc > i+1) {
+						gameIconFlat = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects an icon string\n", argv[i]);
+						return -1;
+					}
+					*/
+				}
+				else
+				if (strcmp(argv[i], "--game-icon-foreground") == 0) {
+					/*
+					if (argc > i+1) {
+						gameIconForeground = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects an icon string\n", argv[i]);
+						return -1;
+					}
+					*/
+				}
+				else
+				if (strcmp(argv[i], "--game-icon-background") == 0) {
+					/*
+					if (argc > i+1) {
+						gameIconBackground = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects an icon string\n", argv[i]);
+						return -1;
+					}
+					*/
+				}
+				else
+				if (strcmp(argv[i], "--game-revision") == 0) {
+					/*
+					if (argc > i+1) {
+						gameRevision = argv[i+1];
+
+						// confirm format, only digits allowed
+						for (int j = 0; j < strlen(gameRevision); j++) {
+							if (gameRevision[j] >= '0'
+							&&  gameRevision[j] <= '9') {
+								continue;
+							}
+
+							printf("avdl error: '%s' argument can only contain digits\n", argv[i]);
+							return -1;
+						}
+
+						i++;
+
+					}
+					else {
+						printf("avdl error: %s expects a revision string\n", argv[i]);
+						return -1;
+					}
+					*/
+				}
+				else
+				if (strcmp(argv[i], "--game-name") == 0) {
+					/*
+					if (argc > i+1) {
+						gameName = argv[i+1];
+
+						// confirm format, only digits and '.' allowed
+						for (int j = 0; j < strlen(gameName); j++) {
+							if ((gameName[j] >= '0' && gameName[j] <= '9')
+							||  (gameName[j] >= 'a' && gameName[j] <= 'z')
+							||  (gameName[j] >= 'A' && gameName[j] <= 'Z')
+							||   gameName[j] == '_') {
+								continue;
+							}
+
+							printf("avdl error: '%s' argument can only contain digits, a-z, A-Z and '_'\n",
+								argv[i]
+							);
+							return -1;
+						}
+
+						i++;
+					}
+					else {
+						printf("avdl error: '%s' expects a game name string\n", argv[i]);
+						return -1;
+					}
+					*/
+				}
+				else
+				if (strcmp(argv[i], "--steam") == 0) {
+					//avdlSteamMode = 1;
+				}
+				else
+				if (strcmp(argv[i], "--standalone") == 0) {
+					//avdlStandalone = 1;
+				}
+				// unknown double dash argument
+				else {
+					printf("avdl error: cannot understand double dash argument '%s'\n", argv[i]);
+					return -1;
+				}
+
+			}
+			else
+			/* phase arguments
+			 * -t: translate only
+			 * -c: skip linking
+			 */
+			if (strcmp(argv[i], "-t") == 0) {
+				/*
+				compile = 0;
+				link = 0;
+				*/
+			}
+			else
+			if (strcmp(argv[i], "-c") == 0) {
+				//link = 0;
+			}
+			else
+			// output filename
+			if (strcmp(argv[i], "-o") == 0) {
+				/*
+				if (argc > i+1) {
+					outname = argv[i+1];
+					i++;
+				}
+				else {
+					printf("avdl error: name is expected after `-o`\n");
+					return -1;
+				}
+				*/
+			}
+			else
+			// add include path
+			if (strcmp(argv[i], "-I") == 0) {
+				if (argc > i+1) {
+					includePath = argv[i+1];
+					i++;
+				}
+				else {
+					printf("avdl error: include path is expected after `-I`\n");
+					return -1;
+				}
+			}
+			else
+			// add extra include paths
+			if (strcmp(argv[i], "-i") == 0) {
+				if (argc > i+1) {
+					if (totalIncludeDirectories >= 10) {
+						printf("avdl error: maximum 10 include directories allowed\n");
+						return -1;
+					}
+					additionalIncludeDirectory[totalIncludeDirectories] = argv[i+1];
+					totalIncludeDirectories++;
+					i++;
+				}
+				else {
+					printf("avdl error: include path is expected after `-i`\n");
+					return -1;
+				}
+			}
+			else
+			// add library path
+			if (strcmp(argv[i], "-L") == 0) {
+				if (argc > i+1) {
+					if (totalLibDirectories >= 10) {
+						printf("avdl error: maximum 10 library directories allowed\n");
+						return -1;
+					}
+					additionalLibDirectory[totalLibDirectories] = argv[i+1];
+					totalLibDirectories++;
+					i++;
+				}
+				else {
+					printf("avdl error: library path is expected after `-L`\n");
+					return -1;
+				}
+			}
+			else
+			// quiet mode
+			if (strcmp(argv[i], "-q") == 0) {
+				avdlQuietMode = 1;
+			}
+			// unknown single dash argument
+			else {
+				printf("avdl error: cannot understand dash argument '%s'\n", argv[i]);
+				return -1;
+			}
+		}
+		// non-dash argument - input file?
+		else {
+			/*
+			// input file
+			if (input_file_total < MAX_INPUT_FILES) {
+				strncpy(filename[input_file_total], argv[i], 100);
+				filename[input_file_total][99] = '\0';
+				input_file_total++;
+			}
+			// error argument
+			else {
+				printf("avdl error: '%s': Only %d input files can be provided at a time\n", argv[i], MAX_INPUT_FILES);
+				return -1;
+			}
+			*/
+		}
+	}
+
 	// project settings
 	struct AvdlSettings avdl_settings;
 	AvdlSettings_Create(&avdl_settings);
