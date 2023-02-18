@@ -148,6 +148,7 @@ int avdl_compile_cengine(struct AvdlSettings *);
 int avdl_link(struct AvdlSettings *);
 int avdl_assets(struct AvdlSettings *);
 
+const char *avdl_project_path;
 const char *cengine_path;
 
 // init data, parse, exit
@@ -163,6 +164,13 @@ int main(int argc, char *argv[]) {
 
 	if (AvdlSettings_SetFromFile(&avdl_settings, "app.avdl") != 0) {
 		printf("avdl error: failed to get project settings from '%s'\n", "app.avdl");
+		return -1;
+	}
+
+	// get avdl path
+	avdl_project_path = avdl_pkg_GetProjectPath();
+	if (!avdl_project_path) {
+		printf("avdl error: cannot get project path\n");
 		return -1;
 	}
 
@@ -1441,7 +1449,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 		// cengine headers
 		strcat(compile_command, " -I");
-		strcat(compile_command, cengine_path);
+		strcat(compile_command, avdl_project_path);
 		strcat(compile_command, "/include");
 
 		// should cengine allow the inclusion of extra directories?

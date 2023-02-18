@@ -34,6 +34,7 @@ enum AVDL_PKG_DEPENDENCIES_TYPE {
  * to compile the engine for a project.
  */
 const char *avdl_pkg_GetCenginePath();
+const char *avdl_pkg_GetProjectPath();
 int avdl_pkg_IsDynamicLocation();
 int avdl_pkg_IsFixedLocation();
 int avdl_pkg_IsDynamicDependencies();
