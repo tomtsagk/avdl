@@ -459,6 +459,9 @@ jobs:
         cd ..
     - name: compile_rue
       run: |
+        echo "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        pwd
+        ls -R avdl_build_linux
         cd rue
         ../avdl_build_linux/bin/avdl
   # Windows
