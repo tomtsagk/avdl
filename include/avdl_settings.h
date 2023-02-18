@@ -59,6 +59,6 @@ struct AvdlSettings {
 };
 
 void AvdlSettings_Create(struct AvdlSettings *);
-void AvdlSettings_SetFromFile(struct AvdlSettings *, char *filename);
+int AvdlSettings_SetFromFile(struct AvdlSettings *, char *filename);
 
 #endif

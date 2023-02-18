@@ -13,6 +13,7 @@ prefix=/usr/local/
 # compiler data
 #
 #COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -fprofile-arcs -ftest-coverage --coverage#-Werror
+#COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -DAVDL_PKG_LOCATION="\"test_loc/test_loc2/\"" #-Werror
 COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security #-Werror
 COMPILER_DEFINES=\
 	-DPKG_NAME=\"${PACKAGE_NAME}\"\

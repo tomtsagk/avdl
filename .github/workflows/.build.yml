@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - master
+      - feature/consume_makefile_compilation
     tags:
       "v[0-9]+.[0-9]+.[0-9]+"
   pull_request:

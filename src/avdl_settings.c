@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 void AvdlSettings_Create(struct AvdlSettings *o) {
 	strncpy(o->src_dir, "src/", 99);
@@ -25,11 +26,11 @@ void AvdlSettings_Create(struct AvdlSettings *o) {
 	o->icon_path[99] = '\0';
 }
 
-void AvdlSettings_SetFromFile(struct AvdlSettings *o, char *filename) {
+int AvdlSettings_SetFromFile(struct AvdlSettings *o, char *filename) {
 	FILE *f = fopen(filename, "r");
 	if (!f) {
-		printf("error reading settings file\n");
-		return;
+		printf("avdl error: reading settings file '%s': %s\n", filename, strerror(errno));
+		return -1;
 	}
 
 	char key[100];
@@ -103,7 +104,10 @@ void AvdlSettings_SetFromFile(struct AvdlSettings *o, char *filename) {
 			o->icon_path[99] = '\0';
 		}
 		else {
-			printf("Unknown key: %s\n", key);
+			printf("avdl error: Unknown key: %s\n", key);
+			return -1;
 		}
 	}
+
+	return 0;
 }

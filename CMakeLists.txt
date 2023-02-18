@@ -8,6 +8,7 @@ add_executable(avdl
 	src/avdl_ast_node.c src/avdl_dynamic_array.c src/avdl_lexer.c src/avdl_parser_cglut.c
 	src/avdl_semantic_analyser.c src/avdl_symtable.c src/avdl_commands.c src/avdl_file_op.c
 	src/avdl_main.c src/avdl_platform.c src/avdl_struct_table.c src/avdl_variable_type.c src/avdl_std.c
+	src/whereami.c src/avdl_pkg.c
 )
 
 add_compile_definitions(

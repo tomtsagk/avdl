@@ -16,6 +16,7 @@
 #include "avdl_parser.h"
 #include "avdl_platform.h"
 #include "avdl_settings.h"
+#include "avdl_pkg.h"
 
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
@@ -27,12 +28,12 @@
 //
 // options to do static build (installed in a directory like /usr)
 // options to do static dependencies (included in the build with a shell `project.sh` file)
-int AVDL_BUILD_LOCATION_DYNAMIC = 1;
-int AVDL_BUILD_LOCATION_STATIC = 2;
+const int AVDL_BUILD_LOCATION_DYNAMIC = 1;
+const int AVDL_BUILD_LOCATION_STATIC = 2;
 int avdl_build_location = AVDL_BUILD_LOCATION_DYNAMIC;
 
-int AVDL_BUILD_DEPENDENCIES_DYNAMIC = 1;
-int AVDL_BUILD_DEPENDENCIES_STATIC = 2;
+const int AVDL_BUILD_DEPENDENCIES_DYNAMIC = 1;
+const int AVDL_BUILD_DEPENDENCIES_STATIC = 2;
 int avdl_build_dependencies = AVDL_BUILD_DEPENDENCIES_DYNAMIC;
 
 // Test terminal colours
@@ -162,6 +163,8 @@ int avdl_compile_cengine(struct AvdlSettings *);
 int avdl_link(struct AvdlSettings *);
 int avdl_assets(struct AvdlSettings *);
 
+const char *cengine_path;
+
 // init data, parse, exit
 #ifdef AVDL_UNIT_TEST
 int avdl_main(int argc, char *argv[]) {
@@ -172,7 +175,18 @@ int main(int argc, char *argv[]) {
 	// project settings
 	struct AvdlSettings avdl_settings;
 	AvdlSettings_Create(&avdl_settings);
-	AvdlSettings_SetFromFile(&avdl_settings, "app.avdl");
+
+	if (AvdlSettings_SetFromFile(&avdl_settings, "app.avdl") != 0) {
+		printf("avdl error: failed to get project settings from '%s'\n", "app.avdl");
+		return -1;
+	}
+
+	// get cengine path
+	cengine_path = avdl_pkg_GetCenginePath();
+	if (!cengine_path) {
+		printf("avdl error: cannot get cengine path\n");
+		return -1;
+	}
 
 	/*
 	printf("looking for source files in: %s\n", avdl_settings.src_dir);
@@ -1506,8 +1520,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 //		strcat(compile_command, "\\\" ");
 
 		// include the source file
-		strcat(compile_command, avdl_getProjectLocation());
-		strcat(compile_command, "/share/avdl/cengine/");
+		strcat(compile_command, cengine_path);
 //		if (avdlSteamMode && cengine_files[i].steam) {
 //			strcat(compile_command, cengine_files[i].steam);
 //		}
@@ -1572,6 +1585,29 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 ////	if (!avdlQuietMode) {
 		printf("avdl: compiling cengine - " GRN "100%%" RESET "\n");
 ////	}
+
+	return 0;
+}
+
+static int create_executable_file(const char *filename, const char *content) {
+
+	// make a `.sh` file to link executable with dependencies
+	int fd = open(filename, O_RDWR | O_CREAT, 0777);
+	if (fd == -1) {
+		printf("avdl error: Unable to open '%s': %s\n", filename, strerror(errno));
+		return -1;
+	}
+
+	/*
+	FILE *fsh = fdopen(fd, "w");
+	if (!fsh) {
+		printf("avdl error: Unable to open fd '%s': %s\n", filename, strerror(errno));
+		return -1;
+	}
+	*/
+
+	write(fd, content, strlen(content));
+	//fclose(fsh);
 
 	return 0;
 }
@@ -1837,36 +1873,46 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 	*/
 
-	// .sh file is needed for standalone builds and/or included dependencies
+	// stand-alone project
 	if (avdl_build_location == AVDL_BUILD_LOCATION_DYNAMIC) {
-		// project.sh runs ./bin/project
+		if (avdl_build_dependencies == AVDL_BUILD_DEPENDENCIES_DYNAMIC) {
+			//
+			// Stand-alone project with shared libraries
+			//
+			// ./bin/project
+			//
+			create_executable_file("./avdl_build/avdl_game.sh", "./bin/avdl_game");
+		}
+		else {
+			//
+			// Stand-alone project with static libraries
+			//
+			// LIB_PATH ./dependencies/ && ./bin/project
+			//
+			create_executable_file("./avdl_build/avdl_game.sh",
+					"LD_LIBRARY_PATH=./dependencies/ ./bin/avdl_game");
+		}
 	}
+	// installed project
 	else {
-		// no .sh file
+		if (avdl_build_dependencies == AVDL_BUILD_DEPENDENCIES_DYNAMIC) {
+			//
+			// Installed project with shared libraries
+			//
+			// no .sh - system will find the `bin/project` file
+			//
+		}
+		else {
+			//
+			// Installed project with static libraries
+			//
+			// Should be invalid, would it make sense ?
+			// ? project.sh references ./dependencies/ and ./bin/project
+			//
+			printf("Installable project with static libraries is not supported\n");
+			return -1;
+		}
 	}
-
-	if (avdl_build_dependencies == AVDL_BUILD_DEPENDENCIES_DYNAMIC) {
-		// no .sh
-	}
-	else {
-		// project.sh references ./dependencies/
-	}
-
-	// make a `.sh` file to link executable with dependencies
-	int fd = open("avdl_build/rue.sh", O_RDWR | O_CREAT, 0777);
-	if (fd == -1) {
-		printf("avdl error: Unable to open '%s': %s\n", "avdl_build/rue.sh", strerror(errno));
-		return -1;
-	}
-
-	FILE *fsh = fdopen(fd, "w");
-	if (!fsh) {
-		printf("avdl error: Unable to open fd '%s': %s\n", "avdl_build/rue.sh", strerror(errno));
-		return -1;
-	}
-
-	fprintf(fsh, "LD_LIBRARY_PATH=./dependencies/ ./bin/avdl_game");
-	fclose(fsh);
 
 	printf("avdl: creating executable - " GRN "done" RESET "\n");
 	return 0;
