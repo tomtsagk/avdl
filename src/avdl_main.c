@@ -1288,7 +1288,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	}
 
 	// is regular file - do nothing
-	if (S_ISREG(statbuf.st_mode)) {
+	if (Avdl_FileOp_IsRegStat(statbuf)) {
 	}
 	// not supporting other file types - skip
 	else {
