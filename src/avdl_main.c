@@ -158,6 +158,9 @@ int avdl_main(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
 #endif
 
+	// temporary windows variable
+	int translateOnly = 0;
+
 	// parse arguments
 	for (int i = 1; i < argc; i++) {
 
@@ -413,6 +416,7 @@ int main(int argc, char *argv[]) {
 			 * -c: skip linking
 			 */
 			if (strcmp(argv[i], "-t") == 0) {
+				translateOnly = 1;
 				/*
 				compile = 0;
 				link = 0;
@@ -555,6 +559,11 @@ int main(int argc, char *argv[]) {
 	if ( avdl_transpile(&avdl_settings) != 0) {
 		printf("avdl: error transpiling project\n");
 		return -1;
+	}
+
+	if (translateOnly) {
+		printf("avdl: done translating\n");
+		return 0;
 	}
 
 	// from `.c` to `.o`
