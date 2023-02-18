@@ -398,7 +398,7 @@ int main(int argc, char *argv[]) {
 				}
 				else
 				if (strcmp(argv[i], "--standalone") == 0) {
-					//avdlStandalone = 1;
+					avdlStandalone = 1;
 				}
 				// unknown double dash argument
 				else {
@@ -1982,12 +1982,12 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		strcat(buffer, additionalLibDirectory[i]);
 	}
 
-////	if (avdlStandalone) {
-////		strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libopus.so.0 -l:libopusfile.so.0 -l:libpng16.so.16 -w -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
-////	}
-////	else {
+	if (avdlStandalone) {
+		strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libopus.so.0 -l:libopusfile.so.0 -l:libpng16.so.16 -w -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
+	}
+	else {
 		strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
-////	}
+	}
 
 ////	if (avdlSteamMode) {
 ////		strcat(buffer, " -lsteam_api ");
