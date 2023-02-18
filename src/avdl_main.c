@@ -1976,10 +1976,11 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	//strcat(buffer, gameName);
 	strcat(buffer, "avdl_game");
 
-////	for (int i = 0; i < totalLibDirectories; i++) {
-////		strcat(buffer, " -L ");
-////		strcat(buffer, additionalLibDirectory[i]);
-////	}
+	// link custom dependencies
+	for (int i = 0; i < totalLibDirectories; i++) {
+		strcat(buffer, " -L ");
+		strcat(buffer, additionalLibDirectory[i]);
+	}
 
 ////	if (avdlStandalone) {
 ////		strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libopus.so.0 -l:libopusfile.so.0 -l:libpng16.so.16 -w -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
