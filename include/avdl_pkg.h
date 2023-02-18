@@ -5,6 +5,9 @@
  * Holds information about the avdl package itself,
  * like where it's installed and how to access
  * its own files.
+ *
+ * By default, it's a dynamic build with shared (dynamic)
+ * dependencies.
  */
 
 /*
@@ -21,10 +24,19 @@ enum AVDL_PKG_LOCATION_TYPE {
 	AVDL_PKG_LOCATION_TYPE_FIXED,
 };
 
+enum AVDL_PKG_DEPENDENCIES_TYPE {
+	AVDL_PKG_DEPENDENCIES_TYPE_DYNAMIC,
+	AVDL_PKG_DEPENDENCIES_TYPE_FIXED,
+};
+
 /*
  * Returns the path of the `cengine` directory,
  * to compile the engine for a project.
  */
 const char *avdl_pkg_GetCenginePath();
+int avdl_pkg_IsDynamicLocation();
+int avdl_pkg_IsFixedLocation();
+int avdl_pkg_IsDynamicDependencies();
+int avdl_pkg_IsFixedDependencies();
 
 #endif

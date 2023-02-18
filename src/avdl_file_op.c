@@ -414,3 +414,11 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 	return 0;
 	#endif
 }
+
+int Avdl_FileOp_DoesFileExist(const char *filename) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 0;
+	#else
+	return access(filename, F_OK) == 0;
+	#endif
+}

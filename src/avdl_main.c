@@ -21,20 +21,6 @@
 #include <unistd.h>
 #endif
 
-// default build:
-// dynamic (re-locateable)
-// shared dependencies (not standalone)
-//
-// options to do static build (installed in a directory like /usr)
-// options to do static dependencies (included in the build with a shell `project.sh` file)
-const int AVDL_BUILD_LOCATION_DYNAMIC = 1;
-const int AVDL_BUILD_LOCATION_STATIC = 2;
-int avdl_build_location = AVDL_BUILD_LOCATION_DYNAMIC;
-
-const int AVDL_BUILD_DEPENDENCIES_DYNAMIC = 1;
-const int AVDL_BUILD_DEPENDENCIES_STATIC = 2;
-int avdl_build_dependencies = AVDL_BUILD_DEPENDENCIES_DYNAMIC;
-
 // Test terminal colours
 #define RED   "\x1B[31m"
 #define GRN   "\x1B[32m"
@@ -1226,7 +1212,7 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 	}
 
 	// skip files already transpiled (check last modified)
-	if ( access(buffer2, F_OK) == 0 ) {
+	if ( Avdl_FileOp_DoesFileExist(buffer2) ) {
 		struct stat statbuf2;
 		if (stat(buffer2, &statbuf2) != 0) {
 			printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));
@@ -1316,7 +1302,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	}
 
 	// skip files already compiled (check last modified)
-	if ( access(buffer2, F_OK) == 0 ) {
+	if ( Avdl_FileOp_DoesFileExist(buffer2) ) {
 		struct stat statbuf2;
 		if (stat(buffer2, &statbuf2) != 0) {
 			printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));
@@ -1461,7 +1447,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 //		}
 //
 		// skip files already compiled
-		if ( access(buffer, F_OK) == 0 ) {
+		if ( Avdl_FileOp_DoesFileExist(buffer) ) {
 			//printf("skipping: %s\n", buffer);
 			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/cengine_files_total *100));
 			fflush(stdout);
@@ -1749,8 +1735,8 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	*/
 
 	// stand-alone project
-	if (avdl_build_location == AVDL_BUILD_LOCATION_DYNAMIC) {
-		if (avdl_build_dependencies == AVDL_BUILD_DEPENDENCIES_DYNAMIC) {
+	if (avdl_pkg_IsDynamicLocation()) {
+		if (avdl_pkg_IsDynamicDependencies()) {
 			//
 			// Stand-alone project with shared libraries
 			//
@@ -1770,7 +1756,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 	// installed project
 	else {
-		if (avdl_build_dependencies == AVDL_BUILD_DEPENDENCIES_DYNAMIC) {
+		if (avdl_pkg_IsDynamicDependencies()) {
 			//
 			// Installed project with shared libraries
 			//
@@ -1835,7 +1821,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	}
 
 	// skip files already transpiled (check last modified)
-	if ( access(buffer2, F_OK) == 0 ) {
+	if ( Avdl_FileOp_DoesFileExist(buffer2) ) {
 		struct stat statbuf2;
 		if (stat(buffer2, &statbuf2) != 0) {
 			printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));

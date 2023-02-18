@@ -15,6 +15,8 @@ int avdl_pkg_location_type = AVDL_PKG_LOCATION_TYPE_DYNAMIC;
 char *avdl_pkg_location_path = 0;
 #endif
 
+int avdl_pkg_dependencies_type = AVDL_PKG_DEPENDENCIES_TYPE_DYNAMIC;
+
 static char buffer[1024];
 
 const char *avdl_pkg_GetCenginePath() {
