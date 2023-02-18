@@ -1197,13 +1197,13 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 	}
 
 	// is directory - skip - maybe recursive compilation at some point?
-	if (S_ISDIR(statbuf.st_mode)) {
+	if (Avdl_FileOp_IsDirStat(statbuf)) {
 		printf("avdl skipping directory: %s\n", buffer);
 		return 0;
 	}
 	else
 	// is regular file - do nothing
-	if (S_ISREG(statbuf.st_mode)) {
+	if (Avdl_FileOp_IsRegStat(statbuf)) {
 	}
 	// not supporting other file types - skip
 	else {
@@ -1734,6 +1734,9 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 	*/
 
+	create_executable_file("./avdl_build/avdl_game.sh",
+			"LD_LIBRARY_PATH=./dependencies/ ./bin/avdl_game");
+	/*
 	// stand-alone project
 	if (avdl_pkg_IsDynamicLocation()) {
 		if (avdl_pkg_IsDynamicDependencies()) {
@@ -1774,6 +1777,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 	}
+	*/
 
 	printf("avdl: creating executable - " GRN "done" RESET "\n");
 	return 0;
@@ -1806,13 +1810,13 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	}
 
 	// is directory - skip - maybe recursive compilation at some point?
-	if (S_ISDIR(statbuf.st_mode)) {
+	if (Avdl_FileOp_IsDirStat(statbuf)) {
 		//printf("avdl skipping directory: %s\n", dir->d_name);
 		return 0;
 	}
 	else
 	// is regular file - do nothing
-	if (S_ISREG(statbuf.st_mode)) {
+	if (Avdl_FileOp_IsRegStat(statbuf)) {
 	}
 	// not supporting other file types - skip
 	else {

@@ -20,4 +20,7 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 
 int Avdl_FileOp_DoesFileExist(const char *filename);
 
+int Avdl_FileOp_IsDirStat(struct stat s);
+int Avdl_FileOp_IsRegStat(struct stat s);
+
 #endif
