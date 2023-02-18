@@ -467,7 +467,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: rue_build_linux
-        path: avdl_build
+        path: rue/avdl_build
   # Windows
   rue_build_windows:
     runs-on: windows-latest
