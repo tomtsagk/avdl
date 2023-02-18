@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "whereami.h"
+#include "avdl_settings.h"
 
 /*
  * By default build is in a dynamic location,
@@ -97,7 +98,6 @@ const char *avdl_pkg_GetProjectPath() {
 		#else
 		slash = '/';
 		#endif
-
 
 		// lose last two files (so `/directory/bin/avdl` becomes `/directory/`)
 		char *p = buffer2 +length -1;
