@@ -649,6 +649,7 @@ jobs:
       shell: bash
       run: |
         cd rue
+        mv ../libraries .
         mkdir cengine
         cp -r ../AVDL_BUILD/share/avdl/cengine/*.c ../AVDL_BUILD/share/avdl/cengine/*.cpp ../AVDL_BUILD/include/*.h cengine
         mkdir build
