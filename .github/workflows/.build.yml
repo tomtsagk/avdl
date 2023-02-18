@@ -463,10 +463,42 @@ jobs:
         ../avdl_build_linux/bin/avdl -i ../avdl_build_linux/dependencies/linux/include -L ../avdl_build_linux/dependencies/linux/lib --standalone
         mkdir avdl_build/dependencies
         cp ../avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
+        rm avdl_build/dependencies/*steam*
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
         name: rue_build_linux
+        path: rue/avdl_build
+  # Linux - steam
+  rue_build_linux_steam:
+    runs-on: ubuntu-20.04
+    needs: [build_linux]
+    steps:
+    - name: update packages
+      run: |
+         sudo apt update && sudo apt install -y gcc libgl1-mesa-dev
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_linux
+        path: avdl_build_linux
+    - name: get_rue
+      run: |
+        chmod +x avdl_build_linux/bin/avdl
+        ls -R avdl_build_linux
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout feature/consume_avdl_makefile
+        cd ..
+    - name: compile_rue
+      run: |
+        cd rue
+        ../avdl_build_linux/bin/avdl -i ../avdl_build_linux/dependencies/linux/include -L ../avdl_build_linux/dependencies/linux/lib --standalone --steam
+        mkdir avdl_build/dependencies
+        cp ../avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
+    - name: upload_artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_build_linux_steam
         path: rue/avdl_build
   # Windows
   rue_build_windows:

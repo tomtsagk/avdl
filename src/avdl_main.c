@@ -394,7 +394,7 @@ int main(int argc, char *argv[]) {
 				}
 				else
 				if (strcmp(argv[i], "--steam") == 0) {
-					//avdlSteamMode = 1;
+					avdlSteamMode = 1;
 				}
 				else
 				if (strcmp(argv[i], "--standalone") == 0) {
@@ -1748,11 +1748,12 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 	for (int i = 0; i < cengine_files_total; i++) {
 
 		strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
-//		if (avdlSteamMode && cengine_files[i].steam) {
-//			printf("cengine steam file: %s\n", cengine_files[i].steam);
-//			strcpy(compile_command, "g++ -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
-//		}
-//		else
+		if (avdlSteamMode && cengine_files[i].steam) {
+			//printf("cengine steam file: %s\n", cengine_files[i].steam);
+			//strcpy(compile_command, "g++ -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
+			strcpy(compile_command, "g++ -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+		}
+		else
 		if (cengine_files[i].main) {
 			//printf("cengine file: %s\n", cengine_files[i].main);
 			//strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
@@ -1768,36 +1769,38 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 		// include the source file
 		strcat(compile_command, cengine_path);
-//		if (avdlSteamMode && cengine_files[i].steam) {
-//			strcat(compile_command, cengine_files[i].steam);
-//		}
-//		else
+		if (avdlSteamMode && cengine_files[i].steam) {
+			strcat(compile_command, cengine_files[i].steam);
+		}
+		else
 		if (cengine_files[i].main) {
 			strcat(compile_command, cengine_files[i].main);
 		}
 		else {
 			continue;
 		}
-//
-//		if (avdlSteamMode) {
-//			strcat(compile_command, " -DAVDL_STEAM ");
-//		}
+
+		if (avdlSteamMode) {
+			strcat(compile_command, " -DAVDL_STEAM ");
+		}
 		strcat(compile_command, " -o ");
 		//strcat(compile_command, buffer);
 		//strcat(compile_command, "/");
-//		if (avdlSteamMode && cengine_files[i].steam) {
-//			strcat(compile_command, cengine_files[i].steam);
-//			compile_command[strlen(compile_command)-3] = 'o';
-//			compile_command[strlen(compile_command)-2] = '\0';
-//		}
-//		else {
+		if (avdlSteamMode && cengine_files[i].steam) {
+			strcpy(buffer, outdir);
+			strcat(buffer, "cengine/");
+			strcat(buffer, cengine_files[i].steam);
+			buffer[strlen(buffer)-3] = 'o';
+			buffer[strlen(buffer)-2] = '\0';
+		}
+		else {
 			strcpy(buffer, outdir);
 			strcat(buffer, "cengine/");
 			strcat(buffer, cengine_files[i].main);
 			//strcat(compile_command, cengine_files[i].main);
 			buffer[strlen(buffer)-1] = 'o';
 			//compile_command[strlen(compile_command)-1] = 'o';
-//		}
+		}
 		strcat(compile_command, buffer);
 
 		// cengine headers
@@ -1929,12 +1932,12 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 
 	// prepare link command
-////	if (avdlSteamMode) {
-////		strcpy(buffer, "g++ -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
-////	}
-////	else {
+	if (avdlSteamMode) {
+		strcpy(buffer, "g++ -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+	}
+	else {
 		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
-////	}
+	}
 
 	// add game files to link
 ////			for (int i = 0; i < input_file_total; i++) {
@@ -1947,9 +1950,9 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	char tempDir[DD_BUFFER_SIZE];
 	strcpy(tempDir, ".avdl_cache/cengine/");
 	for (int i = 0; i < cengine_files_total; i++) {
-////		if (avdlSteamMode && cengine_files[i].steam) {
-////		}
-////		else
+		if (avdlSteamMode && cengine_files[i].steam) {
+		}
+		else
 		if (cengine_files[i].main) {
 		}
 		else {
@@ -1957,15 +1960,15 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		}
 		strcat(buffer, tempDir);
 		strcat(buffer, "/");
-////		if (avdlSteamMode && cengine_files[i].steam) {
-////			strcat(buffer, cengine_files[i].steam);
-////			buffer[strlen(buffer)-3] = 'o';
-////			buffer[strlen(buffer)-2] = '\0';
-////		}
-////		else {
+		if (avdlSteamMode && cengine_files[i].steam) {
+			strcat(buffer, cengine_files[i].steam);
+			buffer[strlen(buffer)-3] = 'o';
+			buffer[strlen(buffer)-2] = '\0';
+		}
+		else {
 			strcat(buffer, cengine_files[i].main);
 			buffer[strlen(buffer)-1] = 'o';
-////		}
+		}
 		strcat(buffer, " ");
 	}
 
@@ -1989,9 +1992,9 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
 	}
 
-////	if (avdlSteamMode) {
-////		strcat(buffer, " -lsteam_api ");
-////	}
+	if (avdlSteamMode) {
+		strcat(buffer, " -lsteam_api ");
+	}
 	//printf("link command: %s\n", buffer);
 	if (system(buffer)) {
 		printf("avdl: error linking files\n");
