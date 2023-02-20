@@ -482,3 +482,12 @@ int Avdl_FileOp_IsRegStat(struct stat s) {
 	return S_ISREG(s.st_mode);
 	#endif
 }
+
+int file_remove(const char *filename) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 0;
+	#else
+	remove(filename);
+	return 0;
+	#endif
+}

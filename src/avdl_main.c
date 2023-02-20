@@ -252,151 +252,6 @@ int main(int argc, char *argv[]) {
 					*/
 				}
 				else
-				if (strcmp(argv[i], "--game-version") == 0) {
-					/*
-					if (argc > i+1) {
-						gameVersion = argv[i+1];
-
-						// confirm format, only digits and '.' allowed
-						for (int j = 0; j < strlen(gameVersion); j++) {
-							if ((gameVersion[j] >= '0' && gameVersion[j] <= '9')
-							||  gameVersion[j] == '.') {
-								continue;
-							}
-
-							printf("avdl error: '%s' argument can only contain digits and '.'\n", argv[i]);
-							return -1;
-						}
-
-						i++;
-					}
-					else {
-						printf("avdl error: '%s' expects a version string\n", argv[i]);
-						return -1;
-					}
-					*/
-				}
-				else
-				if (strcmp(argv[i], "--game-version-code") == 0) {
-					/*
-					if (argc > i+1) {
-						gameVersionCode = argv[i+1];
-						i++;
-					}
-					else {
-						printf("avdl error: '%s' expects a version code string\n", argv[i]);
-						return -1;
-					}
-					*/
-				}
-				else
-				if (strcmp(argv[i], "--game-package-name") == 0) {
-					/*
-					if (argc > i+1) {
-						gamePackageName = argv[i+1];
-						i++;
-					}
-					else {
-						printf("avdl error: '%s' expects a package name string\n", argv[i]);
-						return -1;
-					}
-					*/
-				}
-				else
-				if (strcmp(argv[i], "--game-icon") == 0) {
-					/*
-					if (argc > i+1) {
-						gameIconFlat = argv[i+1];
-						i++;
-					}
-					else {
-						printf("avdl error: '%s' expects an icon string\n", argv[i]);
-						return -1;
-					}
-					*/
-				}
-				else
-				if (strcmp(argv[i], "--game-icon-foreground") == 0) {
-					/*
-					if (argc > i+1) {
-						gameIconForeground = argv[i+1];
-						i++;
-					}
-					else {
-						printf("avdl error: '%s' expects an icon string\n", argv[i]);
-						return -1;
-					}
-					*/
-				}
-				else
-				if (strcmp(argv[i], "--game-icon-background") == 0) {
-					/*
-					if (argc > i+1) {
-						gameIconBackground = argv[i+1];
-						i++;
-					}
-					else {
-						printf("avdl error: '%s' expects an icon string\n", argv[i]);
-						return -1;
-					}
-					*/
-				}
-				else
-				if (strcmp(argv[i], "--game-revision") == 0) {
-					/*
-					if (argc > i+1) {
-						gameRevision = argv[i+1];
-
-						// confirm format, only digits allowed
-						for (int j = 0; j < strlen(gameRevision); j++) {
-							if (gameRevision[j] >= '0'
-							&&  gameRevision[j] <= '9') {
-								continue;
-							}
-
-							printf("avdl error: '%s' argument can only contain digits\n", argv[i]);
-							return -1;
-						}
-
-						i++;
-
-					}
-					else {
-						printf("avdl error: %s expects a revision string\n", argv[i]);
-						return -1;
-					}
-					*/
-				}
-				else
-				if (strcmp(argv[i], "--game-name") == 0) {
-					/*
-					if (argc > i+1) {
-						gameName = argv[i+1];
-
-						// confirm format, only digits and '.' allowed
-						for (int j = 0; j < strlen(gameName); j++) {
-							if ((gameName[j] >= '0' && gameName[j] <= '9')
-							||  (gameName[j] >= 'a' && gameName[j] <= 'z')
-							||  (gameName[j] >= 'A' && gameName[j] <= 'Z')
-							||   gameName[j] == '_') {
-								continue;
-							}
-
-							printf("avdl error: '%s' argument can only contain digits, a-z, A-Z and '_'\n",
-								argv[i]
-							);
-							return -1;
-						}
-
-						i++;
-					}
-					else {
-						printf("avdl error: '%s' expects a game name string\n", argv[i]);
-						return -1;
-					}
-					*/
-				}
-				else
 				if (strcmp(argv[i], "--steam") == 0) {
 					avdlSteamMode = 1;
 				}
@@ -2322,6 +2177,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 char big_buffer[2048];
 int android_object_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
 
+	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 	// ignore `.` and `..`
 	if (strcmp(filename, ".") == 0
 	||  strcmp(filename, "..") == 0) {
@@ -2347,12 +2203,14 @@ int android_object_file(const char *dirname, const char *filename, int fileIndex
 	strcat(buffer2, filename);
 
 	file_copy(buffer, buffer2, 0);
+	#endif
 
 	return 0;
 }
 
 int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
+	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 	// put all object files to android
 	strcpy(buffer, "avdl_build_android/");
 	strcat(buffer, "/app/src/main/cpp/game/");
@@ -2403,6 +2261,9 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	strcat(buffer, "/app/src/main/res/values/");
 	outDir = open(buffer, O_DIRECTORY);
 	file_replace(outDir, "strings.xml.in", outDir, "strings.xml", "%AVDL_PROJECT_NAME%", avdl_settings->project_name);
+	strcat(buffer, "strings.xml.in");
+	file_remove(buffer);
 	close(outDir);
+	#endif
 	return 0;
 }
