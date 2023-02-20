@@ -578,6 +578,8 @@ int main(int argc, char *argv[]) {
 			return -1;
 		}
 
+		printf("avdl project " BLU "\"%s\"" RESET " prepared successfully for android at " BLU "./avdl_build_android/" RESET "\n", avdl_settings.project_name);
+
 		return 0;
 	}
 
