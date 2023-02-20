@@ -18,12 +18,23 @@ void AvdlSettings_Create(struct AvdlSettings *o) {
 	o->project_name[99] = '\0';
 
 	o->version_code = 1;
+	strncpy(o->version_code_str, "1", 99);
+	o->version_code_str[99] = '\0';
 	strncpy(o->version_name, "0.0.0", 99);
 	o->version_name[99] = '\0';
 	o->revision = 0;
 
 	strncpy(o->icon_path, "icon.png", 99);
 	o->icon_path[99] = '\0';
+
+	strncpy(o->icon_ico_path, "icon.ico", 99);
+	o->icon_ico_path[99] = '\0';
+
+	strncpy(o->icon_foreground_path, "icon_foreground.png", 99);
+	o->icon_foreground_path[99] = '\0';
+
+	strncpy(o->icon_background_path, "icon_background.png", 99);
+	o->icon_background_path[99] = '\0';
 
 	strncpy(o->package, "com.company.sample_project", 99);
 	o->icon_path[99] = '\0';
@@ -86,6 +97,8 @@ int AvdlSettings_SetFromFile(struct AvdlSettings *o, char *filename) {
 		else
 		if (strcmp( key, "version_code" ) == 0) {
 			o->version_code = atoi(value);
+			strncpy(o->version_code_str, value, 99);
+			o->version_code_str[99] = '\0';
 		}
 		else
 		if (strcmp( key, "version_name" ) == 0) {

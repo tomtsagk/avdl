@@ -147,6 +147,7 @@ int avdl_compile(struct AvdlSettings *);
 int avdl_compile_cengine(struct AvdlSettings *);
 int avdl_link(struct AvdlSettings *);
 int avdl_assets(struct AvdlSettings *);
+int avdl_android_object(struct AvdlSettings *);
 
 const char *avdl_project_path;
 const char *cengine_path;
@@ -192,7 +193,7 @@ int main(int argc, char *argv[]) {
 				else
 				// compiling for android
 				if (strcmp(argv[i], "--android") == 0) {
-					//avdl_platform_set(AVDL_PLATFORM_ANDROID);
+					avdl_platform_set(AVDL_PLATFORM_ANDROID);
 				}
 				else
 				// show version number
@@ -551,6 +552,10 @@ int main(int argc, char *argv[]) {
 	printf("~ Project Details end ~\n");
 	printf("\n");
 
+	if (!is_dir("avdl_build")) {
+		dir_create("avdl_build");
+	}
+
 	if (!is_dir(".avdl_cache")) {
 		dir_create(".avdl_cache");
 	}
@@ -559,6 +564,21 @@ int main(int argc, char *argv[]) {
 	if ( avdl_transpile(&avdl_settings) != 0) {
 		printf("avdl: error transpiling project\n");
 		return -1;
+	}
+
+	// android
+	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+		create_android_directory("avdl_build_android");
+
+		avdl_android_object(&avdl_settings);
+
+		// handle assets
+		if ( avdl_assets(&avdl_settings) != 0) {
+			printf("avdl: error handling project assets\n");
+			return -1;
+		}
+
+		return 0;
 	}
 
 	if (translateOnly) {
@@ -1522,13 +1542,16 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
+char buffer_android[1024];
 int create_android_directory(const char *androidDirName) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	#else
 	int isDir = is_dir(androidDirName);
 	if (isDir == 0) {
 		dir_create(androidDirName);
-		dir_copy_recursive(0, PKG_LOCATION "/share/avdl/android", 0, androidDirName);
+		strcpy(buffer_android, avdl_pkg_GetProjectPath());
+		strcat(buffer_android, "/share/avdl/android");
+		dir_copy_recursive(0, buffer_android, 0, androidDirName);
 	}
 	else
 	if (isDir < 0) {
@@ -1644,6 +1667,15 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	// src file full path
 	strcpy(buffer, dirname);
 	strcat(buffer, filename);
+
+	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+		//strcpy(buffer, filename[i]);
+		char buffer2[1024];
+		strcpy(buffer2, "avdl_build_android/app/src/main/cpp/engine/");
+		strcat(buffer2, filename);
+		file_copy(buffer, buffer2, 0);
+		return 0;
+	}
 
 	// dst file full path
 	char buffer2[1024];
@@ -2173,6 +2205,38 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	strcpy(buffer, dirname);
 	strcat(buffer, filename);
 
+	// on android, put assets in a specific directory
+	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+		char *assetDir;
+
+		if (strcmp(filename +strlen(filename) -4, ".ply") == 0
+		||  strcmp(filename +strlen(filename) -4, ".ogg") == 0
+		||  strcmp(filename +strlen(filename) -5, ".opus") == 0
+		||  strcmp(filename +strlen(filename) -4, ".wav") == 0) {
+			assetDir = "raw";
+		}
+		else
+		if (strcmp(filename +strlen(filename) -4, ".bmp") == 0
+		||  strcmp(filename +strlen(filename) -4, ".png") == 0) {
+			assetDir = "drawable";
+		}
+		else {
+			assetDir = "raw";
+		}
+
+		char buffer2[1024];
+		strcpy(buffer2, "avdl_build_android/");
+		strcat(buffer2, "/app/src/main/res/");
+		strcat(buffer2, assetDir);
+		strcat(buffer2, "/");
+		dir_create(buffer2);
+		strcat(buffer2, filename);
+
+		file_copy(buffer, buffer2, 0);
+
+		return 0;
+	}
+
 	char *outdir = "avdl_build/assets/";
 
 	// dst file
@@ -2250,5 +2314,93 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	printf("avdl: assets - " GRN "100%%" RESET "\n");
 	fflush(stdout);
 
+	return 0;
+}
+
+char big_buffer[2048];
+int android_object_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
+
+	// ignore `.` and `..`
+	if (strcmp(filename, ".") == 0
+	||  strcmp(filename, "..") == 0) {
+		return 0;
+	}
+
+	// only keep `.c` files
+	if (strcmp(filename +strlen(filename) -2, ".c") != 0) {
+		return 0;
+	}
+
+	// src file
+	strcpy(buffer, dirname);
+	strcat(buffer, filename);
+
+	strcat(big_buffer, "game/");
+	strcat(big_buffer, filename);
+	strcat(big_buffer, " ");
+
+	// dst file
+	char buffer2[1024];
+	strcpy(buffer2, "avdl_build_android/app/src/main/cpp/game/");
+	strcat(buffer2, filename);
+
+	file_copy(buffer, buffer2, 0);
+
+	return 0;
+}
+
+int avdl_android_object(struct AvdlSettings *avdl_settings) {
+
+	// put all object files to android
+	strcpy(buffer, "avdl_build_android/");
+	strcat(buffer, "/app/src/main/cpp/game/");
+	dir_create(buffer);
+
+	big_buffer[0] = '\0';
+	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", android_object_file);
+
+	// folder to edit
+	strcpy(buffer, "avdl_build_android/");
+	strcat(buffer, "/app/src/main/cpp/");
+	int outDir = open(buffer, O_DIRECTORY);
+	if (!outDir) {
+		printf("avdl: can't open %s: %s\n", buffer, strerror(errno));
+		return -1;
+	}
+
+	// add in the avdl-compiled source files
+	file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt", "%AVDL_GAME_FILES%", big_buffer);
+	close(outDir);
+
+	// handle versioning
+	strcpy(buffer, "avdl_build_android/");
+	strcat(buffer, "/app/");
+	outDir = open(buffer, O_DIRECTORY);
+	file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
+	file_replace(outDir, "build.gradle.in2", outDir, "build.gradle.in3", "%AVDL_VERSION_CODE%", avdl_settings->version_code_str);
+	file_replace(outDir, "build.gradle.in3", outDir, "build.gradle", "%AVDL_VERSION_NAME%", avdl_settings->version_name);
+	close(outDir);
+
+	strcpy(buffer, "avdl_build_android/");
+	strcat(buffer, "/app/src/main/res/drawable/");
+	strcat(buffer, avdl_settings->icon_path);
+	file_copy(avdl_settings->icon_path, buffer, 0);
+
+	strcpy(buffer, "avdl_build_android/");
+	strcat(buffer, "/app/src/main/res/drawable/");
+	strcat(buffer, avdl_settings->icon_foreground_path);
+	file_copy(avdl_settings->icon_foreground_path, buffer, 0);
+
+	strcpy(buffer, "avdl_build_android/");
+	strcat(buffer, "/app/src/main/res/drawable/");
+	strcat(buffer, avdl_settings->icon_background_path);
+	file_copy(avdl_settings->icon_background_path, buffer, 0);
+
+	// project name
+	strcpy(buffer, "avdl_build_android/");
+	strcat(buffer, "/app/src/main/res/values/");
+	outDir = open(buffer, O_DIRECTORY);
+	file_replace(outDir, "strings.xml.in", outDir, "strings.xml", "%AVDL_PROJECT_NAME%", avdl_settings->project_name);
+	close(outDir);
 	return 0;
 }
