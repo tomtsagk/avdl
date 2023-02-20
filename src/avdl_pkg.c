@@ -137,7 +137,6 @@ const char *avdl_pkg_GetProjectPath() {
 		printf("avdl error: unknown pkg location type: %d\n", avdl_pkg_location_type);
 		return 0;
 	}
-	printf("project location %s\n", buffer2);
 	return buffer2;
 }
 
