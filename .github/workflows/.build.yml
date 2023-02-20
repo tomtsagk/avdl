@@ -467,14 +467,14 @@ jobs:
         #${AVDL_BIN} --android -o ${DIRECTORY_ANDROID_OUT} ${ANDROID_OBJ} --game-version "${VERSION}" --game-version-code "${VERSION_CODE}" --game-package-name "org.darkdimension.rue" --game-icon-foreground "icon_foreground.png" --game-icon-background "icon_background.png" --game-name "${NAME}"
     - name: compile_apk
       run: |
-        cd avdl_build_android/
+        cd rue/avdl_build_android/
         chmod +x gradlew
         ./gradlew build
-        cd ../
+        cd ../../
         mkdir rue_output
-        mv avdl_build_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk rue_output
+        mv rue/avdl_build_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk rue_output
         mkdir rue_output_debug
-        mv avdl_build_android/app/build/outputs/apk/debug/app-universal-debug.apk rue_output_debug
+        mv rue/avdl_build_android/app/build/outputs/apk/debug/app-universal-debug.apk rue_output_debug
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
