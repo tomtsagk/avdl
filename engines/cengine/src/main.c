@@ -474,11 +474,17 @@ void clean() {
 }
 
 void dd_perspective(float *matrix, float fovyDegrees, float aspectRatio,
-	float znear, float zfar) {
+	float znear, float zfar, int ypriority) {
 
 	float ymax, xmax;
-	ymax = znear * tanf(fovyDegrees * M_PI / 360.0);
-	xmax = ymax * aspectRatio;
+	if (ypriority) {
+		ymax = znear * tanf(fovyDegrees * M_PI / 360.0);
+		xmax = ymax * aspectRatio;
+	}
+	else {
+		xmax = znear * tanf(fovyDegrees * M_PI / 360.0);
+		ymax = xmax * aspectRatio;
+	}
 
 	float left = -xmax;
 	float right = xmax;
@@ -514,10 +520,18 @@ struct dd_matrix matPerspective;
 void handleResize(int w, int h) {
 	glViewport(0, 0, w, h);
 
-	dd_fovaspect_set((double) w /(double) h);
+	int ypriority;
+	if (w > h) {
+		dd_fovaspect_set((double) w /(double) h);
+		ypriority = 1;
+	}
+	else {
+		dd_fovaspect_set((double) h /(double) w);
+		ypriority = 0;
+	}
 
 	// perspective projection matrix
-	dd_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0);
+	dd_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0, ypriority);
 
 	if (cworld && cworld->resize) {
 		cworld->resize(cworld);

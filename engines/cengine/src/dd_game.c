@@ -50,19 +50,39 @@ int dd_window_height() {
 
 // screen limits
 float dd_screen_width_get (float z) {
-	return dd_screen_height_get(z) *dd_fovaspect_get();
+	if (dd_window_width() > dd_window_height()) {
+		return dd_screen_height_get(z) *dd_fovaspect_get();
+	}
+	else {
+		return dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) ) *z *2;
+	}
 }
 
 float dd_screen_height_get(float z) {
-	return dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) ) *z *2;
+	if (dd_window_width() > dd_window_height()) {
+		return dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) ) *z *2;
+	}
+	else {
+		return dd_screen_width_get(z) *dd_fovaspect_get();
+	}
 }
 
 float dd_screen_distance_getw(float width) {
-	return dd_screen_distance_geth(width /dd_fovaspect_get());
+	if (dd_window_width() > dd_window_height()) {
+		return dd_screen_distance_geth(width /dd_fovaspect_get());
+	}
+	else {
+		return (width/2) /dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) );
+	}
 }
 
 float dd_screen_distance_geth(float height) {
-	return (height/2) /dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) );
+	if (dd_window_width() > dd_window_height()) {
+		return (height/2) /dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) );
+	}
+	else {
+		return dd_screen_distance_getw(height /dd_fovaspect_get());
+	}
 }
 
 void dd_fullscreenToggle() {
