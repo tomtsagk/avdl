@@ -66,11 +66,7 @@ void handleMousePress(int button, int state, int x, int y);
 void handlePassiveMotion(int x, int y);
 
 unsigned char input_key;
-int input_mouse;
-int input_mouse_button;
-int input_mouse_state;
-int input_mouse_x;
-int input_mouse_y;
+struct AvdlInput avdl_input;
 
 #undef PI
 #define PI 3.1415926535897932f
@@ -161,7 +157,7 @@ int dd_main(int argc, char *argv[]) {
 	srand(time(NULL));
 	#endif
 	input_key = 0;
-	input_mouse = 0;
+	avdl_input_Init(&avdl_input);
 
 	#if DD_PLATFORM_ANDROID
 	// initialise pthread mutex for jni
@@ -629,9 +625,12 @@ void update() {
 	}
 
 	// handle mouse input
-	if (cworld && cworld->mouse_input && input_mouse) {
-		cworld->mouse_input(cworld, input_mouse_button, input_mouse_state);
-		input_mouse = 0;
+	if (cworld && cworld->mouse_input && avdl_input_GetInputTotal(&avdl_input) > 0) {
+		int totalInput = avdl_input_GetInputTotal(&avdl_input);
+		for (int i = 0; i < totalInput; i++) {
+			cworld->mouse_input(cworld, avdl_input_GetButton(&avdl_input, i), avdl_input_GetState(&avdl_input, i));
+		}
+		avdl_input_ClearInput(&avdl_input);
 	}
 
 	// update world
@@ -727,49 +726,42 @@ void handleKeyboardPress(unsigned char key, int x, int y) {
 void handleMousePress(int button, int state, int x, int y) {
 
 	#if DD_PLATFORM_ANDROID
-	input_mouse_button = button;
-	input_mouse_state = state;
-	input_mouse_x = x;
-	input_mouse_y = y;
-	input_mouse = 1;
+	avdl_input_AddInput(&avdl_input, button, state, x, y);
 	#else
-	input_mouse_x = x;
-	input_mouse_y = y;
+	int state_temp = 0;
 	switch (state) {
 		//case GLUT_DOWN:
 		case 0:
-			input_mouse_state = DD_INPUT_MOUSE_TYPE_PRESSED;
+			state_temp = DD_INPUT_MOUSE_TYPE_PRESSED;
 			break;
 		//case GLUT_UP:
 		case 1:
-			input_mouse_state = DD_INPUT_MOUSE_TYPE_RELEASED;
+			state_temp = DD_INPUT_MOUSE_TYPE_RELEASED;
 			break;
 	}
 
+	int button_temp = 0;
 	switch (button) {
 		//case GLUT_LEFT_BUTTON:
 		case 0:
-			input_mouse_button = DD_INPUT_MOUSE_BUTTON_LEFT;
-			input_mouse = 1;
+			button_temp = DD_INPUT_MOUSE_BUTTON_LEFT;
 			break;
 		//case GLUT_MIDDLE_BUTTON:
 		case 1:
-			input_mouse_button = DD_INPUT_MOUSE_BUTTON_MIDDLE;
-			input_mouse = 1;
+			button_temp = DD_INPUT_MOUSE_BUTTON_MIDDLE;
 			break;
 		//case GLUT_RIGHT_BUTTON:
 		case 2:
-			input_mouse_button = DD_INPUT_MOUSE_BUTTON_RIGHT;
-			input_mouse = 1;
+			button_temp = DD_INPUT_MOUSE_BUTTON_RIGHT;
 			break;
 	}
+	avdl_input_AddInput(&avdl_input, button_temp, state_temp, x, y);
 	#endif
 
 }
 
 void handlePassiveMotion(int x, int y) {
-	input_mouse_x = x;
-	input_mouse_y = y;
+	avdl_input_AddPassiveMotion(&avdl_input, x, y);
 }
 
 #if DD_PLATFORM_ANDROID

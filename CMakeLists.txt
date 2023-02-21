@@ -59,6 +59,7 @@ install(FILES
 	engines/cengine/src/dd_world.c
 	engines/cengine/src/main.c
 	engines/cengine/src/main_cpp.cpp
+	engines/cengine/src/avdl_input.c
 	DESTINATION
 	share/avdl/cengine
 )
@@ -95,6 +96,7 @@ install(FILES
 	engines/cengine/include/dd_vec3.h
 	engines/cengine/include/dd_vec4.h
 	engines/cengine/include/dd_world.h
+	engines/cengine/include/avdl_input.h
 	DESTINATION
 	include
 )

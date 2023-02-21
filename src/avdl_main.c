@@ -93,6 +93,7 @@ struct cengine_file_structure cengine_files[] = {
 	{"dd_vec3.c", 0},
 	{"dd_vec4.c", 0},
 	{"dd_world.c", 0},
+	{"avdl_input.c", 0},
 	{"main.c", 0},
 	{"avdl_steam.c", "avdl_steam_cpp.cpp"},
 	{0, "main_cpp.cpp"},
@@ -132,6 +133,7 @@ char *cengine_headers[] = {
 	"dd_vec3.h",
 	"dd_vec4.h",
 	"dd_world.h",
+	"avdl_input.h",
 	"avdl_achievements.h",
 	"avdl_multiplayer.h",
 };
