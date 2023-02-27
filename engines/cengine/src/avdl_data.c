@@ -84,8 +84,6 @@ void parse_filename(char *buffer, const char *filename) {
 
 int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 
-	//printf("savefile: %s\n", filename);
-
 	#if defined(_WIN32) || defined(WIN32)
 
 	PWSTR path;
@@ -142,6 +140,8 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 		wprintf(L"avdl: error while closing file '%lS': %lS\n", finalLoc, _wcserror(errno));
 		return -1;
 	}
+
+	wprintf("savefile: %lS\n", finalLoc);
 
 	free(finalLoc);
 	CoTaskMemFree(path);
@@ -204,6 +204,8 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 		exit(-1);
 	}
 
+	dd_log("savefile: %s\n", buffer);
+
 	// everything worked as expected
 	return 0;
 
@@ -262,6 +264,7 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 		CoTaskMemFree(path);
 		return -1;
 	}
+	wprintf("loadfile: %lS\n", finalLoc);
 
 	free(finalLoc);
 	CoTaskMemFree(path);
@@ -312,6 +315,8 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 		);
 		exit(-1);
 	}
+
+	dd_log("loadfile: %s\n", buffer);
 
 	// everything worked as expected
 	return 0;
