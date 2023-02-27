@@ -61,6 +61,8 @@ int avdlSteamMode = 0;
 int avdlQuietMode = 0;
 int avdlStandalone = 0;
 
+char *assetLoc = 0;
+
 struct cengine_file_structure {
 	const char *main;
 	const char *steam;
@@ -89,6 +91,7 @@ struct cengine_file_structure cengine_files[] = {
 	{"dd_opengl.c", 0},
 	{"dd_sound.c", 0},
 	{"dd_music.c", 0},
+	{"whereami.c", 0},
 	{"dd_string3d.c", 0},
 	{"dd_vec3.c", 0},
 	{"dd_vec4.c", 0},
@@ -128,6 +131,7 @@ char *cengine_headers[] = {
 	"dd_opengl.h",
 	"dd_sound.h",
 	"dd_music.h",
+	"whereami.h",
 	"dd_string3d.h",
 	"dd_vec2.h",
 	"dd_vec3.h",
@@ -460,10 +464,6 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	//strcat(buffer, gameRevision);
 	strcat(buffer3, "0");
 	strcat(buffer3, "\\\"\" -c -w ");
-	// cengine headers
-	strcat(buffer3, " -I ");
-	strcat(buffer3, avdl_project_path);
-	strcat(buffer3, "/include ");
 	//strcat(buffer, filename[i]);
 	strcat(buffer3, buffer);
 	strcat(buffer3, " -o ");
@@ -549,6 +549,13 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			continue;
 		}
 
+		// asset prefix
+		if (assetLoc) {
+			strcat(compile_command, " -DGAME_ASSET_PREFIX=\"\\\"");
+			strcat(compile_command, assetLoc);
+			strcat(compile_command, "\"\\\" ");
+		}
+
 		if (avdlSteamMode) {
 			strcat(compile_command, " -DAVDL_STEAM ");
 		}
@@ -571,11 +578,6 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			//compile_command[strlen(compile_command)-1] = 'o';
 		}
 		strcat(compile_command, buffer);
-
-		// cengine headers
-		strcat(compile_command, " -I");
-		strcat(compile_command, avdl_project_path);
-		strcat(compile_command, "/include");
 
 		// cengine extra directories (mostly for custom dependencies)
 		for (int i = 0; i < totalIncludeDirectories; i++) {
@@ -746,7 +748,8 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	strcat(buffer, outdir);
 	strcat(buffer, "/");
 	//strcat(buffer, gameName);
-	strcat(buffer, "avdl_game");
+	//strcat(buffer, "avdl_game");
+	strcat(buffer, avdl_settings->project_name_code);
 
 	// link custom dependencies
 	for (int i = 0; i < totalLibDirectories; i++) {
@@ -871,9 +874,16 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		#endif
 	}
 	*/
+	char test_buffer[1024];
+	strcpy(test_buffer, "./avdl_build/");
+	strcat(test_buffer, avdl_settings->project_name_code);
+	strcat(test_buffer, ".sh");
 
-	create_executable_file("./avdl_build/avdl_game.sh",
-			"LD_LIBRARY_PATH=./dependencies/ ./bin/avdl_game");
+	char test_buffer2[1024];
+	strcpy(test_buffer2, "LD_LIBRARY_PATH=./dependencies/ ./bin/");
+	strcat(test_buffer2, avdl_settings->project_name_code);
+
+	create_executable_file(test_buffer, test_buffer2);
 	/*
 	// stand-alone project
 	if (avdl_pkg_IsDynamicLocation()) {
@@ -1212,6 +1222,17 @@ int handle_arguments(int argc, char *argv[]) {
 				else
 				if (strcmp(argv[i], "--standalone") == 0) {
 					avdlStandalone = 1;
+				}
+				else
+				if (strcmp(argv[i], "--asset-loc") == 0) {
+					if (argc > i+1) {
+						assetLoc = argv[i+1];
+						i++;
+					}
+					else {
+						printf("avdl " RED "error" RESET ": " BLU "%s" RESET " expects a path\n", argv[i]);
+						return -1;
+					}
 				}
 				// unknown double dash argument
 				else {

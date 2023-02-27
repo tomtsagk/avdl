@@ -46,6 +46,7 @@ struct AvdlSettings {
 
 	// name of the project
 	char project_name[100];
+	char project_name_code[100];
 
 	// versioning
 	int version_code;
@@ -61,6 +62,7 @@ struct AvdlSettings {
 
 	// package (like com.company.app)
 	char package[100];
+
 };
 
 void AvdlSettings_Create(struct AvdlSettings *);

@@ -2,6 +2,7 @@
 #include "dd_log.h"
 #include <string.h>
 #include "dd_game.h"
+#include "avdl_assetManager.h"
 
 #if DD_PLATFORM_ANDROID
 #include <jni.h>
@@ -45,6 +46,7 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 	strcpy(o->filename, filename);
 	#else
 	strcpy(o->filename, avdl_getProjectLocation());
+	strcat(o->filename, GAME_ASSET_PREFIX);
 	strcat(o->filename, filename);
 	#endif
 	o->sound = Mix_LoadWAV(o->filename);

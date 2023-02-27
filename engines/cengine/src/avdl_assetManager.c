@@ -60,7 +60,6 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	}
 	*/
 
-	//printf("add asset: %s\n", assetname);
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
@@ -69,7 +68,9 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	strcpy(meshToLoad.filename, assetname);
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
+	strcat(meshToLoad.filename, GAME_ASSET_PREFIX);
 	strcat(meshToLoad.filename, assetname);
+	//printf("add asset: %s\n", meshToLoad.filename);
 	#endif
 	dd_da_add(&meshesToLoad, &meshToLoad);
 	//#endif

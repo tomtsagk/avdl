@@ -3,6 +3,10 @@
 
 #include "dd_meshColour.h"
 
+#ifndef GAME_ASSET_PREFIX
+#define GAME_ASSET_PREFIX ""
+#endif
+
 #define AVDL_ASSETMANAGER_MESH 1
 #define AVDL_ASSETMANAGER_MESHCOLOUR 2
 #define AVDL_ASSETMANAGER_MESHTEXTURE 3

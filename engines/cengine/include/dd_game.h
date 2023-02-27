@@ -74,4 +74,23 @@ void avdl_cleanProjectLocation();
 
 #define avdl_exit() dd_flag_exit = 1;
 
+/*
+ * Two types of package location:
+ *
+ * Dynamic: The project lives in a directory,
+ * which might be moved around.
+ *
+ * Fixed: The project is permanently in a directory,
+ * most likely because it was installed on a system.
+ */
+enum GAME_PKG_LOCATION_TYPE {
+	GAME_PKG_LOCATION_TYPE_DYNAMIC,
+	GAME_PKG_LOCATION_TYPE_FIXED,
+};
+
+enum GAME_PKG_DEPENDENCIES_TYPE {
+	GAME_PKG_DEPENDENCIES_TYPE_DYNAMIC,
+	GAME_PKG_DEPENDENCIES_TYPE_FIXED,
+};
+
 #endif

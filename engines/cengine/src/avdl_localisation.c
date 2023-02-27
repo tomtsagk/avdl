@@ -3,6 +3,7 @@
 #include <string.h>
 #include "dd_log.h"
 #include "dd_game.h"
+#include "avdl_assetManager.h"
 
 void avdl_localisation_create(struct avdl_localisation *o) {
 	o->count = 0;
@@ -28,6 +29,7 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 	strcat(obj.buffer, ".json");
 	#else
 	strcpy(obj.buffer, avdl_getProjectLocation());
+	strcat(obj.buffer, GAME_ASSET_PREFIX);
 	strcat(obj.buffer, "assets/");
 	strcat(obj.buffer, keyGroupID);
 	strcat(obj.buffer, ".json");

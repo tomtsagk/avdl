@@ -14,8 +14,11 @@ void AvdlSettings_Create(struct AvdlSettings *o) {
 	o->src_dir[99] = '\0';
 	strncpy(o->asset_dir, "assets/", 99);
 	o->asset_dir[99] = '\0';
-	strncpy(o->project_name, "avdl project", 99);
+	strncpy(o->project_name, "Avdl Project", 99);
 	o->project_name[99] = '\0';
+
+	strncpy(o->project_name_code, "avdl_project", 99);
+	o->project_name_code[99] = '\0';
 
 	o->version_code = 1;
 	strncpy(o->version_code_str, "1", 99);
@@ -93,6 +96,30 @@ int AvdlSettings_SetFromFile(struct AvdlSettings *o, char *filename) {
 		if (strcmp( key, "name" ) == 0) {
 			strncpy(o->project_name, value, 99);
 			o->project_name[99] = '\0';
+
+			// convert project name to a code-friendly version
+			strncpy(o->project_name_code, o->project_name, 99);
+			o->project_name_code[99] = '\0';
+			for (int i = 0; i < strlen(o->project_name_code); i++) {
+				if (o->project_name_code[i] >= 'a'
+				&&  o->project_name_code[i] <= 'z') {
+					continue;
+				}
+
+				if (o->project_name_code[i] >= 'A'
+				&&  o->project_name_code[i] <= 'Z') {
+					o->project_name_code[i] -= ('A' - 'a');
+					continue;
+				}
+
+				if (o->project_name_code[i] >= '0'
+				&&  o->project_name_code[i] <= '9') {
+					continue;
+				}
+
+				o->project_name_code[i] = '_';
+			}
+
 		}
 		else
 		if (strcmp( key, "version_code" ) == 0) {
