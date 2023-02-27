@@ -47,7 +47,7 @@ struct ast_node *game_node;
 
 char *includePath = 0;
 
-char *saveLocation = "";
+char *saveLocation = 0;
 
 char *additionalIncludeDirectory[10];
 int totalIncludeDirectories = 0;
@@ -548,6 +548,10 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		else {
 			continue;
 		}
+
+		strcat(compile_command, " -DPKG_NAME=\"\\\"");
+		strcat(compile_command, avdl_settings->project_name_code);
+		strcat(compile_command, "\"\\\" ");
 
 		// asset prefix
 		if (assetLoc) {
