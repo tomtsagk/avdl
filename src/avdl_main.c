@@ -464,6 +464,10 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	//strcat(buffer, gameRevision);
 	strcat(buffer3, "0");
 	strcat(buffer3, "\\\"\" -c -w ");
+	// cengine headers
+	strcat(buffer3, " -I ");
+	strcat(buffer3, avdl_project_path);
+	strcat(buffer3, "/include ");
 	//strcat(buffer, filename[i]);
 	strcat(buffer3, buffer);
 	strcat(buffer3, " -o ");
@@ -582,6 +586,11 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			//compile_command[strlen(compile_command)-1] = 'o';
 		}
 		strcat(compile_command, buffer);
+
+		// cengine headers
+		strcat(compile_command, " -I ");
+		strcat(compile_command, avdl_project_path);
+		strcat(compile_command, "/include ");
 
 		// cengine extra directories (mostly for custom dependencies)
 		for (int i = 0; i < totalIncludeDirectories; i++) {
