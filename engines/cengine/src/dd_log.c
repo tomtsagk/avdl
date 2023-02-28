@@ -20,7 +20,7 @@ void dd_log(const char *msg, ...) {
 	__android_log_vprint(ANDROID_LOG_INFO, "avdl", msg, args);
 	#elif defined(_WIN32) || defined(WIN32)
 	char buffer[1024];
-	vsnprintf(buff, 1024, msg, args);
+	vsnprintf(buffer, 1024, msg, args);
 	MessageBox(0, buffer, "Variable", 0);
 	#else
 	/*
