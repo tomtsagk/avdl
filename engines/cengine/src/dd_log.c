@@ -21,7 +21,7 @@ void dd_log(const char *msg, ...) {
 	#elif defined(_WIN32) || defined(WIN32)
 	char buffer[1024];
 	vsnprintf(buffer, 1024, msg, args);
-	MessageBox(0, buffer, "Variable", 0);
+	MessageBox(0, buffer, "Avdl Log:", 0);
 	#else
 	/*
 	FILE *f = fopen("error.log", "a");

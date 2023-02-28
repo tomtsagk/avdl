@@ -127,15 +127,11 @@ wchar_t tempProjLocW[1024];
 
 const PROJ_LOC_TYPE *avdl_getProjectLocation() {
 
-	dd_log("about to get project location");
 	if (game_pkg_location_type == GAME_PKG_LOCATION_TYPE_FIXED) {
-		dd_log("fixed location");
 		return game_pkg_location_path;
 	}
 	else
 	if (game_pkg_location_type == GAME_PKG_LOCATION_TYPE_DYNAMIC) {
-		dd_log("dynamic location");
-
 
 		#if defined(_WIN32) || defined(WIN32)
 		wchar_t *pointer = tempProjLocW;
@@ -156,7 +152,6 @@ const PROJ_LOC_TYPE *avdl_getProjectLocation() {
 			secondToLastSlash++;
 			secondToLastSlash[0] = L'\0';
 		}
-		dd_log("final location: %lS", tempProjLocW);
 		return tempProjLocW;
 		#else
 
@@ -166,10 +161,9 @@ const PROJ_LOC_TYPE *avdl_getProjectLocation() {
 			wai_getExecutablePath(tempProjLoc, length, 0);
 		}
 		else {
-			dd_log("too long project path\n");
+			dd_log("avdl error: too long project path\n");
 			return 0;
 		}
-		dd_log("location: %s", tempProjLoc);
 
 		char slash;
 		#if defined(_WIN32) || defined(WIN32)
@@ -193,7 +187,7 @@ const PROJ_LOC_TYPE *avdl_getProjectLocation() {
 					break;
 				}
 				else {
-					dd_log("error getting project path");
+					dd_log("avdl error: cannot get project path");
 					return 0;
 				}
 			}
@@ -204,7 +198,6 @@ const PROJ_LOC_TYPE *avdl_getProjectLocation() {
 			return 0;
 		}
 		(secondToLastSlash+1)[0] = '\0';
-		dd_log("final location: %s", tempProjLoc);
 		#endif
 	}
 	// error

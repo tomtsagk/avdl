@@ -143,25 +143,21 @@ int dd_main(int argc, char *argv[]) {
 	avdl_assetManager_init();
 
 	#if defined(_WIN32) || defined(WIN32)
-	dd_log("about to cd");
 	char *proj_loc = avdl_getProjectLocation();
 	if (proj_loc) {
 		if (_wchdir(proj_loc) != 0) {
 			dd_log("avdl: failed to change directory: %lS", _wcserror(errno));
-			wprintf(L"avdl: failed to change directory: %lS", _wcserror(errno));
 			return -1;
 		}
 	}
 	else {
-		dd_log("unable to get project location");
+		dd_log("avdl error: unable to get project location");
 	}
 	#endif
 
 	dd_clearcolor_r = 0;
 	dd_clearcolor_g = 0;
 	dd_clearcolor_b = 0;
-
-	dd_log("continue");
 
 	#if DD_PLATFORM_NATIVE
 	srand(time(NULL));
@@ -200,7 +196,6 @@ int dd_main(int argc, char *argv[]) {
 	*/
 	#endif
 
-	dd_log("init pre-game data");
 	// initialise pre-game data to defaults then to game-specifics
 	dd_gameInitDefault();
 	dd_gameInit();
@@ -208,7 +203,6 @@ int dd_main(int argc, char *argv[]) {
 	#if DD_PLATFORM_NATIVE
 
 	if (!avdl_verify) {
-		dd_log("initialising sdl window");
 		// Initialise SDL window
 		//int sdlError = SDL_Init(SDL_INIT_EVERYTHING);
 		int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
@@ -291,7 +285,7 @@ int dd_main(int argc, char *argv[]) {
 
 	// audio is off - display message about it
 	if (!dd_hasAudio && !avdl_verify) {
-		dd_log("Game will play without audio");
+		dd_log("avdl error: Game will play without audio");
 	}
 
 	#endif
