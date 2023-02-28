@@ -71,6 +71,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	strcat(meshToLoad.filename, GAME_ASSET_PREFIX);
 	strcat(meshToLoad.filename, assetname);
 	//printf("add asset: %s\n", meshToLoad.filename);
+	dd_log("add asset: %s\n", meshToLoad.filename);
 	#endif
 	dd_da_add(&meshesToLoad, &meshToLoad);
 	//#endif
