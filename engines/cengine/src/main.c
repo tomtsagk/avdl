@@ -102,7 +102,7 @@ int avdl_quiet = 0;
 
 int dd_main(int argc, char *argv[]) {
 
-	freopen("error.log", "w", stdout);
+	//freopen("error.log", "w", stdout);
 	dd_log("about to parse arguments");
 	/*
 	 * parse command line arguments
