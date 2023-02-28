@@ -148,10 +148,17 @@ int dd_main(int argc, char *argv[]) {
 	dd_log("initialising avdl systems 2");
 
 	#if defined(_WIN32) || defined(WIN32)
-	if (_wchdir(avdl_getProjectLocation()) != 0) {
-		dd_log("avdl: failed to change directory");
-		wprintf(L"avdl: failed to change directory: %lS", _wcserror(errno));
-		return -1;
+	dd_log("about to cd");
+	char *proj_loc = avdl_getProjectLocation();
+	if (proj_loc) {
+		if (_wchdir(proj_loc) != 0) {
+			dd_log("avdl: failed to change directory");
+			wprintf(L"avdl: failed to change directory: %lS", _wcserror(errno));
+			return -1;
+		}
+	}
+	else {
+		dd_log("unable to get project location");
 	}
 	#endif
 

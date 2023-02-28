@@ -123,11 +123,14 @@ char tempProjLoc[1024];
 
 const char *avdl_getProjectLocation() {
 
+	dd_log("about to get project location");
 	if (game_pkg_location_type == GAME_PKG_LOCATION_TYPE_FIXED) {
+		dd_log("fixed location");
 		return game_pkg_location_path;
 	}
 	else
 	if (game_pkg_location_type == GAME_PKG_LOCATION_TYPE_DYNAMIC) {
+		dd_log("dynamic location");
 
 		// get path of binary
 		int length = wai_getExecutablePath(NULL, 0, NULL);
@@ -135,12 +138,17 @@ const char *avdl_getProjectLocation() {
 			wai_getExecutablePath(tempProjLoc, length, 0);
 		}
 		else {
-			printf("too long project path\n");
+			dd_log("too long project path\n");
 			return 0;
 		}
+		dd_log("location: %s", tempProjLoc);
 
 		char slash;
+		#if defined(_WIN32) || defined(WIN32)
+		slash = '\\';
+		#else
 		slash = '/';
+		#endif
 
 		// lose last two files (so `/directory/bin/avdl` becomes `/directory/`)
 		char *p = tempProjLoc +length -1;
@@ -157,14 +165,14 @@ const char *avdl_getProjectLocation() {
 					break;
 				}
 				else {
-					printf("error getting project path\n");
+					dd_log("error getting project path");
 					return 0;
 				}
 			}
 			p--;
 		}
 		if (!secondToLastSlash) {
-			printf("avdl error: can't truncate path of cengine\n");
+			dd_log("avdl error: can't truncate path of cengine");
 			return 0;
 		}
 		(secondToLastSlash+1)[0] = '\0';
