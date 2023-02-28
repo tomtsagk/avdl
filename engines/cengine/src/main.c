@@ -147,6 +147,7 @@ int dd_main(int argc, char *argv[]) {
 
 	#if defined(_WIN32) || defined(WIN32)
 	if (_wchdir(avdl_getProjectLocation()) != 0) {
+		dd_log("avdl: failed to change directory");
 		wprintf(L"avdl: failed to change directory: %lS", _wcserror(errno));
 		return -1;
 	}
@@ -155,6 +156,8 @@ int dd_main(int argc, char *argv[]) {
 	dd_clearcolor_r = 0;
 	dd_clearcolor_g = 0;
 	dd_clearcolor_b = 0;
+
+	dd_log("continue");
 
 	#if DD_PLATFORM_NATIVE
 	srand(time(NULL));
@@ -193,6 +196,7 @@ int dd_main(int argc, char *argv[]) {
 	*/
 	#endif
 
+	dd_log("init pre-game data");
 	// initialise pre-game data to defaults then to game-specifics
 	dd_gameInitDefault();
 	dd_gameInit();
