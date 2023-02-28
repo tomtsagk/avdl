@@ -23,12 +23,6 @@ void dd_log(const char *msg, ...) {
 	vsnprintf(buffer, 1024, msg, args);
 	MessageBox(0, buffer, "Avdl Log:", 0);
 	#else
-	/*
-	FILE *f = fopen("error.log", "a");
-	vfprintf(f, msg, args);
-	fprintf(f, "\n");
-	fclose(f);
-	*/
 	vprintf(msg, args);
 	printf("\n");
 	#endif
