@@ -142,8 +142,10 @@ int dd_main(int argc, char *argv[]) {
 
 	dd_log("initialising avdl systems");
 	achievements = avdl_achievements_create();
-	avdl_initProjectLocation();
+	dd_log("initialising avdl systems 1");
+	//avdl_initProjectLocation();
 	avdl_assetManager_init();
+	dd_log("initialising avdl systems 2");
 
 	#if defined(_WIN32) || defined(WIN32)
 	if (_wchdir(avdl_getProjectLocation()) != 0) {
