@@ -102,8 +102,6 @@ int avdl_quiet = 0;
 
 int dd_main(int argc, char *argv[]) {
 
-	//freopen("error.log", "w", stdout);
-	dd_log("about to parse arguments");
 	/*
 	 * parse command line arguments
 	 */
@@ -140,12 +138,9 @@ int dd_main(int argc, char *argv[]) {
 	}
 	#endif
 
-	dd_log("initialising avdl systems");
 	achievements = avdl_achievements_create();
-	dd_log("initialising avdl systems 1");
-	//avdl_initProjectLocation();
+	avdl_initProjectLocation();
 	avdl_assetManager_init();
-	dd_log("initialising avdl systems 2");
 
 	#if defined(_WIN32) || defined(WIN32)
 	dd_log("about to cd");

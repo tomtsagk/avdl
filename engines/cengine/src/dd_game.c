@@ -121,7 +121,14 @@ char *game_pkg_location_path = 0;
 
 char tempProjLoc[1024];
 
-const char *avdl_getProjectLocation() {
+#if defined(_WIN32) || defined(WIN32)
+#define PROJ_LOC_TYPE wchar_t
+wchar_t tempProjLocW[1024];
+#else
+#define PROJ_LOC_TYPE char
+#endif
+
+const PROJ_LOC_TYPE *avdl_getProjectLocation() {
 
 	dd_log("about to get project location");
 	if (game_pkg_location_type == GAME_PKG_LOCATION_TYPE_FIXED) {
@@ -131,6 +138,30 @@ const char *avdl_getProjectLocation() {
 	else
 	if (game_pkg_location_type == GAME_PKG_LOCATION_TYPE_DYNAMIC) {
 		dd_log("dynamic location");
+
+
+		#if defined(_WIN32) || defined(WIN32)
+		wchar_t *pointer = tempProjLocW;
+		wchar_t *secondToLastSlash = 0;
+		wchar_t *lastSlash = 0;
+		int slashesLeft = 2;
+		GetModuleFileNameW(NULL, tempProjLocW, 999);
+		dynamicProjectLocationW[999] = L'\0';
+	
+		while (pointer[0] != L'\0') {
+			if (pointer[0] == L'\\') {
+				secondToLastSlash = lastSlash;
+				lastSlash = pointer;
+			}
+			pointer++;
+		}
+		if (secondToLastSlash) {
+			secondToLastSlash++;
+			secondToLastSlash[0] = L'\0';
+		}
+		dd_log("final location: %lS", tempProjLocW);
+		return tempProjLocW;
+		#else
 
 		// get path of binary
 		int length = wai_getExecutablePath(NULL, 0, NULL);
@@ -177,6 +208,11 @@ const char *avdl_getProjectLocation() {
 		}
 		(secondToLastSlash+1)[0] = '\0';
 		dd_log("final location: %s", tempProjLoc);
+		#endif
+	}
+	// error
+	else {
+		return 0;
 	}
 
 	return tempProjLoc;
