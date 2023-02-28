@@ -66,6 +66,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	meshToLoad.type = type;
 	#if defined(_WIN32) || defined(WIN32)
 	strcpy(meshToLoad.filename, assetname);
+	dd_log("add asset: %s\n", meshToLoad.filename);
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
 	strcat(meshToLoad.filename, GAME_ASSET_PREFIX);

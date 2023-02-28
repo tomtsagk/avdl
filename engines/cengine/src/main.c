@@ -102,6 +102,8 @@ int avdl_quiet = 0;
 
 int dd_main(int argc, char *argv[]) {
 
+	freopen("error.log", "w", stdout);
+	dd_log("about to parse arguments");
 	/*
 	 * parse command line arguments
 	 */
@@ -138,6 +140,7 @@ int dd_main(int argc, char *argv[]) {
 	}
 	#endif
 
+	dd_log("initialising avdl systems");
 	achievements = avdl_achievements_create();
 	avdl_initProjectLocation();
 	avdl_assetManager_init();
@@ -197,6 +200,7 @@ int dd_main(int argc, char *argv[]) {
 	#if DD_PLATFORM_NATIVE
 
 	if (!avdl_verify) {
+		dd_log("initialising sdl window");
 		// Initialise SDL window
 		//int sdlError = SDL_Init(SDL_INIT_EVERYTHING);
 		int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
