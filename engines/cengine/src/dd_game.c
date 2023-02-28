@@ -50,19 +50,39 @@ int dd_window_height() {
 
 // screen limits
 float dd_screen_width_get (float z) {
-	return dd_screen_height_get(z) *dd_fovaspect_get();
+	if (dd_window_width() > dd_window_height()) {
+		return dd_screen_height_get(z) *dd_fovaspect_get();
+	}
+	else {
+		return dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) ) *z *2;
+	}
 }
 
 float dd_screen_height_get(float z) {
-	return dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) ) *z *2;
+	if (dd_window_width() > dd_window_height()) {
+		return dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) ) *z *2;
+	}
+	else {
+		return dd_screen_width_get(z) *dd_fovaspect_get();
+	}
 }
 
 float dd_screen_distance_getw(float width) {
-	return dd_screen_distance_geth(width /dd_fovaspect_get());
+	if (dd_window_width() > dd_window_height()) {
+		return dd_screen_distance_geth(width /dd_fovaspect_get());
+	}
+	else {
+		return (width/2) /dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) );
+	}
 }
 
 float dd_screen_distance_geth(float height) {
-	return (height/2) /dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) );
+	if (dd_window_width() > dd_window_height()) {
+		return (height/2) /dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) );
+	}
+	else {
+		return dd_screen_distance_getw(height /dd_fovaspect_get());
+	}
 }
 
 void dd_fullscreenToggle() {
@@ -87,70 +107,109 @@ wchar_t dynamicProjectLocationW[1000];
 #include <windows.h>
 #endif
 
-#if defined(_WIN32) || defined(WIN32)
-const wchar_t *avdl_getProjectLocation() {
+/*
+ * By default build is in a dynamic location,
+ * unless a package location was given
+ */
+#ifdef GAME_PKG_LOCATION
+int game_pkg_location_type = GAME_PKG_LOCATION_TYPE_FIXED;
+char *game_pkg_location_path = GAME_PKG_LOCATION;
 #else
-const char *avdl_getProjectLocation() {
+int game_pkg_location_type = GAME_PKG_LOCATION_TYPE_DYNAMIC;
+char *game_pkg_location_path = 0;
 #endif
-	#ifdef AVDL_DYNAMIC_PKG_LOCATION
 
-	#if defined(_WIN32) || defined(WIN32)
-	if (!dynamicProjectLocationW) {
-		return L"";
+char tempProjLoc[1024];
+
+#if defined(_WIN32) || defined(WIN32)
+wchar_t tempProjLocW[1024];
+#endif
+
+const PROJ_LOC_TYPE *avdl_getProjectLocation() {
+
+	if (game_pkg_location_type == GAME_PKG_LOCATION_TYPE_FIXED) {
+		return game_pkg_location_path;
 	}
+	else
+	if (game_pkg_location_type == GAME_PKG_LOCATION_TYPE_DYNAMIC) {
+
+		#if defined(_WIN32) || defined(WIN32)
+		wchar_t *pointer = tempProjLocW;
+		wchar_t *secondToLastSlash = 0;
+		wchar_t *lastSlash = 0;
+		int slashesLeft = 2;
+		GetModuleFileNameW(NULL, tempProjLocW, 999);
+		dynamicProjectLocationW[999] = L'\0';
+	
+		while (pointer[0] != L'\0') {
+			if (pointer[0] == L'\\') {
+				secondToLastSlash = lastSlash;
+				lastSlash = pointer;
+			}
+			pointer++;
+		}
+		if (secondToLastSlash) {
+			secondToLastSlash++;
+			secondToLastSlash[0] = L'\0';
+		}
+		return tempProjLocW;
+		#else
+
+		// get path of binary
+		int length = wai_getExecutablePath(NULL, 0, NULL);
+		if (length < 400) {
+			wai_getExecutablePath(tempProjLoc, length, 0);
+		}
+		else {
+			dd_log("avdl error: too long project path\n");
+			return 0;
+		}
+
+		char slash;
+		#if defined(_WIN32) || defined(WIN32)
+		slash = '\\';
+		#else
+		slash = '/';
+		#endif
+
+		// lose last two files (so `/directory/bin/avdl` becomes `/directory/`)
+		char *p = tempProjLoc +length -1;
+		char *lastSlash = 0;
+		char *secondToLastSlash = 0;
+		while (p >= tempProjLoc) {
+			if (p[0] == slash) {
+				if (!lastSlash) {
+					lastSlash = p;
+				}
+				else
+				if (!secondToLastSlash) {
+					secondToLastSlash = p;
+					break;
+				}
+				else {
+					dd_log("avdl error: cannot get project path");
+					return 0;
+				}
+			}
+			p--;
+		}
+		if (!secondToLastSlash) {
+			dd_log("avdl error: can't truncate path of cengine");
+			return 0;
+		}
+		(secondToLastSlash+1)[0] = '\0';
+		#endif
+	}
+	// error
 	else {
-		return dynamicProjectLocationW;
+		return 0;
 	}
-	#else
-	return "";
-	#endif
 
-	#else
+	return tempProjLoc;
 
-	#if defined(_WIN32) || defined(WIN32)
-	return LPKG_LOCATION;
-	#else
-
-	#ifdef PKG_LOCATION
-	return PKG_LOCATION;
-	#else
-	return "";
-	#endif
-
-	#endif
-
-	#endif
 }
 
 void avdl_initProjectLocation() {
-	#ifdef AVDL_DYNAMIC_PKG_LOCATION
-	//wprintf(L"get project loc\n");
-
-	#if defined(_WIN32) || defined(WIN32)
-	wchar_t *pointer = dynamicProjectLocationW;
-	wchar_t *secondToLastSlash = 0;
-	wchar_t *lastSlash = 0;
-	int slashesLeft = 2;
-	GetModuleFileNameW(NULL, dynamicProjectLocationW, 999);
-	dynamicProjectLocationW[999] = L'\0';
-
-	while (pointer[0] != L'\0') {
-		if (pointer[0] == L'\\') {
-			secondToLastSlash = lastSlash;
-			lastSlash = pointer;
-		}
-		pointer++;
-	}
-	if (secondToLastSlash) {
-		secondToLastSlash++;
-		secondToLastSlash[0] = L'\0';
-	}
-	//wprintf(L"project loc: %lS\n", dynamicProjectLocationW);
-	#else
-	// not supported on non-windows os for now
-	#endif
-
-	#endif
 }
 
 void avdl_cleanProjectLocation() {

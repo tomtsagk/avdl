@@ -60,16 +60,22 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	}
 	*/
 
-	//printf("add asset: %s\n", assetname);
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
 	meshToLoad.type = type;
 	#if defined(_WIN32) || defined(WIN32)
 	strcpy(meshToLoad.filename, assetname);
+	//dd_log("add asset: %s\n", meshToLoad.filename);
+	#elif DD_PLATFORM_ANDROID
+	strcpy(meshToLoad.filename, assetname);
+	//dd_log("add android asset: %s\n", meshToLoad.filename);
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
+	strcat(meshToLoad.filename, GAME_ASSET_PREFIX);
 	strcat(meshToLoad.filename, assetname);
+	//printf("add asset: %s\n", meshToLoad.filename);
+	//dd_log("add asset: %s\n", meshToLoad.filename);
 	#endif
 	dd_da_add(&meshesToLoad, &meshToLoad);
 	//#endif

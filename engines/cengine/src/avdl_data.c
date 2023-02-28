@@ -1,5 +1,6 @@
 #include "avdl_data.h"
 #include "dd_log.h"
+#include "dd_game.h"
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
@@ -32,6 +33,11 @@ void parse_filename(char *buffer, const char *filename) {
 	wprintf(L"path: %ls\n", path);
 	CoTaskMemFree(path);
 	*/
+	/*
+	char buffer2[1024];
+	strcpy(buffer2, "~/." PKG_NAME "/saves/");
+	strcat(buffer2, filename);
+	*/
 
 	return;
 
@@ -42,17 +48,32 @@ void parse_filename(char *buffer, const char *filename) {
 	strcat(buffer, filename);
 
 	#else
+	char buffer2[1024];
+	strcpy(buffer2, "~/." PKG_NAME "/saves/");
+	strcat(buffer2, filename);
+
+	/*
+	// dynamic dir save
+	char *proj_loc = avdl_getProjectLocation();
+	if (proj_loc) {
+		strcat(buffer, proj_loc);
+		strcat(buffer, "/saves/");
+	}
+	strcat(buffer, filename);
+	return;
+	*/
+
 	buffer[0] = '\0';
 	int bufferC = 0;
 	int c = 0;
-	while (filename[c] != '\0' && bufferC < 1023) {
+	while (buffer2[c] != '\0' && bufferC < 1023) {
 
-		if (filename[c] == '~') {
+		if (buffer2[c] == '~') {
 			strcat(buffer, getenv("HOME"));
 			bufferC = strlen(buffer);
 		}
 		else {
-			buffer[bufferC] = filename[c];
+			buffer[bufferC] = buffer2[c];
 			bufferC++;
 		}
 		c++;
@@ -120,6 +141,8 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 		return -1;
 	}
 
+	wprintf("savefile: %lS\n", finalLoc);
+
 	free(finalLoc);
 	CoTaskMemFree(path);
 	return 0;
@@ -181,6 +204,8 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 		exit(-1);
 	}
 
+	dd_log("savefile: %s\n", buffer);
+
 	// everything worked as expected
 	return 0;
 
@@ -188,6 +213,8 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 }
 
 int avdl_data_load_internal(void *data, int data_size, const char *filename) {
+
+	//printf("loadfile: %s\n", filename);
 
 	#if defined(_WIN32) || defined(WIN32)
 
@@ -237,6 +264,7 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 		CoTaskMemFree(path);
 		return -1;
 	}
+	wprintf("loadfile: %lS\n", finalLoc);
 
 	free(finalLoc);
 	CoTaskMemFree(path);
@@ -287,6 +315,8 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 		);
 		exit(-1);
 	}
+
+	dd_log("loadfile: %s\n", buffer);
 
 	// everything worked as expected
 	return 0;

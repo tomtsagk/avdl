@@ -3,6 +3,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "avdl_file_op.h"
 #include "avdl_settings.h"
@@ -312,7 +314,7 @@ int dir_createat(int dir_at, const char *filename) {
 	}
 	else {
 		printf("avdl error: cannot create directories on specific locations on windows yet\n");
-		return 0;
+		return -1;
 	}
 	#else
 	mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
@@ -342,4 +344,150 @@ int is_dir(const char *filename) {
 	}
 	#endif
 	return 0;
+}
+
+int Avdl_FileOp_GetNumberOfFiles(const char *directory) {
+
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 0;
+	#else
+	// only handle directories
+	if (!is_dir(directory)) {
+		printf("avdl error: not a directory: %s\n", directory);
+		return -1;
+	}
+
+	// open source directory
+	int src_dir = open(directory, O_DIRECTORY);
+	if (!src_dir) {
+		printf("avdl error: Unable to open '%s': %s\n", directory, strerror(errno));
+		return -1;
+	}
+
+	DIR *d = opendir(directory);
+	if (!d) {
+		printf("avdl error: Unable to open directory '%s': %s\n", directory, strerror(errno));
+		return -1;
+	}
+
+	int files = 0;
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+		struct stat statbuf;
+		if ( fstatat(src_dir, dir->d_name, &statbuf, 0) != 0 ) {
+			printf("avdl error: Unable to stat directory '%s': %s\n", directory, strerror(errno));
+			return -1;
+		}
+
+		if (S_ISREG(statbuf.st_mode)) {
+			files++;
+		}
+	}
+
+	return files;
+	#endif
+}
+
+int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(const char *dirname, const char *filename, int, int)) {
+
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+
+	WIN32_FIND_DATA fdFile;
+	HANDLE hFind = NULL;
+
+	char sPath[2048];
+
+	//Specify a file mask. *.* = We want everything!
+	sprintf(sPath, "%s\\*.*", dirname);
+
+	if((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE)
+	{
+		printf("Path not found: [%s]\n", dirname);
+		return -1;
+	}
+
+	do
+	{
+		//Find first file will always return "."
+		//    and ".." as the first two directories.
+		if(strcmp(fdFile.cFileName, ".") != 0
+		&& strcmp(fdFile.cFileName, "..") != 0)
+		{
+			//Build up our file path using the passed in
+			//  [sDir] and the file/foldername we just found:
+			sprintf(sPath, "%s\\%s", dirname, fdFile.cFileName);
+
+			//Is the entity a File or Folder?
+			if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY)
+			{
+				printf("Directory: %s\n", sPath);
+				//ListDirectoryContents(sPath); //Recursion, I love it!
+			}
+			else{
+				printf("File: %s\n", sPath);
+				handle_function(dirname, fdFile.cFileName, 5, 10);
+			}
+		}
+	}
+	while(FindNextFile(hFind, &fdFile)); //Find the next file.
+
+	FindClose(hFind); //Always, Always, clean things up!
+
+	return 0;
+	#else
+
+	int files_to_handle = Avdl_FileOp_GetNumberOfFiles(dirname);
+	int files_handled = 0;
+
+	/*
+	 * start reading all files from source directory
+	 */
+	DIR *d = opendir(dirname);
+	if (!d) {
+		printf("avdl error: Unable to open directory '%s': %s\n", dirname, strerror(errno));
+		return -1;
+	}
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+		files_handled++;
+		handle_function(dirname, dir->d_name, files_handled, files_to_handle);
+	}
+
+	return 0;
+	#endif
+}
+
+int Avdl_FileOp_DoesFileExist(const char *filename) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 0;
+	#else
+	return access(filename, F_OK) == 0;
+	#endif
+}
+
+int Avdl_FileOp_IsDirStat(struct stat s) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 0;
+	#else
+	return S_ISDIR(s.st_mode);
+	#endif
+}
+
+int Avdl_FileOp_IsRegStat(struct stat s) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 1;
+	#else
+	return S_ISREG(s.st_mode);
+	#endif
+}
+
+int file_remove(const char *filename) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 0;
+	#else
+	remove(filename);
+	return 0;
+	#endif
 }

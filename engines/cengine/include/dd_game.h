@@ -62,10 +62,11 @@ extern int dd_flag_exit;
 
 // project settings
 #if defined(_WIN32) || defined(WIN32)
-const wchar_t *avdl_getProjectLocation();
+#define PROJ_LOC_TYPE wchar_t
 #else
-const char *avdl_getProjectLocation();
+#define PROJ_LOC_TYPE char
 #endif
+const PROJ_LOC_TYPE *avdl_getProjectLocation();
 void avdl_initProjectLocation();
 void avdl_cleanProjectLocation();
 
@@ -73,5 +74,24 @@ void avdl_cleanProjectLocation();
 #define avdl_clear_depth() glClear(GL_DEPTH_BUFFER_BIT)
 
 #define avdl_exit() dd_flag_exit = 1;
+
+/*
+ * Two types of package location:
+ *
+ * Dynamic: The project lives in a directory,
+ * which might be moved around.
+ *
+ * Fixed: The project is permanently in a directory,
+ * most likely because it was installed on a system.
+ */
+enum GAME_PKG_LOCATION_TYPE {
+	GAME_PKG_LOCATION_TYPE_DYNAMIC,
+	GAME_PKG_LOCATION_TYPE_FIXED,
+};
+
+enum GAME_PKG_DEPENDENCIES_TYPE {
+	GAME_PKG_DEPENDENCIES_TYPE_DYNAMIC,
+	GAME_PKG_DEPENDENCIES_TYPE_FIXED,
+};
 
 #endif

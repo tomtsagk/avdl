@@ -66,11 +66,7 @@ void handleMousePress(int button, int state, int x, int y);
 void handlePassiveMotion(int x, int y);
 
 unsigned char input_key;
-int input_mouse;
-int input_mouse_button;
-int input_mouse_state;
-int input_mouse_x;
-int input_mouse_y;
+struct AvdlInput avdl_input;
 
 #undef PI
 #define PI 3.1415926535897932f
@@ -98,22 +94,6 @@ pthread_mutex_t jniMutex;
 
 int avdl_state_initialised = 0;
 int avdl_state_active = 0;
-
-#if DD_PLATFORM_NATIVE
-Uint32 GameLoopTimer(Uint32 interval, void *param) {
-	// Create a user event to call the game loop.
-	SDL_Event event;
-
-	event.type = SDL_USEREVENT;
-	event.user.code = 1;
-	event.user.data1 = 0;
-	event.user.data2 = 0;
-
-	SDL_PushEvent(&event);
-
-	return interval;
-}
-#endif
 
 struct avdl_achievements *achievements = 0;
 
@@ -163,9 +143,15 @@ int dd_main(int argc, char *argv[]) {
 	avdl_assetManager_init();
 
 	#if defined(_WIN32) || defined(WIN32)
-	if (_wchdir(avdl_getProjectLocation()) != 0) {
-		wprintf(L"avdl: failed to change directory: %lS", _wcserror(errno));
-		return -1;
+	char *proj_loc = avdl_getProjectLocation();
+	if (proj_loc) {
+		if (_wchdir(proj_loc) != 0) {
+			dd_log("avdl: failed to change directory: %lS", _wcserror(errno));
+			return -1;
+		}
+	}
+	else {
+		dd_log("avdl error: unable to get project location");
 	}
 	#endif
 
@@ -177,7 +163,7 @@ int dd_main(int argc, char *argv[]) {
 	srand(time(NULL));
 	#endif
 	input_key = 0;
-	input_mouse = 0;
+	avdl_input_Init(&avdl_input);
 
 	#if DD_PLATFORM_ANDROID
 	// initialise pthread mutex for jni
@@ -241,9 +227,6 @@ int dd_main(int argc, char *argv[]) {
 		}
 		handleResize(dd_window_width(), dd_window_height());
 
-		// trigger an update event
-		timer = SDL_AddTimer(30, GameLoopTimer, 0);
-
 		// init opengl
 		GLenum glewError = glewInit();
 		if (glewError != GLEW_OK) {
@@ -302,7 +285,7 @@ int dd_main(int argc, char *argv[]) {
 
 	// audio is off - display message about it
 	if (!dd_hasAudio && !avdl_verify) {
-		dd_log("Game will play without audio");
+		dd_log("avdl error: Game will play without audio");
 	}
 
 	#endif
@@ -328,75 +311,77 @@ int dd_main(int argc, char *argv[]) {
 		// start the loop
 		int isRunning = 1;
 		SDL_Event event;
-		while (isRunning && SDL_WaitEvent(&event) && !dd_flag_exit) {
-			switch (event.type) {
-				case SDL_USEREVENT:
-					update();
-					break;
-				case SDL_QUIT:
-					isRunning = 0;
-					break;
-				case SDL_WINDOWEVENT:
-					if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-						handleResize(event.window.data1, event.window.data2);
-					}
-					break;
-				case SDL_MOUSEMOTION:
-					handlePassiveMotion(event.motion.x, event.motion.y);
-					break;
-				case SDL_MOUSEBUTTONDOWN:
-					handleMousePress(0, 0, event.motion.x, event.motion.y);
-					break;
-				case SDL_MOUSEBUTTONUP:
-					handleMousePress(0, 1, event.motion.x, event.motion.y);
-					break;
-				case SDL_KEYDOWN:
-					// temporary keyboard controls
-					if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-						handleKeyboardPress(27, 0, 0);
-					}
-					else
-					if (event.key.keysym.scancode == SDL_SCANCODE_A) {
-						handleKeyboardPress(97, 0, 0);
-					}
-					else
-					if (event.key.keysym.scancode == SDL_SCANCODE_D) {
-						handleKeyboardPress(100, 0, 0);
-					}
-					else
-					if (event.key.keysym.scancode == SDL_SCANCODE_W) {
-						handleKeyboardPress(119, 0, 0);
-					}
-					else
-					if (event.key.keysym.scancode == SDL_SCANCODE_S) {
-						handleKeyboardPress(115, 0, 0);
-					}
-					else
-					if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
-						handleKeyboardPress(32, 0, 0);
-					}
-					else
-					if (event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
-						handleKeyboardPress(13, 0, 0);
-					}
-					else
-					if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
-						handleKeyboardPress(1, 0, 0);
-					}
-					else
-					if (event.key.keysym.scancode == SDL_SCANCODE_UP) {
-						handleKeyboardPress(2, 0, 0);
-					}
-					else
-					if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
-						handleKeyboardPress(3, 0, 0);
-					}
-					else
-					if (event.key.keysym.scancode == SDL_SCANCODE_DOWN) {
-						handleKeyboardPress(4, 0, 0);
-					}
-					break;
+		//while (isRunning && SDL_WaitEvent(&event) && !dd_flag_exit) {
+		while (isRunning && !dd_flag_exit) {
+			while (SDL_PollEvent(&event)) {
+				switch (event.type) {
+					case SDL_QUIT:
+						isRunning = 0;
+						break;
+					case SDL_WINDOWEVENT:
+						if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+							handleResize(event.window.data1, event.window.data2);
+						}
+						break;
+					case SDL_MOUSEMOTION:
+						handlePassiveMotion(event.motion.x, event.motion.y);
+						break;
+					case SDL_MOUSEBUTTONDOWN:
+						handleMousePress(0, 0, event.motion.x, event.motion.y);
+						break;
+					case SDL_MOUSEBUTTONUP:
+						handleMousePress(0, 1, event.motion.x, event.motion.y);
+						break;
+					case SDL_KEYDOWN:
+						// temporary keyboard controls
+						if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+							handleKeyboardPress(27, 0, 0);
+						}
+						else
+						if (event.key.keysym.scancode == SDL_SCANCODE_A) {
+							handleKeyboardPress(97, 0, 0);
+						}
+						else
+						if (event.key.keysym.scancode == SDL_SCANCODE_D) {
+							handleKeyboardPress(100, 0, 0);
+						}
+						else
+						if (event.key.keysym.scancode == SDL_SCANCODE_W) {
+							handleKeyboardPress(119, 0, 0);
+						}
+						else
+						if (event.key.keysym.scancode == SDL_SCANCODE_S) {
+							handleKeyboardPress(115, 0, 0);
+						}
+						else
+						if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+							handleKeyboardPress(32, 0, 0);
+						}
+						else
+						if (event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
+							handleKeyboardPress(13, 0, 0);
+						}
+						else
+						if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+							handleKeyboardPress(1, 0, 0);
+						}
+						else
+						if (event.key.keysym.scancode == SDL_SCANCODE_UP) {
+							handleKeyboardPress(2, 0, 0);
+						}
+						else
+						if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
+							handleKeyboardPress(3, 0, 0);
+						}
+						else
+						if (event.key.keysym.scancode == SDL_SCANCODE_DOWN) {
+							handleKeyboardPress(4, 0, 0);
+						}
+						break;
+				}
 			}
+			update();
+			SDL_Delay(33.333);
 		}
 	}
 
@@ -495,11 +480,17 @@ void clean() {
 }
 
 void dd_perspective(float *matrix, float fovyDegrees, float aspectRatio,
-	float znear, float zfar) {
+	float znear, float zfar, int ypriority) {
 
 	float ymax, xmax;
-	ymax = znear * tanf(fovyDegrees * M_PI / 360.0);
-	xmax = ymax * aspectRatio;
+	if (ypriority) {
+		ymax = znear * tanf(fovyDegrees * M_PI / 360.0);
+		xmax = ymax * aspectRatio;
+	}
+	else {
+		xmax = znear * tanf(fovyDegrees * M_PI / 360.0);
+		ymax = xmax * aspectRatio;
+	}
 
 	float left = -xmax;
 	float right = xmax;
@@ -535,10 +526,18 @@ struct dd_matrix matPerspective;
 void handleResize(int w, int h) {
 	glViewport(0, 0, w, h);
 
-	dd_fovaspect_set((double) w /(double) h);
+	int ypriority;
+	if (w > h) {
+		dd_fovaspect_set((double) w /(double) h);
+		ypriority = 1;
+	}
+	else {
+		dd_fovaspect_set((double) h /(double) w);
+		ypriority = 0;
+	}
 
 	// perspective projection matrix
-	dd_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0);
+	dd_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0, ypriority);
 
 	if (cworld && cworld->resize) {
 		cworld->resize(cworld);
@@ -646,9 +645,12 @@ void update() {
 	}
 
 	// handle mouse input
-	if (cworld && cworld->mouse_input && input_mouse) {
-		cworld->mouse_input(cworld, input_mouse_button, input_mouse_state);
-		input_mouse = 0;
+	if (cworld && cworld->mouse_input && avdl_input_GetInputTotal(&avdl_input) > 0) {
+		int totalInput = avdl_input_GetInputTotal(&avdl_input);
+		for (int i = 0; i < totalInput; i++) {
+			cworld->mouse_input(cworld, avdl_input_GetButton(&avdl_input, i), avdl_input_GetState(&avdl_input, i));
+		}
+		avdl_input_ClearInput(&avdl_input);
 	}
 
 	// update world
@@ -744,49 +746,42 @@ void handleKeyboardPress(unsigned char key, int x, int y) {
 void handleMousePress(int button, int state, int x, int y) {
 
 	#if DD_PLATFORM_ANDROID
-	input_mouse_button = button;
-	input_mouse_state = state;
-	input_mouse_x = x;
-	input_mouse_y = y;
-	input_mouse = 1;
+	avdl_input_AddInput(&avdl_input, button, state, x, y);
 	#else
-	input_mouse_x = x;
-	input_mouse_y = y;
+	int state_temp = 0;
 	switch (state) {
 		//case GLUT_DOWN:
 		case 0:
-			input_mouse_state = DD_INPUT_MOUSE_TYPE_PRESSED;
+			state_temp = DD_INPUT_MOUSE_TYPE_PRESSED;
 			break;
 		//case GLUT_UP:
 		case 1:
-			input_mouse_state = DD_INPUT_MOUSE_TYPE_RELEASED;
+			state_temp = DD_INPUT_MOUSE_TYPE_RELEASED;
 			break;
 	}
 
+	int button_temp = 0;
 	switch (button) {
 		//case GLUT_LEFT_BUTTON:
 		case 0:
-			input_mouse_button = DD_INPUT_MOUSE_BUTTON_LEFT;
-			input_mouse = 1;
+			button_temp = DD_INPUT_MOUSE_BUTTON_LEFT;
 			break;
 		//case GLUT_MIDDLE_BUTTON:
 		case 1:
-			input_mouse_button = DD_INPUT_MOUSE_BUTTON_MIDDLE;
-			input_mouse = 1;
+			button_temp = DD_INPUT_MOUSE_BUTTON_MIDDLE;
 			break;
 		//case GLUT_RIGHT_BUTTON:
 		case 2:
-			input_mouse_button = DD_INPUT_MOUSE_BUTTON_RIGHT;
-			input_mouse = 1;
+			button_temp = DD_INPUT_MOUSE_BUTTON_RIGHT;
 			break;
 	}
+	avdl_input_AddInput(&avdl_input, button_temp, state_temp, x, y);
 	#endif
 
 }
 
 void handlePassiveMotion(int x, int y) {
-	input_mouse_x = x;
-	input_mouse_y = y;
+	avdl_input_AddPassiveMotion(&avdl_input, x, y);
 }
 
 #if DD_PLATFORM_ANDROID

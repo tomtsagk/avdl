@@ -1,14 +1,14 @@
 #include "dd_mouse.h"
 #include "dd_game.h"
+#include "avdl_input.h"
 
-extern int input_mouse_x;
-extern int input_mouse_y;
+extern struct AvdlInput avdl_input;
 int dd_mouse_x() {
-	return input_mouse_x;
+	return avdl_input_GetX(&avdl_input);
 }
 
 int dd_mouse_y() {
-	return input_mouse_y;
+	return avdl_input_GetY(&avdl_input);
 }
 
 float dd_mouse_xProportion() {

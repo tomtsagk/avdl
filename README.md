@@ -45,7 +45,7 @@ You can find this project packaged for the following Linux distributions:
 Add the Personal Package Archive (PPA) to your system,
 then update repositories and install:
 
-    add-apt-repository ppa:darkdimension/avdl
+    add-apt-repository ppa:afloofdev/avdl
     apt-get update
     apt-get install avdl
 
@@ -72,11 +72,11 @@ used to install packaged from a local file.
 
 ### Fedora 34, Fedora 35, Fedora rawhide
 
-[![Copr build status](https://copr.fedorainfracloud.org/coprs/darkdimension/avdl/package/avdl/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/darkdimension/avdl/package/avdl/)
+[![Copr build status](https://copr.fedorainfracloud.org/coprs/afloofdev/avdl/package/avdl/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/afloofdev/avdl/package/avdl/)
 
 Enable the repository using the package manager, and install:
 
-    dnf copr enable darkdimension/avdl
+    dnf copr enable afloofdev/avdl
     dnf install avdl
 
 Note: These commands may require `root` permissions.
