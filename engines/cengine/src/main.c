@@ -152,7 +152,7 @@ int dd_main(int argc, char *argv[]) {
 	char *proj_loc = avdl_getProjectLocation();
 	if (proj_loc) {
 		if (_wchdir(proj_loc) != 0) {
-			dd_log("avdl: failed to change directory");
+			dd_log("avdl: failed to change directory: %lS", _wcserror(errno));
 			wprintf(L"avdl: failed to change directory: %lS", _wcserror(errno));
 			return -1;
 		}

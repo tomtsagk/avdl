@@ -176,6 +176,7 @@ const char *avdl_getProjectLocation() {
 			return 0;
 		}
 		(secondToLastSlash+1)[0] = '\0';
+		dd_log("final location: %s", tempProjLoc);
 	}
 
 	return tempProjLoc;
