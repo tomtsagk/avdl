@@ -122,10 +122,7 @@ char *game_pkg_location_path = 0;
 char tempProjLoc[1024];
 
 #if defined(_WIN32) || defined(WIN32)
-#define PROJ_LOC_TYPE wchar_t
 wchar_t tempProjLocW[1024];
-#else
-#define PROJ_LOC_TYPE char
 #endif
 
 const PROJ_LOC_TYPE *avdl_getProjectLocation() {

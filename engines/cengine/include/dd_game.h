@@ -61,7 +61,12 @@ extern int dd_flag_updateThread;
 extern int dd_flag_exit;
 
 // project settings
-const char *avdl_getProjectLocation();
+#if defined(_WIN32) || defined(WIN32)
+#define PROJ_LOC_TYPE wchar_t
+#else
+#define PROJ_LOC_TYPE char
+#endif
+const PROJ_LOC_TYPE *avdl_getProjectLocation();
 void avdl_initProjectLocation();
 void avdl_cleanProjectLocation();
 
