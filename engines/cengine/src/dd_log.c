@@ -7,6 +7,10 @@
 #include <stdio.h>
 #endif
 
+#if defined(_WIN32) || defined(WIN32)
+#include <windows.h>
+#endif
+
 void dd_log(const char *msg, ...) {
 
 	va_list args;
