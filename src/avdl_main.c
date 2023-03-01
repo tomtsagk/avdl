@@ -339,20 +339,12 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 		return 0;
 	}
 
-	// skip files already transpiled (check last modified)
-	if ( Avdl_FileOp_DoesFileExist(buffer2) ) {
-		struct stat statbuf2;
-		if (stat(buffer2, &statbuf2) != 0) {
-			printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));
-			return -1;
-		}
-
-		// transpiled file is same or newer (?) - skip transpilation
-		if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
-			//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", buffer, buffer2);
-			return 0;
-		}
-
+	// skip files already compiled (check last modified)
+	// for the time being files don't need to be re-transpiled
+	// if a header changes
+	if ( !Avdl_FileOp_IsFileOlderThan(buffer2, buffer) ) {
+		//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", buffer, buffer2);
+		return 0;
 	}
 	//printf("transpiling %s to %s\n", buffer, buffer2);
 
@@ -439,18 +431,10 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	}
 
 	// skip files already compiled (check last modified)
-	if ( Avdl_FileOp_DoesFileExist(buffer2) ) {
-		struct stat statbuf2;
-		if (stat(buffer2, &statbuf2) != 0) {
-			printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));
-			return -1;
-		}
-
-		// compiled file is same or newer (?) - skip compilation
-		if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
-			//printf("avdl src file not modified, skipping compilation of '%s'\n", dir->d_name);
-			return 0;
-		}
+	// but if any header in `include/` has changed, compile everything
+	if ( !Avdl_FileOp_IsFileOlderThan(buffer2, buffer)
+	&&   !Avdl_FileOp_IsFileOlderThan(buffer2, "include/") ) {
+		return 0;
 	}
 
 	//printf("compiling %s\n", dir->d_name);
@@ -1017,19 +1001,11 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 		return 0;
 	}
 
-	// skip files already transpiled (check last modified)
-	if ( Avdl_FileOp_DoesFileExist(buffer2) ) {
-		struct stat statbuf2;
-		if (stat(buffer2, &statbuf2) != 0) {
-			printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));
-			return -1;
-		}
-
-		// transpiled file is same or newer (?) - skip transpilation
-		if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
-			//printf("avdl asset file not modified, skipping handling of '%s'\n", dir->d_name);
-			return 0;
-		}
+	// skip files already compiled (check last modified)
+	// but if any header in `include/` has changed, compile everything
+	if ( !Avdl_FileOp_IsFileOlderThan(buffer2, buffer) ) {
+		//printf("avdl asset file not modified, skipping handling of '%s'\n", dir->d_name);
+		return 0;
 	}
 	//printf("handling %s\n", dir->d_name);
 

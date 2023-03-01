@@ -137,7 +137,7 @@ static void print_command_if(FILE *fd, struct ast_node *n) {
 
 static void print_command_echo(FILE *fd, struct ast_node *n) {
 
-	fprintf(fd, "printf(\"");
+	fprintf(fd, "dd_log(\"");
 	for (int i = 0; i < n->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&n->children, i);
 
@@ -168,7 +168,7 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 			exit(-1);
 		}
 	}
-	fprintf(fd, "\\n\"");
+	fprintf(fd, "\"");
 	for (int i = 0; i < n->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&n->children, i);
 
