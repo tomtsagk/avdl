@@ -16,20 +16,11 @@
 #include "avdl_platform.h"
 #include "avdl_settings.h"
 #include "avdl_pkg.h"
+#include "avdl_log.h"
 
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
 #endif
-
-// Test terminal colours
-#define RED   "\x1B[31m"
-#define GRN   "\x1B[32m"
-#define YEL   "\x1B[33m"
-#define BLU   "\x1B[34m"
-#define MAG   "\x1B[35m"
-#define CYN   "\x1B[36m"
-#define WHT   "\x1B[37m"
-#define RESET "\x1B[0m"
 
 const char cache_dir[] = ".avdl_cache/";
 
@@ -159,24 +150,27 @@ int handle_arguments();
 // temporary windows variable
 int translateOnly = 0;
 
-// init data, parse, exit
+// hide main when doing unit tests - temporary solution
 #ifdef AVDL_UNIT_TEST
-int avdl_main(int argc, char *argv[]) {
+#define AVDL_MAIN avdl_main
 #else
-int main(int argc, char *argv[]) {
+#define AVDL_MAIN main
 #endif
+
+// init data, parse, exit
+int AVDL_MAIN(int argc, char *argv[]) {
 
 	// get avdl path
 	avdl_project_path = avdl_pkg_GetProjectPath();
 	if (!avdl_project_path) {
-		printf("avdl error: cannot get project path\n");
+		avdl_log_error("cannot get project path");
 		return -1;
 	}
 
 	// get cengine path
 	cengine_path = avdl_pkg_GetCenginePath();
 	if (!cengine_path) {
-		printf("avdl error: cannot get cengine path\n");
+		avdl_log_error("cannot get cengine path");
 		return -1;
 	}
 
@@ -189,7 +183,7 @@ int main(int argc, char *argv[]) {
 	else
 	// error while parsing arguments
 	if (handle_return < 0) {
-		printf("avdl " RED "error" RESET ": failed to parse arguments\n");
+		avdl_log_error("failed to parse arguments");
 		return -1;
 	}
 
@@ -198,18 +192,18 @@ int main(int argc, char *argv[]) {
 	AvdlSettings_Create(&avdl_settings);
 
 	if (AvdlSettings_SetFromFile(&avdl_settings, "app.avdl") != 0) {
-		printf("avdl error: failed to get project settings from '%s'\n", "app.avdl");
+		avdl_log_error("failed to get project settings from '%s'", "app.avdl");
 		return -1;
 	}
 
-	printf("~ Project Details ~\n");
-	printf("Project Name: %s\n", avdl_settings.project_name);
-	printf("Version: %d (%s)-%d\n", avdl_settings.version_code, avdl_settings.version_name, avdl_settings.revision);
-	printf("Icon: %s\n", avdl_settings.icon_path);
-	printf("Package: %s\n", avdl_settings.package);
-	printf("CEngine location in: %s\n", cengine_path);
-	printf("~ Project Details end ~\n");
-	printf("\n");
+	avdl_log("~ Project Details ~");
+	avdl_log("Project Name: " BLU "%s" RESET, avdl_settings.project_name);
+	avdl_log("Version: " BLU "%d" RESET " (" BLU "%s" RESET ")-" BLU "%d" RESET, avdl_settings.version_code, avdl_settings.version_name, avdl_settings.revision);
+	avdl_log("Icon: " BLU "%s" RESET, avdl_settings.icon_path);
+	avdl_log("Package: " BLU "%s" RESET, avdl_settings.package);
+	avdl_log("CEngine location in: " BLU "%s" RESET, cengine_path);
+	avdl_log("~ Project Details end ~");
+	avdl_log("");
 
 	if (!is_dir("avdl_build")) {
 		dir_create("avdl_build");
@@ -221,7 +215,7 @@ int main(int argc, char *argv[]) {
 
 	// from `.dd` to `.c`
 	if ( avdl_transpile(&avdl_settings) != 0) {
-		printf("avdl: error transpiling project\n");
+		avdl_log_error("couldn't transpile project\n");
 		return -1;
 	}
 
@@ -233,45 +227,45 @@ int main(int argc, char *argv[]) {
 
 		// handle assets
 		if ( avdl_assets(&avdl_settings) != 0) {
-			printf("avdl: error handling project assets\n");
+			avdl_log_error("could not handle project assets for android\n");
 			return -1;
 		}
 
-		printf("avdl project " BLU "\"%s\"" RESET " prepared successfully for android at " BLU "./avdl_build_android/" RESET "\n", avdl_settings.project_name);
+		avdl_log("avdl project " BLU "\"%s\"" RESET " prepared successfully for android at " BLU "./avdl_build_android/" RESET, avdl_settings.project_name);
 
 		return 0;
 	}
 
 	if (translateOnly) {
-		printf("avdl: done translating\n");
+		avdl_log("avdl: done translating");
 		return 0;
 	}
 
 	// from `.c` to `.o`
 	if ( avdl_compile(&avdl_settings) != 0) {
-		printf("avdl: error compiling project\n");
+		avdl_log_error("failed to compile '" BLU "%s" RESET "'", avdl_settings.project_name);
 		return -1;
 	}
 
 	// cengine
 	if ( avdl_compile_cengine(&avdl_settings) != 0) {
-		printf("avdl: error compiling cengine\n");
+		avdl_log_error("failed to compile cengine\n");
 		return -1;
 	}
 
 	// combine all `.o` to executable
 	if ( avdl_link(&avdl_settings) != 0) {
-		printf("avdl: error linking project\n");
+		avdl_log_error("failed to link '" BLU "%s" RESET "'", avdl_settings.project_name);
 		return -1;
 	}
 
 	// handle assets
 	if ( avdl_assets(&avdl_settings) != 0) {
-		printf("avdl: error handling project assets\n");
+		avdl_log_error("failed to handle assets in '" BLU "%s" RESET "'");
 		return -1;
 	}
 
-	printf("avdl project " BLU "\"%s\"" RESET " compiled successfully at " BLU "./avdl_build/" RESET "\n", avdl_settings.project_name);
+	avdl_log("avdl: project " BLU "\"%s\"" RESET " compiled successfully at " BLU "./avdl_build/" RESET, avdl_settings.project_name);
 
 	// success!
 	return 0;
@@ -290,7 +284,7 @@ int create_android_directory(const char *androidDirName) {
 	}
 	else
 	if (isDir < 0) {
-		printf("avdl error: file '%s' not a directory\n", androidDirName);
+		avdl_log_error("file '%s' not a directory", androidDirName);
 		return -1;
 	}
 	#endif
@@ -320,13 +314,13 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 	// check file type
 	struct stat statbuf;
 	if (stat(buffer, &statbuf) != 0) {
-		printf("avdl error: Unable to stat file '%s': %s\n", buffer, strerror(errno));
+		avdl_log_error("Unable to stat file '%s': %s", buffer, strerror(errno));
 		return -1;
 	}
 
 	// is directory - skip - maybe recursive compilation at some point?
 	if (Avdl_FileOp_IsDirStat(statbuf)) {
-		printf("avdl skipping directory: %s\n", buffer);
+		avdl_log("skipping directory: %s", buffer);
 		return 0;
 	}
 	else
@@ -335,7 +329,7 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 	}
 	// not supporting other file types - skip
 	else {
-		printf("avdl error: Unsupported file type '%s' - skip\n", buffer);
+		avdl_log_error("Unsupported file type '%s' - skip\n", buffer);
 		return 0;
 	}
 
@@ -353,13 +347,13 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 	// initialise the parent node
 	game_node = ast_create(AST_GAME);
 	if (semanticAnalyser_convertToAst(game_node, buffer) != 0) {
-		printf("avdl failed to do semantic analysis\n");
+		avdl_log_error("failed to do semantic analysis on '" BLU "%s" RESET "'", filename);
 		return -1;
 	}
 
 	// write results to destination file
 	if (transpile_cglut(buffer2, game_node) != 0) {
-		printf("avdl: transpilation failed: %s -> %s\n", buffer, buffer2);
+		avdl_log_error("failed to transpile: %s -> %s", buffer, buffer2);
 		return -1;
 	}
 	printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
@@ -375,7 +369,10 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 	printf("avdl: transpiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
-	Avdl_FileOp_ForFileInDirectory(avdl_settings->src_dir, transpile_file);
+	if ( Avdl_FileOp_ForFileInDirectory(avdl_settings->src_dir, transpile_file) != 0 ) {
+		avdl_log_error("one or more files failed to transpile");
+		return -1;
+	}
 
 	printf("avdl: transpiling - " GRN "100%%" RESET "\n");
 	fflush(stdout);
@@ -412,7 +409,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	// skip non-regular files (like directories)
 	struct stat statbuf;
 	if ( stat(buffer, &statbuf) != 0 ) {
-		printf("avdl error: Unable to stat file '%s': %s\n", buffer, strerror(errno));
+		avdl_log_error("Unable to stat file '%s': %s", buffer, strerror(errno));
 		return -1;
 	}
 
@@ -467,7 +464,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 //	}
 	//printf("avdl compile command: %s\n", buffer3);
 	if (system(buffer3)) {
-		printf("avdl: error compiling file: %s\n", buffer3);
+		avdl_log_error("failed to compile file: " BLU "%s" RESET, filename);
 		return -1;
 	}
 
@@ -482,7 +479,10 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 	printf("avdl: compiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
-	Avdl_FileOp_ForFileInDirectory(cache_dir, compile_file);
+	if ( Avdl_FileOp_ForFileInDirectory(cache_dir, compile_file) != 0) {
+		avdl_log_error("one or more files failed to compile");
+		return -1;
+	}
 
 	printf("avdl: compiling - " GRN "100%%" RESET "\n");
 	fflush(stdout);
@@ -592,7 +592,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 		//printf("cengine compile command: %s\n", compile_command);
 		if (system(compile_command) != 0) {
-			printf("error compiling cengine\n");
+			avdl_log_error("failed to compile cengine\n");
 			return -1;
 		}
 ////		if (!avdlQuietMode) {
@@ -612,7 +612,7 @@ static int create_executable_file(const char *filename, const char *content) {
 	// make a `.sh` file to link executable with dependencies
 	int fd = open(filename, O_RDWR | O_CREAT, 0777);
 	if (fd == -1) {
-		printf("avdl error: Unable to open '%s': %s\n", filename, strerror(errno));
+		avdl_log_error("Unable to open '%s': %s\n", filename, strerror(errno));
 		return -1;
 	}
 
@@ -645,7 +645,7 @@ int add_object_file(const char *dirname, const char *filename, int fileIndex, in
 	// skip non-regular files (like directories)
 	struct stat statbuf;
 	if (stat(buffer2, &statbuf) != 0) {
-		printf("avdl error: Unable to stat file '%s': %s\n", buffer2, strerror(errno));
+		avdl_log_error("Unable to stat file '%s': %s\n", buffer2, strerror(errno));
 		return -1;
 	}
 
@@ -766,7 +766,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 	//printf("link command: %s\n", buffer);
 	if (system(buffer)) {
-		printf("avdl: error linking files\n");
+		avdl_log_error("failed to create executable");
 		return -1;
 	}
 			/*
@@ -982,7 +982,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	// skip non-regular files (like directories)
 	struct stat statbuf;
 	if (stat(buffer, &statbuf) != 0) {
-		printf("avdl error: Unable to stat file '%s': %s\n", buffer, strerror(errno));
+		avdl_log_error("Unable to stat file '%s': %s\n", buffer, strerror(errno));
 		return -1;
 	}
 
@@ -1094,7 +1094,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	strcat(buffer, "/app/src/main/cpp/");
 	int outDir = open(buffer, O_DIRECTORY);
 	if (!outDir) {
-		printf("avdl: can't open %s: %s\n", buffer, strerror(errno));
+		avdl_log_error("can't open %s: %s\n", buffer, strerror(errno));
 		return -1;
 	}
 
@@ -1176,7 +1176,7 @@ int handle_arguments(int argc, char *argv[]) {
 				else
 				// show version number
 				if (strcmp(argv[i], "--version") == 0) {
-					printf(PKG_NAME " v%s\n", PKG_VERSION);
+					avdl_log(PKG_NAME " v%s", PKG_VERSION);
 					return 1;
 				}
 				else
@@ -1189,7 +1189,7 @@ int handle_arguments(int argc, char *argv[]) {
 					printf("%s\n", avdl_getProjectLocation());
 					#endif
 					*/
-					printf("%s\n", avdl_project_path);
+					avdl_log("%s", avdl_project_path);
 					return 1;
 				}
 				else
@@ -1200,7 +1200,7 @@ int handle_arguments(int argc, char *argv[]) {
 						i++;
 					}
 					else {
-						printf("avdl " RED "error" RESET ": " BLU "%s" RESET " expects a path\n", argv[i]);
+						avdl_log_error(BLU "%s" RESET " expects a path", argv[i]);
 						return -1;
 					}
 				}
@@ -1219,13 +1219,13 @@ int handle_arguments(int argc, char *argv[]) {
 						i++;
 					}
 					else {
-						printf("avdl " RED "error" RESET ": " BLU "%s" RESET " expects a path\n", argv[i]);
+						avdl_log_error(BLU "%s" RESET " expects a path", argv[i]);
 						return -1;
 					}
 				}
 				// unknown double dash argument
 				else {
-					printf("avdl " RED "error" RESET ": cannot understand double dash argument " BLU "'%s'" RESET "\n", argv[i]);
+					avdl_log_error("cannot understand double dash argument " BLU "'%s'" RESET, argv[i]);
 					return -1;
 				}
 			}
@@ -1243,7 +1243,7 @@ int handle_arguments(int argc, char *argv[]) {
 					i++;
 				}
 				else {
-					printf("avdl " RED "error" RESET ": include path is expected after " BLU "`-I`" RESET "\n");
+					avdl_log_error("include path is expected after " BLU "`-I`" RESET);
 					return -1;
 				}
 			}
@@ -1252,7 +1252,7 @@ int handle_arguments(int argc, char *argv[]) {
 			if (strcmp(argv[i], "-i") == 0) {
 				if (argc > i+1) {
 					if (totalIncludeDirectories >= 10) {
-						printf("avdl " RED "error" RESET ": maximum " BLU "10" RESET " include directories allowed with " BLU "-i" RESET "\n");
+						avdl_log_error("maximum " BLU "10" RESET " include directories allowed with " BLU "-i" RESET);
 						return -1;
 					}
 					additionalIncludeDirectory[totalIncludeDirectories] = argv[i+1];
@@ -1260,7 +1260,7 @@ int handle_arguments(int argc, char *argv[]) {
 					i++;
 				}
 				else {
-					printf("avdl " RED "error" RESET ": include path is expected after " BLU "`-i`" RESET "\n");
+					avdl_log_error("include path is expected after " BLU "`-i`" RESET);
 					return -1;
 				}
 			}
@@ -1269,7 +1269,7 @@ int handle_arguments(int argc, char *argv[]) {
 			if (strcmp(argv[i], "-L") == 0) {
 				if (argc > i+1) {
 					if (totalLibDirectories >= 10) {
-						printf("avdl " RED "error" RESET ": maximum " BLU "10" RESET " library directories allowed with " BLU "-L" RESET "\n");
+						avdl_log_error("maximum " BLU "10" RESET " library directories allowed with " BLU "-L" RESET);
 						return -1;
 					}
 					additionalLibDirectory[totalLibDirectories] = argv[i+1];
@@ -1277,7 +1277,7 @@ int handle_arguments(int argc, char *argv[]) {
 					i++;
 				}
 				else {
-					printf("avdl " RED "error" RESET ": library path is expected after " BLU "`-L`" RESET "\n");
+					avdl_log_error("library path is expected after " BLU "`-L`" RESET);
 					return -1;
 				}
 			}
@@ -1288,13 +1288,13 @@ int handle_arguments(int argc, char *argv[]) {
 			}
 			// unknown single dash argument
 			else {
-				printf("avdl " RED "error" RESET ": cannot understand dash argument " BLU "'%s'" RESET "\n", argv[i]);
+				avdl_log_error("cannot understand dash argument " BLU "'%s'" RESET, argv[i]);
 				return -1;
 			}
 		}
 		// non-dash argument - nothing?
 		else {
-			printf("avdl " RED "error" RESET ": cannot understand argument " BLU "'%s'" RESET "\n", argv[i]);
+			avdl_log_error("cannot understand argument " BLU "'%s'" RESET, argv[i]);
 			return -1;
 		}
 	}

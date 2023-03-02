@@ -461,7 +461,14 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 	struct dirent *dir;
 	while ((dir = readdir(d)) != NULL) {
 		files_handled++;
-		handle_function(dirname, dir->d_name, files_handled, files_to_handle);
+
+		// given function returned a non zero value, it's unclear if this is
+		// a fatal error or not, so don't print anything, let the calling
+		// function handle it
+		if ( handle_function(dirname, dir->d_name, files_handled, files_to_handle) != 0 ) {
+			closedir(d);
+			return -1;
+		}
 	}
 
 	closedir(d);
