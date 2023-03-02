@@ -17,6 +17,7 @@
 #include "avdl_settings.h"
 #include "avdl_pkg.h"
 #include "avdl_log.h"
+#include "avdl_string.h"
 
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
@@ -271,16 +272,23 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	return 0;
 }
 
-char buffer_android[1024];
 int create_android_directory(const char *androidDirName) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	#else
 	int isDir = is_dir(androidDirName);
 	if (isDir == 0) {
 		dir_create(androidDirName);
-		strcpy(buffer_android, avdl_pkg_GetProjectPath());
-		strcat(buffer_android, "/share/avdl/android");
-		dir_copy_recursive(0, buffer_android, 0, androidDirName);
+		struct avdl_string cenginePath;
+		avdl_string_create(&cenginePath, 1024);
+		avdl_string_cat(&cenginePath, avdl_pkg_GetProjectPath());
+		avdl_string_cat(&cenginePath, "/share/avdl/android");
+		if ( !avdl_string_isValid(&cenginePath) ) {
+			avdl_log_error("cannot construct path of cengine: %s", avdl_string_getError(&cenginePath));
+			avdl_string_clean(&cenginePath);
+			return -1;
+		}
+		dir_copy_recursive(0, avdl_string_toCharPtr(&cenginePath), 0, androidDirName);
+		avdl_string_clean(&cenginePath);
 	}
 	else
 	if (isDir < 0) {
@@ -302,25 +310,43 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 	}
 
 	// src file full path
-	strcpy(buffer, dirname);
-	strcat(buffer, filename);
+	struct avdl_string srcFilePath;
+	avdl_string_create(&srcFilePath, 1024);
+	avdl_string_cat(&srcFilePath, dirname);
+	avdl_string_cat(&srcFilePath, filename);
+	if ( !avdl_string_isValid(&srcFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return -1;
+	}
 
 	// dst file full path
-	char buffer2[1024];
-	strcpy(buffer2, cache_dir);
-	strcat(buffer2, filename);
-	strcat(buffer2, ".c");
+	struct avdl_string dstFilePath;
+	avdl_string_create(&dstFilePath, 1024);
+	avdl_string_cat(&dstFilePath, cache_dir);
+	avdl_string_cat(&dstFilePath, filename);
+	avdl_string_cat(&dstFilePath, ".c");
+	if ( !avdl_string_isValid(&dstFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", cache_dir, filename, avdl_string_getError(&dstFilePath));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+		return -1;
+	}
 
 	// check file type
 	struct stat statbuf;
-	if (stat(buffer, &statbuf) != 0) {
-		avdl_log_error("Unable to stat file '%s': %s", buffer, strerror(errno));
+	if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
+		avdl_log_error("Unable to stat file '%s': %s", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return -1;
 	}
 
 	// is directory - skip - maybe recursive compilation at some point?
 	if (Avdl_FileOp_IsDirStat(statbuf)) {
-		avdl_log("skipping directory: %s", buffer);
+		avdl_log("skipping directory: %s", avdl_string_toCharPtr(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return 0;
 	}
 	else
@@ -329,15 +355,19 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 	}
 	// not supporting other file types - skip
 	else {
-		avdl_log_error("Unsupported file type '%s' - skip\n", buffer);
+		avdl_log_error("Unsupported file type '%s' - skip\n", avdl_string_toCharPtr(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return 0;
 	}
 
 	// skip files already compiled (check last modified)
 	// for the time being files don't need to be re-transpiled
 	// if a header changes
-	if ( !Avdl_FileOp_IsFileOlderThan(buffer2, buffer) ) {
+	if ( !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath)) ) {
 		//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", buffer, buffer2);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return 0;
 	}
 	//printf("transpiling %s to %s\n", buffer, buffer2);
@@ -346,17 +376,24 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 
 	// initialise the parent node
 	game_node = ast_create(AST_GAME);
-	if (semanticAnalyser_convertToAst(game_node, buffer) != 0) {
+	if (semanticAnalyser_convertToAst(game_node, avdl_string_toCharPtr(&srcFilePath)) != 0) {
 		avdl_log_error("failed to do semantic analysis on '" BLU "%s" RESET "'", filename);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return -1;
 	}
 
 	// write results to destination file
-	if (transpile_cglut(buffer2, game_node) != 0) {
-		avdl_log_error("failed to transpile: %s -> %s", buffer, buffer2);
+	if (transpile_cglut(avdl_string_toCharPtr(&dstFilePath), game_node) != 0) {
+		avdl_log_error("failed to transpile: %s -> %s", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return -1;
 	}
 	printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
+
+	avdl_string_clean(&srcFilePath);
+	avdl_string_clean(&dstFilePath);
 
 	return 0;
 }
@@ -389,27 +426,51 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	}
 
 	// src file full path
-	strcpy(buffer, dirname);
-	strcat(buffer, filename);
+	struct avdl_string srcFilePath;
+	avdl_string_create(&srcFilePath, 1024);
+	avdl_string_cat(&srcFilePath, dirname);
+	avdl_string_cat(&srcFilePath, filename);
+	if ( !avdl_string_isValid(&srcFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return -1;
+	}
 
+	// on android just copy src file to its destination
 	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
-		//strcpy(buffer, filename[i]);
-		char buffer2[1024];
-		strcpy(buffer2, "avdl_build_android/app/src/main/cpp/engine/");
-		strcat(buffer2, filename);
-		file_copy(buffer, buffer2, 0);
+		struct avdl_string androidFilePath;
+		avdl_string_create(&androidFilePath, 1024);
+		avdl_string_cat(&androidFilePath, "avdl_build_android/app/src/main/cpp/engine/");
+		avdl_string_cat(&androidFilePath, filename);
+		if ( !avdl_string_isValid(&androidFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s", "avdl_build_android/app/src/main/cpp/engine/", filename, avdl_string_getError(&androidFilePath));
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&androidFilePath);
+			return -1;
+		}
+		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
+		avdl_string_clean(&androidFilePath);
 		return 0;
 	}
 
 	// dst file full path
-	char buffer2[1024];
-	strcpy(buffer2, buffer);
-	strcat(buffer2, ".o");
+	struct avdl_string dstFilePath;
+	avdl_string_create(&dstFilePath, 1024);
+	avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(&srcFilePath));
+	avdl_string_cat(&dstFilePath, ".o");
+	if ( !avdl_string_isValid(&dstFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&dstFilePath));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+		return -1;
+	}
 
 	// skip non-regular files (like directories)
 	struct stat statbuf;
-	if ( stat(buffer, &statbuf) != 0 ) {
-		avdl_log_error("Unable to stat file '%s': %s", buffer, strerror(errno));
+	if ( stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0 ) {
+		avdl_log_error("Unable to stat file '%s': %s", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return -1;
 	}
 
@@ -419,58 +480,79 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	// not supporting other file types - skip
 	else {
 		//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return 0;
 	}
 
 	// skip non-`.c` files
-	if (strcmp(buffer +strlen(buffer) -2, ".c") != 0) {
+	if (strcmp(avdl_string_toCharPtr(&srcFilePath) +strlen(avdl_string_toCharPtr(&srcFilePath)) -2, ".c") != 0) {
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return 0;
 	}
 
 	// skip files already compiled (check last modified)
 	// but if any header in `include/` has changed, compile everything
-	if ( !Avdl_FileOp_IsFileOlderThan(buffer2, buffer)
-	&&   !Avdl_FileOp_IsFileOlderThan(buffer2, "include/") ) {
+	if ( !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
+	&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return 0;
 	}
 
 	//printf("compiling %s\n", dir->d_name);
 
-	char buffer3[1024];
-	// compile
-	strcpy(buffer3, "gcc -O3 -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
-	//strcat(buffer, gameVersion);
-	strcat(buffer3, "0.0.0");
-	strcat(buffer3, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
-	//strcat(buffer, gameRevision);
-	strcat(buffer3, "0");
-	strcat(buffer3, "\\\"\" -c -w ");
+	// command string
+	struct avdl_string commandString;
+	avdl_string_create(&commandString, 1024);
+	avdl_string_cat(&commandString, "gcc -O3 -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
+	avdl_string_cat(&commandString, "0.0.0");
+	avdl_string_cat(&commandString, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
+	avdl_string_cat(&commandString, "0");
+	avdl_string_cat(&commandString, "\\\"\" -c -w ");
 	// cengine headers
-	strcat(buffer3, " -I ");
-	strcat(buffer3, avdl_project_path);
-	strcat(buffer3, "/include ");
-	//strcat(buffer, filename[i]);
-	strcat(buffer3, buffer);
-	strcat(buffer3, " -o ");
-	strcat(buffer3, buffer2);
+	avdl_string_cat(&commandString, " -I ");
+	avdl_string_cat(&commandString, avdl_project_path);
+	avdl_string_cat(&commandString, "/include ");
+
+	avdl_string_cat(&commandString, avdl_string_toCharPtr(&srcFilePath));
+	avdl_string_cat(&commandString, " -o ");
+	avdl_string_cat(&commandString, avdl_string_toCharPtr(&dstFilePath));
 	for (int i = 0; i < totalIncludeDirectories; i++) {
-		strcat(buffer3, " -I ");
-		strcat(buffer3, additionalIncludeDirectory[i]);
+		avdl_string_cat(&commandString, " -I ");
+		avdl_string_cat(&commandString, additionalIncludeDirectory[i]);
 	}
-	strcat(buffer3, " -I include ");
+	avdl_string_cat(&commandString, " -I include ");
+
+	// unclear if needed
 //	if (includePath) {
 //		strcat(buffer, " -I ");
 //		strcat(buffer, includePath);
 //	}
+
+	if ( !avdl_string_isValid(&commandString) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&commandString));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+		avdl_string_clean(&commandString);
+		return -1;
+	}
 	//printf("avdl compile command: %s\n", buffer3);
-	if (system(buffer3)) {
+	if (system(avdl_string_toCharPtr(&commandString))) {
 		avdl_log_error("failed to compile file: " BLU "%s" RESET, filename);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+		avdl_string_clean(&commandString);
 		return -1;
 	}
 
 	printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
 	fflush(stdout);
 
+	avdl_string_clean(&srcFilePath);
+	avdl_string_clean(&dstFilePath);
+	avdl_string_clean(&commandString);
 	return 0;
 }
 
@@ -496,10 +578,19 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 	 * if not available, compile `cengine` and cache it
 	 */
 	char *outdir = ".avdl_cache/";
-	strcpy(buffer, outdir);
-	strcat(buffer, "cengine/");
-	if (!is_dir(buffer)) {
-		dir_create(buffer);
+
+	// create .avdl_cache/cengine directory
+	struct avdl_string cenginePath;
+	avdl_string_create(&cenginePath, 1024);
+	avdl_string_cat(&cenginePath, outdir);
+	avdl_string_cat(&cenginePath, "cengine/");
+	if ( !avdl_string_isValid(&cenginePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", outdir, "cengine/", avdl_string_getError(&cenginePath));
+		avdl_string_clean(&cenginePath);
+		return -1;
+	}
+	if (!is_dir(avdl_string_toCharPtr(&cenginePath))) {
+		dir_create(avdl_string_toCharPtr(&cenginePath));
 	}
 
 	printf("avdl: compiling cengine - " RED "0%%" RESET "\r");
@@ -554,22 +645,27 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		strcat(compile_command, " -o ");
 		//strcat(compile_command, buffer);
 		//strcat(compile_command, "/");
+		struct avdl_string cenginePathOut;
+		avdl_string_create(&cenginePathOut, 1024);
 		if (avdlSteamMode && cengine_files[i].steam) {
-			strcpy(buffer, outdir);
-			strcat(buffer, "cengine/");
-			strcat(buffer, cengine_files[i].steam);
-			buffer[strlen(buffer)-3] = 'o';
-			buffer[strlen(buffer)-2] = '\0';
+			avdl_string_cat(&cenginePathOut, outdir);
+			avdl_string_cat(&cenginePathOut, "cengine/");
+			avdl_string_cat(&cenginePathOut, cengine_files[i].steam);
+			avdl_string_replaceEnding(&cenginePathOut, ".cpp", ".o");
 		}
 		else {
-			strcpy(buffer, outdir);
-			strcat(buffer, "cengine/");
-			strcat(buffer, cengine_files[i].main);
-			//strcat(compile_command, cengine_files[i].main);
-			buffer[strlen(buffer)-1] = 'o';
-			//compile_command[strlen(compile_command)-1] = 'o';
+			avdl_string_cat(&cenginePathOut, outdir);
+			avdl_string_cat(&cenginePathOut, "cengine/");
+			avdl_string_cat(&cenginePathOut, cengine_files[i].main);
+			avdl_string_replaceEnding(&cenginePathOut, ".c", ".o");
 		}
-		strcat(compile_command, buffer);
+
+		if ( !avdl_string_isValid(&cenginePathOut) ) {
+			avdl_log_error("cannot construct path '%s%s%s': %s", outdir, "cengine/", cengine_files[i].steam, avdl_string_getError(&cenginePathOut));
+			avdl_string_clean(&cenginePathOut);
+			return -1;
+		}
+		strcat(compile_command, avdl_string_toCharPtr(&cenginePathOut));
 
 		// cengine headers
 		strcat(compile_command, " -I ");
@@ -583,7 +679,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		}
 
 		// skip files already compiled
-		if ( Avdl_FileOp_DoesFileExist(buffer) ) {
+		if ( Avdl_FileOp_DoesFileExist(avdl_string_toCharPtr(&cenginePathOut)) ) {
 			//printf("skipping: %s\n", buffer);
 			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/cengine_files_total *100));
 			fflush(stdout);
@@ -593,6 +689,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		//printf("cengine compile command: %s\n", compile_command);
 		if (system(compile_command) != 0) {
 			avdl_log_error("failed to compile cengine\n");
+			avdl_string_clean(&cenginePath);
 			return -1;
 		}
 ////		if (!avdlQuietMode) {
@@ -604,6 +701,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		printf("avdl: compiling cengine - " GRN "100%%" RESET "\n");
 ////	}
 
+	avdl_string_clean(&cenginePath);
 	return 0;
 }
 
@@ -638,14 +736,22 @@ int add_object_file(const char *dirname, const char *filename, int fileIndex, in
 		return 0;
 	}
 
-	char buffer2[1024];
-	strcpy(buffer2, dirname);
-	strcat(buffer2, filename);
+	// src file full path
+	struct avdl_string srcFilePath;
+	avdl_string_create(&srcFilePath, 1024);
+	avdl_string_cat(&srcFilePath, dirname);
+	avdl_string_cat(&srcFilePath, filename);
+	if ( !avdl_string_isValid(&srcFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return -1;
+	}
 
 	// skip non-regular files (like directories)
 	struct stat statbuf;
-	if (stat(buffer2, &statbuf) != 0) {
-		avdl_log_error("Unable to stat file '%s': %s\n", buffer2, strerror(errno));
+	if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
+		avdl_log_error("Unable to stat file '%s': %s\n", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
+		avdl_string_clean(&srcFilePath);
 		return -1;
 	}
 
@@ -658,6 +764,7 @@ int add_object_file(const char *dirname, const char *filename, int fileIndex, in
 	// not supporting other file types - skip
 	else {
 		//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+		avdl_string_clean(&srcFilePath);
 		return 0;
 	}
 
@@ -682,6 +789,7 @@ int add_object_file(const char *dirname, const char *filename, int fileIndex, in
 
 	}
 	*/
+	avdl_string_clean(&srcFilePath);
 	return 0;
 }
 
@@ -698,6 +806,11 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	if (!is_dir(outdir)) {
 		dir_create(outdir);
 	}
+
+	/*
+	struct avdl_string linkCommand;
+	avdl_string_create(&linkCommand, 1024);
+	*/
 
 	// prepare link command
 	if (avdlSteamMode) {
@@ -765,6 +878,13 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		strcat(buffer, " -lsteam_api ");
 	}
 	//printf("link command: %s\n", buffer);
+	/*
+	if ( !avdl_string_isValid(&linkCommand) ) {
+		avdl_log_error("cannot construct link command: %s", avdl_string_getError(&linkCommand));
+		avdl_string_clean(&linkCommand);
+		return -1;
+	}
+	*/
 	if (system(buffer)) {
 		avdl_log_error("failed to create executable");
 		return -1;
@@ -936,9 +1056,16 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 		return 0;
 	}
 
-	// src file
-	strcpy(buffer, dirname);
-	strcat(buffer, filename);
+	// src file full path
+	struct avdl_string srcFilePath;
+	avdl_string_create(&srcFilePath, 1024);
+	avdl_string_cat(&srcFilePath, dirname);
+	avdl_string_cat(&srcFilePath, filename);
+	if ( !avdl_string_isValid(&srcFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return -1;
+	}
 
 	// on android, put assets in a specific directory
 	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
@@ -959,36 +1086,57 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 			assetDir = "raw";
 		}
 
-		char buffer2[1024];
-		strcpy(buffer2, "avdl_build_android/");
-		strcat(buffer2, "/app/src/main/res/");
-		strcat(buffer2, assetDir);
-		strcat(buffer2, "/");
-		dir_create(buffer2);
-		strcat(buffer2, filename);
+		// android file full path
+		struct avdl_string androidFilePath;
+		avdl_string_create(&androidFilePath, 1024);
+		avdl_string_cat(&androidFilePath, "avdl_build_android/");
+		avdl_string_cat(&androidFilePath, "/app/src/main/res/");
+		avdl_string_cat(&androidFilePath, assetDir);
+		avdl_string_cat(&androidFilePath, "/");
+		if ( !avdl_string_isValid(&androidFilePath) ) {
+			avdl_log_error("cannot construct android file path: %s", avdl_string_getError(&androidFilePath));
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&androidFilePath);
+			return -1;
+		}
+		dir_create(avdl_string_toCharPtr(&androidFilePath));
+		strcat(avdl_string_toCharPtr(&androidFilePath), filename);
 
-		file_copy(buffer, buffer2, 0);
+		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
+		avdl_string_clean(&androidFilePath);
 
+		avdl_string_clean(&srcFilePath);
 		return 0;
 	}
 
 	char *outdir = "avdl_build/assets/";
 
-	// dst file
-	char buffer2[1024];
-	strcpy(buffer2, outdir);
-	strcat(buffer2, filename);
+	// dst file full path
+	struct avdl_string dstFilePath;
+	avdl_string_create(&dstFilePath, 1024);
+	avdl_string_cat(&dstFilePath, outdir);
+	avdl_string_cat(&dstFilePath, filename);
+	if ( !avdl_string_isValid(&dstFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", outdir, filename, avdl_string_getError(&dstFilePath));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+		return -1;
+	}
 
 	// skip non-regular files (like directories)
 	struct stat statbuf;
-	if (stat(buffer, &statbuf) != 0) {
-		avdl_log_error("Unable to stat file '%s': %s\n", buffer, strerror(errno));
+	if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
+		avdl_log_error("Unable to stat file '%s': %s\n", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return -1;
 	}
 
 	// is directory - skip - maybe recursive compilation at some point?
 	if (Avdl_FileOp_IsDirStat(statbuf)) {
 		//printf("avdl skipping directory: %s\n", dir->d_name);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return 0;
 	}
 	else
@@ -998,13 +1146,17 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	// not supporting other file types - skip
 	else {
 		//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return 0;
 	}
 
 	// skip files already compiled (check last modified)
 	// but if any header in `include/` has changed, compile everything
-	if ( !Avdl_FileOp_IsFileOlderThan(buffer2, buffer) ) {
+	if ( !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath)) ) {
 		//printf("avdl asset file not modified, skipping handling of '%s'\n", dir->d_name);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
 		return 0;
 	}
 	//printf("handling %s\n", dir->d_name);
@@ -1015,10 +1167,12 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	 * control of editing files to supported formats
 	 * and throwing errors on unsupported formats.
 	 */
-	file_copy(buffer, buffer2, 0);
+	file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
 
 	printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
 	fflush(stdout);
+	avdl_string_clean(&srcFilePath);
+	avdl_string_clean(&dstFilePath);
 	return 0;
 }
 
@@ -1059,20 +1213,36 @@ int android_object_file(const char *dirname, const char *filename, int fileIndex
 		return 0;
 	}
 
-	// src file
-	strcpy(buffer, dirname);
-	strcat(buffer, filename);
+	// src file full path
+	struct avdl_string srcFilePath;
+	avdl_string_create(&srcFilePath, 1024);
+	avdl_string_cat(&srcFilePath, dirname);
+	avdl_string_cat(&srcFilePath, filename);
+	if ( !avdl_string_isValid(&srcFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return -1;
+	}
 
 	strcat(big_buffer, "game/");
 	strcat(big_buffer, filename);
 	strcat(big_buffer, " ");
 
-	// dst file
-	char buffer2[1024];
-	strcpy(buffer2, "avdl_build_android/app/src/main/cpp/game/");
-	strcat(buffer2, filename);
+	// dst file full path
+	struct avdl_string dstFilePath;
+	avdl_string_create(&dstFilePath, 1024);
+	avdl_string_cat(&dstFilePath, "avdl_build_android/app/src/main/cpp/game/");
+	avdl_string_cat(&dstFilePath, filename);
+	if ( !avdl_string_isValid(&dstFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", "avdl_build_android/app/src/main/cpp/game/", filename, avdl_string_getError(&dstFilePath));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+		return -1;
+	}
 
-	file_copy(buffer, buffer2, 0);
+	file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
+	avdl_string_clean(&srcFilePath);
+	avdl_string_clean(&dstFilePath);
 	#endif
 
 	return 0;
@@ -1089,18 +1259,30 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	big_buffer[0] = '\0';
 	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", android_object_file);
 
+	// cpp directory
+	struct avdl_string cppFilePath;
+	avdl_string_create(&cppFilePath, 1024);
+	avdl_string_cat(&cppFilePath, "avdl_build_android/");
+	avdl_string_cat(&cppFilePath, "/app/src/main/cpp/");
+	if ( !avdl_string_isValid(&cppFilePath) ) {
+		avdl_log_error("cannot construct android cpp path: %s", avdl_string_getError(&cppFilePath));
+		avdl_string_clean(&cppFilePath);
+		return -1;
+	}
+
 	// folder to edit
-	strcpy(buffer, "avdl_build_android/");
-	strcat(buffer, "/app/src/main/cpp/");
-	int outDir = open(buffer, O_DIRECTORY);
+	int outDir = open(avdl_string_toCharPtr(&cppFilePath), O_DIRECTORY);
 	if (!outDir) {
-		avdl_log_error("can't open %s: %s\n", buffer, strerror(errno));
+		avdl_log_error("can't open %s: %s\n", avdl_string_toCharPtr(&cppFilePath), strerror(errno));
+		avdl_string_clean(&cppFilePath);
 		return -1;
 	}
 
 	// add in the avdl-compiled source files
 	file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt", "%AVDL_GAME_FILES%", big_buffer);
 	close(outDir);
+
+	avdl_string_clean(&cppFilePath);
 
 	// handle versioning
 	strcpy(buffer, "avdl_build_android/");

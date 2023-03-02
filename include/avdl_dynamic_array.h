@@ -31,7 +31,7 @@ int dd_da_init (struct dd_dynamic_array *da, int el_size);
  * add  : adds `data_count` elements at `position`
  */
 int dd_da_push(struct dd_dynamic_array *da, void *data);
-int dd_da_add (struct dd_dynamic_array *da, void *data, unsigned int data_count, int position);
+int dd_da_add (struct dd_dynamic_array *da, const void *data, unsigned int data_count, int position);
 
 /* remove functions */
 int dd_da_pop(struct dd_dynamic_array *da);
