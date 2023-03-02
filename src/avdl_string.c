@@ -40,6 +40,10 @@ char *avdl_string_getError(struct avdl_string *o) {
 	if (o->errorCode == 1) {
 		return "maximum number of characters reached";
 	}
+	else
+	if (o->errorCode == 0) {
+		return "";
+	}
 	else {
 		return "unknown error";
 	}

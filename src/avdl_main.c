@@ -343,7 +343,7 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 	}
 
 	// is directory - skip - maybe recursive compilation at some point?
-	if (Avdl_FileOp_IsDirStat(statbuf)) {
+	if (Avdl_FileOp_IsDirStat(&statbuf)) {
 		avdl_log("skipping directory: %s", avdl_string_toCharPtr(&srcFilePath));
 		avdl_string_clean(&srcFilePath);
 		avdl_string_clean(&dstFilePath);
@@ -351,7 +351,7 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 	}
 	else
 	// is regular file - do nothing
-	if (Avdl_FileOp_IsRegStat(statbuf)) {
+	if (Avdl_FileOp_IsRegStat(&statbuf)) {
 	}
 	// not supporting other file types - skip
 	else {
@@ -475,7 +475,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	}
 
 	// is regular file - do nothing
-	if (Avdl_FileOp_IsRegStat(statbuf)) {
+	if (Avdl_FileOp_IsRegStat(&statbuf)) {
 	}
 	// not supporting other file types - skip
 	else {
@@ -756,7 +756,7 @@ int add_object_file(const char *dirname, const char *filename, int fileIndex, in
 	}
 
 	// is regular file - add to link command
-	if (Avdl_FileOp_IsRegStat(statbuf)) {
+	if (Avdl_FileOp_IsRegStat(&statbuf)) {
 		strcat(buffer, ".avdl_cache/");
 		strcat(buffer, filename);
 		strcat(buffer, ".c.o ");
@@ -1133,7 +1133,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	}
 
 	// is directory - skip - maybe recursive compilation at some point?
-	if (Avdl_FileOp_IsDirStat(statbuf)) {
+	if (Avdl_FileOp_IsDirStat(&statbuf)) {
 		//printf("avdl skipping directory: %s\n", dir->d_name);
 		avdl_string_clean(&srcFilePath);
 		avdl_string_clean(&dstFilePath);
@@ -1141,7 +1141,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	}
 	else
 	// is regular file - do nothing
-	if (Avdl_FileOp_IsRegStat(statbuf)) {
+	if (Avdl_FileOp_IsRegStat(&statbuf)) {
 	}
 	// not supporting other file types - skip
 	else {

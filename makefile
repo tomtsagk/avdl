@@ -146,7 +146,8 @@ clean:
 #
 # simple tests, they are just compiled and run
 #
-test: #${TESTS_NAMES} ${SAMPLES}
+#test: #${TESTS_NAMES} ${SAMPLES}
+test: ${TESTS_NAMES}
 
 ${SAMPLES}: ${EXECUTABLE}
 	@echo "Testing $@"

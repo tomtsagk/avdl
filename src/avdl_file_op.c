@@ -484,19 +484,19 @@ int Avdl_FileOp_DoesFileExist(const char *filename) {
 	#endif
 }
 
-int Avdl_FileOp_IsDirStat(struct stat s) {
+int Avdl_FileOp_IsDirStat(struct stat *s) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	return 0;
 	#else
-	return S_ISDIR(s.st_mode);
+	return S_ISDIR(s->st_mode);
 	#endif
 }
 
-int Avdl_FileOp_IsRegStat(struct stat s) {
+int Avdl_FileOp_IsRegStat(struct stat *s) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	return 1;
 	#else
-	return S_ISREG(s.st_mode);
+	return S_ISREG(s->st_mode);
 	#endif
 }
 

@@ -1,12 +1,12 @@
+#include "avdl_parser.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
-#include "avdl_parser.h"
 #include "avdl_symtable.h"
 #include "avdl_struct_table.h"
-#include "avdl_file_op.h"
 #include "avdl_commands.h"
 
 static void print_command_definition(FILE *fd, struct ast_node *n);
