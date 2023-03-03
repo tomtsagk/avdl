@@ -18,6 +18,7 @@
 #include "avdl_pkg.h"
 #include "avdl_log.h"
 #include "avdl_string.h"
+#include "avdl_arguments.h"
 
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
@@ -37,23 +38,12 @@ char buffer[DD_BUFFER_SIZE];
 // game node, parent of all nodes
 struct ast_node *game_node;
 
-char *includePath = 0;
-
-char *saveLocation = 0;
-
 char *additionalIncludeDirectory[10];
 int totalIncludeDirectories = 0;
 char *additionalLibDirectory[10];
 int totalLibDirectories = 0;
 
 int create_android_directory(const char *androidDirName);
-
-int avdlSteamMode = 0;
-
-int avdlQuietMode = 0;
-int avdlStandalone = 0;
-
-char *assetLoc = 0;
 
 struct cengine_file_structure {
 	const char *main;
@@ -144,12 +134,6 @@ int avdl_assets(struct AvdlSettings *);
 int avdl_android_object(struct AvdlSettings *);
 
 const char *avdl_project_path;
-const char *cengine_path;
-
-int handle_arguments();
-
-// temporary windows variable
-int translateOnly = 0;
 
 // hide main when doing unit tests - temporary solution
 #ifdef AVDL_UNIT_TEST
@@ -161,21 +145,26 @@ int translateOnly = 0;
 // init data, parse, exit
 int AVDL_MAIN(int argc, char *argv[]) {
 
-	// get avdl path
-	avdl_project_path = avdl_pkg_GetProjectPath();
-	if (!avdl_project_path) {
-		avdl_log_error("cannot get project path");
+	// project settings
+	struct AvdlSettings avdl_settings;
+	if (AvdlSettings_Create(&avdl_settings) != 0) {
+		avdl_log_error("unable to initialise avdl settings");
 		return -1;
 	}
 
-	// get cengine path
-	cengine_path = avdl_pkg_GetCenginePath();
-	if (!cengine_path) {
-		avdl_log_error("cannot get cengine path");
-		return -1;
+	// temp solutions
+	avdl_project_path = avdl_settings.pkg_path;
+
+	totalIncludeDirectories = avdl_settings.total_include_directories;
+	for (int i = 0; i < totalIncludeDirectories; i++) {
+		additionalIncludeDirectory[i] = avdl_settings.additional_include_directory[i];
+	}
+	totalLibDirectories = avdl_settings.total_lib_directories;
+	for (int i = 0; i < totalLibDirectories; i++) {
+		additionalLibDirectory[i] = avdl_settings.additional_lib_directory[i];
 	}
 
-	int handle_return = handle_arguments(argc, argv);
+	int handle_return = avdl_arguments_handle(&avdl_settings, argc, argv);
 
 	// the arguments require the program to stop executing
 	if (handle_return > 0) {
@@ -188,10 +177,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		return -1;
 	}
 
-	// project settings
-	struct AvdlSettings avdl_settings;
-	AvdlSettings_Create(&avdl_settings);
-
+	// load settings from the current project
 	if (AvdlSettings_SetFromFile(&avdl_settings, "app.avdl") != 0) {
 		avdl_log_error("failed to get project settings from '%s'", "app.avdl");
 		return -1;
@@ -202,7 +188,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	avdl_log("Version: " BLU "%d" RESET " (" BLU "%s" RESET ")-" BLU "%d" RESET, avdl_settings.version_code, avdl_settings.version_name, avdl_settings.revision);
 	avdl_log("Icon: " BLU "%s" RESET, avdl_settings.icon_path);
 	avdl_log("Package: " BLU "%s" RESET, avdl_settings.package);
-	avdl_log("CEngine location in: " BLU "%s" RESET, cengine_path);
+	avdl_log("CEngine location in: " BLU "%s" RESET, avdl_settings.cengine_path);
 	avdl_log("~ Project Details end ~");
 	avdl_log("");
 
@@ -237,7 +223,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		return 0;
 	}
 
-	if (translateOnly) {
+	if (avdl_settings.translate_only) {
 		avdl_log("avdl: done translating");
 		return 0;
 	}
@@ -400,9 +386,6 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 
 int avdl_transpile(struct AvdlSettings *avdl_settings) {
 
-	// TODO: Handle this
-	includePath = "include/";
-
 	printf("avdl: transpiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
@@ -525,12 +508,6 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	}
 	avdl_string_cat(&commandString, " -I include ");
 
-	// unclear if needed
-//	if (includePath) {
-//		strcat(buffer, " -I ");
-//		strcat(buffer, includePath);
-//	}
-
 	if ( !avdl_string_isValid(&commandString) ) {
 		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&commandString));
 		avdl_string_clean(&srcFilePath);
@@ -599,7 +576,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 	for (int i = 0; i < cengine_files_total; i++) {
 
 		strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
-		if (avdlSteamMode && cengine_files[i].steam) {
+		if (avdl_settings->steam_mode && cengine_files[i].steam) {
 			//printf("cengine steam file: %s\n", cengine_files[i].steam);
 			//strcpy(compile_command, "g++ -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
 			strcpy(compile_command, "g++ -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
@@ -616,8 +593,8 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		}
 
 		// include the source file
-		strcat(compile_command, cengine_path);
-		if (avdlSteamMode && cengine_files[i].steam) {
+		strcat(compile_command, avdl_settings->cengine_path);
+		if (avdl_settings->steam_mode && cengine_files[i].steam) {
 			strcat(compile_command, cengine_files[i].steam);
 		}
 		else
@@ -633,13 +610,13 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		strcat(compile_command, "\"\\\" ");
 
 		// asset prefix
-		if (assetLoc) {
+		if (avdl_settings->asset_prefix[0] != '\0') {
 			strcat(compile_command, " -DGAME_ASSET_PREFIX=\"\\\"");
-			strcat(compile_command, assetLoc);
+			strcat(compile_command, avdl_settings->asset_prefix);
 			strcat(compile_command, "\"\\\" ");
 		}
 
-		if (avdlSteamMode) {
+		if (avdl_settings->steam_mode) {
 			strcat(compile_command, " -DAVDL_STEAM ");
 		}
 		strcat(compile_command, " -o ");
@@ -647,7 +624,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		//strcat(compile_command, "/");
 		struct avdl_string cenginePathOut;
 		avdl_string_create(&cenginePathOut, 1024);
-		if (avdlSteamMode && cengine_files[i].steam) {
+		if (avdl_settings->steam_mode && cengine_files[i].steam) {
 			avdl_string_cat(&cenginePathOut, outdir);
 			avdl_string_cat(&cenginePathOut, "cengine/");
 			avdl_string_cat(&cenginePathOut, cengine_files[i].steam);
@@ -669,7 +646,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 		// cengine headers
 		strcat(compile_command, " -I ");
-		strcat(compile_command, avdl_project_path);
+		strcat(compile_command, avdl_settings->pkg_path);
 		strcat(compile_command, "/include ");
 
 		// cengine extra directories (mostly for custom dependencies)
@@ -813,7 +790,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	*/
 
 	// prepare link command
-	if (avdlSteamMode) {
+	if (avdl_settings->steam_mode) {
 		strcpy(buffer, "g++ -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
 	}
 	else {
@@ -831,7 +808,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	char tempDir[DD_BUFFER_SIZE];
 	strcpy(tempDir, ".avdl_cache/cengine/");
 	for (int i = 0; i < cengine_files_total; i++) {
-		if (avdlSteamMode && cengine_files[i].steam) {
+		if (avdl_settings->steam_mode && cengine_files[i].steam) {
 		}
 		else
 		if (cengine_files[i].main) {
@@ -841,7 +818,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		}
 		strcat(buffer, tempDir);
 		strcat(buffer, "/");
-		if (avdlSteamMode && cengine_files[i].steam) {
+		if (avdl_settings->steam_mode && cengine_files[i].steam) {
 			strcat(buffer, cengine_files[i].steam);
 			buffer[strlen(buffer)-3] = 'o';
 			buffer[strlen(buffer)-2] = '\0';
@@ -867,14 +844,14 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		strcat(buffer, additionalLibDirectory[i]);
 	}
 
-	if (avdlStandalone) {
+	if (avdl_settings->standalone) {
 		strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libopus.so.0 -l:libopusfile.so.0 -l:libpng16.so.16 -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
 	}
 	else {
 		strcat(buffer, " -O3 -lm -logg -lopus -lopusfile -lpng -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
 	}
 
-	if (avdlSteamMode) {
+	if (avdl_settings->steam_mode) {
 		strcat(buffer, " -lsteam_api ");
 	}
 	//printf("link command: %s\n", buffer);
@@ -1318,168 +1295,4 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	close(outDir);
 	#endif
 	return 0;
-}
-
-int handle_arguments(int argc, char *argv[]) {
-
-	// parse arguments
-	for (int i = 1; i < argc; i++) {
-
-		// dash argument
-		if (strlen(argv[i]) > 0 && argv[i][0] == '-') {
-
-			// double dash argument
-			if (strlen(argv[i]) > 1 && argv[i][1] == '-') {
-
-				// print abstract syntax tree
-				if (strcmp(argv[i], "--print-ast") == 0) {
-					//show_ast = 1;
-				}
-				else
-				// print struct table
-				if (strcmp(argv[i], "--print-struct-table") == 0) {
-					//show_struct_table = 1;
-				}
-				else
-				// compiling for windows
-				if (strcmp(argv[i], "--windows") == 0) {
-					avdl_platform_set(AVDL_PLATFORM_WINDOWS);
-				}
-				else
-				// compiling for linux
-				if (strcmp(argv[i], "--linux") == 0) {
-					avdl_platform_set(AVDL_PLATFORM_LINUX);
-				}
-				else
-				// compiling for android
-				if (strcmp(argv[i], "--android") == 0) {
-					avdl_platform_set(AVDL_PLATFORM_ANDROID);
-				}
-				else
-				// show version number
-				if (strcmp(argv[i], "--version") == 0) {
-					avdl_log(PKG_NAME " v%s", PKG_VERSION);
-					return 1;
-				}
-				else
-				// show pkg location
-				if (strcmp(argv[i], "--get-pkg-location") == 0) {
-					/*
-					#if AVDL_IS_OS(AVDL_OS_WINDOWS)
-					wprintf(L"%lS\n", avdl_getProjectLocation());
-					#else
-					printf("%s\n", avdl_getProjectLocation());
-					#endif
-					*/
-					avdl_log("%s", avdl_project_path);
-					return 1;
-				}
-				else
-				// custom save location
-				if (strcmp(argv[i], "--save-loc") == 0) {
-					if (argc > i+1) {
-						saveLocation = argv[i+1];
-						i++;
-					}
-					else {
-						avdl_log_error(BLU "%s" RESET " expects a path", argv[i]);
-						return -1;
-					}
-				}
-				else
-				if (strcmp(argv[i], "--steam") == 0) {
-					avdlSteamMode = 1;
-				}
-				else
-				if (strcmp(argv[i], "--standalone") == 0) {
-					avdlStandalone = 1;
-				}
-				else
-				if (strcmp(argv[i], "--asset-loc") == 0) {
-					if (argc > i+1) {
-						assetLoc = argv[i+1];
-						i++;
-					}
-					else {
-						avdl_log_error(BLU "%s" RESET " expects a path", argv[i]);
-						return -1;
-					}
-				}
-				// unknown double dash argument
-				else {
-					avdl_log_error("cannot understand double dash argument " BLU "'%s'" RESET, argv[i]);
-					return -1;
-				}
-			}
-			else
-			/* phase arguments
-			 */
-			if (strcmp(argv[i], "-t") == 0) {
-				translateOnly = 1;
-			}
-			else
-			// add include path
-			if (strcmp(argv[i], "-I") == 0) {
-				if (argc > i+1) {
-					includePath = argv[i+1];
-					i++;
-				}
-				else {
-					avdl_log_error("include path is expected after " BLU "`-I`" RESET);
-					return -1;
-				}
-			}
-			else
-			// add extra include paths
-			if (strcmp(argv[i], "-i") == 0) {
-				if (argc > i+1) {
-					if (totalIncludeDirectories >= 10) {
-						avdl_log_error("maximum " BLU "10" RESET " include directories allowed with " BLU "-i" RESET);
-						return -1;
-					}
-					additionalIncludeDirectory[totalIncludeDirectories] = argv[i+1];
-					totalIncludeDirectories++;
-					i++;
-				}
-				else {
-					avdl_log_error("include path is expected after " BLU "`-i`" RESET);
-					return -1;
-				}
-			}
-			else
-			// add library path
-			if (strcmp(argv[i], "-L") == 0) {
-				if (argc > i+1) {
-					if (totalLibDirectories >= 10) {
-						avdl_log_error("maximum " BLU "10" RESET " library directories allowed with " BLU "-L" RESET);
-						return -1;
-					}
-					additionalLibDirectory[totalLibDirectories] = argv[i+1];
-					totalLibDirectories++;
-					i++;
-				}
-				else {
-					avdl_log_error("library path is expected after " BLU "`-L`" RESET);
-					return -1;
-				}
-			}
-			else
-			// quiet mode
-			if (strcmp(argv[i], "-q") == 0) {
-				avdlQuietMode = 1;
-			}
-			// unknown single dash argument
-			else {
-				avdl_log_error("cannot understand dash argument " BLU "'%s'" RESET, argv[i]);
-				return -1;
-			}
-		}
-		// non-dash argument - nothing?
-		else {
-			avdl_log_error("cannot understand argument " BLU "'%s'" RESET, argv[i]);
-			return -1;
-		}
-	}
-	return 0;
-
 }

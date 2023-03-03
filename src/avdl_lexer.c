@@ -8,8 +8,6 @@
 #include "avdl_lexer.h"
 #include "avdl_log.h"
 
-extern char *includePath;
-
 static char buffer[500];
 
 static int avdl_lexer_includePop(struct avdl_lexer *o) {
@@ -414,6 +412,10 @@ int avdl_lexer_addIncludedFile(struct avdl_lexer *o, const char *includeFilename
 	o->currentPastFile++;
 	strcpy(o->pastFiles[o->currentPastFile], includeFilename);
 
+	// temp commented out
+	strcpy(buffer, "include/");
+	strcat(buffer, includeFilename);
+	/*
 	if (includePath) {
 		strcpy(buffer, includePath);
 		strcat(buffer, includeFilename);
@@ -421,6 +423,7 @@ int avdl_lexer_addIncludedFile(struct avdl_lexer *o, const char *includeFilename
 	else {
 		strcpy(buffer, includeFilename);
 	}
+	*/
 
 	if (o->currentFile+1 >= 10) {
 		avdl_log_error("lexer: reached limit of included files with: '%s'", buffer);

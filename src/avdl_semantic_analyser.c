@@ -134,7 +134,7 @@ static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 	return asset;
 }
 
-extern char *saveLocation;
+//extern char *saveLocation;
 static struct ast_node *expect_command_savefile(struct avdl_lexer *l) {
 	struct ast_node *savefile = expect_string(l);
 
