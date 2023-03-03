@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "avdl_file_op.h"
 #include "avdl_settings.h"
@@ -331,16 +332,22 @@ int dir_createat(int dir_at, const char *filename) {
 int is_dir(const char *filename) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	#else
-	DIR *dir = opendir(filename);
-	if (dir) {
-		return 1;
-	}
-	else
-	if (errno == ENOENT) {
+
+	// doesn't exist - not directory
+	if ( !Avdl_FileOp_DoesFileExist(filename) ) {
 		return 0;
 	}
-	else {
+
+	// check file type
+	struct stat statbuf;
+	if ( stat(filename, &statbuf) != 0 ) {
+		printf("avdl error: Unable to stat file '%s': %s\n", filename, strerror(errno));
 		return -1;
+	}
+
+	// is directory - copy everything recursively
+	if (S_ISDIR(statbuf.st_mode)) {
+		return 1;
 	}
 	#endif
 	return 0;
@@ -377,6 +384,7 @@ int Avdl_FileOp_GetNumberOfFiles(const char *directory) {
 		struct stat statbuf;
 		if ( fstatat(src_dir, dir->d_name, &statbuf, 0) != 0 ) {
 			printf("avdl error: Unable to stat directory '%s': %s\n", directory, strerror(errno));
+			closedir(d);
 			return -1;
 		}
 
@@ -385,6 +393,7 @@ int Avdl_FileOp_GetNumberOfFiles(const char *directory) {
 		}
 	}
 
+	closedir(d);
 	return files;
 	#endif
 }
@@ -452,9 +461,17 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 	struct dirent *dir;
 	while ((dir = readdir(d)) != NULL) {
 		files_handled++;
-		handle_function(dirname, dir->d_name, files_handled, files_to_handle);
+
+		// given function returned a non zero value, it's unclear if this is
+		// a fatal error or not, so don't print anything, let the calling
+		// function handle it
+		if ( handle_function(dirname, dir->d_name, files_handled, files_to_handle) != 0 ) {
+			closedir(d);
+			return -1;
+		}
 	}
 
+	closedir(d);
 	return 0;
 	#endif
 }
@@ -467,19 +484,19 @@ int Avdl_FileOp_DoesFileExist(const char *filename) {
 	#endif
 }
 
-int Avdl_FileOp_IsDirStat(struct stat s) {
+int Avdl_FileOp_IsDirStat(struct stat *s) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	return 0;
 	#else
-	return S_ISDIR(s.st_mode);
+	return S_ISDIR(s->st_mode);
 	#endif
 }
 
-int Avdl_FileOp_IsRegStat(struct stat s) {
+int Avdl_FileOp_IsRegStat(struct stat *s) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	return 1;
 	#else
-	return S_ISREG(s.st_mode);
+	return S_ISREG(s->st_mode);
 	#endif
 }
 
@@ -489,5 +506,70 @@ int file_remove(const char *filename) {
 	#else
 	remove(filename);
 	return 0;
+	#endif
+}
+
+int Avdl_FileOp_IsFileOlderThan(const char *source, const char *target) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 1;
+	#else
+
+	// source file doesn't exist - target is newer by default
+	if ( !Avdl_FileOp_DoesFileExist(source) ) {
+		return 1;
+	}
+
+	// target is a directory - go recursive
+	if ( is_dir(target) ) {
+		int isNewer = 0;
+
+		/*
+		 * start reading all files from source directory
+		 */
+		DIR *d = opendir(target);
+		if (!d) {
+			printf("avdl error: Unable to open directory '%s': %s\n", target, strerror(errno));
+			return -1;
+		}
+
+		struct dirent *dir;
+		char dirBuffer[1024];
+		while ((dir = readdir(d)) != NULL) {
+
+			// ignore `.` and `..`
+			if(strcmp(dir->d_name, ".") == 0
+			|| strcmp(dir->d_name, "..") == 0) {
+				continue;
+			}
+
+			strcpy(dirBuffer, target);
+			strcat(dirBuffer, "/");
+			strcat(dirBuffer, dir->d_name);
+			if ( Avdl_FileOp_IsFileOlderThan(source, dirBuffer) ) {
+				isNewer = 1;
+				break;
+			}
+		}
+		closedir(d);
+		return isNewer;
+	}
+
+	struct stat statbuffer;
+	if (stat(source, &statbuffer) != 0) {
+		printf("avdl error: Unable to stat file '%s': %s\n", source, strerror(errno));
+		return -1;
+	}
+
+	struct stat statbuffer2;
+	if (stat(target, &statbuffer2) != 0) {
+		printf("avdl error: Unable to stat second file '%s': %s\n", target, strerror(errno));
+		return -1;
+	}
+
+	if (difftime(statbuffer2.st_mtime, statbuffer.st_mtime) >= 0) {
+		return 1;
+	}
+	return 0;
+
 	#endif
 }

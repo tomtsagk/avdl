@@ -1,12 +1,12 @@
+#include "avdl_parser.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
 
-#include "avdl_parser.h"
 #include "avdl_symtable.h"
 #include "avdl_struct_table.h"
-#include "avdl_file_op.h"
 #include "avdl_commands.h"
 
 static void print_command_definition(FILE *fd, struct ast_node *n);
@@ -137,7 +137,7 @@ static void print_command_if(FILE *fd, struct ast_node *n) {
 
 static void print_command_echo(FILE *fd, struct ast_node *n) {
 
-	fprintf(fd, "printf(\"");
+	fprintf(fd, "dd_log(\"");
 	for (int i = 0; i < n->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&n->children, i);
 
@@ -168,7 +168,7 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 			exit(-1);
 		}
 	}
-	fprintf(fd, "\\n\"");
+	fprintf(fd, "\"");
 	for (int i = 0; i < n->children.elements; i++) {
 		struct ast_node *child = dd_da_get(&n->children, i);
 

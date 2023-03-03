@@ -2,7 +2,7 @@
 # package data
 #
 PACKAGE_NAME=avdl
-PACKAGE_VERSION=0.7.3
+PACKAGE_VERSION=0.7.4
 
 #
 # system data
@@ -146,7 +146,8 @@ clean:
 #
 # simple tests, they are just compiled and run
 #
-test: #${TESTS_NAMES} ${SAMPLES}
+#test: #${TESTS_NAMES} ${SAMPLES}
+test: ${TESTS_NAMES}
 
 ${SAMPLES}: ${EXECUTABLE}
 	@echo "Testing $@"

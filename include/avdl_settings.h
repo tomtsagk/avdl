@@ -35,6 +35,8 @@
 
 /*
  * Compiler settings on how to compile a game
+ * contains all data that could be changed
+ * every time this program is run
  */
 struct AvdlSettings {
 
@@ -63,9 +65,28 @@ struct AvdlSettings {
 	// package (like com.company.app)
 	char package[100];
 
+	/* avdl details */
+	char pkg_path[1024];
+	char cengine_path[1024];
+	char save_path[1024];
+	int steam_mode;
+	int standalone;
+	int quiet_mode;
+
+	// where to look for assets
+	// For exampe "share/avdl/" would search for assets in "share/avdl/assets/"
+	char asset_prefix[1024];
+
+	int translate_only;
+
+	char *additional_include_directory[10];
+	int total_include_directories;
+	char *additional_lib_directory[10];
+	int total_lib_directories;
+
 };
 
-void AvdlSettings_Create(struct AvdlSettings *);
+int AvdlSettings_Create(struct AvdlSettings *);
 int AvdlSettings_SetFromFile(struct AvdlSettings *, char *filename);
 
 #endif

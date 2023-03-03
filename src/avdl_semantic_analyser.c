@@ -10,6 +10,7 @@
 #include "avdl_lexer.h"
 #include "avdl_platform.h"
 #include "avdl_pkg.h"
+#include "avdl_log.h"
 
 extern const char *avdl_project_path;
 
@@ -133,7 +134,7 @@ static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 	return asset;
 }
 
-extern char *saveLocation;
+//extern char *saveLocation;
 static struct ast_node *expect_command_savefile(struct avdl_lexer *l) {
 	struct ast_node *savefile = expect_string(l);
 
@@ -832,9 +833,8 @@ static void semantic_error(struct avdl_lexer *l, const char *msg, ...) {
 	va_list args;
 	va_start(args, msg);
 
-	printf("avdl: syntax error at %s:%d:%d\n", avdl_lexer_getCurrentFilename(l), avdl_lexer_getCurrentLinenumber(l), avdl_lexer_getCurrentCharacterNumber(l));
-	vprintf(msg, args);
-	printf("\n");
+	avdl_log_error("semantic analysis: syntax error at " BLU "%s:%d:%d" RESET, avdl_lexer_getCurrentFilename(l), avdl_lexer_getCurrentLinenumber(l), avdl_lexer_getCurrentCharacterNumber(l));
+	avdl_log(msg, args);
 	avdl_lexer_printCurrentLine(l);
 
 	va_end(args);

@@ -6,15 +6,14 @@
 
 #include "avdl_symtable.h"
 #include "avdl_lexer.h"
-
-extern char *includePath;
+#include "avdl_log.h"
 
 static char buffer[500];
 
 static int avdl_lexer_includePop(struct avdl_lexer *o) {
 
 	if (o->currentFile == 0) {
-		printf("lexer: attempted to pop base file\n");
+		avdl_log_error("lexer: attempted to pop base file");
 		return -1;
 	}
 
@@ -38,7 +37,7 @@ static int avdl_lexer_includePop(struct avdl_lexer *o) {
 int avdl_lexer_create(struct avdl_lexer *o, const char *filename) {
 
 	if (strlen(filename) > MAX_FILENAME_LENGTH-1) {
-		printf("avdl lexer error: cannot initiate lexer, filename too big: '%s'\n", filename);
+		avdl_log_error("lexer: cannot initiate, filename too big: '%s'", filename);
 		return -1;
 	}
 	o->currentFile = 0;
@@ -48,7 +47,7 @@ int avdl_lexer_create(struct avdl_lexer *o, const char *filename) {
 
 	o->files[0].f = fopen(filename, "r");
 	if (!o->files[0].f) {
-		printf("avdl lexer error: unable to open '%s': %s\n", filename, strerror(errno));
+		avdl_log_error("lexer: unable to open '%s': %s", filename, strerror(errno));
 		return -1;
 	}
 
@@ -167,7 +166,8 @@ int avdl_lexer_getNextToken(struct avdl_lexer *o) {
 	||  (buffer[0] >= 'A' && buffer[0] <= 'Z')
 	||   buffer[0] == '_') {
 		char restNumber[500];
-		if (fscanf(o->files[o->currentFile].f, "%500[a-zA-Z0-9_]", restNumber) > 0) {
+		restNumber[499] = '\0';
+		if (fscanf(o->files[o->currentFile].f, "%499[a-zA-Z0-9_]", restNumber) > 0) {
 			strcat(buffer, restNumber);
 		}
 		//printf("identifier: %s\n", buffer);
@@ -179,7 +179,7 @@ int avdl_lexer_getNextToken(struct avdl_lexer *o) {
 
 		// get the whole number
 		char restNumber[500];
-		restNumber[0] = '\0';
+		restNumber[499] = '\0';
 		if (fscanf(o->files[o->currentFile].f, "%499[0-9.]", restNumber) > 0) {
 			strcat(buffer, restNumber);
 		}
@@ -223,6 +223,7 @@ int avdl_lexer_getNextToken(struct avdl_lexer *o) {
 		// check if negative number
 		if (buffer[0] == '-') {
 			char restNumber[500];
+			restNumber[499] = '\0';
 			if (fscanf(o->files[o->currentFile].f, "%499[0-9.]", restNumber) > 0) {
 				buffer[1] = '\0';
 				strcat(buffer, restNumber);
@@ -294,7 +295,7 @@ int avdl_lexer_getNextToken(struct avdl_lexer *o) {
 	}
 
 	if (returnToken == LEXER_TOKEN_UNKNOWN) {
-		printf("avdl: unknown token: %s\n", buffer);
+		avdl_log_error("lexer: unknown token: %s", buffer);
 		return -1;
 	}
 
@@ -355,8 +356,9 @@ void avdl_lexer_printCurrentLine(struct avdl_lexer *o) {
 
 	FILE *f = fopen(o->pointPrevious.filename, "r");
 	char b[500];
+	b[499] = '\0';
 	if (!f) {
-		printf("error error\n");
+		avdl_log_error("lexer: error opening file for logging errors '%s': %s", o->pointPrevious.filename, strerror(errno));
 		return;
 	}
 
@@ -378,7 +380,7 @@ void avdl_lexer_printCurrentLine(struct avdl_lexer *o) {
 			}
 			p++;
 		}
-		printf("|%s\n", b);
+		avdl_log("|%s", b);
 		if (i == 1) {
 			printf(" ");
 			for (int j = 0; j < o->pointPrevious.characterNumber-1; j++) {
@@ -402,7 +404,7 @@ int avdl_lexer_addIncludedFile(struct avdl_lexer *o, const char *includeFilename
 
 	// character limit per filename
 	if (strlen(includeFilename) >= MAX_FILENAME_LENGTH-1) {
-		printf("cannot include %s: too long name\n", includeFilename);
+		avdl_log_error("lexer: cannot include %s: too long name", includeFilename);
 		return -1;
 	}
 
@@ -410,6 +412,10 @@ int avdl_lexer_addIncludedFile(struct avdl_lexer *o, const char *includeFilename
 	o->currentPastFile++;
 	strcpy(o->pastFiles[o->currentPastFile], includeFilename);
 
+	// temp commented out
+	strcpy(buffer, "include/");
+	strcat(buffer, includeFilename);
+	/*
 	if (includePath) {
 		strcpy(buffer, includePath);
 		strcat(buffer, includeFilename);
@@ -417,9 +423,10 @@ int avdl_lexer_addIncludedFile(struct avdl_lexer *o, const char *includeFilename
 	else {
 		strcpy(buffer, includeFilename);
 	}
+	*/
 
 	if (o->currentFile+1 >= 10) {
-		printf("avdl: lexer: reached limit of included files with: '%s'\n", buffer);
+		avdl_log_error("lexer: reached limit of included files with: '%s'", buffer);
 		return -1;
 	}
 
@@ -437,7 +444,7 @@ int avdl_lexer_addIncludedFile(struct avdl_lexer *o, const char *includeFilename
 
 	o->files[o->currentFile].f = fopen(buffer, "r");
 	if (!o->files[o->currentFile].f) {
-		printf("avdl error: Unable to open '%s': %s\n", buffer, strerror(errno));
+		avdl_log_error("lexer: Unable to open '%s': %s", buffer, strerror(errno));
 		return -1;
 	}
 

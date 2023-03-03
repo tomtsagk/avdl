@@ -4,6 +4,7 @@
 
 #include "avdl_dynamic_array.h"
 #include "avdl_std.h"
+#include "avdl_log.h"
 
 static int set_array_size(struct dd_dynamic_array *da, int count) {
 
@@ -49,13 +50,18 @@ int dd_da_push(struct dd_dynamic_array *da, void *data) {
 	return dd_da_add(da, data, 1, -1);
 }
 
-int dd_da_add(struct dd_dynamic_array *da, void *data, unsigned int data_count, int position) {
+int dd_da_add(struct dd_dynamic_array *da, const void *data, unsigned int data_count, int position) {
 
 	/*
 	 * position of negative value means add to end of array
 	 */
 	if (position < 0) {
-		position = da->elements;
+		position = da->elements +(position +1);
+
+		if (position < 0) {
+			avdl_log_error("failed to add data to array: position is negative: %d", position);
+			return 0;
+		}
 	}
 
 	/*
@@ -83,7 +89,7 @@ int dd_da_add(struct dd_dynamic_array *da, void *data, unsigned int data_count, 
 	}
 
 	/* Copy element byte-by-byte (according to element_size) to array */
-	memcpy((char*)da->array +(da->element_size *position),
+	memcpy(((char*)da->array) +(da->element_size *position),
 		data, da->element_size *data_count
 	);
 
@@ -118,7 +124,7 @@ int dd_da_remove(struct dd_dynamic_array *da, unsigned int count, int position) 
 	 */
 	if (position >= da->elements
 	||  position < 0
-	||  count <= 0
+	||  count == 0
 	||  position +count > da->elements) {
 		return 0;
 	}
