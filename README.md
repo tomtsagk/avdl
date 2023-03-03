@@ -70,7 +70,7 @@ Using the command line, move to an empty directory and run:
 Note: The command `pacman -U` needs `root` permissions, as it is
 used to install packaged from a local file.
 
-### Fedora 34, Fedora 35, Fedora rawhide
+### Fedora - Copr
 
 [![Copr build status](https://copr.fedorainfracloud.org/coprs/afloofdev/avdl/package/avdl/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/afloofdev/avdl/package/avdl/)
 
@@ -83,17 +83,14 @@ Note: These commands may require `root` permissions.
 
 ## How to compile and install manually
 
-This project currently supports only compilation for Linux out of the box.
-I've managed to compile it manually for Windows, but the process is not
-automated yet.
+You can compile the project using `makefile` on Linux and `cmake` on windows.
 
 ### Dependencies
 
 To compile this project, you will need the following dependencies:
 
 * `make` - to build the project
-* `gcc` - used to compile this project
-	and to aid the compilation process of `avdl` projects
+* `gcc` - to compile this project and to aid the compilation of `avdl` projects
 * `sdl2` and `sdl2_mixer` - used for windowing and audio
 * `glew` - used for advanced opengl functionality
 

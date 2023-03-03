@@ -168,7 +168,8 @@ int avdl_lexer_getNextToken(struct avdl_lexer *o) {
 	||  (buffer[0] >= 'A' && buffer[0] <= 'Z')
 	||   buffer[0] == '_') {
 		char restNumber[500];
-		if (fscanf(o->files[o->currentFile].f, "%500[a-zA-Z0-9_]", restNumber) > 0) {
+		restNumber[499] = '\0';
+		if (fscanf(o->files[o->currentFile].f, "%499[a-zA-Z0-9_]", restNumber) > 0) {
 			strcat(buffer, restNumber);
 		}
 		//printf("identifier: %s\n", buffer);
@@ -180,7 +181,7 @@ int avdl_lexer_getNextToken(struct avdl_lexer *o) {
 
 		// get the whole number
 		char restNumber[500];
-		restNumber[0] = '\0';
+		restNumber[499] = '\0';
 		if (fscanf(o->files[o->currentFile].f, "%499[0-9.]", restNumber) > 0) {
 			strcat(buffer, restNumber);
 		}
@@ -224,6 +225,7 @@ int avdl_lexer_getNextToken(struct avdl_lexer *o) {
 		// check if negative number
 		if (buffer[0] == '-') {
 			char restNumber[500];
+			restNumber[499] = '\0';
 			if (fscanf(o->files[o->currentFile].f, "%499[0-9.]", restNumber) > 0) {
 				buffer[1] = '\0';
 				strcat(buffer, restNumber);
@@ -356,6 +358,7 @@ void avdl_lexer_printCurrentLine(struct avdl_lexer *o) {
 
 	FILE *f = fopen(o->pointPrevious.filename, "r");
 	char b[500];
+	b[499] = '\0';
 	if (!f) {
 		avdl_log_error("lexer: error opening file for logging errors '%s': %s", o->pointPrevious.filename, strerror(errno));
 		return;

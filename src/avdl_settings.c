@@ -55,7 +55,7 @@ int AvdlSettings_SetFromFile(struct AvdlSettings *o, char *filename) {
 	while ( fscanf(f, "%*[ \t\r\n]") != EOF ) {
 
 		// ignore comment lines
-		if (fscanf(f, "%[#]", key)) {
+		if (fscanf(f, "%1[#]", key)) {
 			fscanf(f, "%*[^\r\n]");
 			continue;
 		}
@@ -71,7 +71,7 @@ int AvdlSettings_SetFromFile(struct AvdlSettings *o, char *filename) {
 		fscanf(f, "%*[ \t]");
 
 		// find value
-		fscanf(f, "%100[^\n\r \t]", value);
+		fscanf(f, "%99[^\n\r \t]", value);
 		//printf("Found value: %s.\n", value);
 
 		// remove white space / new line

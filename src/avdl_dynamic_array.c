@@ -124,7 +124,7 @@ int dd_da_remove(struct dd_dynamic_array *da, unsigned int count, int position) 
 	 */
 	if (position >= da->elements
 	||  position < 0
-	||  count <= 0
+	||  count == 0
 	||  position +count > da->elements) {
 		return 0;
 	}
