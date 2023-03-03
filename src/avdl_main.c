@@ -155,6 +155,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	// temp solutions
 	avdl_project_path = avdl_settings.pkg_path;
 
+	int handle_return = avdl_arguments_handle(&avdl_settings, argc, argv);
+
 	totalIncludeDirectories = avdl_settings.total_include_directories;
 	for (int i = 0; i < totalIncludeDirectories; i++) {
 		additionalIncludeDirectory[i] = avdl_settings.additional_include_directory[i];
@@ -163,8 +165,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	for (int i = 0; i < totalLibDirectories; i++) {
 		additionalLibDirectory[i] = avdl_settings.additional_lib_directory[i];
 	}
-
-	int handle_return = avdl_arguments_handle(&avdl_settings, argc, argv);
 
 	// the arguments require the program to stop executing
 	if (handle_return > 0) {
