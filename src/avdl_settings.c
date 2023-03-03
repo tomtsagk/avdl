@@ -4,12 +4,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include "avdl_pkg.h"
+#include "avdl_log.h"
 
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
 #endif
 
-void AvdlSettings_Create(struct AvdlSettings *o) {
+int AvdlSettings_Create(struct AvdlSettings *o) {
 	strncpy(o->src_dir, "src/", 99);
 	o->src_dir[99] = '\0';
 	strncpy(o->asset_dir, "assets/", 99);
@@ -41,6 +43,46 @@ void AvdlSettings_Create(struct AvdlSettings *o) {
 
 	strncpy(o->package, "com.company.sample_project", 99);
 	o->icon_path[99] = '\0';
+
+	// get avdl path
+	const char *avdl_project_path = avdl_pkg_GetProjectPath();
+	if (!avdl_project_path) {
+		avdl_log_error("cannot get package path");
+		return -1;
+	}
+	if (strlen(avdl_project_path) > 1023) {
+		avdl_log_error("package path is too long: %s", avdl_project_path);
+		return -1;
+	}
+	strncpy(o->pkg_path, avdl_project_path, 1023);
+	o->pkg_path[1023] = '\0';
+
+	// get cengine path
+	const char *cengine_path = avdl_pkg_GetCenginePath();
+	if (!cengine_path) {
+		avdl_log_error("cannot get cengine path");
+		return -1;
+	}
+	if (strlen(cengine_path) > 1023) {
+		avdl_log_error("cengine path is too long: %s", cengine_path);
+		return -1;
+	}
+	strncpy(o->cengine_path, cengine_path, 1023);
+	o->cengine_path[1023] = '\0';
+
+	o->save_path[0] = '\0';
+
+	o->steam_mode = 0;
+	o->standalone = 0;
+	o->quiet_mode = 0;
+	o->asset_prefix[0] = '\0';
+
+	o->translate_only = 0;
+
+	o->total_include_directories = 0;
+	o->total_lib_directories = 0;
+
+	return 0;
 }
 
 int AvdlSettings_SetFromFile(struct AvdlSettings *o, char *filename) {
