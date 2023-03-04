@@ -192,6 +192,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	avdl_log("~ Project Details end ~");
 	avdl_log("");
 
+	/*
 	if (!is_dir("avdl_build")) {
 		dir_create("avdl_build");
 	}
@@ -199,6 +200,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	if (!is_dir(".avdl_cache")) {
 		dir_create(".avdl_cache");
 	}
+	*/
 
 	// from `.dd` to `.c`
 	if ( avdl_transpile(&avdl_settings) != 0) {
