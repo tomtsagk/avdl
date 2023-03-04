@@ -409,17 +409,15 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 
 	//Specify a file mask. *.* = We want everything!
 	sprintf(sPath, "%s\\*.*", dirname);
-	avdl_log("looking for files in %s\\*.*", dirname);
 
 	if((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE)
 	{
-		printf("Path not found: [%s]\n", dirname);
+		avdl_log_error("Path not found: [%s]\n", dirname);
 		return -1;
 	}
 
 	do
 	{
-		avdl_log("file: %s", fdFile.cFileName);
 
 		//Find first file will always return "."
 		//    and ".." as the first two directories.
@@ -435,11 +433,11 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 		//Is the entity a File or Folder?
 		if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY)
 		{
-			avdl_log("Directory: %s\n", sPath);
+			//avdl_log("Directory: %s\n", sPath);
 			//ListDirectoryContents(sPath); //Recursion, I love it!
 		}
 		else{
-			avdl_log("File: %s\n", sPath);
+			//avdl_log("File: %s\n", sPath);
 			handle_function(dirname, fdFile.cFileName, 5, 10);
 		}
 	}

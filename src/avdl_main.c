@@ -155,7 +155,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	// temp solutions
 	avdl_project_path = avdl_settings.pkg_path;
 
-	/*
 	int handle_return = avdl_arguments_handle(&avdl_settings, argc, argv);
 
 	totalIncludeDirectories = avdl_settings.total_include_directories;
@@ -177,7 +176,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		avdl_log_error("failed to parse arguments");
 		return -1;
 	}
-	*/
 
 	// load settings from the current project
 	if (AvdlSettings_SetFromFile(&avdl_settings, "app.avdl") != 0) {
@@ -194,8 +192,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	avdl_log("~ Project Details end ~");
 	avdl_log("");
 
-	return 0;
-
 	if (!is_dir("avdl_build")) {
 		dir_create("avdl_build");
 	}
@@ -203,8 +199,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	if (!is_dir(".avdl_cache")) {
 		dir_create(".avdl_cache");
 	}
-
-	return 0;
 
 	// from `.dd` to `.c`
 	if ( avdl_transpile(&avdl_settings) != 0) {
