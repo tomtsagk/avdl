@@ -155,8 +155,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	// temp solutions
 	avdl_project_path = avdl_settings.pkg_path;
 
-	return 0;
-
 	/*
 	int handle_return = avdl_arguments_handle(&avdl_settings, argc, argv);
 
@@ -186,6 +184,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		avdl_log_error("failed to get project settings from '%s'", "app.avdl");
 		return -1;
 	}
+
+	return 0;
 
 	avdl_log("~ Project Details ~");
 	avdl_log("Project Name: " BLU "%s" RESET, avdl_settings.project_name);
