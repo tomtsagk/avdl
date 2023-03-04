@@ -166,7 +166,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	for (int i = 0; i < totalLibDirectories; i++) {
 		additionalLibDirectory[i] = avdl_settings.additional_lib_directory[i];
 	}
-	*/
 
 	// the arguments require the program to stop executing
 	if (handle_return > 0) {
@@ -178,6 +177,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		avdl_log_error("failed to parse arguments");
 		return -1;
 	}
+	*/
 
 	// load settings from the current project
 	if (AvdlSettings_SetFromFile(&avdl_settings, "app.avdl") != 0) {
