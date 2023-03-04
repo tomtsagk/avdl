@@ -155,6 +155,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	// temp solutions
 	avdl_project_path = avdl_settings.pkg_path;
 
+	/*
 	int handle_return = avdl_arguments_handle(&avdl_settings, argc, argv);
 
 	totalIncludeDirectories = avdl_settings.total_include_directories;
@@ -165,6 +166,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	for (int i = 0; i < totalLibDirectories; i++) {
 		additionalLibDirectory[i] = avdl_settings.additional_lib_directory[i];
 	}
+	*/
 
 	// the arguments require the program to stop executing
 	if (handle_return > 0) {
@@ -192,7 +194,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	avdl_log("~ Project Details end ~");
 	avdl_log("");
 
-	/*
 	if (!is_dir("avdl_build")) {
 		dir_create("avdl_build");
 	}
@@ -200,7 +201,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	if (!is_dir(".avdl_cache")) {
 		dir_create(".avdl_cache");
 	}
-	*/
+
+	return 0;
 
 	// from `.dd` to `.c`
 	if ( avdl_transpile(&avdl_settings) != 0) {
