@@ -155,6 +155,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	// temp solutions
 	avdl_project_path = avdl_settings.pkg_path;
 
+	return 0;
+
 	/*
 	int handle_return = avdl_arguments_handle(&avdl_settings, argc, argv);
 
