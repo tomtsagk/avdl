@@ -409,6 +409,7 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 
 	//Specify a file mask. *.* = We want everything!
 	sprintf(sPath, "%s\\*.*", dirname);
+	avdl_log("looking for files in %s\\*.*", dirname);
 
 	if((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE)
 	{
@@ -418,25 +419,28 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 
 	do
 	{
+		avdl_log("file: %s", fdFile.cFileName);
+
 		//Find first file will always return "."
 		//    and ".." as the first two directories.
-		if(strcmp(fdFile.cFileName, ".") != 0
-		&& strcmp(fdFile.cFileName, "..") != 0)
-		{
-			//Build up our file path using the passed in
-			//  [sDir] and the file/foldername we just found:
-			sprintf(sPath, "%s\\%s", dirname, fdFile.cFileName);
+		if(strcmp(fdFile.cFileName, ".") == 0
+		|| strcmp(fdFile.cFileName, "..") == 0) {
+			continue;
+		}
 
-			//Is the entity a File or Folder?
-			if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY)
-			{
-				printf("Directory: %s\n", sPath);
-				//ListDirectoryContents(sPath); //Recursion, I love it!
-			}
-			else{
-				printf("File: %s\n", sPath);
-				handle_function(dirname, fdFile.cFileName, 5, 10);
-			}
+		//Build up our file path using the passed in
+		//  [sDir] and the file/foldername we just found:
+		sprintf(sPath, "%s\\%s", dirname, fdFile.cFileName);
+
+		//Is the entity a File or Folder?
+		if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY)
+		{
+			avdl_log("Directory: %s\n", sPath);
+			//ListDirectoryContents(sPath); //Recursion, I love it!
+		}
+		else{
+			avdl_log("File: %s\n", sPath);
+			handle_function(dirname, fdFile.cFileName, 5, 10);
 		}
 	}
 	while(FindNextFile(hFind, &fdFile)); //Find the next file.
