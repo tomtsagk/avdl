@@ -185,8 +185,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		return -1;
 	}
 
-	return 0;
-
 	avdl_log("~ Project Details ~");
 	avdl_log("Project Name: " BLU "%s" RESET, avdl_settings.project_name);
 	avdl_log("Version: " BLU "%d" RESET " (" BLU "%s" RESET ")-" BLU "%d" RESET, avdl_settings.version_code, avdl_settings.version_name, avdl_settings.revision);
@@ -195,6 +193,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	avdl_log("CEngine location in: " BLU "%s" RESET, avdl_settings.cengine_path);
 	avdl_log("~ Project Details end ~");
 	avdl_log("");
+
+	return 0;
 
 	if (!is_dir("avdl_build")) {
 		dir_create("avdl_build");
