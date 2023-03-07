@@ -1,22 +1,6 @@
 #ifndef AVDL_SETTINGS_H
 #define AVDL_SETTINGS_H
 
-#if AVDL_IS_OS(AVDL_OS_WINDOWS)
-#include <windows.h>
-#endif
-
-#ifndef PKG_NAME
-#define PKG_NAME "avdl"
-#endif
-
-#ifndef PKG_VERSION
-#define PKG_VERSION "0.0.0-1"
-#endif
-
-#ifndef PKG_LOCATION
-#define PKG_LOCATION ""
-#endif
-
 /*
  * settings to aid compilation
  */
@@ -48,6 +32,23 @@
 	#endif
 
 #endif
+
+#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+#include <windows.h>
+#endif
+
+#ifndef PKG_NAME
+#define PKG_NAME "avdl"
+#endif
+
+#ifndef PKG_VERSION
+#define PKG_VERSION "0.0.0-1"
+#endif
+
+#ifndef PKG_LOCATION
+#define PKG_LOCATION ""
+#endif
+
 
 /*
  * compiling platform
