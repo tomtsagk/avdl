@@ -2,6 +2,7 @@
 
 #include "avdl_log.h"
 #include <string.h>
+#include "avdl_settings.h"
 
 int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *argv[]) {
 
