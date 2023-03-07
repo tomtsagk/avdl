@@ -13,7 +13,6 @@
 #include "avdl_semantic_analyser.h"
 #include "avdl_ast_node.h"
 #include "avdl_parser.h"
-#include "avdl_platform.h"
 #include "avdl_settings.h"
 #include "avdl_pkg.h"
 #include "avdl_log.h"
@@ -23,6 +22,8 @@
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
 #endif
+
+extern enum AVDL_PLATFORM avdl_platform_temp;
 
 const char cache_dir[] = ".avdl_cache/";
 
@@ -37,11 +38,6 @@ char buffer[DD_BUFFER_SIZE];
 
 // game node, parent of all nodes
 struct ast_node *game_node;
-
-char *additionalIncludeDirectory[10];
-int totalIncludeDirectories = 0;
-char *additionalLibDirectory[10];
-int totalLibDirectories = 0;
 
 int create_android_directory(const char *androidDirName);
 
@@ -135,6 +131,9 @@ int avdl_android_object(struct AvdlSettings *);
 
 const char *avdl_project_path;
 
+// temp hack
+struct AvdlSettings *avdl_settings_ptr = 0;
+
 // hide main when doing unit tests - temporary solution
 #ifdef AVDL_UNIT_TEST
 #define AVDL_MAIN avdl_main
@@ -151,20 +150,12 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		avdl_log_error("unable to initialise avdl settings");
 		return -1;
 	}
+	avdl_settings_ptr = &avdl_settings;
 
 	// temp solutions
 	avdl_project_path = avdl_settings.pkg_path;
 
 	int handle_return = avdl_arguments_handle(&avdl_settings, argc, argv);
-
-	totalIncludeDirectories = avdl_settings.total_include_directories;
-	for (int i = 0; i < totalIncludeDirectories; i++) {
-		additionalIncludeDirectory[i] = avdl_settings.additional_include_directory[i];
-	}
-	totalLibDirectories = avdl_settings.total_lib_directories;
-	for (int i = 0; i < totalLibDirectories; i++) {
-		additionalLibDirectory[i] = avdl_settings.additional_lib_directory[i];
-	}
 
 	// the arguments require the program to stop executing
 	if (handle_return > 0) {
@@ -207,7 +198,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	}
 
 	// android
-	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+	if (avdl_settings.target_platform == AVDL_PLATFORM_ANDROID) {
 		create_android_directory("avdl_build_android");
 
 		avdl_android_object(&avdl_settings);
@@ -360,6 +351,9 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 
 	included_files_num = 0;
 
+	// TODO: Find a better way to do this
+	avdl_platform_temp = avdl_settings_ptr->target_platform;
+
 	// initialise the parent node
 	game_node = ast_create(AST_GAME);
 	if (semanticAnalyser_convertToAst(game_node, avdl_string_toCharPtr(&srcFilePath)) != 0) {
@@ -420,7 +414,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	}
 
 	// on android just copy src file to its destination
-	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+	if (avdl_settings_ptr->target_platform == AVDL_PLATFORM_ANDROID) {
 		struct avdl_string androidFilePath;
 		avdl_string_create(&androidFilePath, 1024);
 		avdl_string_cat(&androidFilePath, "avdl_build_android/app/src/main/cpp/engine/");
@@ -502,9 +496,9 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	avdl_string_cat(&commandString, avdl_string_toCharPtr(&srcFilePath));
 	avdl_string_cat(&commandString, " -o ");
 	avdl_string_cat(&commandString, avdl_string_toCharPtr(&dstFilePath));
-	for (int i = 0; i < totalIncludeDirectories; i++) {
+	for (int i = 0; i < avdl_settings_ptr->total_include_directories; i++) {
 		avdl_string_cat(&commandString, " -I ");
-		avdl_string_cat(&commandString, additionalIncludeDirectory[i]);
+		avdl_string_cat(&commandString, avdl_settings_ptr->additional_include_directory[i]);
 	}
 	avdl_string_cat(&commandString, " -I include ");
 
@@ -650,9 +644,9 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		strcat(compile_command, "/include ");
 
 		// cengine extra directories (mostly for custom dependencies)
-		for (int i = 0; i < totalIncludeDirectories; i++) {
+		for (int i = 0; i < avdl_settings_ptr->total_include_directories; i++) {
 			strcat(compile_command, " -I ");
-			strcat(compile_command, additionalIncludeDirectory[i]);
+			strcat(compile_command, avdl_settings_ptr->additional_include_directory[i]);
 		}
 
 		// skip files already compiled
@@ -839,9 +833,9 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	strcat(buffer, avdl_settings->project_name_code);
 
 	// link custom dependencies
-	for (int i = 0; i < totalLibDirectories; i++) {
+	for (int i = 0; i < avdl_settings->total_lib_directories; i++) {
 		strcat(buffer, " -L ");
-		strcat(buffer, additionalLibDirectory[i]);
+		strcat(buffer, avdl_settings->additional_lib_directory[i]);
 	}
 
 	if (avdl_settings->standalone) {
@@ -1045,7 +1039,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	}
 
 	// on android, put assets in a specific directory
-	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+	if (avdl_settings_ptr->target_platform == AVDL_PLATFORM_ANDROID) {
 		char *assetDir;
 
 		if (strcmp(filename +strlen(filename) -4, ".ply") == 0

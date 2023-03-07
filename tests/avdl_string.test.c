@@ -31,11 +31,23 @@ int main(int argc, char *argv[]) {
 	assert(avdl_string_endsIn(&string, "e"));
 	assert(!avdl_string_endsIn(&string, "d"));
 
+	assert(!avdl_string_endsIn(&string, "too long string, it will never end in it"));
+
+	avdl_string_replaceEnding(&string, "doesn't end in this", "won't replace with this");
+	assert(avdl_string_endsIn(&string, "abge"));
+
 	// check edge cases
 	avdl_string_cat(&string, "too long string to fit");
 	assert(!avdl_string_isValid(&string));
 	assert(strcmp(avdl_string_getError(&string), "") != 0);
+	avdl_string_cat(&string, "some other string");
+	assert(strcmp(avdl_string_toCharPtr(&string), "") == 0);
+	assert(!avdl_string_endsIn(&string, "it doesn't matter"));
+	avdl_string_replaceEnding(&string, "ending one", "ending two");
 
+	avdl_string_clean(&string);
+
+	// second cleaning should be handled and ignored
 	avdl_string_clean(&string);
 
 	return 0;

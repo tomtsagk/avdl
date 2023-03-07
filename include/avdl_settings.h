@@ -34,6 +34,24 @@
 #endif
 
 /*
+ * compiling platform
+ *
+ * used when compiling a game to decide
+ * which platform to compile for
+ *
+ * by default, it will try to compile for the same
+ * platform as the host device
+ *
+ */
+enum AVDL_PLATFORM {
+	AVDL_PLATFORM_LINUX,
+	AVDL_PLATFORM_WINDOWS,
+	AVDL_PLATFORM_ANDROID,
+
+	AVDL_PLATFORM_UNKNOWN,
+};
+
+/*
  * Compiler settings on how to compile a game
  * contains all data that could be changed
  * every time this program is run
@@ -83,6 +101,9 @@ struct AvdlSettings {
 	int total_include_directories;
 	char *additional_lib_directory[10];
 	int total_lib_directories;
+
+	// what platform to compile for
+	enum AVDL_PLATFORM target_platform;
 
 };
 
