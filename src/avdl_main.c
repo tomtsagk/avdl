@@ -339,9 +339,9 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 	}
 
 	// skip files already compiled (check last modified)
-	// for the time being files don't need to be re-transpiled
-	// if a header changes
-	if ( !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath)) ) {
+	// but compile everything if a header file has changed
+	if ( !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
+	&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
 		//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", buffer, buffer2);
 		avdl_string_clean(&srcFilePath);
 		avdl_string_clean(&dstFilePath);
