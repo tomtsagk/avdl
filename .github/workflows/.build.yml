@@ -5,7 +5,6 @@ on:
     branches:
       - develop
       - master
-      - feature/consume_makefile_compilation
     tags:
       "v[0-9]+.[0-9]+.[0-9]+"
   pull_request:
@@ -437,3 +436,280 @@ jobs:
         asset_path: avdl_build_windows.zip
         asset_name: avdl_${{ github.ref_name }}_windows.zip
         asset_content_type: application/gzip
+  # Android
+  rue_build_android:
+    runs-on: ubuntu-latest
+    needs: [build_linux]
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_linux
+        path: avdl_build_linux
+    - name: get_rue
+      shell: bash
+      run: |
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout develop
+        cd ..
+    - name: set_avdl
+      run: |
+        mkdir AVDL_BUILD
+        mv avdl_build_linux/* AVDL_BUILD
+        rmdir avdl_build_linux
+        chmod +x AVDL_BUILD/bin/avdl
+    - name: generate_android_project
+      run: |
+        cd rue
+        ../AVDL_BUILD/bin/avdl --android
+    - name: compile_apk
+      run: |
+        cd rue/avdl_build_android/
+        chmod +x gradlew
+        ./gradlew build
+        cd ../../
+        mkdir rue_output
+        mv rue/avdl_build_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk rue_output
+        mkdir rue_output_debug
+        mv rue/avdl_build_android/app/build/outputs/apk/debug/app-universal-debug.apk rue_output_debug
+    - name: upload_artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_android
+        path: rue_output
+    - name: upload_artifact_debug
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_android_debug
+        path: rue_output_debug
+
+  # Linux
+  rue_build_linux:
+    runs-on: ubuntu-20.04
+    needs: [build_linux]
+    steps:
+    - name: update packages
+      run: |
+         sudo apt update && sudo apt install -y gcc libgl1-mesa-dev
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_linux
+        path: avdl_build_linux
+    - name: get_rue
+      run: |
+        chmod +x avdl_build_linux/bin/avdl
+        ls -R avdl_build_linux
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout develop
+        cd ..
+    - name: compile_rue
+      run: |
+        cd rue
+        ../avdl_build_linux/bin/avdl -i ../avdl_build_linux/dependencies/linux/include -L ../avdl_build_linux/dependencies/linux/lib --standalone
+        mkdir avdl_build/dependencies
+        cp ../avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
+        rm avdl_build/dependencies/*steam*
+    - name: upload_artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_build_linux
+        path: rue/avdl_build
+  # Linux - steam
+  rue_build_linux_steam:
+    runs-on: ubuntu-20.04
+    needs: [build_linux]
+    steps:
+    - name: update packages
+      run: |
+         sudo apt update && sudo apt install -y gcc libgl1-mesa-dev
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_linux
+        path: avdl_build_linux
+    - name: get_rue
+      run: |
+        chmod +x avdl_build_linux/bin/avdl
+        ls -R avdl_build_linux
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout develop
+        cd ..
+    - name: compile_rue
+      run: |
+        cd rue
+        ../avdl_build_linux/bin/avdl -i ../avdl_build_linux/dependencies/linux/include -L ../avdl_build_linux/dependencies/linux/lib --standalone --steam
+        mkdir avdl_build/dependencies
+        cp ../avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
+    - name: upload_artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_build_linux_steam
+        path: rue/avdl_build
+  # Windows
+  rue_build_windows:
+    runs-on: windows-latest
+    needs: [build_windows]
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_windows
+        path: avdl_build_windows
+    - name: get_rue
+      shell: bash
+      run: |
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout develop
+        cd ..
+    - name: prepare_libraries
+      shell: bash
+      run: |
+        mkdir libraries
+    - name: unpack_avdl
+      shell: bash
+      run: |
+        mkdir AVDL_BUILD
+        mv avdl_build_windows/* AVDL_BUILD
+        rmdir avdl_build_windows
+        cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
+        cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
+    - name: zlib
+      shell: bash
+      run: |
+        cp -r AVDL_BUILD/dependencies/windows/zlib "C:/Program Files (x86)/zlib"
+    - name: libpng
+      shell: bash
+      run: |
+        cp -r AVDL_BUILD/dependencies/windows/libpng "C:/Program Files (x86)/libpng"
+    - name: get_libraries
+      run: |
+        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
+    - name: glew
+      shell: bash
+      run: |
+        mv glew-2.2.0-win32.zip libraries
+        cd libraries
+        unzip glew-2.2.0-win32.zip
+        cd ..
+    - name: sdl
+      shell: bash
+      run: |
+        mv SDL2-devel-2.0.22-VC.zip libraries
+        cd libraries
+        unzip SDL2-devel-2.0.22-VC.zip
+        cd ..
+    - name: sdl_mixer
+      shell: bash
+      run: |
+        mv SDL2_mixer-devel-2.6.0-VC.zip libraries
+        cd libraries
+        unzip SDL2_mixer-devel-2.6.0-VC.zip
+        cd ..
+    - name: compile_rue
+      shell: bash
+      run: |
+        cd rue
+        mv ../libraries .
+        mkdir cengine
+        cp -r ../AVDL_BUILD/share/avdl/cengine/*.c ../AVDL_BUILD/include/*.h cengine
+        mkdir build
+        ../AVDL_BUILD/bin/avdl.exe -t
+        cp .avdl_cache/*.c src/
+        for i in src/*.c; do mv $i ${i/.dd.c/.c}; done
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="RUE_BUILD"
+        cmake --build . --config Release
+        cmake --install .
+        cd ..
+    - name: upload_artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_build_windows
+        path: rue/build/RUE_BUILD
+  # Windows
+  rue_build_windows_steam:
+    runs-on: windows-latest
+    needs: [build_windows]
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_windows
+        path: avdl_build_windows
+    - name: get_rue
+      shell: bash
+      run: |
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout develop
+        cd ..
+    - name: prepare_libraries
+      shell: bash
+      run: |
+        mkdir libraries
+    - name: unpack_avdl
+      shell: bash
+      run: |
+        mkdir AVDL_BUILD
+        mv avdl_build_windows/* AVDL_BUILD
+        rmdir avdl_build_windows
+        cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
+        cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
+    - name: zlib
+      shell: bash
+      run: |
+        cp -r AVDL_BUILD/dependencies/windows/zlib "C:/Program Files (x86)/zlib"
+    - name: libpng
+      shell: bash
+      run: |
+        cp -r AVDL_BUILD/dependencies/windows/libpng "C:/Program Files (x86)/libpng"
+    - name: get_libraries
+      run: |
+        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
+        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
+    - name: glew
+      shell: bash
+      run: |
+        mv glew-2.2.0-win32.zip libraries
+        cd libraries
+        unzip glew-2.2.0-win32.zip
+        cd ..
+    - name: sdl
+      shell: bash
+      run: |
+        mv SDL2-devel-2.0.22-VC.zip libraries
+        cd libraries
+        unzip SDL2-devel-2.0.22-VC.zip
+        cd ..
+    - name: sdl_mixer
+      shell: bash
+      run: |
+        mv SDL2_mixer-devel-2.6.0-VC.zip libraries
+        cd libraries
+        unzip SDL2_mixer-devel-2.6.0-VC.zip
+        cd ..
+    - name: compile_rue
+      shell: bash
+      run: |
+        mv AVDL_BUILD rue
+        cd rue
+        mv ../libraries .
+        mkdir cengine
+        cp -r ./AVDL_BUILD/share/avdl/cengine/*.c ./AVDL_BUILD/share/avdl/cengine/*.cpp ./AVDL_BUILD/include/*.h cengine
+        mkdir build
+        ./AVDL_BUILD/bin/avdl.exe -t
+        cp .avdl_cache/*.c src/
+        for i in src/*.c; do mv $i ${i/.dd.c/.c}; done
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="RUE_BUILD" -DAVDL_STEAM=1
+        cmake --build . --config Release
+        cmake --install .
+        cd ..
+    - name: upload_artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_build_windows_steam
+        path: rue/build/RUE_BUILD

@@ -8,9 +8,12 @@
 #include "avdl_commands.h"
 #include "avdl_semantic_analyser.h"
 #include "avdl_lexer.h"
-#include "avdl_platform.h"
 #include "avdl_pkg.h"
 #include "avdl_log.h"
+#include "avdl_settings.h"
+
+// TODO: Possibly remove this
+enum AVDL_PLATFORM avdl_platform_temp;
 
 extern const char *avdl_project_path;
 
@@ -89,7 +92,7 @@ static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 	 *
 	 * temporary solution
 	 */
-	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+	if (avdl_platform_temp == AVDL_PLATFORM_ANDROID) {
 		char buffer[500];
 		strcpy(buffer, ast_getLex(assetName));
 
@@ -116,8 +119,8 @@ static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 	}
 	else
 	// on linux and windows, attach the custom install location as the asset's prefix
-	if (avdl_platform_get() == AVDL_PLATFORM_LINUX
-	||  avdl_platform_get() == AVDL_PLATFORM_WINDOWS) {
+	if (avdl_platform_temp == AVDL_PLATFORM_LINUX
+	||  avdl_platform_temp == AVDL_PLATFORM_WINDOWS) {
 		/*
 		if (!installLocationDynamic) {
 			char buffer[500];
@@ -144,7 +147,7 @@ static struct ast_node *expect_command_savefile(struct avdl_lexer *l) {
 	 *
 	 * temporary solution
 	 */
-	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
+	if (avdl_platform_temp == AVDL_PLATFORM_ANDROID) {
 		char buffer[500];
 		strcpy(buffer, ast_getLex(savefile));
 
@@ -171,8 +174,8 @@ static struct ast_node *expect_command_savefile(struct avdl_lexer *l) {
 	}
 	else
 	// on linux and windows, attach the custom install location as the asset's prefix
-	if (avdl_platform_get() == AVDL_PLATFORM_LINUX
-	||  avdl_platform_get() == AVDL_PLATFORM_WINDOWS) {
+	if (avdl_platform_temp == AVDL_PLATFORM_LINUX
+	||  avdl_platform_temp == AVDL_PLATFORM_WINDOWS) {
 		/*
 		char buffer[500];
 		if (saveLocation) {

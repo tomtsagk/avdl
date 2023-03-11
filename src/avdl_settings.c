@@ -82,6 +82,14 @@ int AvdlSettings_Create(struct AvdlSettings *o) {
 	o->total_include_directories = 0;
 	o->total_lib_directories = 0;
 
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	o->target_platform = AVDL_PLATFORM_WINDOWS;
+	#elif AVDL_IS_OS(AVDL_OS_LINUX)
+	o->target_platform = AVDL_PLATFORM_LINUX;
+	#else
+	o->target_platform = AVDL_PLATFORM_UNKNOWN;
+	#endif
+
 	return 0;
 }
 
@@ -190,9 +198,12 @@ int AvdlSettings_SetFromFile(struct AvdlSettings *o, char *filename) {
 		}
 		else {
 			printf("avdl error: Unknown key: %s\n", key);
+			fclose(f);
 			return -1;
 		}
 	}
+
+	fclose(f);
 
 	return 0;
 }

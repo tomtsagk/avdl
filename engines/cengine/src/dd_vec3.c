@@ -60,3 +60,7 @@ void dd_vec3_normalise(struct dd_vec3 *o) {
 float dd_vec3_magnitude(struct dd_vec3 *o) {
 	return dd_math_sqrt(dd_math_pow(o->x, 2) +dd_math_pow(o->y, 2) +dd_math_pow(o->z, 2));
 }
+
+float dd_vec3_dot(struct dd_vec3 *a, struct dd_vec3 *b) {
+	return a->x *b->x + a->y *b->y + a->z *b->z;
+}

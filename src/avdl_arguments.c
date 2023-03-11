@@ -1,8 +1,8 @@
 #include "avdl_arguments.h"
 
-#include "avdl_platform.h"
 #include "avdl_log.h"
 #include <string.h>
+#include "avdl_settings.h"
 
 int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *argv[]) {
 
@@ -31,17 +31,17 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 				*/
 				// compiling for windows
 				if (strcmp(argv[i], "--windows") == 0) {
-					avdl_platform_set(AVDL_PLATFORM_WINDOWS);
+					avdl_settings->target_platform = AVDL_PLATFORM_WINDOWS;
 				}
 				else
 				// compiling for linux
 				if (strcmp(argv[i], "--linux") == 0) {
-					avdl_platform_set(AVDL_PLATFORM_LINUX);
+					avdl_settings->target_platform = AVDL_PLATFORM_LINUX;
 				}
 				else
 				// compiling for android
 				if (strcmp(argv[i], "--android") == 0) {
-					avdl_platform_set(AVDL_PLATFORM_ANDROID);
+					avdl_settings->target_platform = AVDL_PLATFORM_ANDROID;
 				}
 				else
 				// show version number
