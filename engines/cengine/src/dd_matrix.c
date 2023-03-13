@@ -291,12 +291,12 @@ void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float t
 
 	struct dd_vec3 forward;
 	dd_vec3_create(&forward);
-	dd_vec3_set(&forward, targetX, targetY, targetZ);
+	dd_vec3_setf(&forward, targetX, targetY, targetZ);
 	dd_vec3_normalise(&forward);
 
 	struct dd_vec3 fakeup;
 	dd_vec3_create(&fakeup);
-	dd_vec3_set(&fakeup, 0, 1, 0);
+	dd_vec3_setf(&fakeup, 0, 1, 0);
 
 	struct dd_vec3 right;
 	dd_vec3_create(&right);
