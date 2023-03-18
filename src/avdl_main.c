@@ -75,6 +75,11 @@ struct cengine_file_structure cengine_files[] = {
 	{"dd_vec4.c", 0},
 	{"dd_world.c", 0},
 	{"avdl_input.c", 0},
+	{"avdl_physics.c", 0},
+	{"avdl_collider.c", 0},
+	{"avdl_collider_aabb.c", 0},
+	{"avdl_collider_sphere.c", 0},
+	{"avdl_rigidbody.c", 0},
 	{"main.c", 0},
 	{"avdl_steam.c", "avdl_steam_cpp.cpp"},
 	{0, "main_cpp.cpp"},
@@ -118,6 +123,11 @@ char *cengine_headers[] = {
 	"avdl_input.h",
 	"avdl_achievements.h",
 	"avdl_multiplayer.h",
+	"avdl_physics.h",
+	"avdl_collider.h",
+	"avdl_collider_aabb.h",
+	"avdl_collider_sphere.h",
+	"avdl_rigidbody.h",
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 

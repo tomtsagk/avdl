@@ -102,6 +102,21 @@ void struct_table_init() {
 	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getValue", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_multiplayer_identity", 0);
+	struct_table_push("avdl_physics", 0);
+	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("addObject", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("avdl_collider", 0);
+	struct_table_push("avdl_collider_aabb", "avdl_collider");
+	struct_table_push_member("setMin", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setMax", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("avdl_collider_sphere", "avdl_collider");
+	struct_table_push_member("setRadius", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("avdl_rigidbody", 0);
+	struct_table_push_member("setPositionf", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setMass", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("matrixMultiply", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setCollider", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

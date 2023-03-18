@@ -23,6 +23,11 @@ add_executable(avdl
 	src/avdl_log.c
 	src/avdl_string.c
 	src/avdl_arguments.c
+	src/avdl_physics.c
+	src/avdl_collider.c
+	src/avdl_collider_aabb.c
+	src/avdl_collider_sphere.c
+	src/avdl_collider_rigidbody.c
 )
 
 add_compile_definitions(
