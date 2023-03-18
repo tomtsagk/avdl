@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 
 # set the project name
-project(avdl VERSION 0.7.8)
+project(avdl VERSION 0.7.9)
 
 # add the executable
 add_executable(avdl
@@ -79,7 +79,7 @@ install(FILES
 	engines/cengine/src/avdl_collider.c
 	engines/cengine/src/avdl_collider_aabb.c
 	engines/cengine/src/avdl_collider_sphere.c
-	engines/cengine/src/avdl_collider_rigidbody.c
+	engines/cengine/src/avdl_rigidbody.c
 	DESTINATION
 	share/avdl/cengine
 )
@@ -122,7 +122,7 @@ install(FILES
 	engines/cengine/include/avdl_collider.h
 	engines/cengine/include/avdl_collider_aabb.h
 	engines/cengine/include/avdl_collider_sphere.h
-	engines/cengine/include/avdl_collider_rigidbody.h
+	engines/cengine/include/avdl_rigidbody.h
 	DESTINATION
 	include
 )
