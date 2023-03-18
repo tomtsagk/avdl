@@ -23,11 +23,6 @@ add_executable(avdl
 	src/avdl_log.c
 	src/avdl_string.c
 	src/avdl_arguments.c
-	src/avdl_physics.c
-	src/avdl_collider.c
-	src/avdl_collider_aabb.c
-	src/avdl_collider_sphere.c
-	src/avdl_collider_rigidbody.c
 )
 
 add_compile_definitions(
@@ -80,6 +75,11 @@ install(FILES
 	engines/cengine/src/main_cpp.cpp
 	engines/cengine/src/avdl_input.c
 	engines/cengine/src/whereami.c
+	engines/cengine/src/avdl_physics.c
+	engines/cengine/src/avdl_collider.c
+	engines/cengine/src/avdl_collider_aabb.c
+	engines/cengine/src/avdl_collider_sphere.c
+	engines/cengine/src/avdl_collider_rigidbody.c
 	DESTINATION
 	share/avdl/cengine
 )
@@ -118,6 +118,11 @@ install(FILES
 	engines/cengine/include/dd_world.h
 	engines/cengine/include/avdl_input.h
 	engines/cengine/include/whereami.h
+	engines/cengine/include/avdl_physics.h
+	engines/cengine/include/avdl_collider.h
+	engines/cengine/include/avdl_collider_aabb.h
+	engines/cengine/include/avdl_collider_sphere.h
+	engines/cengine/include/avdl_collider_rigidbody.h
 	DESTINATION
 	include
 )
