@@ -30,5 +30,10 @@
 #include "avdl_achievements.h"
 #include "avdl_multiplayer.h"
 #include "avdl_input.h"
+#include "avdl_physics.h"
+#include "avdl_collider.h"
+#include "avdl_collider_aabb.h"
+#include "avdl_collider_sphere.h"
+#include "avdl_rigidbody.h"
 
 int dd_main(int argc, char *argv[]);
