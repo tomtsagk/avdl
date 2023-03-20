@@ -66,7 +66,6 @@ struct cengine_file_structure cengine_files[] = {
 	{"dd_meshColour.c", 0},
 	{"dd_meshTexture.c", 0},
 	{"dd_mouse.c", 0},
-	{"dd_opengl.c", 0},
 	{"dd_sound.c", 0},
 	{"dd_music.c", 0},
 	{"whereami.c", 0},

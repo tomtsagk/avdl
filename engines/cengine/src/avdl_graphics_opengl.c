@@ -1,9 +1,5 @@
 #include "avdl_graphics.h"
 
-#if DD_PLATFORM_NATIVE
-#include "dd_opengl.h"
-#endif
-
 #include "avdl_shaders.h"
 #include "dd_game.h"
 
@@ -26,7 +22,7 @@ void avdl_graphics_generateContextId() {
 	openglContextId++;
 }
 
-int  avdl_graphics_getContextId() {
+int avdl_graphics_getContextId() {
 	return openglContextId;
 }
 

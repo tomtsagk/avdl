@@ -3,7 +3,7 @@
 
 #if DD_PLATFORM_ANDROID
 #else
-#include "dd_opengl.h"
+#include "avdl_graphics.h"
 
 #if defined(_WIN32) || defined(WIN32)
 #include <SDL_mixer.h>

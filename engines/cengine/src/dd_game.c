@@ -12,7 +12,7 @@ int dd_flag_exit = 0;
 int dd_width = 0;
 int dd_height = 0;
 #else
-#include "dd_opengl.h"
+#include "avdl_graphics.h"
 
 SDL_Window* mainWindow;
 SDL_GLContext mainGLContext;

@@ -384,8 +384,8 @@ void avdl_program_setFragmentShader(struct avdl_program *o, char *source) {
 
 void avdl_program_useProgram(struct avdl_program *o) {
 	if (o->program == 0
-	||  o->openglContext != avdl_opengl_getContextId()) {
-		o->openglContext = avdl_opengl_getContextId();
+	||  o->openglContext != avdl_graphics_getContextId()) {
+		o->openglContext = avdl_graphics_getContextId();
 		o->program = avdl_loadProgram(o->sdrVertexSrc, o->sdrFragmentSrc);
 	}
 	avdl_useProgram(o);

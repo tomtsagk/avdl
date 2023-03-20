@@ -7,7 +7,7 @@ enum dd_primitives {
 	DD_PRIMITIVE_BOX,
 };
 
-#include "dd_opengl.h"
+#include "avdl_graphics.h"
 #include "dd_matrix.h"
 
 /* Generic mesh that holds all the data needed to draw a mesh

@@ -1,7 +1,7 @@
 #ifndef DD_IMAGE_H
 #define DD_IMAGE_H
 
-#include "dd_opengl.h"
+#include "avdl_graphics.h"
 
 enum AVDL_IMAGETYPE {
 	AVDL_IMAGETYPE_PNG,

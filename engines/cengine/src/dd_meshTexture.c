@@ -5,7 +5,6 @@
 #include <string.h>
 #include "dd_log.h"
 #include "avdl_assetManager.h"
-#include "dd_opengl.h"
 #include "dd_log.h"
 #include <stdlib.h>
 #include "avdl_graphics.h"

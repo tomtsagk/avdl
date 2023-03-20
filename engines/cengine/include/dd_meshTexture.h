@@ -3,7 +3,7 @@
 
 #include "dd_meshColour.h"
 #include "dd_image.h"
-#include "dd_opengl.h"
+#include "avdl_graphics.h"
 
 struct dd_meshTexture {
 	struct dd_meshColour parent;

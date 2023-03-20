@@ -1,7 +1,7 @@
 #ifndef AVDL_SHADERS_H
 #define AVDL_SHADERS_H
 
-#include <dd_opengl.h>
+#include <avdl_graphics.h>
 
 struct avdl_program {
 	char *sdrVertexSrc;

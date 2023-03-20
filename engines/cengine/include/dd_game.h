@@ -2,7 +2,7 @@
 #define DD_GAME_H
 
 #if DD_PLATFORM_NATIVE
-#include "dd_opengl.h"
+#include "avdl_graphics.h"
 
 #ifndef PKG_LOCATION
 #define PKG_LOCATION ""
