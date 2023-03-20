@@ -837,7 +837,9 @@ static void semantic_error(struct avdl_lexer *l, const char *msg, ...) {
 	va_start(args, msg);
 
 	avdl_log_error("semantic analysis: syntax error at " BLU "%s:%d:%d" RESET, avdl_lexer_getCurrentFilename(l), avdl_lexer_getCurrentLinenumber(l), avdl_lexer_getCurrentCharacterNumber(l));
-	avdl_log(msg, args);
+	//avdl_log(msg, args);
+	vprintf(msg, args);
+	printf("\n");
 	avdl_lexer_printCurrentLine(l);
 
 	va_end(args);
