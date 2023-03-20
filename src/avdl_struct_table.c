@@ -115,8 +115,13 @@ void struct_table_init() {
 	struct_table_push("avdl_rigidbody", 0);
 	struct_table_push_member("setPositionf", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setMass", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setRestitution", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("addVelocityf", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("matrixMultiply", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setCollider", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("getPositionX", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("getPositionY", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("getPositionZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 
