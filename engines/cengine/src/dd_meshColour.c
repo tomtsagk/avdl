@@ -7,6 +7,7 @@
 #include "avdl_assetManager.h"
 #include "dd_log.h"
 #include <stdlib.h>
+#include "avdl_graphics.h"
 
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
@@ -69,32 +70,32 @@ void dd_meshColour_clean(struct dd_meshColour *m) {
 /* draw the mesh itself */
 void dd_meshColour_draw(struct dd_meshColour *m) {
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m->parent.v);
+	avdl_graphics_EnableVertexAttribArray(0);
+	avdl_graphics_VertexAttribPointer(0, 3, GL_FLOAT, 0, 0, m->parent.v);
 
 	if (m->c) {
-		glEnableVertexAttribArray(1);
+		avdl_graphics_EnableVertexAttribArray(1);
 		#if DD_PLATFORM_ANDROID
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_TRUE, 0, m->c);
+		avdl_graphics_VertexAttribPointer(1, 4, GL_FLOAT, 1, 0, m->c);
 		#else
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 0, m->c);
+		avdl_graphics_VertexAttribPointer(1, 3, GL_FLOAT, 1, 0, m->c);
 		#endif
 	}
 
-	GLint MatrixID = glGetUniformLocation(currentProgram, "matrix");
+	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		dd_log("avdl: dd_meshTexture_draw: location of `matrix` not found in current program");
+		dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
 	}
 	else {
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 	}
 
-	glDrawArrays(GL_TRIANGLES, 0, m->parent.vcount);
+	avdl_graphics_DrawArrays(m->parent.vcount);
 
 	if (m->c) {
-		glDisableVertexAttribArray(1);
+		avdl_graphics_DisableVertexAttribArray(1);
 	}
-	glDisableVertexAttribArray(0);
+	avdl_graphics_DisableVertexAttribArray(0);
 }
 
 /*

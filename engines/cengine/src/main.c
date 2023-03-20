@@ -56,8 +56,6 @@ void clean();
 void onResume();
 void onPause();
 
-int avdl_engine_init_opengl();
-
 /*
  * input handling functions
  */
@@ -77,11 +75,6 @@ JNIEnv *jniEnv;
 JavaVM* jvm = 0;
 jobject activity = 0;
 #endif
-
-// shaders
-GLuint defaultProgram;
-GLuint fontProgram;
-GLuint currentProgram;
 
 #if DD_PLATFORM_NATIVE
 // threads
@@ -155,10 +148,6 @@ int dd_main(int argc, char *argv[]) {
 	}
 	#endif
 
-	dd_clearcolor_r = 0;
-	dd_clearcolor_g = 0;
-	dd_clearcolor_b = 0;
-
 	#if DD_PLATFORM_NATIVE
 	srand(time(NULL));
 	#endif
@@ -212,7 +201,7 @@ int dd_main(int argc, char *argv[]) {
 		}
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP;
+		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 		int width = dd_gameInitWindowWidth;
 		int height = dd_gameInitWindowHeight;
 		mainWindow = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
@@ -238,7 +227,7 @@ int dd_main(int argc, char *argv[]) {
 	#endif
 
 	if (!avdl_verify) {
-		avdl_engine_init_opengl();
+		avdl_graphics_Init();
 
 		/*
 		 * string3d initialisation for displaying text
@@ -295,13 +284,6 @@ int dd_main(int argc, char *argv[]) {
 	nworld_size = dd_default_world_size;
 	nworld_constructor = dd_default_world_constructor;
 	nworld_ready = 1;
-
-	/* commented out - for now
-	dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
-	dd_log("Renderer: %s", glGetString(GL_RENDERER));
-	dd_log("Version GL: %s", glGetString(GL_VERSION));
-	dd_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
-	*/
 
 	avdl_state_initialised = 1;
 	onResume();
@@ -524,7 +506,7 @@ struct dd_matrix matPerspective;
 
 // handle resize with perspective projection
 void handleResize(int w, int h) {
-	glViewport(0, 0, w, h);
+	avdl_graphics_Viewport(0, 0, w, h);
 
 	int ypriority;
 	if (w > h) {
@@ -711,8 +693,8 @@ void draw() {
 	#endif
 
 	// clear everything
-	glClearColor(dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	avdl_graphics_ClearToColour();
+	avdl_graphics_ClearColourAndDepth();
 
 	// reset view
 	dd_matrix_globalInit();
@@ -844,35 +826,6 @@ void onPause() {
 	#endif
 }
 
-int avdl_engine_init_opengl() {
-
-	avdl_opengl_generateContextId();
-
-	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.8, 0.6, 1.0, 1);
-
-	/*
-	 * load shaders
-	 */
-	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
-	if (!defaultProgram) {
-		dd_log("avdl: error loading shaders");
-		exit(-1);
-	}
-
-	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex, avdl_shaderFont_fragment);
-	if (!fontProgram) {
-		dd_log("avdl: error loading font shaders");
-		exit(-1);
-	}
-
-	glUseProgram(defaultProgram);
-	currentProgram = defaultProgram;
-
-	return 0;
-
-}
-
 /*
  * Android specific functions that call the engine's events
  */
@@ -918,7 +871,7 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 		dd_main(0, 0);
 	}
 	else {
-		avdl_engine_init_opengl();
+		avdl_graphics_Init();
 	}
 
 }

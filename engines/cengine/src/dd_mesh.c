@@ -6,6 +6,7 @@
 #include "avdl_assetManager.h"
 #include "dd_log.h"
 #include <stdlib.h>
+#include "avdl_graphics.h"
 
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
@@ -102,20 +103,20 @@ void dd_mesh_clean(struct dd_mesh *m) {
  */
 void dd_mesh_draw(struct dd_mesh *m) {
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, m->v);
+	avdl_graphics_EnableVertexAttribArray(0);
+	avdl_graphics_VertexAttribPointer(0, 3, GL_FLOAT, 0, 0, m->v);
 
-	GLint MatrixID = glGetUniformLocation(currentProgram, "matrix");
+	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		dd_log("avdl: dd_meshTexture_draw: location of `matrix` not found in current program");
+		dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
 	}
 	else {
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 	}
 
-	glDrawArrays(GL_TRIANGLES, 0, m->vcount);
+	avdl_graphics_DrawArrays(m->vcount);
 
-	glDisableVertexAttribArray(0);
+	avdl_graphics_DisableVertexAttribArray(0);
 }
 
 /*

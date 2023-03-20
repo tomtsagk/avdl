@@ -33,7 +33,6 @@ void dd_image_load_bmp(struct dd_image *img, const wchar_t *filename);
 void dd_image_load_bmp(struct dd_image *img, const char *filename);
 #endif
 void dd_image_load_png(struct dd_image *img, const char *filename);
-void dd_image_to_opengl(struct dd_image *img);
 
 void dd_image_bind(struct dd_image *o);
 void dd_image_unbind(struct dd_image *o);

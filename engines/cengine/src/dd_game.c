@@ -19,9 +19,9 @@ SDL_GLContext mainGLContext;
 SDL_TimerID timer;
 #endif
 
-float dd_clearcolor_r;
-float dd_clearcolor_g;
-float dd_clearcolor_b;
+float dd_clearcolor_r = 0;
+float dd_clearcolor_g = 0;
+float dd_clearcolor_b = 0;
 
 // initialise game init variables
 char *gameTitle = 0;

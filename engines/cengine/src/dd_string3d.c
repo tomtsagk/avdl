@@ -119,14 +119,14 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 		struct dd_meshTexture *m = &numbers[numberString[i] -48];
 
 		int previousProgram;
-		glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
-		glUseProgram(fontProgram);
-		GLint MatrixID = glGetUniformLocation(fontProgram, "matrix");
-		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+		previousProgram = avdl_graphics_GetCurrentProgram();
+		avdl_graphics_UseProgram(fontProgram);
+		GLint MatrixID = avdl_graphics_GetUniformLocation(fontProgram, "matrix");
+		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 
 		dd_meshTexture_draw(m);
 
-		glUseProgram(previousProgram);
+		avdl_graphics_UseProgram(previousProgram);
 
 		dd_translatef(fontKerning, 0, 0);
 	}
@@ -182,14 +182,14 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 			struct dd_word_mesh *m = dd_da_get(&o->textMeshes, wordsTotal +i);
 
 			int previousProgram;
-			glGetIntegerv(GL_CURRENT_PROGRAM, &previousProgram);
-			glUseProgram(fontProgram);
-			GLint MatrixID = glGetUniformLocation(fontProgram, "matrix");
-			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, (float *)dd_matrix_globalGet());
+			previousProgram = avdl_graphics_GetCurrentProgram();
+			avdl_graphics_UseProgram(fontProgram);
+			GLint MatrixID = avdl_graphics_GetUniformLocation(fontProgram, "matrix");
+			avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 
 			dd_meshTexture_draw(&m->m);
 
-			glUseProgram(previousProgram);
+			avdl_graphics_UseProgram(previousProgram);
 
 			dd_translatef((m->width+1) *fontKerning, 0, 0);
 		}

@@ -80,6 +80,7 @@ install(FILES
 	engines/cengine/src/avdl_collider_aabb.c
 	engines/cengine/src/avdl_collider_sphere.c
 	engines/cengine/src/avdl_rigidbody.c
+	engines/cengine/src/avdl_graphics_opengl.c
 	DESTINATION
 	share/avdl/cengine
 )
@@ -123,6 +124,7 @@ install(FILES
 	engines/cengine/include/avdl_collider_aabb.h
 	engines/cengine/include/avdl_collider_sphere.h
 	engines/cengine/include/avdl_rigidbody.h
+	engines/cengine/include/avdl_graphics.h
 	DESTINATION
 	include
 )

@@ -18,9 +18,7 @@ extern SDL_TimerID timer;
 
 // way to change the background clear colour
 extern float dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b;
-//#define dd_clearColour(r, g, b, a) glClearColor(r, g, b, a)
 #define dd_clearColour(r, g, b, a) dd_clearcolor_r = r; dd_clearcolor_g = g; dd_clearcolor_b = b;
-#define dd_clearDepth() glClear(GL_DEPTH_BUFFER_BIT)
 
 // initialise all pre-game data
 void dd_gameInitDefault();
@@ -69,9 +67,6 @@ extern int dd_flag_exit;
 const PROJ_LOC_TYPE *avdl_getProjectLocation();
 void avdl_initProjectLocation();
 void avdl_cleanProjectLocation();
-
-// clear drawing depth buffer
-#define avdl_clear_depth() glClear(GL_DEPTH_BUFFER_BIT)
 
 #define avdl_exit() dd_flag_exit = 1;
 

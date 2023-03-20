@@ -208,41 +208,6 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 
 }
 
-void dd_image_to_opengl(struct dd_image *img) {
-
-	glGenTextures(1, &img->tex);
-	glBindTexture(GL_TEXTURE_2D, img->tex);
-	/*
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	*/
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	#if DD_PLATFORM_NATIVE
-	glTexImage2D(GL_TEXTURE_2D, 0, img->pixelFormat, img->width, img->height, 0, img->pixelFormat, GL_FLOAT, img->pixels);
-	#elif DD_PLATFORM_ANDROID
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img->width, img->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img->pixelsb);
-	#endif
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	#if DD_PLATFORM_NATIVE
-	free(img->pixels);
-	img->pixels = 0;
-	#elif DD_PLATFORM_ANDROID
-	free(img->pixelsb);
-	img->pixelsb = 0;
-	#endif
-
-}
-
 void dd_image_clean(struct dd_image *o) {
 	if (o->pixels) {
 		free(o->pixels);
@@ -255,19 +220,19 @@ void dd_image_clean(struct dd_image *o) {
 	}
 
 	if (o->tex) {
-		glDeleteTextures(1, &o->tex);
+		avdl_graphics_DeleteTexture(o->tex);
 	}
 }
 
 void dd_image_bind(struct dd_image *o) {
 
 	if (o->pixels || o->pixelsb) {
-		dd_image_to_opengl(o);
+		avdl_graphics_ImageToGpu(o);
 	}
 
 	// texture is valid in this opengl context, bind it
-	if (o->openglContextId == avdl_opengl_getContextId()) {
-		glBindTexture(GL_TEXTURE_2D, o->tex);
+	if (o->openglContextId == avdl_graphics_getContextId()) {
+		avdl_graphics_BindTexture(o->tex);
 	}
 	// texture was in a previous opengl context, reload it
 	else
@@ -279,12 +244,12 @@ void dd_image_bind(struct dd_image *o) {
 
 void dd_image_unbind(struct dd_image *o) {
 	if (o->tex) {
-		glBindTexture(GL_TEXTURE_2D, 0);
+		avdl_graphics_BindTexture(0);
 	}
 }
 
 void dd_image_set(struct dd_image *o, const char *filename, int type) {
-	o->openglContextId = avdl_opengl_getContextId();
+	o->openglContextId = avdl_graphics_getContextId();
 	o->assetName = filename;
 	o->assetType = type;
 	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
