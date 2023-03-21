@@ -51,12 +51,17 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 	);
 	//dd_log("diff: %f - %f - %f", diff.x, diff.y, diff.z);
 
+	/*
+	dd_log("a min: %f - %f - %f", a_col->min.x, a_col->min.y, a_col->min.z);
+	dd_log("a max: %f - %f - %f", a_col->max.x, a_col->max.y, a_col->max.z);
+	*/
+
 	// find closest point on aabb
 	struct dd_vec3 closest;
 	dd_vec3_setf(&closest,
-		dd_math_clamp(a_col->min.x, a_col->max.x, diff.x),
-		dd_math_clamp(a_col->min.y, a_col->max.y, diff.y),
-		dd_math_clamp(a_col->min.z, a_col->max.z, diff.z)
+		dd_math_clamp(a->position.x -a_col->max.x, a->position.x +a_col->max.x, a->position.x +diff.x),
+		dd_math_clamp(a->position.y -a_col->max.y, a->position.y +a_col->max.y, a->position.y +diff.y),
+		dd_math_clamp(a->position.z -a_col->max.z, a->position.z +a_col->max.z, a->position.z +diff.z)
 	);
 	//dd_log("closest: %f - %f - %f", closest.x, closest.y, closest.z);
 
@@ -74,6 +79,7 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 	float r = b_col->radius;
 	//dd_log("radius: %f", b_col->radius);
 	float d = dd_vec3_magnitude(&normal);
+	//dd_log("magnit: %f", d);
 
 	if ( r < d) {
 		m->collide = 0;
@@ -185,7 +191,7 @@ void avdl_physics_update(struct avdl_physics *o) {
 				// vs aabb
 				if (o->object[j]->collider && o->object[j]->collider->type == AVDL_COLLIDER_TYPE_AABB) {
 					//avdl_physics_collision_aabbVSaabb(&m, o->object[i], o->object[j]);
-					dd_log("aabb vs aabb");
+					//dd_log("aabb vs aabb");
 				}
 				else
 				// vs sphere
