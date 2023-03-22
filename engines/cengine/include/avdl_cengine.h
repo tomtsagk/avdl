@@ -35,5 +35,6 @@
 #include "avdl_collider_sphere.h"
 #include "avdl_rigidbody.h"
 #include "avdl_graphics.h"
+#include "avdl_engine.h"
 
 int dd_main(int argc, char *argv[]);

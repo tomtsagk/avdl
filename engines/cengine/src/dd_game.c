@@ -14,9 +14,6 @@ int dd_height = 0;
 #else
 #include "avdl_graphics.h"
 
-SDL_Window* mainWindow;
-SDL_GLContext mainGLContext;
-SDL_TimerID timer;
 #endif
 
 float dd_clearcolor_r = 0;
@@ -36,15 +33,21 @@ void dd_gameInitDefault() {
 
 #if DD_PLATFORM_NATIVE
 int dd_window_width() {
+	return 100;
+	/*
 	int w, h;
 	SDL_GetWindowSize(mainWindow, &w, &h);
 	return w;
+	*/
 }
 
 int dd_window_height() {
+	return 100;
+	/*
 	int w, h;
 	SDL_GetWindowSize(mainWindow, &w, &h);
 	return h;
+	*/
 }
 #endif
 
@@ -87,9 +90,11 @@ float dd_screen_distance_geth(float height) {
 
 void dd_fullscreenToggle() {
 	#if DD_PLATFORM_NATIVE
+	/*
 	Uint32 FullscreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
 	int isFullscreen = SDL_GetWindowFlags(mainWindow) & FullscreenFlag;
 	SDL_SetWindowFullscreen(mainWindow, isFullscreen ? 0 : FullscreenFlag);
+	*/
 	#elif DD_PLATFORM_ANDROID
 	#endif
 }

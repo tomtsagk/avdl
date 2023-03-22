@@ -8,12 +8,6 @@
 #define PKG_LOCATION ""
 #endif
 
-/* defines game-specific data that are used by the engine
- * but are configured from each individual game
- */
-extern SDL_Window* mainWindow;
-extern SDL_GLContext mainGLContext;
-extern SDL_TimerID timer;
 #endif
 
 // way to change the background clear colour

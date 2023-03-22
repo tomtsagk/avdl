@@ -80,6 +80,7 @@ struct cengine_file_structure cengine_files[] = {
 	{"avdl_collider_sphere.c", 0},
 	{"avdl_rigidbody.c", 0},
 	{"avdl_graphics_opengl.c", 0},
+	{"avdl_engine.c", 0},
 	{"main.c", 0},
 	{"avdl_steam.c", "avdl_steam_cpp.cpp"},
 	{0, "main_cpp.cpp"},
@@ -128,6 +129,7 @@ char *cengine_headers[] = {
 	"avdl_collider_sphere.h",
 	"avdl_rigidbody.h",
 	"avdl_graphics.h",
+	"avdl_engine.h",
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 

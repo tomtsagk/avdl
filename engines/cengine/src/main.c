@@ -39,10 +39,6 @@ pthread_mutex_t updateDrawMutex;
 
 	#include "dd_async_call.h"
 
-	extern SDL_Window* mainWindow;
-	extern SDL_GLContext mainGLContext;
-	extern SDL_TimerID timer;
-
 #endif
 
 /*
@@ -86,12 +82,13 @@ pthread_mutex_t jniMutex;
 #endif
 
 int avdl_state_initialised = 0;
-int avdl_state_active = 0;
 
 struct avdl_achievements *achievements = 0;
 
 int avdl_verify = 0;
 int avdl_quiet = 0;
+
+struct avdl_engine engine;
 
 int dd_main(int argc, char *argv[]) {
 
@@ -189,37 +186,14 @@ int dd_main(int argc, char *argv[]) {
 	dd_gameInitDefault();
 	dd_gameInit();
 
-	#if DD_PLATFORM_NATIVE
-
 	if (!avdl_verify) {
-		// Initialise SDL window
-		//int sdlError = SDL_Init(SDL_INIT_EVERYTHING);
-		int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-		if (sdlError < 0) {
-			dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
-			return -1;
-		}
-		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-		Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
-		int width = dd_gameInitWindowWidth;
-		int height = dd_gameInitWindowHeight;
-		mainWindow = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
-			SDL_WINDOWPOS_UNDEFINED, width, height, flags);
-		if (mainWindow == NULL) {
-			dd_log("avdl: failed to create SDL2 window: %s\n", SDL_GetError());
-			return -1;
-		}
-		mainGLContext = SDL_GL_CreateContext(mainWindow);
-		if (mainGLContext == NULL) {
-			dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
-		}
+		avdl_engine_init(&engine);
+
+		#if DD_PLATFORM_NATIVE
 		handleResize(dd_window_width(), dd_window_height());
-	}
+		#endif
 
-	#endif
-
-	if (!avdl_verify) {
 		avdl_graphics_Init();
 
 		/*
@@ -283,6 +257,10 @@ int dd_main(int argc, char *argv[]) {
 	#if DD_PLATFORM_NATIVE
 
 	if (!avdl_verify) {
+
+		// keeps running until game exits
+		avdl_engine_loop(&engine);
+
 		// start the loop
 		int isRunning = 1;
 		SDL_Event event;
@@ -436,12 +414,16 @@ void clean() {
 
 	#if DD_PLATFORM_NATIVE
 	if (!avdl_verify) {
+
+		avdl_engine_clean(&engine);
+		/*
 		// destroy window
 		SDL_GL_DeleteContext(mainGLContext);
 		SDL_DestroyWindow(mainWindow);
 
 		Mix_Quit();
 		SDL_Quit();
+		*/
 	}
 
 	//curl_global_cleanup();
@@ -527,7 +509,7 @@ int dd_isAsyncCallActive = 0;
 void update() {
 
 	#if DD_PLATFORM_NATIVE
-	if (!avdl_state_active) {
+	if (avdl_engine_isPaused(&engine)) {
 		return;
 	}
 	#endif
@@ -696,10 +678,13 @@ void draw() {
 		cworld->draw(cworld);
 	}
 
+	avdl_engine_draw(&engine);
+	/*
 	#if DD_PLATFORM_NATIVE
 	// show result
 	SDL_GL_SwapWindow(mainWindow);
 	#endif
+	*/
 }
 
 void handleKeyboardPress(unsigned char key, int x, int y) {
@@ -777,8 +762,8 @@ void onResume() {
 	pthread_mutex_unlock(&updateDrawMutex);
 	#endif
 
-	if (!avdl_state_active) {
-		avdl_state_active = 1;
+	if (avdl_engine_isPaused(&engine)) {
+		avdl_engine_setPaused(&engine, 0);
 		#if DD_PLATFORM_ANDROID
 		pthread_create(&updatePthread, NULL, &updateThread, NULL);
 		#elif DD_PLATFORM_NATIVE
@@ -800,8 +785,8 @@ void onPause() {
 
 	if (!avdl_state_initialised) return;
 
-	if (avdl_state_active) {
-		avdl_state_active = 0;
+	if (!avdl_engine_isPaused(&engine)) {
+		avdl_engine_setPaused(&engine, 1);
 		#if DD_PLATFORM_ANDROID
 		pthread_join(updatePthread, NULL);
 		#endif
@@ -824,7 +809,7 @@ void onPause() {
 #if DD_PLATFORM_ANDROID
 
 void updateThread() {
-	while (!dd_flag_exit && avdl_state_active) {
+	while (!dd_flag_exit && !avdl_engine_isPaused(&engine)) {
 		pthread_mutex_lock(&updateDrawMutex);
 		update();
 		pthread_mutex_unlock(&updateDrawMutex);
