@@ -4,8 +4,10 @@
 #include "avdl_graphics.h"
 
 struct avdl_engine {
+	#if DD_PLATFORM_NATIVE
 	SDL_Window *window;
 	SDL_GLContext glContext;
+	#endif
 
 	int isRunning;
 	int isPaused;
