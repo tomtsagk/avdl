@@ -34,12 +34,14 @@ int avdl_engine_init(struct avdl_engine *o) {
 }
 
 int avdl_engine_clean(struct avdl_engine *o) {
+	#if DD_PLATFORM_NATIVE
 	// destroy window
 	SDL_GL_DeleteContext(o->glContext);
 	SDL_DestroyWindow(o->window);
 
 	Mix_Quit();
 	SDL_Quit();
+	#endif
 }
 
 int avdl_engine_draw(struct avdl_engine *o) {
