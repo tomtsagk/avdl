@@ -215,13 +215,6 @@ int dd_main(int argc, char *argv[]) {
 			dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
 		}
 		handleResize(dd_window_width(), dd_window_height());
-
-		// init opengl
-		GLenum glewError = glewInit();
-		if (glewError != GLEW_OK) {
-			dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
-			return -1;
-		}
 	}
 
 	#endif
@@ -293,7 +286,6 @@ int dd_main(int argc, char *argv[]) {
 		// start the loop
 		int isRunning = 1;
 		SDL_Event event;
-		//while (isRunning && SDL_WaitEvent(&event) && !dd_flag_exit) {
 		while (isRunning && !dd_flag_exit) {
 			while (SDL_PollEvent(&event)) {
 				switch (event.type) {

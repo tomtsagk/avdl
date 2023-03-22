@@ -33,6 +33,13 @@ GLuint currentProgram;
 
 int avdl_graphics_Init() {
 
+	// init glew
+	GLenum glewError = glewInit();
+	if (glewError != GLEW_OK) {
+		dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
+		return -1;
+	}
+
 	avdl_graphics_generateContextId();
 
 	glEnable(GL_DEPTH_TEST);
