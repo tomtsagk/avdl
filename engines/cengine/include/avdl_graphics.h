@@ -29,6 +29,8 @@ void avdl_graphics_ClearColourAndDepth();
 void avdl_graphics_generateContextId();
 int  avdl_graphics_getContextId();
 
+int avdl_graphics_generateContext();
+
 #define avdl_graphics_SetUniformMatrix4f(uniform, matrix) glUniformMatrix4fv(uniform, 1, GL_FALSE, matrix)
 
 #define avdl_graphics_SetUniform1f(uniform, f1)             glUniform1f(uniform, f1)

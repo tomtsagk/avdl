@@ -9,8 +9,8 @@ int nworld_ready = 0;
 int nworld_loading = 0;
 int dd_default_world_size = 0;
 void (*dd_default_world_constructor)(struct dd_world *) = 0;
-struct dd_world *cworld = 0;
-struct dd_world *nworld = 0;
+//struct dd_world *cworld = 0;
+//struct dd_world *nworld = 0;
 
 /* constructor creates an empty world
  */
@@ -29,6 +29,7 @@ void dd_world_clean(struct dd_world *w) {
 // change to a new world, given size to allocate and constructor
 void dd_world_change(int size, void (*constructor)(struct dd_world *)) {
 
+	/*
 	// free any previous world
 	if (cworld) {
 		cworld->clean(cworld);
@@ -51,6 +52,7 @@ void dd_world_change(int size, void (*constructor)(struct dd_world *)) {
 	if (cworld->resize) {
 		cworld->resize(cworld);
 	}
+	*/
 }
 
 void dd_world_create(struct dd_world *this) {

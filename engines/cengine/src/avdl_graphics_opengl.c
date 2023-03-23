@@ -2,6 +2,8 @@
 
 #include "avdl_shaders.h"
 #include "dd_game.h"
+#include "dd_log.h"
+#include <stdlib.h>
 
 void avdl_graphics_ClearDepth() {
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -42,28 +44,7 @@ int avdl_graphics_Init() {
 	}
 	#endif
 
-	avdl_graphics_generateContextId();
-
-	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.8, 0.6, 1.0, 1);
-
-	/*
-	 * load shaders
-	 */
-	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
-	if (!defaultProgram) {
-		dd_log("avdl: error loading shaders");
-		return -1;
-	}
-
-	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex, avdl_shaderFont_fragment);
-	if (!fontProgram) {
-		dd_log("avdl: error loading font shaders");
-		return -1;
-	}
-
-	glUseProgram(defaultProgram);
-	currentProgram = defaultProgram;
+	avdl_graphics_generateContext();
 
 	return 0;
 
@@ -167,4 +148,30 @@ void avdl_graphics_VertexAttribPointer(int p, int size, int format, int normalis
 
 void avdl_graphics_DrawArrays(int vcount) {
 	glDrawArrays(GL_TRIANGLES, 0, vcount);
+}
+
+int avdl_graphics_generateContext() {
+
+	avdl_graphics_generateContextId();
+
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.8, 0.6, 1.0, 1);
+
+	/*
+	 * load shaders
+	 */
+	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
+	if (!defaultProgram) {
+		dd_log("avdl: error loading shaders");
+		return -1;
+	}
+
+	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex, avdl_shaderFont_fragment);
+	if (!fontProgram) {
+		dd_log("avdl: error loading font shaders");
+		return -1;
+	}
+
+	glUseProgram(defaultProgram);
+	currentProgram = defaultProgram;
 }

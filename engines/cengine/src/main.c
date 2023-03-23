@@ -41,6 +41,9 @@ pthread_mutex_t updateDrawMutex;
 
 #endif
 
+extern GLuint defaultProgram;
+extern GLuint currentProgram;
+
 /*
  * general event functions
  */
@@ -244,10 +247,7 @@ int dd_main(int argc, char *argv[]) {
 	#endif
 
 	// initialise world
-	cworld = 0;
-	nworld_size = dd_default_world_size;
-	nworld_constructor = dd_default_world_constructor;
-	nworld_ready = 1;
+	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
 
 	avdl_state_initialised = 1;
 	onResume();
@@ -256,7 +256,7 @@ int dd_main(int argc, char *argv[]) {
 	if (!avdl_verify) {
 
 		// keeps running until game exits
-		avdl_engine_loop(&engine);
+		//avdl_engine_loop(&engine);
 
 		// start the loop
 		int isRunning = 1;
@@ -336,6 +336,7 @@ int dd_main(int argc, char *argv[]) {
 
 	if (avdl_verify) {
 
+		/*
 		//avdl_assetManager_lockLoading();
 
 		// allocate new world and construct it
@@ -358,6 +359,7 @@ int dd_main(int argc, char *argv[]) {
 		}
 
 		cworld->update(cworld);
+		*/
 
 	}
 
@@ -395,10 +397,7 @@ void clean() {
 	avdl_achievements_clean(achievements);
 	avdl_cleanProjectLocation();
 
-	if (cworld) {
-		cworld->clean(cworld);
-		cworld = 0;
-	}
+	avdl_engine_clean(&engine);
 
 	#if DD_PLATFORM_ANDROID
 	pthread_mutex_destroy(&jniMutex);
@@ -410,19 +409,6 @@ void clean() {
 	#endif
 
 	#if DD_PLATFORM_NATIVE
-	if (!avdl_verify) {
-
-		avdl_engine_clean(&engine);
-		/*
-		// destroy window
-		SDL_GL_DeleteContext(mainGLContext);
-		SDL_DestroyWindow(mainWindow);
-
-		Mix_Quit();
-		SDL_Quit();
-		*/
-	}
-
 	//curl_global_cleanup();
 	#endif
 	/*
@@ -492,9 +478,7 @@ void handleResize(int w, int h) {
 	// perspective projection matrix
 	dd_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0, ypriority);
 
-	if (cworld && cworld->resize) {
-		cworld->resize(cworld);
-	}
+	avdl_engine_resize(&engine);
 }
 
 #if DD_PLATFORM_NATIVE
@@ -510,70 +494,6 @@ void update() {
 		return;
 	}
 	#endif
-
-	#ifdef AVDL_STEAM
-	avdl_steam_update();
-	#endif
-
-	// a new world is signaled to be loaded
-	if (nworld_constructor) {
-
-		// the new world has not started loading, so start loading it
-		if (!nworld_loading) {
-
-			// set flag that world is loading
-			nworld_loading = 1;
-
-			// clear everything loading on asset manager
-			avdl_assetManager_clear();
-
-			// allocate new world and construct it
-			nworld = malloc(nworld_size);
-			nworld_constructor(nworld);
-
-			// from now on, loading new assets is not allowed
-			avdl_assetManager_lockLoading();
-
-		}
-		else
-		// The world has finished loading
-		if (nworld && nworld_ready && avdl_assetManager_getLoadedProportion() >= 1.0) {
-
-			/*
-			// Cancel async calls
-			dd_isAsyncCallActive = 0;
-			*/
-
-			// free any previous world
-			if (cworld) {
-				cworld->clean(cworld);
-				cworld = 0;
-			}
-
-			// from now on, new assets can be loaded again
-			avdl_assetManager_unlockLoading();
-
-			// Apply the new world
-			cworld = nworld;
-			nworld = 0;
-
-			// from this point on, new world can be set
-			nworld_constructor = 0;
-			nworld_size = 0;
-			nworld_ready = 0;
-			nworld_loading = 0;
-
-			// notify the world that it has loaded assets
-			cworld->onload(cworld);
-
-			// resize the new world
-			if (cworld->resize) {
-				cworld->resize(cworld);
-			}
-
-		}
-
-	}
 
 	/*
 	#if DD_PLATFORM_NATIVE
@@ -591,30 +511,7 @@ void update() {
 	#endif
 	*/
 
-	// handle key input
-	if (cworld && cworld->key_input && input_key) {
-		cworld->key_input(cworld, input_key);
-		input_key = 0;
-	}
-
-	// handle mouse input
-	if (cworld && cworld->mouse_input && avdl_input_GetInputTotal(&avdl_input) > 0) {
-		int totalInput = avdl_input_GetInputTotal(&avdl_input);
-		for (int i = 0; i < totalInput; i++) {
-			cworld->mouse_input(cworld, avdl_input_GetButton(&avdl_input, i), avdl_input_GetState(&avdl_input, i));
-		}
-		avdl_input_ClearInput(&avdl_input);
-	}
-
-	// update world
-	if (cworld && cworld->update) {
-		cworld->update(cworld);
-	}
-
-	// asset loader will load any new assets
-	if (avdl_assetManager_hasAssetsToLoad() && !avdl_assetManager_isLoading()) {
-		avdl_assetManager_loadAll();
-	}
+	avdl_engine_update(&engine);
 
 	// prepare next frame
 	#if DD_PLATFORM_NATIVE
@@ -670,18 +567,7 @@ void draw() {
 	// reset view
 	dd_matrix_globalInit();
 
-	// draw world
-	if (cworld && cworld->draw) {
-		cworld->draw(cworld);
-	}
-
 	avdl_engine_draw(&engine);
-	/*
-	#if DD_PLATFORM_NATIVE
-	// show result
-	SDL_GL_SwapWindow(mainWindow);
-	#endif
-	*/
 }
 
 void handleKeyboardPress(unsigned char key, int x, int y) {
@@ -845,8 +731,7 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 		dd_main(0, 0);
 	}
 	else {
-		//avdl_graphics_Init();
-		avdl_graphics_generateContextId();
+		avdl_graphics_generateContext();
 	}
 
 }
@@ -861,10 +746,6 @@ void Java_org_darkdimension_avdl_AvdlActivity_nativeDone(JNIEnv*  env) {
 		jvm = 0;
 		pthread_mutex_unlock(&jniMutex);
 	}
-	/*
-	dd_flag_exit = 1;
-	clean();
-	*/
 }
 
 /*

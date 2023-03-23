@@ -28,8 +28,8 @@ struct dd_dynamic_array meshesLoading;
 int assetManagerLoading;
 
 static float desiredLoadedPercentage;
-static int totalAssets;
-static int totalAssetsLoaded;
+int totalAssets;
+int totalAssetsLoaded;
 static int lockLoading;
 
 static int interruptLoading;

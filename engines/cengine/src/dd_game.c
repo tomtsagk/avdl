@@ -2,6 +2,7 @@
 #include "dd_math.h"
 #include "dd_fov.h"
 #include <stdio.h>
+#include "dd_log.h"
 
 int dd_flag_initialised = 0;
 int dd_flag_focused = 0;

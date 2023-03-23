@@ -12,6 +12,7 @@ static unsigned int pseudo_seed = 100;
 
 int dd_math_randPseudoSetSeed(int seed) {
 	pseudo_seed = seed;
+	return 0;
 }
 
 int dd_math_randPseudo(int to) {
