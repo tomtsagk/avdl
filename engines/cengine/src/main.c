@@ -145,9 +145,6 @@ int dd_main(int argc, char *argv[]) {
 	}
 	#endif
 
-	#if DD_PLATFORM_NATIVE
-	srand(time(NULL));
-	#endif
 	input_key = 0;
 	avdl_input_Init(&avdl_input);
 
@@ -848,7 +845,8 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 		dd_main(0, 0);
 	}
 	else {
-		avdl_graphics_Init();
+		//avdl_graphics_Init();
+		avdl_graphics_generateContextId();
 	}
 
 }

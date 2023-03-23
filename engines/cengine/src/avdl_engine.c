@@ -6,6 +6,9 @@ int avdl_engine_init(struct avdl_engine *o) {
 	o->isPaused = 1;
 
 	#if DD_PLATFORM_NATIVE
+
+	srand(time(NULL));
+
 	// Initialise SDL window
 	int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	if (sdlError < 0) {
