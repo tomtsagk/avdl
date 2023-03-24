@@ -1,11 +1,21 @@
 #include "avdl_engine.h"
 #include "dd_game.h"
 
+#include "dd_matrix.h"
+#include "dd_fov.h"
+#include "avdl_graphics.h"
+#include "avdl_cengine.h"
+
+#include <math.h>
+
 extern unsigned char input_key;
 extern struct AvdlInput avdl_input;
 
 extern int totalAssets;
 extern int totalAssetsLoaded;
+
+static void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio,
+	float znear, float zfar, int ypriority);
 
 int avdl_engine_init(struct avdl_engine *o) {
 
@@ -18,6 +28,54 @@ int avdl_engine_init(struct avdl_engine *o) {
 	o->nworld_size = 0;
 	o->nworld_constructor = 0;
 
+	// initialise pre-game data to defaults then to game-specifics
+	dd_gameInitDefault();
+	dd_gameInit();
+
+	// audio
+	#if DD_PLATFORM_NATIVE
+
+	if (o->verify) {
+		dd_hasAudio = 0;
+	}
+
+	// audio is meant to be active
+	if (dd_hasAudio) {
+
+		/*
+		 * initialise audio, if it fails, don't play audio at all
+		 * during the game
+		 */
+		if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
+			dd_log("avdl: error initialising audio mixer");
+			dd_hasAudio = 0;
+		}
+		// audio initialisation succeeded
+		else {
+			Mix_Init(MIX_INIT_OPUS | MIX_INIT_OGG);
+
+			// make sure there's at least 8 channels
+			dd_numberOfAudioChannels = Mix_AllocateChannels(-1);
+			if (dd_numberOfAudioChannels < 8) {
+				dd_numberOfAudioChannels = Mix_AllocateChannels(8);
+			}
+
+			// start at full volume
+			avdl_music_setVolume(100);
+			avdl_sound_setVolume(100);
+
+		}
+
+	} // init audio
+
+	// audio is off - display message about it
+	if (!dd_hasAudio && !o->verify) {
+		dd_log("avdl error: Game will play without audio");
+	}
+
+	#endif
+
+	// window
 	#if DD_PLATFORM_NATIVE
 
 	srand(time(NULL));
@@ -46,6 +104,19 @@ int avdl_engine_init(struct avdl_engine *o) {
 	//handleResize(dd_window_width(), dd_window_height());
 	#endif
 
+	#if DD_PLATFORM_NATIVE
+	avdl_engine_resize(o, dd_window_width(), dd_window_height());
+	#endif
+
+	avdl_graphics_Init();
+
+	/*
+	 * string3d initialisation for displaying text
+	 */
+	if (dd_string3d_isActive()) {
+		dd_string3d_init();
+	}
+
 	return 0;
 }
 
@@ -68,6 +139,13 @@ int avdl_engine_clean(struct avdl_engine *o) {
 }
 
 int avdl_engine_draw(struct avdl_engine *o) {
+
+	// clear everything
+	avdl_graphics_ClearToColour();
+	avdl_graphics_ClearColourAndDepth();
+
+	// reset view
+	dd_matrix_globalInit();
 
 	// draw world
 	if (o->cworld && o->cworld->draw) {
@@ -100,7 +178,25 @@ int avdl_engine_initWorld(struct avdl_engine *o, void (*constructor)(struct dd_w
 	return 0;
 }
 
-int avdl_engine_resize(struct avdl_engine *o) {
+struct dd_matrix matPerspective;
+
+int avdl_engine_resize(struct avdl_engine *o, int w, int h) {
+
+	avdl_graphics_Viewport(0, 0, w, h);
+
+	int ypriority;
+	if (w > h) {
+		dd_fovaspect_set((double) w /(double) h);
+		ypriority = 1;
+	}
+	else {
+		dd_fovaspect_set((double) h /(double) w);
+		ypriority = 0;
+	}
+
+	// perspective projection matrix
+	avdl_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0, ypriority);
+
 	if (o->cworld && o->cworld->resize) {
 		o->cworld->resize(o->cworld);
 	}
@@ -217,4 +313,45 @@ int avdl_engine_update(struct avdl_engine *o) {
 	}
 
 	return 0;
+}
+
+void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio,
+	float znear, float zfar, int ypriority) {
+
+	float ymax, xmax;
+	if (ypriority) {
+		ymax = znear * tanf(fovyDegrees * M_PI / 360.0);
+		xmax = ymax * aspectRatio;
+	}
+	else {
+		xmax = znear * tanf(fovyDegrees * M_PI / 360.0);
+		ymax = xmax * aspectRatio;
+	}
+
+	float left = -xmax;
+	float right = xmax;
+	float bottom = -ymax;
+	float top = ymax;
+
+	float temp, temp2, temp3, temp4;
+	temp = 2.0 * znear;
+	temp2 = right - left;
+	temp3 = top - bottom;
+	temp4 = zfar - znear;
+	matrix[0] = temp / temp2;
+	matrix[1] = 0.0;
+	matrix[2] = 0.0;
+	matrix[3] = 0.0;
+	matrix[4] = 0.0;
+	matrix[5] = temp / temp3;
+	matrix[6] = 0.0;
+	matrix[7] = 0.0;
+	matrix[8] = (right + left) / temp2;
+	matrix[9] = (top + bottom) / temp3;
+	matrix[10] = (-zfar - znear) / temp4;
+	matrix[11] = -1.0;
+	matrix[12] = 0.0;
+	matrix[13] = 0.0;
+	matrix[14] = (-temp * zfar) / temp4;
+	matrix[15] = 0.0;
 }

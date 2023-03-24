@@ -1,4 +1,5 @@
 #include "dd_fov.h"
+#include <math.h>
 
 float fovy = 45.0;
 float fov_aspect = 0;

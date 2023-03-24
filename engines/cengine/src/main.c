@@ -88,9 +88,6 @@ int avdl_state_initialised = 0;
 
 struct avdl_achievements *achievements = 0;
 
-int avdl_verify = 0;
-int avdl_quiet = 0;
-
 struct avdl_engine engine;
 
 int dd_main(int argc, char *argv[]) {
@@ -112,18 +109,18 @@ int dd_main(int argc, char *argv[]) {
 		else
 		// verify game, for testing reasons
 		if (strcmp(argv[i], "--verify") == 0) {
-			avdl_verify = 1;
+			engine.verify = 1;
 		}
 		else
 		// quiet mode
 		if (strcmp(argv[i], "-q") == 0) {
-			avdl_quiet = 1;
+			engine.quiet = 1;
 		}
 
 	}
 
 	#ifdef AVDL_STEAM
-	if (!avdl_verify) {
+	if (!engine.verify) {
 		if (!avdl_steam_init()) {
 			dd_log("avdl: error initialising steam");
 			return -1;
@@ -182,69 +179,7 @@ int dd_main(int argc, char *argv[]) {
 	*/
 	#endif
 
-	// initialise pre-game data to defaults then to game-specifics
-	dd_gameInitDefault();
-	dd_gameInit();
-
-	if (!avdl_verify) {
-
-		avdl_engine_init(&engine);
-
-		#if DD_PLATFORM_NATIVE
-		handleResize(dd_window_width(), dd_window_height());
-		#endif
-
-		avdl_graphics_Init();
-
-		/*
-		 * string3d initialisation for displaying text
-		 */
-		if (dd_string3d_isActive()) {
-			dd_string3d_init();
-		}
-	}
-
-	#if DD_PLATFORM_NATIVE
-
-	if (avdl_verify) {
-		dd_hasAudio = 0;
-	}
-
-	// audio is meant to be active
-	if (dd_hasAudio) {
-
-		/*
-		 * initialise audio, if it fails, don't play audio at all
-		 * during the game
-		 */
-		if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
-			dd_log("avdl: error initialising audio mixer");
-			dd_hasAudio = 0;
-		}
-		// audio initialisation succeeded
-		else {
-			Mix_Init(MIX_INIT_OPUS | MIX_INIT_OGG);
-
-			// make sure there's at least 8 channels
-			dd_numberOfAudioChannels = Mix_AllocateChannels(-1);
-			if (dd_numberOfAudioChannels < 8) {
-				dd_numberOfAudioChannels = Mix_AllocateChannels(8);
-			}
-
-			// start at full volume
-			avdl_music_setVolume(100);
-			avdl_sound_setVolume(100);
-
-		}
-
-	} // init audio
-
-	// audio is off - display message about it
-	if (!dd_hasAudio && !avdl_verify) {
-		dd_log("avdl error: Game will play without audio");
-	}
-
-	#endif
+	avdl_engine_init(&engine);
 
 	// initialise world
 	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
@@ -253,7 +188,7 @@ int dd_main(int argc, char *argv[]) {
 	onResume();
 	#if DD_PLATFORM_NATIVE
 
-	if (!avdl_verify) {
+	if (!engine.verify) {
 
 		// keeps running until game exits
 		//avdl_engine_loop(&engine);
@@ -334,7 +269,7 @@ int dd_main(int argc, char *argv[]) {
 		}
 	}
 
-	if (avdl_verify) {
+	if (engine.verify) {
 
 		/*
 		//avdl_assetManager_lockLoading();
@@ -382,7 +317,7 @@ int main(int argc, char *argv[]) {
 // clean leftovers
 void clean() {
 	/*
-	if (!avdl_quiet) {
+	if (!engine.quiet) {
 		dd_log("avdl: cleaning data");
 	}
 	*/
@@ -390,7 +325,7 @@ void clean() {
 	avdl_state_initialised = 0;
 
 	#ifdef AVDL_STEAM
-	if (!avdl_verify) {
+	if (!engine.verify) {
 		avdl_steam_shutdown();
 	}
 	#endif
@@ -412,73 +347,15 @@ void clean() {
 	//curl_global_cleanup();
 	#endif
 	/*
-	if (!avdl_quiet) {
+	if (!engine.quiet) {
 		dd_log("avdl: done cleaning data");
 	}
 	*/
 }
 
-void dd_perspective(float *matrix, float fovyDegrees, float aspectRatio,
-	float znear, float zfar, int ypriority) {
-
-	float ymax, xmax;
-	if (ypriority) {
-		ymax = znear * tanf(fovyDegrees * M_PI / 360.0);
-		xmax = ymax * aspectRatio;
-	}
-	else {
-		xmax = znear * tanf(fovyDegrees * M_PI / 360.0);
-		ymax = xmax * aspectRatio;
-	}
-
-	float left = -xmax;
-	float right = xmax;
-	float bottom = -ymax;
-	float top = ymax;
-
-	float temp, temp2, temp3, temp4;
-	temp = 2.0 * znear;
-	temp2 = right - left;
-	temp3 = top - bottom;
-	temp4 = zfar - znear;
-	matrix[0] = temp / temp2;
-	matrix[1] = 0.0;
-	matrix[2] = 0.0;
-	matrix[3] = 0.0;
-	matrix[4] = 0.0;
-	matrix[5] = temp / temp3;
-	matrix[6] = 0.0;
-	matrix[7] = 0.0;
-	matrix[8] = (right + left) / temp2;
-	matrix[9] = (top + bottom) / temp3;
-	matrix[10] = (-zfar - znear) / temp4;
-	matrix[11] = -1.0;
-	matrix[12] = 0.0;
-	matrix[13] = 0.0;
-	matrix[14] = (-temp * zfar) / temp4;
-	matrix[15] = 0.0;
-}
-
-struct dd_matrix matPerspective;
-
 // handle resize with perspective projection
 void handleResize(int w, int h) {
-	avdl_graphics_Viewport(0, 0, w, h);
-
-	int ypriority;
-	if (w > h) {
-		dd_fovaspect_set((double) w /(double) h);
-		ypriority = 1;
-	}
-	else {
-		dd_fovaspect_set((double) h /(double) w);
-		ypriority = 0;
-	}
-
-	// perspective projection matrix
-	dd_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0, ypriority);
-
-	avdl_engine_resize(&engine);
+	avdl_engine_resize(&engine, w, h);
 }
 
 #if DD_PLATFORM_NATIVE
@@ -559,13 +436,6 @@ void draw() {
 		return;
 	}
 	#endif
-
-	// clear everything
-	avdl_graphics_ClearToColour();
-	avdl_graphics_ClearColourAndDepth();
-
-	// reset view
-	dd_matrix_globalInit();
 
 	avdl_engine_draw(&engine);
 }
@@ -696,8 +566,7 @@ void updateThread() {
 		pthread_mutex_lock(&updateDrawMutex);
 		update();
 		pthread_mutex_unlock(&updateDrawMutex);
-		//usleep(33333);
-		usleep(25000);
+		usleep(33333);
 	}
 }
 
@@ -725,11 +594,12 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 	(*(*jniEnv)->ReleaseStringUTFChars)(jniEnv, path, pathstr);
 	pthread_mutex_unlock(&jniMutex);
 
-
+	// engine is not initialised - start everything from scratch
 	if (!avdl_state_initialised) {
 		// Initialises the engine and the first world
 		dd_main(0, 0);
 	}
+	// engine is initialised - refresh graphics context
 	else {
 		avdl_graphics_generateContext();
 	}
