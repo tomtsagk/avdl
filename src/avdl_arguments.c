@@ -82,6 +82,7 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 				else
 				if (strcmp(argv[i], "--steam") == 0) {
 					avdl_settings->steam_mode = 1;
+					avdl_settings->cpp_mode = 1;
 				}
 				else
 				if (strcmp(argv[i], "--standalone") == 0) {

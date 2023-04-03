@@ -8,15 +8,15 @@
 
 #include <math.h>
 
-extern unsigned char input_key;
-extern struct AvdlInput avdl_input;
-
 extern int totalAssets;
 extern int totalAssetsLoaded;
 
 static void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio,
 	float znear, float zfar, int ypriority);
 
+extern int dd_flag_exit;
+
+#ifndef AVDL_DIRECT3D11
 int avdl_engine_init(struct avdl_engine *o) {
 
 	o->isPaused = 1;
@@ -27,6 +27,48 @@ int avdl_engine_init(struct avdl_engine *o) {
 	o->nworld_loading = 0;
 	o->nworld_size = 0;
 	o->nworld_constructor = 0;
+
+	o->input_key = 0;
+
+	#ifdef AVDL_STEAM
+	if (!o->verify) {
+		if (!avdl_steam_init()) {
+			dd_log("avdl: error initialising steam");
+			return -1;
+		}
+	}
+	#endif
+
+	avdl_input_Init(&o->input);
+
+	#if defined(_WIN32) || defined(WIN32)
+	const PROJ_LOC_TYPE *proj_loc = avdl_getProjectLocation();
+	if (proj_loc) {
+		if (_wchdir(proj_loc) != 0) {
+			dd_log("avdl: failed to change directory: %lS", _wcserror(errno));
+			return -1;
+		}
+	}
+	else {
+		dd_log("avdl error: unable to get project location");
+	}
+	#endif
+
+	o->achievements = avdl_achievements_create();
+	avdl_assetManager_init();
+
+	#if DD_PLATFORM_NATIVE
+	/*
+	// initialise curl
+	curl_global_init(CURL_GLOBAL_ALL);
+
+	if (pthread_mutex_init(&asyncCallMutex, NULL) != 0)
+	{
+		dd_log("avdl: mutex for async calls init failed");
+		return -1;
+	}
+	*/
+	#endif
 
 	// initialise pre-game data to defaults then to game-specifics
 	dd_gameInitDefault();
@@ -119,8 +161,13 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	return 0;
 }
+#endif
 
 int avdl_engine_clean(struct avdl_engine *o) {
+
+	#ifdef AVDL_DIRECT3D11
+	#else
+	avdl_achievements_clean(o->achievements);
 
 	if (o->cworld) {
 		o->cworld->clean(o->cworld);
@@ -135,10 +182,25 @@ int avdl_engine_clean(struct avdl_engine *o) {
 	Mix_Quit();
 	SDL_Quit();
 	#endif
+
+	#endif
+
+	#ifdef AVDL_STEAM
+	if (!o->verify) {
+		avdl_steam_shutdown();
+	}
+	#endif
 	return 0;
 }
 
+#ifndef AVDL_DIRECT3D11
 int avdl_engine_draw(struct avdl_engine *o) {
+
+	#if DD_PLATFORM_ANDROID
+	if (dd_flag_exit) {
+		return 0;
+	}
+	#endif
 
 	// clear everything
 	avdl_graphics_ClearToColour();
@@ -159,6 +221,7 @@ int avdl_engine_draw(struct avdl_engine *o) {
 
 	return 0;
 }
+#endif
 
 int avdl_engine_isPaused(struct avdl_engine *o) {
 	return o->isPaused;
@@ -182,6 +245,8 @@ struct dd_matrix matPerspective;
 
 int avdl_engine_resize(struct avdl_engine *o, int w, int h) {
 
+	#ifdef AVDL_DIRECT3D11
+	#else
 	avdl_graphics_Viewport(0, 0, w, h);
 
 	int ypriority;
@@ -200,10 +265,34 @@ int avdl_engine_resize(struct avdl_engine *o, int w, int h) {
 	if (o->cworld && o->cworld->resize) {
 		o->cworld->resize(o->cworld);
 	}
+	#endif
 	return 0;
 }
 
 int avdl_engine_update(struct avdl_engine *o) {
+
+	#if DD_PLATFORM_NATIVE
+	if (avdl_engine_isPaused(o)) {
+		return;
+	}
+	#endif
+
+	/*
+	#if DD_PLATFORM_NATIVE
+	// handle asynchronous calls
+	if (dd_isAsyncCallActive) {
+		pthread_mutex_lock(&asyncCallMutex);
+		if (dd_asyncCall.isComplete) {
+			dd_isAsyncCallActive = 0;
+			if (dd_asyncCall.callback) {
+				dd_asyncCall.callback(dd_asyncCall.context);
+			}
+		}
+		pthread_mutex_unlock(&asyncCallMutex);
+	}
+	#endif
+	*/
+
 
 	#ifdef AVDL_STEAM
 	avdl_steam_update();
@@ -288,18 +377,18 @@ int avdl_engine_update(struct avdl_engine *o) {
 	}
 
 	// handle key input
-	if (o->cworld && o->cworld->key_input && input_key) {
-		o->cworld->key_input(o->cworld, input_key);
-		input_key = 0;
+	if (o->cworld && o->cworld->key_input && o->input_key) {
+		o->cworld->key_input(o->cworld, o->input_key);
+		o->input_key = 0;
 	}
 
 	// handle mouse input
-	if (o->cworld && o->cworld->mouse_input && avdl_input_GetInputTotal(&avdl_input) > 0) {
-		int totalInput = avdl_input_GetInputTotal(&avdl_input);
+	if (o->cworld && o->cworld->mouse_input && avdl_input_GetInputTotal(&o->input) > 0) {
+		int totalInput = avdl_input_GetInputTotal(&o->input);
 		for (int i = 0; i < totalInput; i++) {
-			o->cworld->mouse_input(o->cworld, avdl_input_GetButton(&avdl_input, i), avdl_input_GetState(&avdl_input, i));
+			o->cworld->mouse_input(o->cworld, avdl_input_GetButton(&o->input, i), avdl_input_GetState(&o->input, i));
 		}
-		avdl_input_ClearInput(&avdl_input);
+		avdl_input_ClearInput(&o->input);
 	}
 
 	// update world
@@ -317,6 +406,7 @@ int avdl_engine_update(struct avdl_engine *o) {
 
 void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio,
 	float znear, float zfar, int ypriority) {
+	#ifndef AVDL_DIRECT3D11
 
 	float ymax, xmax;
 	if (ypriority) {
@@ -354,4 +444,163 @@ void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio,
 	matrix[13] = 0.0;
 	matrix[14] = (-temp * zfar) / temp4;
 	matrix[15] = 0.0;
+
+	#endif
+}
+
+#ifndef AVDL_DIRECT3D11
+static void handleMousePress(struct avdl_engine *o, int button, int state, int x, int y) {
+
+	// SDL to AVDL conversion
+	int state_temp = 0;
+	switch (state) {
+		//case GLUT_DOWN:
+		case 0:
+			state_temp = DD_INPUT_MOUSE_TYPE_PRESSED;
+			break;
+		//case GLUT_UP:
+		case 1:
+			state_temp = DD_INPUT_MOUSE_TYPE_RELEASED;
+			break;
+	}
+
+	int button_temp = 0;
+	switch (button) {
+		//case GLUT_LEFT_BUTTON:
+		case 0:
+			button_temp = DD_INPUT_MOUSE_BUTTON_LEFT;
+			break;
+		//case GLUT_MIDDLE_BUTTON:
+		case 1:
+			button_temp = DD_INPUT_MOUSE_BUTTON_MIDDLE;
+			break;
+		//case GLUT_RIGHT_BUTTON:
+		case 2:
+			button_temp = DD_INPUT_MOUSE_BUTTON_RIGHT;
+			break;
+	}
+	avdl_input_AddInput(&o->input, button_temp, state_temp, x, y);
+
+}
+
+int avdl_engine_loop(struct avdl_engine *o) {
+	#if DD_PLATFORM_NATIVE
+
+	if (o->verify) {
+		avdl_engine_verify(o);
+		return 0;
+	}
+
+	int isRunning = 1;
+	SDL_Event event;
+	while (isRunning && !dd_flag_exit) {
+		while (SDL_PollEvent(&event)) {
+			switch (event.type) {
+			case SDL_QUIT:
+				isRunning = 0;
+				break;
+			case SDL_WINDOWEVENT:
+				if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+					avdl_engine_resize(o, event.window.data1, event.window.data2);
+				}
+				break;
+			case SDL_MOUSEMOTION:
+				avdl_input_AddPassiveMotion(&o->input, event.motion.x, event.motion.y);
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				handleMousePress(o, 0, 0, event.motion.x, event.motion.y);
+				break;
+			case SDL_MOUSEBUTTONUP:
+				handleMousePress(o, 0, 1, event.motion.x, event.motion.y);
+				break;
+			case SDL_KEYDOWN:
+				// temporary keyboard controls
+				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
+					o->input_key = 27;
+				}
+				else
+				if (event.key.keysym.scancode == SDL_SCANCODE_A) {
+					o->input_key = 97;
+				}
+				else
+				if (event.key.keysym.scancode == SDL_SCANCODE_D) {
+					o->input_key = 100;
+				}
+				else
+				if (event.key.keysym.scancode == SDL_SCANCODE_W) {
+					o->input_key = 119;
+				}
+				else
+				if (event.key.keysym.scancode == SDL_SCANCODE_S) {
+					o->input_key = 115;
+				}
+				else
+				if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+					o->input_key = 32;
+				}
+				else
+				if (event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
+					o->input_key = 13;
+				}
+				else
+				if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
+					o->input_key = 1;
+				}
+				else
+				if (event.key.keysym.scancode == SDL_SCANCODE_UP) {
+					o->input_key = 2;
+				}
+				else
+				if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
+					o->input_key = 3;
+				}
+				else
+				if (event.key.keysym.scancode == SDL_SCANCODE_DOWN) {
+					o->input_key = 4;
+				}
+				break;
+			}
+		}
+
+		//update();
+		avdl_engine_update(o);
+
+		// prepare next frame
+		#if DD_PLATFORM_NATIVE
+		avdl_engine_draw(o);
+		//draw();
+		#endif
+
+		SDL_Delay(33.333);
+	}
+	#endif
+	return 0;
+}
+#endif
+
+void avdl_engine_verify(struct avdl_engine *o) {
+	/*
+	//avdl_assetManager_lockLoading();
+
+	// allocate new world and construct it
+	nworld = malloc(nworld_size);
+	nworld_constructor(nworld);
+
+	// from now on, new assets can be loaded again
+	//avdl_assetManager_unlockLoading();
+
+	// Apply the new world
+	cworld = nworld;
+	nworld = 0;
+
+	// notify the world that it has loaded assets
+	cworld->onload(cworld);
+
+	// resize the new world
+	if (cworld->resize) {
+		cworld->resize(cworld);
+	}
+
+	cworld->update(cworld);
+	*/
 }

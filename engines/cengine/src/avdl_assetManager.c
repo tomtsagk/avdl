@@ -54,6 +54,9 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 		return;
 	}
 	*/
+	#ifdef AVDL_DIRECT3D11
+	return;
+	#endif
 
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;

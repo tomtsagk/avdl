@@ -18,6 +18,10 @@ void dd_log(const char *msg, ...) {
 
 	#if DD_PLATFORM_ANDROID
 	__android_log_vprint(ANDROID_LOG_INFO, "avdl", msg, args);
+	#elif AVDL_DIRECT3D11
+	char buffer[1024];
+	vsnprintf(buffer, 1024, msg, args);
+	MessageBox(0, buffer, "Avdl Log:", 0);
 	#elif defined(_WIN32) || defined(WIN32)
 	char buffer[1024];
 	vsnprintf(buffer, 1024, msg, args);

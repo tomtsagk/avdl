@@ -2,6 +2,12 @@
 #define AVDL_STEAM_H
 
 #ifdef __cplusplus
+#ifdef AVDL_STEAM
+#include "steam_api.h"
+#endif
+#endif
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 

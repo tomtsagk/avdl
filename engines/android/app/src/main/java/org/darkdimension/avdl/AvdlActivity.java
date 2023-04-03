@@ -111,6 +111,7 @@ public class AvdlActivity extends Activity {
 		int id = AvdlActivity.context.getApplicationContext().getResources().getIdentifier(assetName, "raw", AvdlActivity.context.getPackageName());
 		//Log.w("avdl", "id: " +id);
 		if (id == 0) {
+			Log.w("avdl", "Error loading asset: " +assetName +" with id: " +id);
 			return null;
 		}
 

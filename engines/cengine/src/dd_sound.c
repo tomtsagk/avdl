@@ -22,6 +22,7 @@ void dd_sound_create(struct dd_sound *o) {
 	o->playLoop = dd_sound_playLoop;
 	o->stop = dd_sound_stop;
 
+	#ifndef AVDL_DIRECT3D11
 	if (!dd_hasAudio) return;
 	o->filename[0] = '\0';
 	#if DD_PLATFORM_ANDROID
@@ -31,9 +32,11 @@ void dd_sound_create(struct dd_sound *o) {
 	#endif
 
 	o->playingChannel = -1;
+	#endif
 }
 
 void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_format format) {
+	#ifndef AVDL_DIRECT3D11
 	if (!dd_hasAudio) return;
 	if (strlen(filename) >= 100) {
 		dd_log("avdl: asset name can't be more than 100 characters: %s", filename);
@@ -55,9 +58,11 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 	}
 
 	#endif
+	#endif
 }
 
 void dd_sound_clean(struct dd_sound *o) {
+	#ifndef AVDL_DIRECT3D11
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
 	#else
@@ -66,9 +71,11 @@ void dd_sound_clean(struct dd_sound *o) {
 		o->sound = 0;
 	}
 	#endif
+	#endif
 }
 
 void dd_sound_play(struct dd_sound *o) {
+	#ifndef AVDL_DIRECT3D11
 	if (!dd_hasAudio) return;
 	if (avdl_sound_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
@@ -96,9 +103,11 @@ void dd_sound_play(struct dd_sound *o) {
 	#else
 	o->playingChannel = Mix_PlayChannel(-1, o->sound, 0);
 	#endif
+	#endif
 }
 
 void dd_sound_playLoop(struct dd_sound *o, int loops) {
+	#ifndef AVDL_DIRECT3D11
 	if (!dd_hasAudio) return;
 	if (avdl_sound_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
@@ -126,9 +135,11 @@ void dd_sound_playLoop(struct dd_sound *o, int loops) {
 	#else
 	o->playingChannel = Mix_PlayChannel(-1, o->sound, loops);
 	#endif
+	#endif
 }
 
 void dd_sound_stop(struct dd_sound *o) {
+	#ifndef AVDL_DIRECT3D11
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
 	if (o->index == -1) return;
@@ -157,9 +168,11 @@ void dd_sound_stop(struct dd_sound *o) {
 	#else
 	Mix_HaltChannel(o->playingChannel);
 	#endif
+	#endif
 }
 
 void avdl_sound_setVolume(int volume) {
+	#ifndef AVDL_DIRECT3D11
 	if (!dd_hasAudio) return;
 	if (volume < 0) volume = 0;
 	if (volume > 100) volume = 100;
@@ -168,9 +181,11 @@ void avdl_sound_setVolume(int volume) {
 	#else
 	Mix_Volume(-1, (avdl_sound_volume /100.0) *MIX_MAX_VOLUME);
 	#endif
+	#endif
 }
 
 int avdl_sound_getVolume() {
+	#ifndef AVDL_DIRECT3D11
 	if (!dd_hasAudio) return 0;
 	#if DD_PLATFORM_ANDROID
 	return avdl_sound_volume;
@@ -178,4 +193,6 @@ int avdl_sound_getVolume() {
 	int volume = Mix_Volume(-1, -1);
 	return ((float) volume /MIX_MAX_VOLUME) *100;
 	#endif
+	#endif
+	return 0;
 }

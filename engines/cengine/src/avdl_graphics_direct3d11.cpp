@@ -1,22 +1,48 @@
 #include "avdl_graphics.h"
 
-#ifndef AVDL_DIRECT3D11
+#ifdef AVDL_DIRECT3D11
+/*
+#include <d3d11.h>
+#include <dxgi.h>
+#include <d3dcompiler.h>
+#include <assert.h>
+#include <dd_log.h>
+
+#include <Windows.h>
 
 #include "avdl_shaders.h"
 #include "dd_game.h"
 #include "dd_log.h"
 #include <stdlib.h>
+*/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+extern ID3D11DeviceContext* device_context_ptr;
+extern ID3D11RenderTargetView* render_target_view_ptr;
+*/
 
 void avdl_graphics_ClearDepth() {
-	glClear(GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void avdl_graphics_ClearToColour() {
-	glClearColor(dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1);
+	/*
+	float background_colour[4] = {
+		dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1.0f
+	};
+	device_context_ptr->ClearRenderTargetView(
+		render_target_view_ptr, background_colour
+	);
+	//glClearColor(dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1);
+	*/
 }
 
 void avdl_graphics_ClearColourAndDepth() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 // context id - used to re-load assets if context is reset
@@ -30,13 +56,16 @@ int avdl_graphics_getContextId() {
 	return openglContextId;
 }
 
+/*
 // shaders
 GLuint defaultProgram;
 GLuint fontProgram;
 GLuint currentProgram;
+*/
 
 int avdl_graphics_Init() {
 
+	/*
 	#if DD_PLATFORM_NATIVE
 	// init glew
 	GLenum glewError = glewInit();
@@ -48,45 +77,51 @@ int avdl_graphics_Init() {
 
 	avdl_graphics_generateContext();
 
+	*/
 	return 0;
 
 }
 
 void avdl_graphics_Viewport(int x, int y, int w, int h) {
-	glViewport(x, y, w, h);
+	//glViewport(x, y, w, h);
 }
 
 void avdl_graphics_PrintInfo() {
+	/*
 	dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
 	dd_log("Renderer: %s", glGetString(GL_RENDERER));
 	dd_log("Version GL: %s", glGetString(GL_VERSION));
 	dd_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	*/
 }
 
 int avdl_graphics_GetCurrentProgram() {
+	/*
 	int program = 0;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
 	return program;
+	*/
+	return 0;
 }
 
 void avdl_graphics_UseProgram(int program) {
-	glUseProgram(program);
+	//glUseProgram(program);
 }
 
 int avdl_graphics_GetUniformLocation(int program, const char *uniform) {
-	return glGetUniformLocation(program, uniform);
+	//return glGetUniformLocation(program, uniform);
+	return 0;
 }
 
 void avdl_graphics_ImageToGpu(struct dd_image *o) {
 
+	/*
 	glGenTextures(1, &o->tex);
 	glBindTexture(GL_TEXTURE_2D, o->tex);
-	/*
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	*/
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -109,35 +144,39 @@ void avdl_graphics_ImageToGpu(struct dd_image *o) {
 	free(o->pixelsb);
 	o->pixelsb = 0;
 	#endif
+	*/
 
 }
 
 void avdl_graphics_DeleteTexture(unsigned int tex) {
-	glDeleteTextures(1, &tex);
+	//glDeleteTextures(1, &tex);
 }
 
 void avdl_graphics_BindTexture(unsigned int tex) {
-	glBindTexture(GL_TEXTURE_2D, tex);
+	//glBindTexture(GL_TEXTURE_2D, tex);
 }
 
 void avdl_graphics_EnableBlend() {
+	/*
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	*/
 }
 
 void avdl_graphics_DisableBlend() {
-	glDisable(GL_BLEND);
+	//glDisable(GL_BLEND);
 }
 
 void avdl_graphics_EnableVertexAttribArray(int attrib) {
-	glEnableVertexAttribArray(attrib);
+	//glEnableVertexAttribArray(attrib);
 }
 
 void avdl_graphics_DisableVertexAttribArray(int attrib) {
-	glDisableVertexAttribArray(attrib);
+	//glDisableVertexAttribArray(attrib);
 }
 
 void avdl_graphics_VertexAttribPointer(int p, int size, int format, int normalised, int stride, void *data) {
+	/*
 	int norm;
 	if (!normalised) {
 		norm = GL_FALSE;
@@ -146,36 +185,41 @@ void avdl_graphics_VertexAttribPointer(int p, int size, int format, int normalis
 		norm = GL_TRUE;
 	}
 	glVertexAttribPointer(p, size, format, norm, stride, data);
+	*/
 }
 
 void avdl_graphics_DrawArrays(int vcount) {
-	glDrawArrays(GL_TRIANGLES, 0, vcount);
+	//glDrawArrays(GL_TRIANGLES, 0, vcount);
 }
 
 int avdl_graphics_generateContext() {
-
-	avdl_graphics_generateContextId();
-
-	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.8, 0.6, 1.0, 1);
-
-	/*
-	 * load shaders
-	 */
-	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
-	if (!defaultProgram) {
-		dd_log("avdl: error loading shaders");
-		return -1;
-	}
-
-	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex, avdl_shaderFont_fragment);
-	if (!fontProgram) {
-		dd_log("avdl: error loading font shaders");
-		return -1;
-	}
-
-	glUseProgram(defaultProgram);
-	currentProgram = defaultProgram;
+//	avdl_graphics_generateContextId();
+//
+//	glEnable(GL_DEPTH_TEST);
+//	glClearColor(0.8, 0.6, 1.0, 1);
+//
+//	/*
+//	 * load shaders
+//	 /
+//	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
+//	if (!defaultProgram) {
+//		dd_log("avdl: error loading shaders");
+//		return -1;
+//	}
+//
+//	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex, avdl_shaderFont_fragment);
+//	if (!fontProgram) {
+//		dd_log("avdl: error loading font shaders");
+//		return -1;
+//	}
+//
+//	glUseProgram(defaultProgram);
+//	currentProgram = defaultProgram;
 	return 0;
 }
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

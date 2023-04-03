@@ -29,7 +29,11 @@ void avdl_useProgram(struct avdl_program *o);
 /*
  * get/edit uniforms
  */
+#ifdef AVDL_DIRECT3D11
+int avdl_getUniformLocation(struct avdl_program *o, char *varname);
+#else
 GLint avdl_getUniformLocation(struct avdl_program *o, char *varname);
+#endif
 
 /*
  * takes a string for the vertex and one for the fragment shader as parameters,

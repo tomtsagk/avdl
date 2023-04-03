@@ -9,8 +9,10 @@
 #include <stdlib.h>
 #include "avdl_graphics.h"
 
+#ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
+#endif
 
 // constructor
 void dd_meshColour_create(struct dd_meshColour *m) {
@@ -70,6 +72,7 @@ void dd_meshColour_clean(struct dd_meshColour *m) {
 /* draw the mesh itself */
 void dd_meshColour_draw(struct dd_meshColour *m) {
 
+	#ifndef AVDL_DIRECT3D11
 	avdl_graphics_EnableVertexAttribArray(0);
 	avdl_graphics_VertexAttribPointer(0, 3, GL_FLOAT, 0, 0, m->parent.v);
 
@@ -96,6 +99,7 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 		avdl_graphics_DisableVertexAttribArray(1);
 	}
 	avdl_graphics_DisableVertexAttribArray(0);
+	#endif
 }
 
 /*

@@ -7,6 +7,27 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 
+// direct3d 11
+#elif AVDL_DIRECT3D11
+/*
+#define WIN32_LEAN_AND_MEAN
+
+#include <d3d11.h>
+#ifdef AVDL_SCARLETT
+	#include <dxgi1_2.h>
+#else
+	#include <dxgi.h>
+#endif
+#include <d3dcompiler.h>
+#include <assert.h>
+
+#include <Windows.h>
+
+#ifndef UNICODE
+#define UNICODE
+#endif
+*/
+
 // import opengl on native
 #elif DD_PLATFORM_NATIVE
 #include <GL/glew.h>
@@ -20,6 +41,10 @@
 #endif
 
 #include "dd_image.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void avdl_graphics_ClearDepth();
 void avdl_graphics_ClearToColour();
@@ -71,5 +96,9 @@ void avdl_graphics_DisableVertexAttribArray(int attrib);
 void avdl_graphics_VertexAttribPointer(int p, int size, int format, int, int, void *data);
 
 void avdl_graphics_DrawArrays(int vcount);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

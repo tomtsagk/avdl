@@ -1,6 +1,7 @@
 #include "avdl_achievements.h"
-#include "steam_api.h"
+#include "avdl_steam.h"
 
+#ifdef AVDL_STEAM
 struct avdl_achievements *avdl_achievements_create() {
 	if (!SteamUserStats()->RequestCurrentStats()) {
 		printf("avdl: failed to initialise achievements\n");
@@ -25,3 +26,4 @@ void avdl_achievements_unset(struct avdl_achievements *o, const char *achievemen
 		printf("avdl: failed to unset steam achievement: '%s'\n", achievementId);
 	}
 }
+#endif

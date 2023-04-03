@@ -4,9 +4,11 @@
 #include "avdl_cengine.h"
 
 static struct dd_image fontTexture;
+#ifndef AVDL_DIRECT3D11
 extern GLuint fontProgram;
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
+#endif
 
 static int isActive = 0;
 static const char *fontname = 0;
@@ -41,6 +43,7 @@ extern struct dd_matrix matPerspective;
 
 void dd_string3d_init() {
 
+	#ifndef AVDL_DIRECT3D11
 	dd_image_create(&fontTexture);
 	dd_image_set(&fontTexture, fontname, fonttype);
 
@@ -60,6 +63,8 @@ void dd_string3d_init() {
 			(fontHeight /fontRows)
 		);
 	}
+
+	#endif
 
 } // string3d init
 
@@ -93,6 +98,7 @@ void dd_string3d_draw(struct dd_string3d *o) {
 }
 
 void dd_string3d_drawInt(struct dd_string3d *o, int num) {
+	#ifndef AVDL_DIRECT3D11
 	char numberString[11];
 	snprintf(numberString, 11, "%d", num);
 	numberString[10] = '\0';
@@ -132,9 +138,11 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 	}
 
 	dd_matrix_pop();
+	#endif
 }
 
 void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
+	#ifndef AVDL_DIRECT3D11
 
 	dd_matrix_push();
 
@@ -199,6 +207,7 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 	} while (wordsTotal < o->textMeshes.elements);
 
 	dd_matrix_pop();
+	#endif
 }
 
 void dd_string3d_clean(struct dd_string3d *o) {
@@ -207,6 +216,7 @@ void dd_string3d_clean(struct dd_string3d *o) {
 
 void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 
+	#ifndef AVDL_DIRECT3D11
 	// empty previous text meshes (if any)
 	for (int i = 0; i < o->textMeshes.elements; i++) {
 		struct dd_word_mesh *p;
@@ -271,6 +281,8 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 		t += p->width;
 
 	} while (t[0] != '\0');
+
+	#endif
 
 }
 

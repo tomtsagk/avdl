@@ -3,6 +3,9 @@
 #include "dd_fov.h"
 #include <stdio.h>
 #include "dd_log.h"
+#include "avdl_engine.h"
+
+extern struct avdl_engine engine;
 
 int dd_flag_initialised = 0;
 int dd_flag_focused = 0;
@@ -34,21 +37,23 @@ void dd_gameInitDefault() {
 
 #if DD_PLATFORM_NATIVE
 int dd_window_width() {
+	#ifdef AVDL_DIRECT3D11
 	return 100;
-	/*
+	#else
 	int w, h;
-	SDL_GetWindowSize(mainWindow, &w, &h);
+	SDL_GetWindowSize(engine.window, &w, &h);
 	return w;
-	*/
+	#endif
 }
 
 int dd_window_height() {
+	#ifdef AVDL_DIRECT3D11
 	return 100;
-	/*
+	#else
 	int w, h;
-	SDL_GetWindowSize(mainWindow, &w, &h);
+	SDL_GetWindowSize(engine.window, &w, &h);
 	return h;
-	*/
+	#endif
 }
 #endif
 
@@ -213,10 +218,4 @@ const PROJ_LOC_TYPE *avdl_getProjectLocation() {
 
 	return tempProjLoc;
 
-}
-
-void avdl_initProjectLocation() {
-}
-
-void avdl_cleanProjectLocation() {
 }

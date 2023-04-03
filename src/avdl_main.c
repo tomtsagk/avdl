@@ -41,53 +41,53 @@ struct ast_node *game_node;
 
 int create_android_directory(const char *androidDirName);
 
-struct cengine_file_structure {
-	const char *main;
-	const char *steam;
+char *cengine_files[] = {
+	"avdl_assetManager.c",
+	"avdl_data.c",
+	"avdl_localisation.c",
+	"avdl_particle_system.c",
+	"avdl_shaders.c",
+	"dd_dynamic_array.c",
+	"dd_filetomesh.c",
+	"dd_fov.c",
+	"dd_game.c",
+	"dd_gamejolt.c",
+	"dd_image.c",
+	"dd_json.c",
+	"dd_log.c",
+	"dd_math.c",
+	"dd_matrix.c",
+	"dd_mesh.c",
+	"dd_meshColour.c",
+	"dd_meshTexture.c",
+	"dd_mouse.c",
+	"dd_sound.c",
+	"dd_music.c",
+	"whereami.c",
+	"dd_string3d.c",
+	"dd_vec3.c",
+	"dd_vec4.c",
+	"dd_world.c",
+	"avdl_input.c",
+	"avdl_physics.c",
+	"avdl_collider.c",
+	"avdl_collider_aabb.c",
+	"avdl_collider_sphere.c",
+	"avdl_rigidbody.c",
+	"avdl_graphics_opengl.c",
+	"avdl_graphics_direct3d11.cpp",
+	"avdl_engine.c",
+	"main.c",
+	"avdl_steam.c",
+	"avdl_steam_cpp.cpp",
+	"main_cpp.cpp",
+	"avdl_achievements.c",
+	"avdl_achievements_steam.cpp",
+	"avdl_multiplayer.c",
+	"avdl_multiplayer_steam.cpp",
+	"avdl_engine_cpp.cpp",
 };
-
-struct cengine_file_structure cengine_files[] = {
-	{"avdl_assetManager.c", 0},
-	{"avdl_data.c", 0},
-	{"avdl_localisation.c", 0},
-	{"avdl_particle_system.c", 0},
-	{"avdl_shaders.c", 0},
-	{"dd_dynamic_array.c", 0},
-	{"dd_filetomesh.c", 0},
-	{"dd_fov.c", 0},
-	{"dd_game.c", 0},
-	{"dd_gamejolt.c", 0},
-	{"dd_image.c", 0},
-	{"dd_json.c", 0},
-	{"dd_log.c", 0},
-	{"dd_math.c", 0},
-	{"dd_matrix.c", 0},
-	{"dd_mesh.c", 0},
-	{"dd_meshColour.c", 0},
-	{"dd_meshTexture.c", 0},
-	{"dd_mouse.c", 0},
-	{"dd_sound.c", 0},
-	{"dd_music.c", 0},
-	{"whereami.c", 0},
-	{"dd_string3d.c", 0},
-	{"dd_vec3.c", 0},
-	{"dd_vec4.c", 0},
-	{"dd_world.c", 0},
-	{"avdl_input.c", 0},
-	{"avdl_physics.c", 0},
-	{"avdl_collider.c", 0},
-	{"avdl_collider_aabb.c", 0},
-	{"avdl_collider_sphere.c", 0},
-	{"avdl_rigidbody.c", 0},
-	{"avdl_graphics_opengl.c", 0},
-	{"avdl_engine.c", 0},
-	{"main.c", 0},
-	{"avdl_steam.c", "avdl_steam_cpp.cpp"},
-	{0, "main_cpp.cpp"},
-	{"avdl_achievements.c", "avdl_achievements_steam.cpp"},
-	{"avdl_multiplayer.c", "avdl_multiplayer_steam.cpp"},
-};
-unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(struct cengine_file_structure);
+unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 
 char *cengine_headers[] = {
 	"avdl_steam.h",
@@ -145,6 +145,7 @@ const char *avdl_project_path;
 
 // temp hack
 struct AvdlSettings *avdl_settings_ptr = 0;
+enum AVDL_PLATFORM avdl_target_platform;
 
 // hide main when doing unit tests - temporary solution
 #ifdef AVDL_UNIT_TEST
@@ -168,6 +169,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	avdl_project_path = avdl_settings.pkg_path;
 
 	int handle_return = avdl_arguments_handle(&avdl_settings, argc, argv);
+
+	avdl_target_platform = avdl_settings.target_platform;
 
 	// the arguments require the program to stop executing
 	if (handle_return > 0) {
@@ -581,35 +584,24 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 	char compile_command[DD_BUFFER_SIZE];
 	for (int i = 0; i < cengine_files_total; i++) {
 
-		strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
-		if (avdl_settings->steam_mode && cengine_files[i].steam) {
+		struct avdl_string cEngFile;
+		avdl_string_create(&cEngFile, 1024);
+		avdl_string_cat(&cEngFile, cengine_files[i]);
+		if (avdl_string_endsIn(&cEngFile, ".cpp")) {
 			//printf("cengine steam file: %s\n", cengine_files[i].steam);
 			//strcpy(compile_command, "g++ -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
 			strcpy(compile_command, "g++ -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
 		}
-		else
-		if (cengine_files[i].main) {
+		else {
 			//printf("cengine file: %s\n", cengine_files[i].main);
 			//strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
 			strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
 		}
-		// no file available for current settings
-		else {
-			continue;
-		}
+		avdl_string_clean(&cEngFile);
 
 		// include the source file
 		strcat(compile_command, avdl_settings->cengine_path);
-		if (avdl_settings->steam_mode && cengine_files[i].steam) {
-			strcat(compile_command, cengine_files[i].steam);
-		}
-		else
-		if (cengine_files[i].main) {
-			strcat(compile_command, cengine_files[i].main);
-		}
-		else {
-			continue;
-		}
+		strcat(compile_command, cengine_files[i]);
 
 		strcat(compile_command, " -DPKG_NAME=\"\\\"");
 		strcat(compile_command, avdl_settings->project_name_code);
@@ -630,21 +622,18 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		//strcat(compile_command, "/");
 		struct avdl_string cenginePathOut;
 		avdl_string_create(&cenginePathOut, 1024);
-		if (avdl_settings->steam_mode && cengine_files[i].steam) {
-			avdl_string_cat(&cenginePathOut, outdir);
-			avdl_string_cat(&cenginePathOut, "cengine/");
-			avdl_string_cat(&cenginePathOut, cengine_files[i].steam);
+		avdl_string_cat(&cenginePathOut, outdir);
+		avdl_string_cat(&cenginePathOut, "cengine/");
+		avdl_string_cat(&cenginePathOut, cengine_files[i]);
+		if (avdl_string_endsIn(&cenginePathOut, ".cpp")) {
 			avdl_string_replaceEnding(&cenginePathOut, ".cpp", ".o");
 		}
 		else {
-			avdl_string_cat(&cenginePathOut, outdir);
-			avdl_string_cat(&cenginePathOut, "cengine/");
-			avdl_string_cat(&cenginePathOut, cengine_files[i].main);
 			avdl_string_replaceEnding(&cenginePathOut, ".c", ".o");
 		}
 
 		if ( !avdl_string_isValid(&cenginePathOut) ) {
-			avdl_log_error("cannot construct path '%s%s%s': %s", outdir, "cengine/", cengine_files[i].steam, avdl_string_getError(&cenginePathOut));
+			avdl_log_error("cannot construct path '%s%s%s': %s", outdir, "cengine/", cengine_files[i], avdl_string_getError(&cenginePathOut));
 			avdl_string_clean(&cenginePathOut);
 			return -1;
 		}
@@ -796,7 +785,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	*/
 
 	// prepare link command
-	if (avdl_settings->steam_mode) {
+	if (avdl_settings->cpp_mode) {
 		strcpy(buffer, "g++ -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
 	}
 	else {
@@ -814,25 +803,20 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	char tempDir[DD_BUFFER_SIZE];
 	strcpy(tempDir, ".avdl_cache/cengine/");
 	for (int i = 0; i < cengine_files_total; i++) {
-		if (avdl_settings->steam_mode && cengine_files[i].steam) {
-		}
-		else
-		if (cengine_files[i].main) {
-		}
-		else {
-			continue;
-		}
 		strcat(buffer, tempDir);
 		strcat(buffer, "/");
-		if (avdl_settings->steam_mode && cengine_files[i].steam) {
-			strcat(buffer, cengine_files[i].steam);
-			buffer[strlen(buffer)-3] = 'o';
-			buffer[strlen(buffer)-2] = '\0';
+		struct avdl_string tempfile;
+		avdl_string_create(&tempfile, 1024);
+		avdl_string_cat(&tempfile, cengine_files[i]);
+		if (avdl_string_endsIn(&tempfile, ".cpp")) {
+			avdl_string_replaceEnding(&tempfile, ".cpp", ".o");
 		}
-		else {
-			strcat(buffer, cengine_files[i].main);
-			buffer[strlen(buffer)-1] = 'o';
+		else
+		if (avdl_string_endsIn(&tempfile, ".c")) {
+			avdl_string_replaceEnding(&tempfile, ".c", ".o");
 		}
+		strcat(buffer, avdl_string_toCharPtr(&tempfile));
+		avdl_string_clean(&tempfile);
 		strcat(buffer, " ");
 	}
 
@@ -1051,7 +1035,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	}
 
 	// on android, put assets in a specific directory
-	if (avdl_settings_ptr->target_platform == AVDL_PLATFORM_ANDROID) {
+	if (avdl_target_platform == AVDL_PLATFORM_ANDROID) {
 		char *assetDir;
 
 		if (strcmp(filename +strlen(filename) -4, ".ply") == 0

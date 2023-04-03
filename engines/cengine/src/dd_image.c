@@ -29,6 +29,9 @@ void dd_image_create(struct dd_image *o) {
 
 void dd_image_load_png(struct dd_image *img, const char *filename) {
 
+	#ifdef AVDL_DIRECT3D11
+	#else
+
 	#if DD_PLATFORM_ANDROID
 	#else
 
@@ -141,9 +144,14 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 
 	#endif
 
+	#endif // direct3d 11
+
 }
 
 void dd_image_load_bmp(struct dd_image *img, const char *filename) {
+
+	#ifdef AVDL_DIRECT3D11
+	#else
 
 	#if DD_PLATFORM_ANDROID
 	#else
@@ -206,9 +214,13 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	fclose(f);
 	#endif
 
+	#endif
+
 }
 
 void dd_image_clean(struct dd_image *o) {
+	#ifdef AVDL_DIRECT3D11
+	#else
 	if (o->pixels) {
 		free(o->pixels);
 		o->pixels = 0;
@@ -222,10 +234,13 @@ void dd_image_clean(struct dd_image *o) {
 	if (o->tex) {
 		avdl_graphics_DeleteTexture(o->tex);
 	}
+	#endif
 }
 
 void dd_image_bind(struct dd_image *o) {
 
+	#ifdef AVDL_DIRECT3D11
+	#else
 	if (o->pixels || o->pixelsb) {
 		avdl_graphics_ImageToGpu(o);
 	}
@@ -240,17 +255,24 @@ void dd_image_bind(struct dd_image *o) {
 		o->tex = 0;
 		o->set(o, o->assetName, o->assetType);
 	}
+	#endif
 }
 
 void dd_image_unbind(struct dd_image *o) {
+	#ifdef AVDL_DIRECT3D11
+	#else
 	if (o->tex) {
 		avdl_graphics_BindTexture(0);
 	}
+	#endif
 }
 
 void dd_image_set(struct dd_image *o, const char *filename, int type) {
+	#ifdef AVDL_DIRECT3D11
+	#else
 	o->openglContextId = avdl_graphics_getContextId();
 	o->assetName = filename;
 	o->assetType = type;
 	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
+	#endif
 }

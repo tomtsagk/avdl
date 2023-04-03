@@ -1,5 +1,6 @@
 #include "avdl_multiplayer.h"
 
+#ifndef AVDL_STEAM
 int avdl_multiplayer_isEnabled() {
 	return 0;
 }
@@ -100,3 +101,4 @@ void avdl_multiplayer_sendMessageToPlayer_internal(struct avdl_multiplayer *o, i
 const char *avdl_multiplayer_getPlayerNameByIndex(struct avdl_multiplayer *o, int index) {
 	return "";
 }
+#endif

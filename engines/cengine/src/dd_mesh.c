@@ -8,8 +8,10 @@
 #include <stdlib.h>
 #include "avdl_graphics.h"
 
+#ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
+#endif
 
 float shape_triangle[] = {
 	0, 0.5, 0,
@@ -103,6 +105,7 @@ void dd_mesh_clean(struct dd_mesh *m) {
  */
 void dd_mesh_draw(struct dd_mesh *m) {
 
+	#ifndef AVDL_DIRECT3D11
 	avdl_graphics_EnableVertexAttribArray(0);
 	avdl_graphics_VertexAttribPointer(0, 3, GL_FLOAT, 0, 0, m->v);
 
@@ -117,6 +120,7 @@ void dd_mesh_draw(struct dd_mesh *m) {
 	avdl_graphics_DrawArrays(m->vcount);
 
 	avdl_graphics_DisableVertexAttribArray(0);
+	#endif
 }
 
 /*

@@ -1,6 +1,10 @@
 #ifndef AVDL_INPUT_H
 #define AVDL_INPUT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct AvdlMouseInput {
 	int button;
 	int state;
@@ -24,5 +28,9 @@ int avdl_input_ClearInput(struct AvdlInput *);
 
 int avdl_input_AddInput(struct AvdlInput *, int button, int state, int x, int y);
 int avdl_input_AddPassiveMotion(struct AvdlInput *, int x, int y);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

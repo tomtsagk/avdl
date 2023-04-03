@@ -3,6 +3,10 @@
 
 #include "dd_meshColour.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef GAME_ASSET_PREFIX
 #define GAME_ASSET_PREFIX ""
 #endif
@@ -41,5 +45,9 @@ void avdl_assetManager_unlockLoading();
 void avdl_assetManager_clear();
 
 void avdl_assetManager_setPercentage(float percentage);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,9 @@
 #ifndef DD_LOG_H
 #define DD_LOG_H
 
+#ifdef __cplusplus
+extern "C"
+#endif
 /*
  * dd_log
  * custom wrapper to print a message to

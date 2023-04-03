@@ -105,6 +105,7 @@ struct AvdlSettings {
 	char cengine_path[1024];
 	char save_path[1024];
 	int steam_mode;
+	int cpp_mode;
 	int standalone;
 	int quiet_mode;
 

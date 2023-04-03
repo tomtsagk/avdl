@@ -5,10 +5,14 @@
 #else
 #include "avdl_graphics.h"
 
+#ifndef AVDL_DIRECT3D11
+
 #if defined(_WIN32) || defined(WIN32)
 #include <SDL_mixer.h>
 #else
 #include <SDL2/SDL_mixer.h>
+#endif
+
 #endif
 
 #endif
@@ -31,10 +35,12 @@ enum dd_audio_format {
 struct dd_sound {
 	char filename[400];
 	char filenameW[400];
+	#ifndef AVDL_DIRECT3D11
 	#if DD_PLATFORM_ANDROID
 	int index;
 	#else
 	Mix_Chunk *sound;
+	#endif
 	#endif
 	int playingChannel;
 

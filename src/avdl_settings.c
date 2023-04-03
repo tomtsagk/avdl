@@ -73,6 +73,7 @@ int AvdlSettings_Create(struct AvdlSettings *o) {
 	o->save_path[0] = '\0';
 
 	o->steam_mode = 0;
+	o->cpp_mode = 0;
 	o->standalone = 0;
 	o->quiet_mode = 0;
 	o->asset_prefix[0] = '\0';

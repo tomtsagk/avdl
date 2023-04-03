@@ -1,7 +1,7 @@
 #include "avdl_steam.h"
 #include <stdio.h>
-#include "steam_api.h"
 
+#ifdef AVDL_STEAM
 int avdl_steam_init() {
 	return SteamAPI_Init();
 }
@@ -13,3 +13,4 @@ void avdl_steam_update() {
 void avdl_steam_shutdown() {
 	SteamAPI_Shutdown();
 }
+#endif

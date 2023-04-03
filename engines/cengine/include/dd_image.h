@@ -9,10 +9,15 @@ enum AVDL_IMAGETYPE {
 };
 
 struct dd_image {
+	#ifdef AVDL_DIRECT3D11
+	int tex;
+	int *pixelsb;
+	#else
 	GLuint tex;
+	GLubyte *pixelsb;
+	#endif
 	int width, height;
 	float *pixels;
-	GLubyte *pixelsb;
 	const char *assetName;
 	int assetType;
 	int openglContextId;

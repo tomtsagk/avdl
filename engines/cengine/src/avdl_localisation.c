@@ -16,6 +16,8 @@ void avdl_localisation_clean(struct avdl_localisation *o) {
 
 void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) {
 
+	#ifndef AVDL_DIRECT3D11
+
 	#if DD_PLATFORM_ANDROID
 	return;
 	#endif
@@ -56,6 +58,8 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 	}
 
 	//avdl_localisation_print(o);
+
+	#endif
 }
 
 char *avdl_localisation_getValue(struct avdl_localisation *o, const char *key) {

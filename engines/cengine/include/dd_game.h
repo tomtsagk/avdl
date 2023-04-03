@@ -10,6 +10,10 @@
 
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // way to change the background clear colour
 extern float dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b;
 #define dd_clearColour(r, g, b, a) dd_clearcolor_r = r; dd_clearcolor_g = g; dd_clearcolor_b = b;
@@ -59,8 +63,6 @@ extern int dd_flag_exit;
 #define PROJ_LOC_TYPE char
 #endif
 const PROJ_LOC_TYPE *avdl_getProjectLocation();
-void avdl_initProjectLocation();
-void avdl_cleanProjectLocation();
 
 #define avdl_exit() dd_flag_exit = 1;
 
@@ -82,5 +84,9 @@ enum GAME_PKG_DEPENDENCIES_TYPE {
 	GAME_PKG_DEPENDENCIES_TYPE_DYNAMIC,
 	GAME_PKG_DEPENDENCIES_TYPE_FIXED,
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

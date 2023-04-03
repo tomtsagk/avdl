@@ -9,8 +9,10 @@
 #include <stdlib.h>
 #include "avdl_graphics.h"
 
+#ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
+#endif
 
 void dd_meshTexture_create(struct dd_meshTexture *m) {
 	dd_meshColour_create(&m->parent);
@@ -79,6 +81,7 @@ void dd_meshTexture_set_primitive_texcoords(struct dd_meshTexture *m, float offs
 
 void dd_meshTexture_draw(struct dd_meshTexture *m) {
 
+	#ifndef AVDL_DIRECT3D11
 	if (m->hasTransparency) {
 		avdl_graphics_EnableBlend();
 	}
@@ -124,6 +127,8 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 	if (m->hasTransparency) {
 		avdl_graphics_DisableBlend();
 	}
+
+	#endif
 }
 
 void dd_meshTexture_copy(struct dd_meshTexture *dest, struct dd_meshTexture *src) {

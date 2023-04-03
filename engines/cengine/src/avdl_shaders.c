@@ -88,6 +88,7 @@ const char *versionSource = "#version XXX YY\n";
 
 unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 
+	#ifndef AVDL_DIRECT3D11
 	/*
 	 * set up a copy of the source code, and try different versions of it
 	 */
@@ -197,12 +198,14 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 		return sdr;
 	}
 	free(newSource);
+	#endif
 
 	// no shader compiled
 	return 0;
 }
 
 unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
+	#ifndef AVDL_DIRECT3D11
 	// no shaders given
 	if (!vsdr || !fsdr) {
 		dd_log("create_program called with invalid shader objects, aborting");
@@ -243,11 +246,16 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
 
 	//Return program
 	return prog;
+	#endif
+	return 0;
 }
 
+#ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
+#endif
 void avdl_useProgram(struct avdl_program *o) {
+	#ifndef AVDL_DIRECT3D11
 	if (!o || !o->program) {
 		glUseProgram(defaultProgram);
 		currentProgram = defaultProgram;
@@ -256,6 +264,7 @@ void avdl_useProgram(struct avdl_program *o) {
 		glUseProgram(o->program);
 		currentProgram = o->program;
 	}
+	#endif
 }
 
 /*
@@ -263,6 +272,7 @@ void avdl_useProgram(struct avdl_program *o) {
  */
 unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 
+	#ifndef AVDL_DIRECT3D11
 	// check input
 	if (!vfname || !ffname) return 0;
 
@@ -296,6 +306,8 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 
 	// shaders created - create program
 	return create_program(vsdr, fsdr);
+	#endif
+	return 0;
 }
 
 const char *avdl_shaderDefault_vertex =
@@ -391,6 +403,12 @@ void avdl_program_useProgram(struct avdl_program *o) {
 	avdl_useProgram(o);
 }
 
+#ifdef AVDL_DIRECT3D11
+int avdl_getUniformLocation(struct avdl_program *o, char *varname) {
+	return 0;
+}
+#else
 GLint avdl_getUniformLocation(struct avdl_program *o, char *varname) {
 	return glGetUniformLocation(o->program, varname);
 }
+#endif

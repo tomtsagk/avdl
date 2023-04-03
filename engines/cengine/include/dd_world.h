@@ -1,6 +1,10 @@
 #ifndef DD_WORLD_H
 #define DD_WORLD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* data that each world has
  */
 extern struct dd_world {
@@ -27,7 +31,6 @@ extern int nworld_loading;
 /* constructor destructor
  */
 struct dd_world *dd_world_create_dynamic();
-void dd_world_clean();
 
 /*
  * handy function to change between worlds
@@ -50,5 +53,9 @@ void dd_world_clean(struct dd_world *);
 extern int dd_default_world_size;
 extern void (*dd_default_world_constructor)(struct dd_world *);
 #define dd_world_set_default(WORLD) dd_default_world_size = sizeof(struct WORLD); dd_default_world_constructor = WORLD ## _create;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

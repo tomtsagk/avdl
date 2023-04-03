@@ -5,10 +5,14 @@
 #else
 #include "avdl_graphics.h"
 
+#ifndef AVDL_DIRECT3D11
+
 #if defined(_WIN32) || defined(WIN32)
 #include <SDL_mixer.h>
 #else
 #include <SDL2/SDL_mixer.h>
+#endif
+
 #endif
 
 #endif
@@ -22,10 +26,12 @@ extern int avdl_music_volume;
 struct dd_music {
 	char filename[400];
 	char filenameW[400];
+	#ifndef AVDL_DIRECT3D11
 	#if DD_PLATFORM_ANDROID
 	int index;
 	#else
 	Mix_Music *music;
+	#endif
 	#endif
 
 	void (*load)(struct dd_music *, const char *filename, int type);

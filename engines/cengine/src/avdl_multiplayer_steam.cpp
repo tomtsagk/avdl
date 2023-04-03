@@ -1,8 +1,9 @@
 #include "avdl_multiplayer.h"
-#include "steam_api.h"
+#include "avdl_steam.h"
 #include <stdlib.h>
 #include <cstddef>
 
+#ifdef AVDL_STEAM
 static CSteamID slobbyId;
 static CSteamID lobbyMembers[10];
 static char lobbyMembersName[10][20];
@@ -747,3 +748,4 @@ const char *avdl_multiplayer_getPlayerNameByIndex(struct avdl_multiplayer *o, in
 	}
 	return "";
 }
+#endif
