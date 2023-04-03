@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 
 # set the project name
-project(avdl VERSION 0.7.12)
-#project(d3d11game LANGUAGES CXX)
+project(avdl VERSION 0.7.13)
 
 # add the executable
 add_executable(${PROJECT_NAME}
