@@ -6,7 +6,8 @@
 // world interface and starting world
 #include "avdl_cengine.h"
 
-#if defined(_WIN32) || defined(WIN32)
+#if defined(AVDL_OS_WINDOWS)
+HANDLE updateDrawMutex;
 #else
 
 #include <unistd.h>
@@ -97,7 +98,8 @@ int dd_main(int argc, char *argv[]) {
 	}
 	#endif
 
-	#if defined(_WIN32) || defined(WIN32)
+	#if defined(AVDL_OS_WINDOWS)
+	updateDrawMutex = CreateMutex(NULL, FALSE, NULL);
 	#else
 	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
 	{
@@ -123,6 +125,7 @@ int dd_main(int argc, char *argv[]) {
 	avdl_engine_clean(&engine);
 
 	#if defined(_WIN32) || defined(WIN32)
+	CloseHandle(updateDrawMutex);
 	#else
 	pthread_mutex_destroy(&updateDrawMutex);
 	#endif
@@ -161,13 +164,15 @@ void onResume() {
 
 	if (!avdl_state_initialised) return;
 
-	#if defined(_WIN32) || defined(WIN32)
+	#if defined(AVDL_OS_WINDOWS)
+	WaitForSingleObject(updateDrawMutex, INFINITE);
 	#else
 	pthread_mutex_lock(&updateDrawMutex);
 	#endif
 	dd_flag_exit = 0;
 	dd_flag_focused = 1;
-	#if defined(_WIN32) || defined(WIN32)
+	#if defined(AVDL_OS_WINDOWS)
+	ReleaseMutex(updateDrawMutex);
 	#else
 	pthread_mutex_unlock(&updateDrawMutex);
 	#endif
@@ -201,13 +206,15 @@ void onPause() {
 		pthread_join(updatePthread, NULL);
 		#endif
 	}
-	#if defined(_WIN32) || defined(WIN32)
+	#if defined(AVDL_OS_WINDOWS)
+	WaitForSingleObject(updateDrawMutex, INFINITE);
 	#else
 	pthread_mutex_lock(&updateDrawMutex);
 	#endif
 	dd_flag_focused = 0;
 	//dd_flag_initialised = 0;
-	#if defined(_WIN32) || defined(WIN32)
+	#if defined(AVDL_OS_WINDOWS)
+	ReleaseMutex(updateDrawMutex);
 	#else
 	pthread_mutex_unlock(&updateDrawMutex);
 	#endif

@@ -8,7 +8,11 @@
 #include <stdio.h>
 #include "dd_game.h"
 
-#if defined(_WIN32) || defined(WIN32)
+void avdl_assetManager_loadAssets();
+
+#if defined(AVDL_OS_WINDOWS)
+#include <windows.h>
+extern HANDLE updateDrawMutex;
 #else
 #include <pthread.h>
 #include <unistd.h>
@@ -20,6 +24,27 @@ extern pthread_mutex_t jniMutex;
 #include <jni.h>
 extern JavaVM* jvm;
 extern jclass *clazz;
+#endif
+
+/*
+ * load assets async
+ */
+#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+static pthread_t loadAssetsThread = 0;
+
+void *load_assets_thread_function(void *data) {
+	avdl_assetManager_loadAssets();
+	pthread_exit(NULL);
+}
+#elif defined(AVDL_OS_WINDOWS)
+#include <windows.h>
+
+HANDLE thread;
+
+DWORD WINAPI ThreadFunc(void* data) {
+	avdl_assetManager_loadAssets();
+	return 0;
+}
 #endif
 
 struct dd_dynamic_array meshesToLoad;
@@ -354,14 +379,18 @@ void avdl_assetManager_loadAssets() {
 		pthread_mutex_unlock(&jniMutex);
 		#endif
 
-		#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+		#if defined(AVDL_OS_WINDOWS)
+		WaitForSingleObject(updateDrawMutex, INFINITE);
+		#elif defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
 		pthread_mutex_lock(&updateDrawMutex);
 		#endif
 
 		totalAssetsLoaded++;
 		if (interruptLoading) break;
 		//dd_log("assets loaded: %d / %d", totalAssetsLoaded, totalAssets);
-		#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+		#if defined(AVDL_OS_WINDOWS)
+		ReleaseMutex(updateDrawMutex);
+		#elif defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
 		pthread_mutex_unlock(&updateDrawMutex);
 		#endif
 
@@ -370,11 +399,16 @@ void avdl_assetManager_loadAssets() {
 	dd_da_empty(&meshesLoading);
 	//dd_log("finished all loading");
 
-	#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+	#if defined(AVDL_OS_WINDOWS)
+	WaitForSingleObject(updateDrawMutex, INFINITE);
+	#elif defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
 	pthread_mutex_lock(&updateDrawMutex);
 	#endif
 	assetManagerLoading = 0;
-	#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+	#if defined(AVDL_OS_WINDOWS)
+	ReleaseMutex(updateDrawMutex);
+	CloseHandle(thread);
+	#elif defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
 	pthread_mutex_unlock(&updateDrawMutex);
 	#endif
 
@@ -382,18 +416,6 @@ void avdl_assetManager_loadAssets() {
 
 void avdl_assetManager_clean() {
 }
-
-/*
- * load assets async
- */
-#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
-static pthread_t loadAssetsThread = 0;
-
-void *load_assets_thread_function(void *data) {
-	avdl_assetManager_loadAssets();
-	pthread_exit(NULL);
-}
-#endif
 
 void avdl_assetManager_loadAll() {
 	if (assetManagerLoading) return;
@@ -413,7 +435,9 @@ void avdl_assetManager_loadAll() {
 	*/
 	#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
 	pthread_create(&loadAssetsThread, NULL, load_assets_thread_function, 0);
-	pthread_detach(loadAssetsThread);
+	pthread_detach(loadAssetsThread); // do not wait for thread result code
+	#elif defined(AVDL_OS_WINDOWS)
+	HANDLE thread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, NULL);
 	#else
 	avdl_assetManager_loadAssets();
 	#endif
