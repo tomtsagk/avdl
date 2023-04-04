@@ -316,7 +316,7 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 		exit(-1);
 	}
 
-	dd_log("loadfile: %s\n", buffer);
+	dd_log("loadfile: %s", buffer);
 
 	// everything worked as expected
 	return 0;

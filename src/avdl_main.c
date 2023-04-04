@@ -599,6 +599,12 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		}
 		avdl_string_clean(&cEngFile);
 
+		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+		strcat(compile_command, " -DAVDL_OS_WINDOWS ");
+		#elif AVDL_IS_OS(AVDL_OS_LINUX)
+		strcat(compile_command, " -DAVDL_OS_LINUX ");
+		#endif
+
 		// include the source file
 		strcat(compile_command, avdl_settings->cengine_path);
 		strcat(compile_command, cengine_files[i]);
