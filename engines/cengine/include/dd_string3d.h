@@ -8,6 +8,7 @@ void dd_string3d_activate(const char *src, int src_type, float fColumns, float f
 int dd_string3d_isActive();
 
 void dd_string3d_init();
+void dd_string3d_deinit();
 
 enum dd_string3d_align {
 	DD_STRING3D_ALIGN_LEFT,

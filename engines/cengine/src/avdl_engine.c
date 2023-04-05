@@ -168,10 +168,16 @@ int avdl_engine_clean(struct avdl_engine *o) {
 	#ifdef AVDL_DIRECT3D11
 	#else
 	avdl_achievements_clean(o->achievements);
+	avdl_assetManager_deinit();
 
 	if (o->cworld) {
 		o->cworld->clean(o->cworld);
+		free(o->cworld);
 		o->cworld = 0;
+	}
+
+	if (dd_string3d_isActive()) {
+		dd_string3d_deinit();
 	}
 
 	#if DD_PLATFORM_NATIVE
@@ -346,6 +352,7 @@ int avdl_engine_update(struct avdl_engine *o) {
 			// free any previous world
 			if (o->cworld) {
 				o->cworld->clean(o->cworld);
+				free(o->cworld);
 				o->cworld = 0;
 			}
 

@@ -98,7 +98,11 @@ void dd_mesh_set_primitive(struct dd_mesh *m, enum dd_primitives shape) {
  * load function or not used anymore.
  */
 void dd_mesh_clean(struct dd_mesh *m) {
-	if (m->v && m->dirtyVertices) free(m->v);
+	if (m->v && m->dirtyVertices) {
+		free(m->v);
+		m->v = 0;
+		m->dirtyVertices = 0;
+	}
 }
 
 /* draw the mesh itself
@@ -145,6 +149,7 @@ void dd_mesh_copy(struct dd_mesh *dest, struct dd_mesh *src) {
 
 void dd_mesh_combine(struct dd_mesh *dst, struct dd_mesh *src, float offsetX, float offsetY, float offsetZ) {
 	dst->v = realloc(dst->v, (dst->vcount +src->vcount) *sizeof(float) *3);
+	dst->dirtyVertices = 1;
 	for (int i = dst->vcount *3; i < (dst->vcount +src->vcount) *3; i += 3) {
 		dst->v[i+0] = src->v[(i+0) -(dst->vcount *3)] +offsetX;
 		dst->v[i+1] = src->v[(i+1) -(dst->vcount *3)] +offsetY;

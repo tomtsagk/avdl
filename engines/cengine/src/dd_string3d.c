@@ -68,6 +68,13 @@ void dd_string3d_init() {
 
 } // string3d init
 
+void dd_string3d_deinit() {
+	dd_image_clean(&fontTexture);
+	for (int i = 0; i < 10; i++) {
+		dd_meshTexture_clean(&numbers[i]);
+	}
+}
+
 void dd_string3d_create(struct dd_string3d *o) {
 
 	dd_da_init(&o->textMeshes, sizeof(struct dd_word_mesh));
@@ -211,6 +218,12 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 }
 
 void dd_string3d_clean(struct dd_string3d *o) {
+	// empty previous text meshes (if any)
+	for (int i = 0; i < o->textMeshes.elements; i++) {
+		struct dd_word_mesh *p;
+		p = dd_da_get(&o->textMeshes, i);
+		dd_meshTexture_clean(&p->m);
+	}
 	dd_da_free(&o->textMeshes);
 }
 
@@ -259,7 +272,6 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 			struct dd_meshTexture m2;
 			dd_meshTexture_create(&m2);
 			dd_meshTexture_set_primitive(&m2, DD_PRIMITIVE_RECTANGLE);
-			dd_meshColour_set_colour(&m2, 1, 1, 1);
 
 			// for each letter, create a mesh and position it
 			int offsetX = (t[i] -32) %fontColumns;
@@ -272,11 +284,13 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 			);
 
 			dd_meshTexture_combine(&p->m, &m2, fontKerning/2 +characterNumber *fontKerning, 0, 0);
+			dd_meshTexture_clean(&m2);
 
 			// move to next character
 			characterNumber++;
 
 		}
+		dd_meshColour_set_colour(&p->m, 1, 1, 1);
 
 		t += p->width;
 

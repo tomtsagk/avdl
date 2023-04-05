@@ -68,6 +68,11 @@ void avdl_assetManager_init() {
 	desiredLoadedPercentage = 1.0;
 }
 
+void avdl_assetManager_deinit() {
+	dd_da_free(&meshesToLoad );
+	dd_da_free(&meshesLoading);
+}
+
 void avdl_assetManager_add(void *object, int meshType, const char *assetname, int type) {
 	if (lockLoading) {
 		return;
@@ -412,9 +417,6 @@ void avdl_assetManager_loadAssets() {
 	pthread_mutex_unlock(&updateDrawMutex);
 	#endif
 
-}
-
-void avdl_assetManager_clean() {
 }
 
 void avdl_assetManager_loadAll() {

@@ -28,7 +28,7 @@ extern struct dd_dynamic_array meshesToLoad;
 
 // init-clean
 void avdl_assetManager_init();
-void avdl_assetManager_clean();
+void avdl_assetManager_deinit();
 
 // add assets to load
 void avdl_assetManager_add(void *object, int meshType, const char *assetname, int type);

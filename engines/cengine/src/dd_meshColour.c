@@ -39,6 +39,7 @@ void dd_meshColour_set_colour(struct dd_meshColour *m, float r, float g, float b
 	}
 	#if DD_PLATFORM_ANDROID
 	m->c = malloc(m->parent.vcount *sizeof(float) *4);
+	m->dirtyColours = 1;
 	for (int i = 0; i < m->parent.vcount *4; i += 4) {
 		m->c[i+0] = r;
 		m->c[i+1] = g;
@@ -47,6 +48,7 @@ void dd_meshColour_set_colour(struct dd_meshColour *m, float r, float g, float b
 	}
 	#else
 	m->c = malloc(m->parent.vcount *sizeof(float) *3);
+	m->dirtyColours = 1;
 	for (int i = 0; i < m->parent.vcount *3; i += 3) {
 		m->c[i+0] = r;
 		m->c[i+1] = g;
@@ -129,6 +131,7 @@ void dd_meshColour_combine(struct dd_meshColour *dst, struct dd_meshColour *src,
 
 	if ((!dst->c && src->c) || dst->c) {
 		dst->c = realloc(dst->c, dst->parent.vcount *sizeof(float) *4);
+		dst->dirtyColours = 1;
 		int oldVertices = dst->parent.vcount -src->parent.vcount;
 		for (int i = oldVertices *4; i < dst->parent.vcount *4; i += 4) {
 			// get new mesh's colour

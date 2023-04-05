@@ -61,6 +61,7 @@ void dd_meshTexture_set_primitive(struct dd_meshTexture *m, enum dd_primitives s
 			break;
 		case DD_PRIMITIVE_RECTANGLE:
 			m->t = malloc(sizeof(float) *6 *2);
+			m->dirtyTextures = 1;
 			for (int i = 0; i < 6; i++) {
 				m->t[i*2+0] = m->parent.parent.v[i*3+0] +0.5;
 				m->t[i*2+1] = m->parent.parent.v[i*3+1] +0.5;
@@ -149,6 +150,7 @@ void dd_meshTexture_combine(struct dd_meshTexture *dst, struct dd_meshTexture *s
 
 	if ((!dst->t && src->t) || dst->t) {
 		dst->t = realloc(dst->t, dst->parent.parent.vcount *sizeof(float) *2);
+		dst->dirtyTextures = 1;
 		int oldVertices = dst->parent.parent.vcount -src->parent.parent.vcount;
 		for (int i = oldVertices *2; i < dst->parent.parent.vcount *2; i += 2) {
 			if (src->t) {
