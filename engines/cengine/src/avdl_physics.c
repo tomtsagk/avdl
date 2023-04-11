@@ -12,8 +12,13 @@ struct manifold {
 
 void avdl_physics_create(struct avdl_physics *o) {
 	o->object_count = 0;
+	avdl_physics_clearConstantForce(o);
+
 	o->update = avdl_physics_update;
 	o->addObject = avdl_physics_addObject;
+
+	o->addConstantForcef = avdl_physics_addConstantForcef;
+	o->clearConstantForce = avdl_physics_clearConstantForce;
 }
 
 void avdl_physics_collision_aabbVSaabb(struct manifold *m, struct avdl_rigidbody *a, struct avdl_rigidbody *b) {
@@ -168,9 +173,12 @@ void avdl_physics_update(struct avdl_physics *o) {
 		struct dd_vec3 acceleration;
 		dd_vec3_setf(&acceleration, 0, 0, 0);
 
-		// gravity
-		//dd_vec3_addf(&acceleration, 0.0001 *o->object[i]->mass_inv, -0.001 *o->object[i]->mass_inv, 0);
-		dd_vec3_addf(&acceleration, 0, -0.001 *o->object[i]->mass_inv, 0);
+		// constant force
+		dd_vec3_addf(&acceleration,
+			o->constant_force.x *o->object[i]->mass_inv,
+			o->constant_force.y *o->object[i]->mass_inv,
+			o->constant_force.z *o->object[i]->mass_inv
+		);
 
 		// add acceleration to velocity
 		dd_vec3_add(&o->object[i]->velocity, &o->object[i]->velocity, &acceleration);
@@ -299,9 +307,18 @@ void avdl_physics_clean(struct avdl_physics *o) {
 
 void avdl_physics_addObject(struct avdl_physics *o, struct avdl_rigidbody *obj) {
 	if (o->object_count == 10) {
+		dd_log("avdl error: physics engine: can't add more than 10 objects");
 		return;
 	}
 
 	o->object[o->object_count] = obj;
 	o->object_count++;
+}
+
+void avdl_physics_addConstantForcef(struct avdl_physics *o, float x, float y, float z) {
+	dd_vec3_addf(&o->constant_force, x, y, z);
+}
+
+void avdl_physics_clearConstantForce(struct avdl_physics *o) {
+	dd_vec3_setf(&o->constant_force, 0, 0, 0);
 }

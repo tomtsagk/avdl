@@ -106,6 +106,8 @@ void struct_table_init() {
 	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("addObject", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("addConstantForcef", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clearConstantForce", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_collider", 0);
 	struct_table_push("avdl_collider_aabb", "avdl_collider");
 	struct_table_push_member("setMin", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
