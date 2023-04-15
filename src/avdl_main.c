@@ -18,6 +18,7 @@
 #include "avdl_log.h"
 #include "avdl_string.h"
 #include "avdl_arguments.h"
+#include "avdl_time.h"
 
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
@@ -157,6 +158,10 @@ enum AVDL_PLATFORM avdl_target_platform;
 // init data, parse, exit
 int AVDL_MAIN(int argc, char *argv[]) {
 
+	// measure time
+	struct avdl_time clock;
+	avdl_time_start(&clock);
+
 	// project settings
 	struct AvdlSettings avdl_settings;
 	if (AvdlSettings_Create(&avdl_settings) != 0) {
@@ -224,7 +229,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 			return -1;
 		}
 
-		avdl_log("avdl project " BLU "\"%s\"" RESET " prepared successfully for android at " BLU "./avdl_build_android/" RESET, avdl_settings.project_name);
+		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for android at " BLU "./avdl_build_android/" RESET, avdl_settings.project_name);
 
 		return 0;
 	}
@@ -258,7 +263,9 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		return -1;
 	}
 
-	avdl_log("avdl: project " BLU "\"%s\"" RESET " compiled successfully at " BLU "./avdl_build/" RESET, avdl_settings.project_name);
+	// report results
+	avdl_time_end(&clock);
+	avdl_log("avdl: project " BLU "%s" RESET " compiled successfully at " BLU "./avdl_build/" RESET " in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
 
 	// success!
 	return 0;
