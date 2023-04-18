@@ -1,0 +1,35 @@
+#include "dd_log.h"
+#include <stdarg.h>
+#include <stdio.h>
+
+#ifdef AVDL_DIRECT3D11
+
+#include <windows.h>
+
+void dd_log(const char *msg, ...) {
+
+	va_list args;
+	va_start(args, msg);
+
+	char buffer[1024];
+	vsnprintf(buffer, 1024, msg, args);
+
+	std::string s_str = std::string(buffer);
+	std::wstring wid_str = std::wstring(s_str.begin(), s_str.end());
+	const wchar_t* w_char = wid_str.c_str();
+	Platform::String^ p_string = ref new Platform::String(w_char);
+
+	MessageDialog^ msg = ref new MessageDialog(p_string);
+	UICommand^ continueCommand = ref new UICommand("Ok");
+	UICommand^ upgradeCommand = ref new UICommand("Cancel");
+
+	msg->DefaultCommandIndex = 0;
+	msg->CancelCommandIndex = 1;
+	msg->Commands->Append(continueCommand);
+	msg->Commands->Append(upgradeCommand);
+	msg->ShowAsync();
+
+	va_end(args);
+}
+
+#endif

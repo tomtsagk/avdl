@@ -1,10 +1,12 @@
 #ifndef AVDL_TIME_H
 #define AVDL_TIME_H
 
+#include <avdl_settings.h>
+
 #include <time.h>
 
 struct avdl_time {
-	#ifdef AVDL_IS_OS(AVDL_OS_LINUX)
+	#if AVDL_IS_OS(AVDL_OS_LINUX)
 	struct timespec start;
 	struct timespec end;
 	double start_sec;

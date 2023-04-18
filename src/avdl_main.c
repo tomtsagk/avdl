@@ -56,6 +56,7 @@ char *cengine_files[] = {
 	"dd_image.c",
 	"dd_json.c",
 	"dd_log.c",
+	"dd_log_cpp.cpp",
 	"dd_math.c",
 	"dd_matrix.c",
 	"dd_mesh.c",
