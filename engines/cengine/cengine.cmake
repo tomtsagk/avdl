@@ -19,6 +19,7 @@ install(FILES
 	engines/cengine/src/dd_image.c
 	engines/cengine/src/dd_json.c
 	engines/cengine/src/dd_log.c
+	engines/cengine/src/dd_log_cpp.cpp
 	engines/cengine/src/dd_math.c
 	engines/cengine/src/dd_matrix.c
 	engines/cengine/src/dd_mesh.c
