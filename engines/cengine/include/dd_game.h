@@ -57,7 +57,9 @@ extern int dd_flag_updateThread;
 extern int dd_flag_exit;
 
 // project settings
-#if defined(_WIN32) || defined(WIN32)
+#if defined(AVDL_DIRECT3D11)
+#define PROJ_LOC_TYPE char
+#elif defined(_WIN32) || defined(WIN32)
 #define PROJ_LOC_TYPE wchar_t
 #else
 #define PROJ_LOC_TYPE char

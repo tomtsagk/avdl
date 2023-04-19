@@ -1,6 +1,10 @@
 #ifndef DD_IMAGE_H
 #define DD_IMAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "avdl_graphics.h"
 
 enum AVDL_IMAGETYPE {
@@ -32,7 +36,9 @@ struct dd_image {
 
 void dd_image_create(struct dd_image *o);
 
-#if defined(WIN32) || defined(_WIN32)
+#ifdef AVDL_DIRECT3D11
+void dd_image_load_bmp(struct dd_image *img, const char *filename);
+#elif defined(WIN32) || defined(_WIN32)
 void dd_image_load_bmp(struct dd_image *img, const wchar_t *filename);
 #else
 void dd_image_load_bmp(struct dd_image *img, const char *filename);
@@ -44,5 +50,9 @@ void dd_image_unbind(struct dd_image *o);
 void dd_image_set(struct dd_image *o, const char *filename, int type);
 
 void dd_image_clean(struct dd_image *o);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

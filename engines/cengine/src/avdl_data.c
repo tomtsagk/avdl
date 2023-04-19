@@ -84,7 +84,8 @@ void parse_filename(char *buffer, const char *filename) {
 
 int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 
-	#if defined(_WIN32) || defined(WIN32)
+	#if defined(AVDL_DIRECT3D11)
+	#elif defined(_WIN32) || defined(WIN32)
 
 	PWSTR path;
 	SHGetKnownFolderPath(&FOLDERID_LocalAppData, 0, NULL, &path);
@@ -216,7 +217,8 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 
 	//printf("loadfile: %s\n", filename);
 
-	#if defined(_WIN32) || defined(WIN32)
+	#if defined(AVDL_DIRECT3D11)
+	#elif defined(_WIN32) || defined(WIN32)
 
 	//dd_log("save file: %s", filename);
 

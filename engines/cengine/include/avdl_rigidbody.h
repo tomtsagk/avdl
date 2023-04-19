@@ -3,6 +3,10 @@
 
 #include "avdl_collider.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct avdl_rigidbody {
 
 	struct avdl_collider *collider;
@@ -41,5 +45,9 @@ void avdl_rigidbody_addVelocityf(struct avdl_rigidbody *, float, float, float);
 float avdl_rigidbody_getPositionX(struct avdl_rigidbody *);
 float avdl_rigidbody_getPositionY(struct avdl_rigidbody *);
 float avdl_rigidbody_getPositionZ(struct avdl_rigidbody *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

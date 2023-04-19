@@ -8,6 +8,17 @@
 #include <whereami.h>
 #endif
 
+#ifdef AVDL_DIRECT3D11
+WAI_FUNCSPEC
+int WAI_PREFIX(getExecutablePath)(char* out, int capacity, int* dirname_length) {
+	return 0;
+}
+WAI_FUNCSPEC
+int WAI_PREFIX(getModulePath)(char* out, int capacity, int* dirname_length) {
+	return 0;
+}
+#else
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -801,4 +812,6 @@ int WAI_PREFIX(getModulePath)(char* out, int capacity, int* dirname_length)
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

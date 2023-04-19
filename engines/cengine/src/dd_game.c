@@ -35,7 +35,7 @@ void dd_gameInitDefault() {
 	dd_gameInitWindowHeight = 480;
 }
 
-#if DD_PLATFORM_NATIVE
+#if DD_PLATFORM_NATIVE || defined(AVDL_DIRECT3D11)
 int dd_window_width() {
 	#ifdef AVDL_DIRECT3D11
 	return 100;

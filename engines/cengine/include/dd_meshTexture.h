@@ -1,6 +1,10 @@
 #ifndef DD_MESHTEXTURE_D
 #define DD_MESHTEXTURE_D
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "dd_meshColour.h"
 #include "dd_image.h"
 #include "avdl_graphics.h"
@@ -38,5 +42,9 @@ void dd_meshTexture_setTexture(struct dd_meshTexture *o, struct dd_image *tex);
 void dd_meshTexture_combine(struct dd_meshTexture *dst, struct dd_meshTexture *src, float offsetX, float offsetY, float offsetZ);
 
 void dd_meshTexture_setTransparency(struct dd_meshTexture *o, int transparency);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

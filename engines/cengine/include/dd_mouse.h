@@ -1,6 +1,10 @@
 #ifndef DD_MOUSE_H
 #define DD_MOUSE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum DD_INPUT_MOUSE_BUTTON {
 	DD_INPUT_MOUSE_BUTTON_LEFT,
 	DD_INPUT_MOUSE_BUTTON_MIDDLE,
@@ -36,6 +40,10 @@ float dd_mouse_yProportion();
 // temporarily disable
 //#define dd_mouse_shape(shape) glutSetCursor(shape)
 //#define dd_mouse_position(x, y) glutWarpPointer(x, y)
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif

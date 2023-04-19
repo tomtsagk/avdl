@@ -20,7 +20,11 @@ struct dd_meshToLoad {
 	void *object;
 	int meshType;
 	char filename[400];
+	#ifdef AVDL_DIRECT3D11
+	char filenameW[400];
+	#else
 	wchar_t filenameW[400];
+	#endif
 	int type;
 };
 

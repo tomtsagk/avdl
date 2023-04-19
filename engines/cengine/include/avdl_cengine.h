@@ -2,6 +2,10 @@
 #define AVDL_GAME_VERSION "0.0.0"
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "dd_dynamic_array.h"
 #include "dd_filetomesh.h"
 #include "dd_matrix.h"
@@ -38,3 +42,7 @@
 #include "avdl_engine.h"
 
 int dd_main(int argc, char *argv[]);
+
+#ifdef __cplusplus
+}
+#endif

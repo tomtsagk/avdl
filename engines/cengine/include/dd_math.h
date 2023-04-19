@@ -1,6 +1,10 @@
 #ifndef DD_MATH_H
 #define DD_MATH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "dd_vec2.h"
 #include "dd_vec3.h"
 #include <math.h>
@@ -61,5 +65,8 @@ float dd_math_dec2rad(float dec);
 float dd_math_dot2(struct dd_vec2 *v1, struct dd_vec2 *v2);
 float dd_math_dot3(struct dd_vec3 *v1, struct dd_vec3 *v2);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif

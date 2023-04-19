@@ -1,6 +1,10 @@
 #ifndef DD_MESHCOLOUR_H
 #define DD_MESHCOLOUR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "dd_mesh.h"
 
 struct dd_meshColour {
@@ -26,5 +30,9 @@ void dd_meshColour_copy(struct dd_meshColour *dest, struct dd_meshColour *src);
 void dd_meshColour_set_colour(struct dd_meshColour *m, float r, float g, float b);
 
 void dd_meshColour_combine(struct dd_meshColour *dest, struct dd_meshColour *src, float offsetX, float offsetY, float offsetZ);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MESHCOLOUR_H */

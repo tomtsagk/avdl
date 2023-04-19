@@ -5,6 +5,10 @@
 #include "avdl_rigidbody.h"
 #include "dd_vec3.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct avdl_physics {
 	struct avdl_rigidbody *object[10];
 	int object_count;
@@ -24,5 +28,9 @@ void avdl_physics_addObject(struct avdl_physics *o, struct avdl_rigidbody *obj);
 
 void avdl_physics_addConstantForcef(struct avdl_physics *o, float x, float y, float z);
 void avdl_physics_clearConstantForce(struct avdl_physics *o);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

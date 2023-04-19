@@ -3,6 +3,10 @@
 
 #include <avdl_graphics.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct avdl_program {
 	char *sdrVertexSrc;
 	char *sdrFragmentSrc;
@@ -52,5 +56,9 @@ extern const char *avdl_shaderDefault_fragment;
  */
 extern const char *avdl_shaderFont_vertex;
 extern const char *avdl_shaderFont_fragment;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

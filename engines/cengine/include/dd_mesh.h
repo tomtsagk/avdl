@@ -1,6 +1,10 @@
 #ifndef DD_MESH_H
 #define DD_MESH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum dd_primitives {
 	DD_PRIMITIVE_TRIANGLE,
 	DD_PRIMITIVE_RECTANGLE,
@@ -46,5 +50,9 @@ void dd_mesh_load(struct dd_mesh *m, const char *filename, int type);
 
 void dd_mesh_copy(struct dd_mesh *dest, struct dd_mesh *src);
 void dd_mesh_combine(struct dd_mesh *dest, struct dd_mesh *src, float offsetX, float offsetY, float offsetZ);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* MESH_H */

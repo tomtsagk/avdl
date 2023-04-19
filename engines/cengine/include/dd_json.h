@@ -1,6 +1,10 @@
 #ifndef DD_JSON_H
 #define DD_JSON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 
 // Tokens
@@ -67,5 +71,9 @@ char *dd_json_getTokenString(struct dd_json_object *o);
 int dd_json_getTokenSize(struct dd_json_object *o);
 
 void dd_json_deinit(struct dd_json_object *o);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

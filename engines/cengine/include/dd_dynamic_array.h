@@ -1,6 +1,10 @@
 #ifndef DD_DYNAMIC_ARRAY_H
 #define DD_DYNAMIC_ARRAY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* a dynamic array
  * elements have a custom size (specified inside an init function)
  * new elements can be added
@@ -46,5 +50,9 @@ void *dd_da_get(struct dd_dynamic_array *da, unsigned int element);
 
 void dd_da_empty(struct dd_dynamic_array *da);
 void dd_da_copy(struct dd_dynamic_array *dest, struct dd_dynamic_array *src);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

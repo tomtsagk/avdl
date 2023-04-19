@@ -19,6 +19,7 @@ int main(int argc, char *argv[]) {
 #endif
 #endif
 
+#if 0
 #ifdef AVDL_DIRECT3D11
 #include "avdl_engine.h"
 #include <stdio.h>
@@ -33,4 +34,5 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	return dd_main(0, 0);
 	//return 0;
 }
+#endif
 #endif

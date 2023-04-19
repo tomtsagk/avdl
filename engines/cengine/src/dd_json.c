@@ -20,6 +20,8 @@ void dd_json_init(struct dd_json_object *o, char *json_string, int size) {
 }
 
 void dd_json_initFile(struct dd_json_object *o, char *filename) {
+	#ifdef AVDL_DIRECT3D11
+	#else
 	o->file = fopen(filename, "r");
 	if (!o->file) {
 		dd_log("avdl: error opening file '%s': %s",
@@ -27,10 +29,13 @@ void dd_json_initFile(struct dd_json_object *o, char *filename) {
 		);
 	}
 	o->hasKey = 0;
+	#endif
 }
 
 void dd_json_next(struct dd_json_object *o) {
 
+	#ifdef AVDL_DIRECT3D11
+	#else
 	if (o->file) {
 
 		// ignore whitespace
@@ -213,6 +218,7 @@ void dd_json_next(struct dd_json_object *o) {
 			}
 			break;
 	}
+	#endif
 }
 
 enum DD_JSON_TOKEN dd_json_getToken(struct dd_json_object *o) {
@@ -228,6 +234,8 @@ int dd_json_getTokenSize(struct dd_json_object *o) {
 }
 
 void dd_json_deinit(struct dd_json_object *o) {
+	#ifdef AVDL_DIRECT3D11
+	#else
 	if (o->file) {
 		fclose(o->file);
 		o->file = 0;
@@ -241,4 +249,5 @@ void dd_json_deinit(struct dd_json_object *o) {
 	o->length = 0;
 
 	o->buffer[0] = '\0';
+	#endif
 }

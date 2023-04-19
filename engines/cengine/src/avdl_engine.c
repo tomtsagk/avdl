@@ -17,6 +17,7 @@ static void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio
 extern int dd_flag_exit;
 
 #ifndef AVDL_DIRECT3D11
+
 int avdl_engine_init(struct avdl_engine *o) {
 
 	o->isPaused = 1;
@@ -41,7 +42,8 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	avdl_input_Init(&o->input);
 
-	#if defined(_WIN32) || defined(WIN32)
+	#if defined(AVDL_DIRECT3D11)
+	#elif defined(_WIN32) || defined(WIN32)
 	const PROJ_LOC_TYPE *proj_loc = avdl_getProjectLocation();
 	if (proj_loc) {
 		if (_wchdir(proj_loc) != 0) {

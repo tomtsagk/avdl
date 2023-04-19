@@ -1,6 +1,10 @@
 #ifndef DD_MATRIX_H
 #define DD_MATRIX_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * matrix, that controls transformations of objects
  */
@@ -76,5 +80,9 @@ void dd_matrix_approach_rs(struct dd_matrix *m1, struct dd_matrix *m2, float cou
 float dd_matrix_x(struct dd_matrix *m);
 float dd_matrix_y(struct dd_matrix *m);
 float dd_matrix_z(struct dd_matrix *m);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

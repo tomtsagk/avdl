@@ -1,5 +1,8 @@
 #ifndef DD_GAMEJOLT_H
 #define DD_GAMEJOLT_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 //
 //#include "dd_json.h"
 //
@@ -97,4 +100,7 @@
 //int dd_gamejolt_response_hasUser(struct dd_gamejolt_response_struct *, int scoreIndex);
 //
 void nofunc();
+#ifdef __cplusplus
+}
+#endif
 #endif

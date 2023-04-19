@@ -6,15 +6,23 @@
 // world interface and starting world
 #include "avdl_cengine.h"
 
-#if defined(AVDL_OS_WINDOWS)
+#ifdef AVDL_DIRECT3D11
+#elif defined(AVDL_OS_WINDOWS)
 HANDLE updateDrawMutex;
 #else
 
+#ifdef AVDL_DIRECT3D11
+#else
 #include <unistd.h>
+#endif
+
+#ifdef AVDL_DIRECT3D11
+#else
 // Threads
 #include <pthread.h>
 pthread_t updatePthread;
 pthread_mutex_t updateDrawMutex;
+#endif
 
 #endif
 
@@ -62,6 +70,8 @@ struct avdl_engine engine;
 
 int dd_main(int argc, char *argv[]) {
 
+	#ifdef AVDL_DIRECT3D11
+	#else
 	/*
 	 * parse command line arguments
 	 */
@@ -88,6 +98,7 @@ int dd_main(int argc, char *argv[]) {
 		}
 
 	}
+	#endif
 
 	#if DD_PLATFORM_ANDROID
 	// initialise pthread mutex for jni
@@ -98,7 +109,8 @@ int dd_main(int argc, char *argv[]) {
 	}
 	#endif
 
-	#if defined(AVDL_OS_WINDOWS)
+	#ifdef AVDL_DIRECT3D11
+	#elif defined(AVDL_OS_WINDOWS)
 	updateDrawMutex = CreateMutex(NULL, FALSE, NULL);
 	#else
 	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
@@ -124,7 +136,8 @@ int dd_main(int argc, char *argv[]) {
 
 	avdl_engine_clean(&engine);
 
-	#if defined(_WIN32) || defined(WIN32)
+	#ifdef AVDL_DIRECT3D11
+	#elif defined(_WIN32) || defined(WIN32)
 	CloseHandle(updateDrawMutex);
 	#else
 	pthread_mutex_destroy(&updateDrawMutex);
@@ -164,14 +177,16 @@ void onResume() {
 
 	if (!avdl_state_initialised) return;
 
-	#if defined(AVDL_OS_WINDOWS)
+	#ifdef AVDL_DIRECT3D11
+	#elif defined(AVDL_OS_WINDOWS)
 	WaitForSingleObject(updateDrawMutex, INFINITE);
 	#else
 	pthread_mutex_lock(&updateDrawMutex);
 	#endif
 	dd_flag_exit = 0;
 	dd_flag_focused = 1;
-	#if defined(AVDL_OS_WINDOWS)
+	#ifdef AVDL_DIRECT3D11
+	#elif defined(AVDL_OS_WINDOWS)
 	ReleaseMutex(updateDrawMutex);
 	#else
 	pthread_mutex_unlock(&updateDrawMutex);
@@ -206,14 +221,16 @@ void onPause() {
 		pthread_join(updatePthread, NULL);
 		#endif
 	}
-	#if defined(AVDL_OS_WINDOWS)
+	#ifdef AVDL_DIRECT3D11
+	#elif defined(AVDL_OS_WINDOWS)
 	WaitForSingleObject(updateDrawMutex, INFINITE);
 	#else
 	pthread_mutex_lock(&updateDrawMutex);
 	#endif
 	dd_flag_focused = 0;
 	//dd_flag_initialised = 0;
-	#if defined(AVDL_OS_WINDOWS)
+	#ifdef AVDL_DIRECT3D11
+	#elif defined(AVDL_OS_WINDOWS)
 	ReleaseMutex(updateDrawMutex);
 	#else
 	pthread_mutex_unlock(&updateDrawMutex);

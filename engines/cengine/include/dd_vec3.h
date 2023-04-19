@@ -1,6 +1,10 @@
 #ifndef DD_VEC3_H
 #define DD_VEC3_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct dd_vec3 {
 	float x, y, z;
 	void (*setf)(struct dd_vec3 *, float, float, float);
@@ -30,5 +34,9 @@ void dd_vec3_cross(struct dd_vec3 *o, struct dd_vec3 *v1, struct dd_vec3 *v2);
 float dd_vec3_dot(struct dd_vec3 *a, struct dd_vec3 *b);
 void dd_vec3_normalise(struct dd_vec3 *o);
 float dd_vec3_magnitude(struct dd_vec3 *o);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

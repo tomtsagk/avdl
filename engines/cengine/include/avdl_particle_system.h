@@ -22,6 +22,10 @@
  */
 #define PARTICLES_TOTAL 50
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  * each individual particle's data
  */
@@ -123,5 +127,9 @@ void avdl_particle_system_setParticleScale       (struct avdl_particle_system *o
 void avdl_particle_system_setParticleScaleFuzz   (struct avdl_particle_system *o, float x, float y, float z);
 
 void avdl_particle_system_setParticlesTotal(struct avdl_particle_system *o, int);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

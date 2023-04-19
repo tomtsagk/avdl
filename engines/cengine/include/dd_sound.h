@@ -1,6 +1,10 @@
 #ifndef DD_SOUND_H
 #define DD_SOUND_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if DD_PLATFORM_ANDROID
 #else
 #include "avdl_graphics.h"
@@ -60,5 +64,9 @@ void dd_sound_stop(struct dd_sound *);
 
 void avdl_sound_setVolume(int volume);
 int avdl_sound_getVolume();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

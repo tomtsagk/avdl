@@ -5,7 +5,8 @@
 #include "avdl_assetManager.h"
 #include <errno.h>
 
-#if DD_PLATFORM_ANDROID
+#ifdef AVDL_DIRECT3D11
+#elif DD_PLATFORM_ANDROID
 #else
 #include <png.h>
 #endif
