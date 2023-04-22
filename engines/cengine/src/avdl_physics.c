@@ -16,6 +16,7 @@ void avdl_physics_create(struct avdl_physics *o) {
 
 	o->update = avdl_physics_update;
 	o->addObject = avdl_physics_addObject;
+	o->clearObjects = avdl_physics_clearObjects;
 
 	o->addConstantForcef = avdl_physics_addConstantForcef;
 	o->clearConstantForce = avdl_physics_clearConstantForce;
@@ -313,6 +314,10 @@ void avdl_physics_addObject(struct avdl_physics *o, struct avdl_rigidbody *obj) 
 
 	o->object[o->object_count] = obj;
 	o->object_count++;
+}
+
+void avdl_physics_clearObjects(struct avdl_physics *o) {
+	o->object_count = 0;
 }
 
 void avdl_physics_addConstantForcef(struct avdl_physics *o, float x, float y, float z) {
