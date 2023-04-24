@@ -327,3 +327,22 @@ void avdl_physics_addConstantForcef(struct avdl_physics *o, float x, float y, fl
 void avdl_physics_clearConstantForce(struct avdl_physics *o) {
 	dd_vec3_setf(&o->constant_force, 0, 0, 0);
 }
+
+int avdl_physics_isCollision(struct avdl_rigidbody *o1, struct avdl_rigidbody *o2) {
+	struct manifold m;
+	if (o1->collider->type == AVDL_COLLIDER_TYPE_AABB) {
+		if (o2->collider->type == AVDL_COLLIDER_TYPE_SPHERE) {
+			avdl_physics_collision_aabbVSsphere(&m, o1, o2);
+			return m.collide;
+		}
+	}
+	else
+	if (o1->collider->type == AVDL_COLLIDER_TYPE_SPHERE) {
+		if (o1->collider->type == AVDL_COLLIDER_TYPE_AABB) {
+			avdl_physics_collision_aabbVSsphere(&m, o2, o1);
+			return m.collide;
+		}
+	}
+
+	return 0;
+}

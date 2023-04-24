@@ -35,4 +35,6 @@ void avdl_physics_clearConstantForce(struct avdl_physics *o);
 }
 #endif
 
+int avdl_physics_isCollision(struct avdl_rigidbody *o1, struct avdl_rigidbody *o2);
+
 #endif
