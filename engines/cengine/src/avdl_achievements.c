@@ -1,6 +1,6 @@
 #include "avdl_achievements.h"
 
-#ifndef AVDL_STEAM
+#if !defined(AVDL_STEAM) && !defined(AVDL_QUEST2)
 struct avdl_achievements *avdl_achievements_create() {
 	return 0;
 }

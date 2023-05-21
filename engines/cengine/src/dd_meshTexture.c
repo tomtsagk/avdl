@@ -5,7 +5,7 @@
 #include <string.h>
 #include "dd_log.h"
 #include "avdl_assetManager.h"
-#include "dd_log.h"
+#include "dd_game.h"
 #include <stdlib.h>
 #include "avdl_graphics.h"
 
@@ -20,6 +20,8 @@ void dd_meshTexture_create(struct dd_meshTexture *m) {
 	m->t = 0;
 	m->img = 0;
 	m->hasTransparency = 0;
+	m->verticesTex = 0;
+	m->dirtyTextureArrayObject = 0;
 	m->parent.parent.load = (void (*)(struct dd_mesh *, const char *filename, int type)) dd_meshTexture_load;
 	m->parent.parent.draw = (void (*)(struct dd_mesh *)) dd_meshTexture_draw;
 	m->parent.parent.clean = (void (*)(struct dd_mesh *)) dd_meshTexture_clean;
@@ -47,6 +49,12 @@ void dd_meshTexture_clean(struct dd_meshTexture *m) {
 		free(m->t);
 		m->t = 0;
 		m->dirtyTextures = 0;
+	}
+
+	if (m->dirtyTextureArrayObject) {
+		free(m->verticesTex);
+		m->verticesTex = 0;
+		m->dirtyTextureArrayObject = 0;
 	}
 
 }
@@ -83,47 +91,114 @@ void dd_meshTexture_set_primitive_texcoords(struct dd_meshTexture *m, float offs
 void dd_meshTexture_draw(struct dd_meshTexture *m) {
 
 	#ifndef AVDL_DIRECT3D11
+
+	if (m->parent.parent.array == 0 || m->parent.parent.openglContextId != avdl_graphics_getContextId()) {
+
+                m->parent.parent.openglContextId = avdl_graphics_getContextId();
+
+		m->verticesTex = malloc( sizeof(struct dd_vertex_tex) *m->parent.parent.vcount );
+		m->dirtyTextureArrayObject = 1;
+		for (int i = 0; i < m->parent.parent.vcount; i++) {
+			m->verticesTex[i].pos[0] = m->parent.parent.v[i *3 +0];
+			m->verticesTex[i].pos[1] = m->parent.parent.v[i *3 +1];
+			m->verticesTex[i].pos[2] = m->parent.parent.v[i *3 +2];
+
+			#if DD_PLATFORM_ANDROID
+			if (m->parent.c) {
+				m->verticesTex[i].col[0] = m->parent.c[i *4 +0];
+				m->verticesTex[i].col[1] = m->parent.c[i *4 +1];
+				m->verticesTex[i].col[2] = m->parent.c[i *4 +2];
+				m->verticesTex[i].col[3] = m->parent.c[i *4 +3];
+			}
+			else {
+				m->verticesTex[i].col[0] = 0;
+				m->verticesTex[i].col[1] = 0;
+				m->verticesTex[i].col[2] = 0;
+				m->verticesTex[i].col[3] = 0;
+			}
+			#else
+			if (m->parent.c) {
+				m->verticesTex[i].col[0] = m->parent.c[i *3 +0];
+				m->verticesTex[i].col[1] = m->parent.c[i *3 +1];
+				m->verticesTex[i].col[2] = m->parent.c[i *3 +2];
+			}
+			else {
+				m->verticesTex[i].col[0] = 0;
+				m->verticesTex[i].col[1] = 0;
+				m->verticesTex[i].col[2] = 0;
+			}
+			#endif
+
+			if (m->t) {
+				m->verticesTex[i].tex[0] = m->t[i *2 +0];
+				m->verticesTex[i].tex[1] = m->t[i *2 +1];
+			}
+			else {
+				m->verticesTex[i].tex[0] = 0;
+				m->verticesTex[i].tex[1] = 0;
+			}
+		}
+
+		glGenVertexArrays(1, &m->parent.parent.array);
+		glBindVertexArray(m->parent.parent.array);
+	
+		glGenBuffers(1, &m->parent.parent.buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, m->parent.parent.buffer);
+	
+		glBufferData(GL_ARRAY_BUFFER, sizeof(struct dd_vertex_tex) *m->parent.parent.vcount, m->verticesTex, GL_STATIC_DRAW);
+	
+		int pos = glGetAttribLocation(currentProgram, "position");
+		glVertexAttribPointer(pos, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, pos));
+		glEnableVertexAttribArray(pos);
+
+		int col = glGetAttribLocation(currentProgram, "colour");
+		glVertexAttribPointer(col, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, col));
+		glEnableVertexAttribArray(col);
+
+		int tex = glGetAttribLocation(currentProgram, "texCoord");
+		glVertexAttribPointer(tex, 2, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, tex));
+		glEnableVertexAttribArray(tex);
+	}
+
 	if (m->hasTransparency) {
 		avdl_graphics_EnableBlend();
-	}
-
-	avdl_graphics_EnableVertexAttribArray(0);
-	avdl_graphics_VertexAttribPointer(0, 3, GL_FLOAT, 0, 0, m->parent.parent.v);
-
-	if (m->parent.c) {
-		avdl_graphics_EnableVertexAttribArray(1);
-		#if DD_PLATFORM_ANDROID
-		avdl_graphics_VertexAttribPointer(1, 4, GL_FLOAT, 1, 0, m->parent.c);
-		#else
-		avdl_graphics_VertexAttribPointer(1, 3, GL_FLOAT, 1, 0, m->parent.c);
-		#endif
-	}
-
-	if (m->t) {
-		avdl_graphics_EnableVertexAttribArray(2);
-		avdl_graphics_VertexAttribPointer(2, 2, GL_FLOAT, 0, 0, m->t);
 	}
 
 	if (m->img) {
 		m->img->bind(m->img);
 	}
 
+	glBindVertexArray(m->parent.parent.array);
+
+	#if defined(AVDL_QUEST2)
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		dd_log("avdl: dd_meshTexture_draw: location of `matrix` not found in current program");
+		dd_log("avdl: dd_meshTexture: location of `matrix` not found in current program");
+	}
+	else {
+		glUniformMatrix4fv(
+			MatrixID,
+			1,
+			GL_TRUE,
+			(float *)dd_matrix_globalGet()
+		);
+	}
+	#else
+	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
+	if (MatrixID < 0) {
+		dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
 	}
 	else {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 	}
+	#endif
 
-	avdl_graphics_DrawArrays(m->parent.parent.vcount);
+	glDrawArrays(GL_TRIANGLES, 0, m->parent.parent.vcount);
+	glBindVertexArray(0);
 
 	if (m->img) {
 		m->img->unbind(m->img);
 	}
-	if (m->t) avdl_graphics_DisableVertexAttribArray(2);
-	if (m->parent.c) avdl_graphics_DisableVertexAttribArray(1);
-	avdl_graphics_DisableVertexAttribArray(0);
 
 	if (m->hasTransparency) {
 		avdl_graphics_DisableBlend();

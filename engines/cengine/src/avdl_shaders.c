@@ -20,6 +20,29 @@ static char *avsl_shader_vertex =
 "#define AVDL_IN attribute\n"
 "#define AVDL_OUT varying\n"
 "#endif\n"
+
+#if defined(AVDL_QUEST2)
+"#define NUM_VIEWS 2\n"
+"#define VIEW_ID gl_ViewID_OVR\n"
+"#extension GL_OVR_multiview2 : require\n"
+"layout(num_views=NUM_VIEWS) in;\n"
+"uniform SceneMatrices {\n"
+"	uniform mat4 ViewMatrix[NUM_VIEWS];\n"
+"	uniform mat4 ProjectionMatrix[NUM_VIEWS];\n"
+"} sm;\n"
+"in vec3 position;\n"
+"uniform mat4 matrix;\n"
+"vec4 final_position() {\n"
+"	return (sm.ProjectionMatrix[VIEW_ID] * sm.ViewMatrix[VIEW_ID]) * matrix * vec4(position, 1.0);\n"
+"}\n"
+#else
+"AVDL_IN vec4 position;\n"
+"uniform mat4 matrix;\n"
+"vec4 final_position() {\n"
+"	return (matrix *position);\n"
+"}\n"
+#endif
+
 ;
 
 static char *avsl_shader_fragment =
@@ -146,14 +169,14 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 	unsigned int sdr = glCreateShader(type);
 	GLenum err = glGetError();
 	if (!sdr || err != GL_NO_ERROR) {
-		dd_log("avdl: create_shader: error creating shader");
+		//dd_log("avdl: create_shader: error creating shader");
 		glDeleteShader(sdr);
 		free(newSource);
 		return 0;
 	}
 	glShaderSource(sdr, 1, &newSource2, 0);
 	if (glGetError() != GL_NO_ERROR) {
-		dd_log("avdl: create_shader: error getting shader source");
+		//dd_log("avdl: create_shader: error getting shader source");
 		glDeleteShader(sdr);
 		free(newSource);
 		return 0;
@@ -162,7 +185,7 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 	GLint sdrStatus;
 	glGetShaderiv(sdr, GL_COMPILE_STATUS, &sdrStatus);
 	if (glGetError() != GL_NO_ERROR || sdrStatus == GL_FALSE) {
-		dd_log("avdl: create_shader: error compiling shader source");
+		//dd_log("avdl: create_shader: error compiling shader source");
 
 		//Get compilation log
 		int logsz;
@@ -171,10 +194,12 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 			char *buf = malloc(sizeof(char) *(logsz +1));
 			glGetShaderInfoLog(sdr, logsz, 0, buf);
 			buf[logsz] = 0;
+			/*
 			dd_log("avdl: compilation of %s shader failed: %s",
 				type == GL_VERTEX_SHADER   ? "vertex" :
 				type == GL_FRAGMENT_SHADER ? "fragment" :
 				"<unknown>", buf);
+				*/
 			free(buf);
 		}
 
@@ -225,11 +250,13 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
 	int logsz;
 	glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &logsz);
 	if (logsz > 1) {
+		/*
 		char *buf = malloc(sizeof(char) *(logsz +1));
 		glGetProgramInfoLog(prog, logsz, 0, buf);
 		buf[logsz] = 0;
 		dd_log("linking shader program failed.\nshader program linker log: %s", buf);
 		free(buf);
+		*/
 	}
 
 	//Check compilation status
@@ -311,17 +338,14 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 }
 
 const char *avdl_shaderDefault_vertex =
-"AVDL_IN vec4 position;\n"
 "AVDL_IN vec3 colour;\n"
 "AVDL_IN vec2 texCoord;\n"
-
-"uniform mat4 matrix;\n"
 
 "AVDL_OUT vec2 outTexCoord;\n"
 "AVDL_OUT vec4 outColour;\n"
 
 "void main() {\n"
-"	gl_Position = matrix *position;\n"
+"	gl_Position = final_position();\n"
 "	outColour = vec4(colour.rgb, 0);\n"
 "	outTexCoord  = texCoord;\n"
 "}\n"
@@ -338,19 +362,39 @@ const char *avdl_shaderDefault_fragment =
 "}\n"
 ;
 
+const char *avdl_shaderDefault_vertex_q2 =
+"in vec3 colour;\n"
+"in vec2 texCoord;\n"
+"out vec4 fragmentColor;\n"
+"out vec2 outTexCoord;\n"
+"void main() {\n"
+"	gl_Position = final_position();\n"
+"	fragmentColor = vec4(colour, 0.0);\n"
+"	outTexCoord  = texCoord;\n"
+"}\n"
+;
+
+const char *avdl_shaderDefault_fragment_q2 =
+"in lowp vec4 fragmentColor;\n"
+"in lowp vec2 outTexCoord;\n"
+"out lowp vec4 outColor;\n"
+"uniform sampler2D image;\n"
+"void main() {\n"
+"	outColor = fragmentColor +texture(image, outTexCoord);\n"
+"}\n"
+;
+
 const char *avdl_shaderFont_vertex =
-"AVDL_IN vec4 position;\n"
 "AVDL_IN vec2 texCoord;\n"
 
 "uniform vec3 colorFront;\n"
 "uniform vec3 colorBack;\n"
-"uniform mat4 matrix;\n"
 
 "AVDL_OUT vec4 outColour;\n"
 "AVDL_OUT vec2 outTexCoord;\n"
 
 "void main() {\n"
-"	gl_Position = matrix *position;\n"
+"	gl_Position = final_position();\n"
 "	outColour = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
 "	outTexCoord  = texCoord;\n"
 "}\n"
@@ -368,6 +412,32 @@ const char *avdl_shaderFont_fragment =
 "		discard;\n"
 "	}\n"
 "	avdl_frag_color = finalCol;\n"
+"}\n"
+;
+
+const char *avdl_shaderFont_vertex_q2 =
+"in vec3 colour;\n"
+"in vec2 texCoord;\n"
+"out vec4 fragmentColour;\n"
+"out vec2 outTexCoord;\n"
+"void main() {\n"
+"	gl_Position = final_position();\n"
+"	fragmentColour = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
+"	outTexCoord  = texCoord;\n"
+"}\n"
+;
+
+const char *avdl_shaderFont_fragment_q2 =
+"in lowp vec4 fragmentColour;\n"
+"in lowp vec2 outTexCoord;\n"
+"out lowp vec4 outColor;\n"
+"uniform sampler2D image;\n"
+"void main() {\n"
+"	vec4 finalCol = texture(image, outTexCoord);\n"
+"	if (finalCol.r < 0.05 && finalCol.g < 0.05 && finalCol.b < 0.05) {\n"
+"		discard;\n"
+"	}\n"
+"	outColor = finalCol;\n"
 "}\n"
 ;
 

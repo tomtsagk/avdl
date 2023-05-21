@@ -34,6 +34,11 @@ pthread_mutex_t updateDrawMutex;
 	#include <jni.h>
 	jclass *clazz;
 
+	#if defined(AVDL_QUEST2)
+	jmethodID BitmapMethodId;
+	jmethodID ReadPlyMethodId;
+	#endif
+
 	// Reconstruct engine to use one JNIEnv per world
 	JNIEnv *jniEnv;
 	JavaVM* jvm = 0;
@@ -100,7 +105,7 @@ int dd_main(int argc, char *argv[]) {
 	}
 	#endif
 
-	#if DD_PLATFORM_ANDROID
+	#if defined(DD_PLATFORM_ANDROID) && !defined(AVDL_QUEST2)
 	// initialise pthread mutex for jni
 	if (pthread_mutex_init(&jniMutex, NULL) != 0)
 	{
@@ -245,7 +250,7 @@ void onPause() {
 void updateThread() {
 	while (!dd_flag_exit && !avdl_engine_isPaused(&engine)) {
 		pthread_mutex_lock(&updateDrawMutex);
-		avdl_engine_update(&engine);
+		avdl_engine_update(&engine, 1);
 		if (dd_flag_exit) {
 			/*
 			JNIEnv *env;
@@ -289,6 +294,15 @@ void updateThread() {
  * nativeInit : Called when the app is first created
  */
 void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject thiz, jobject mainActivity) {
+
+	#if defined(AVDL_QUEST2)
+	// initialise pthread mutex for jni
+	if (pthread_mutex_init(&jniMutex, NULL) != 0)
+	{
+		dd_log("avdl: mutex for jni init failed");
+		return;
+	}
+	#endif
 
 	pthread_mutex_lock(&jniMutex);
 	// Global variables to access Java virtual machine and environment
@@ -388,8 +402,43 @@ void Java_org_darkdimension_avdl_AvdlActivity_nativeResume(JNIEnv* env) {
 void Java_org_darkdimension_avdl_AvdlActivity_nativeKeyDown(JNIEnv*  env, jobject obj, jint key) {
 	if (dd_flag_exit == 0) {
 		pthread_mutex_lock(&updateDrawMutex);
-		engine.input_key = key;
+		engine.input.input_key = key;
 		pthread_mutex_unlock(&updateDrawMutex);
 	}
 }
+
+#if defined(AVDL_QUEST2)
+JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+	//dd_log("JNI_OnLoad");
+	jvm = vm;
+	(*jvm)->GetEnv(jvm, &jniEnv, JNI_VERSION_1_6);
+	jclass classLocal = (*(*jniEnv)->FindClass)(jniEnv, "dev/afloof/avdl/AvdlActivity");
+	clazz = (*jniEnv)->NewGlobalRef(jniEnv, classLocal);
+
+	BitmapMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
+	ReadPlyMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadPly", "(Ljava/lang/String;I)[Ljava/lang/Object;");
+
+	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
+	{
+		dd_log("avdl: mutex for update/draw init failed");
+		return JNI_VERSION_1_6;
+	}
+
+	return JNI_VERSION_1_6;
+}
+
+void set_android_save_dir(jobject activity) {
+	// grab internal save path, for save/load functionality
+	jmethodID getFilesDir = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "getFilesDir", "()Ljava/io/File;");
+	jobject dirobj = (*(*jniEnv)->CallObjectMethod)(jniEnv, activity, getFilesDir);
+	jclass dir = (*(*jniEnv)->GetObjectClass)(jniEnv, dirobj);
+	jmethodID getStoragePath =
+		(*(*jniEnv)->GetMethodID)(jniEnv, dir, "getAbsolutePath", "()Ljava/lang/String;");
+	jstring path=(jstring)(*(*jniEnv)->CallObjectMethod)(jniEnv, dirobj, getStoragePath);
+	const char *pathstr=(*(*jniEnv)->GetStringUTFChars)(jniEnv, path, 0);
+	strcpy(avdl_data_saveDirectory, pathstr);
+	//dd_log("save dir: %s", avdl_data_saveDirectory);
+	(*(*jniEnv)->ReleaseStringUTFChars)(jniEnv, path, pathstr);
+}
+#endif
 #endif

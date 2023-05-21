@@ -1,0 +1,42 @@
+
+apply plugin: 'com.android.application'
+apply from: "${rootProject.projectDir}/VrApp.gradle"
+
+android {
+	namespace 'dev.afloof.avdl'
+	compileSdkVersion 32
+	ndkVersion '25.1.8937393'
+
+	defaultConfig {
+		// Gradle replaces the manifest package with this value, which must
+		// be unique on a system.  If you don't change it, a new app
+		// will replace an older one.
+		applicationId '%AVDL_PACKAGE_NAME%'
+		minSdkVersion 24
+		targetSdkVersion 32
+		versionCode  %AVDL_VERSION_CODE%
+		versionName  "%AVDL_VERSION_NAME%"
+
+		// override app plugin abiFilters for 64-bit support
+		externalNativeBuild {
+			ndk {
+				abiFilters 'arm64-v8a'
+			}
+			ndkBuild {
+				abiFilters 'arm64-v8a'
+			}
+		}
+	}
+
+	sourceSets {
+		main {
+			manifest.srcFile 'AndroidManifest.xml'
+			java.srcDirs = ['../../java']
+			res.srcDirs = ['../../res']
+		}
+	}
+
+	lintOptions {
+		disable 'ExpiredTargetSdkVersion'
+	}
+}

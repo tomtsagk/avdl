@@ -50,12 +50,16 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname);
  */
 extern const char *avdl_shaderDefault_vertex;
 extern const char *avdl_shaderDefault_fragment;
+extern const char *avdl_shaderDefault_vertex_q2;
+extern const char *avdl_shaderDefault_fragment_q2;
 
 /*
  * the font shader, used only for text
  */
 extern const char *avdl_shaderFont_vertex;
 extern const char *avdl_shaderFont_fragment;
+extern const char *avdl_shaderFont_vertex_q2;
+extern const char *avdl_shaderFont_fragment_q2;
 
 #ifdef __cplusplus
 }

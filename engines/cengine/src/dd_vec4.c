@@ -50,17 +50,18 @@ void dd_vec4_clean(struct dd_vec4 *o) {
 }
 
 void dd_vec4_multiply(struct dd_vec4 *o, struct dd_matrix *m) {
-//	struct dd_vec4 new_vec;
-//	int x;
-//	for (x = 0; x < 4; x++) {
-//		new_vec.cell[x] =
-//			(m1->cell[(x%4)+ 0] *m2->cell[(x/4)*4+0]) +
-//			(m1->cell[(x%4)+ 4] *m2->cell[(x/4)*4+1]) +
-//			(m1->cell[(x%4)+ 8] *m2->cell[(x/4)*4+2]) +
-//			(m1->cell[(x%4)+12] *m2->cell[(x/4)*4+3]);
-//	}
-//
-//	for (x = 0; x < 16; x++) {
-//		m1->cell[x] = new_mat.cell[x];
-//	}
+        struct dd_vec4 new_vec;
+        int x;
+        for (x = 0; x < 4; x++) {
+		// Quest 2 only ?
+                new_vec.cell[x] =
+                        (o->cell[0] *m->cell[(x *4) +0]) +
+                        (o->cell[1] *m->cell[(x *4) +1]) +
+                        (o->cell[2] *m->cell[(x *4) +2]) +
+                        (o->cell[3] *m->cell[(x *4) +3]);
+        }
+
+        for (x = 0; x < 4; x++) {
+                o->cell[x] = new_vec.cell[x];
+        }
 }

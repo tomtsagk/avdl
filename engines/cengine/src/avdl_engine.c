@@ -7,6 +7,78 @@
 #include "avdl_cengine.h"
 
 #include <math.h>
+#include <string.h>
+
+// EXT_texture_border_clamp
+#ifndef GL_CLAMP_TO_BORDER
+#define GL_CLAMP_TO_BORDER 0x812D
+#endif
+
+#ifndef GL_TEXTURE_BORDER_COLOR
+#define GL_TEXTURE_BORDER_COLOR 0x1004
+#endif
+
+#ifndef GL_FRAMEBUFFER_SRGB_EXT
+#define GL_FRAMEBUFFER_SRGB_EXT 0x8DB9
+#endif
+
+#if !defined(GL_EXT_multisampled_render_to_texture)
+typedef void(GL_APIENTRY* PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)(
+	GLenum target,
+	GLsizei samples,
+	GLenum internalformat,
+	GLsizei width,
+	GLsizei height);
+typedef void(GL_APIENTRY* PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)(
+	GLenum target,
+	GLenum attachment,
+	GLenum textarget,
+	GLuint texture,
+	GLint level,
+	GLsizei samples);
+#endif
+
+#if !defined(GL_OVR_multiview)
+typedef void(GL_APIENTRY* PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(
+	GLenum target,
+	GLenum attachment,
+	GLuint texture,
+	GLint level,
+	GLint baseViewIndex,
+	GLsizei numViews);
+#endif
+
+#if !defined(GL_OVR_multiview_multisampled_render_to_texture)
+typedef void(GL_APIENTRY* PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(
+	GLenum target,
+	GLenum attachment,
+	GLuint texture,
+	GLint level,
+	GLsizei samples,
+	GLint baseViewIndex,
+	GLsizei numViews);
+#endif
+
+struct OpenGLExtensions_t {
+	int multi_view; // GL_OVR_multiview, GL_OVR_multiview2
+	int EXT_texture_border_clamp; // GL_EXT_texture_border_clamp, GL_OES_texture_border_clamp
+	int EXT_sRGB_write_control;
+};
+struct OpenGLExtensions_t glExtensions;
+
+static void EglInitExtensions() {
+	//glExtensions = {};
+	const char* allExtensions = (const char*)glGetString(GL_EXTENSIONS);
+	if (allExtensions != 0) {
+		glExtensions.multi_view = strstr(allExtensions, "GL_OVR_multiview2") &&
+		strstr(allExtensions, "GL_OVR_multiview_multisampled_render_to_texture");
+
+		glExtensions.EXT_texture_border_clamp =
+			strstr(allExtensions, "GL_EXT_texture_border_clamp") ||
+			strstr(allExtensions, "GL_OES_texture_border_clamp");
+		glExtensions.EXT_sRGB_write_control = strstr(allExtensions, "GL_EXT_sRGB_write_control");
+	}
+}
 
 extern int totalAssets;
 extern int totalAssetsLoaded;
@@ -15,6 +87,9 @@ static void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio
 	float znear, float zfar, int ypriority);
 
 extern int dd_flag_exit;
+
+extern GLuint defaultProgram;
+extern GLuint currentProgram;
 
 #ifndef AVDL_DIRECT3D11
 
@@ -29,7 +104,15 @@ int avdl_engine_init(struct avdl_engine *o) {
 	o->nworld_size = 0;
 	o->nworld_constructor = 0;
 
-	o->input_key = 0;
+	#if defined(AVDL_QUEST2)
+	o->resumed = 0;
+	o->focused = 0;
+	o->NativeWindow = 0;
+	o->frameCount = -1;
+	o->SessionActive = 0;
+	#endif
+
+	avdl_time_start(&o->end_of_update_time);
 
 	#ifdef AVDL_STEAM
 	if (!o->verify) {
@@ -148,7 +231,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	//handleResize(dd_window_width(), dd_window_height());
 	#endif
 
-	#if DD_PLATFORM_NATIVE
+	#if defined(DD_PLATFORM_NATIVE) || defined(AVDL_QUEST2)
 	avdl_engine_resize(o, dd_window_width(), dd_window_height());
 	#endif
 
@@ -160,6 +243,109 @@ int avdl_engine_init(struct avdl_engine *o) {
 	if (dd_string3d_isActive()) {
 		dd_string3d_init();
 	}
+
+	#if defined(AVDL_QUEST2)
+
+	// opengl extensions
+	EglInitExtensions();
+	if (glExtensions.EXT_sRGB_write_control) {
+		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+	}
+
+	// VR view matrices (2 view + 2 proj - one for each eye)
+	glGenBuffers(1, &o->SceneMatrices);
+	glBindBuffer(GL_UNIFORM_BUFFER, o->SceneMatrices);
+	glBufferData(
+		GL_UNIFORM_BUFFER,
+		4 * sizeof(struct dd_matrix),
+		0,
+		GL_STATIC_DRAW
+	);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	// framebuffer
+	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC glFramebufferTextureMultiviewOVR =
+		(PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)eglGetProcAddress(
+			"glFramebufferTextureMultiviewOVR"
+		);
+	PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC glFramebufferTextureMultisampleMultiviewOVR =
+		(PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)eglGetProcAddress(
+			"glFramebufferTextureMultisampleMultiviewOVR"
+		);
+
+	o->Elements = malloc(sizeof(struct Element) *o->SwapChainLength);
+
+	for (int i = 0; i < o->SwapChainLength; i++) {
+		struct Element *el = &o->Elements[i];
+
+		// create color buffer texture
+		el->ColorTexture = o->colorTextures[i];
+		GLenum colorTextureTarget = GL_TEXTURE_2D_ARRAY;
+		glBindTexture(colorTextureTarget, el->ColorTexture);
+		glTexParameteri(colorTextureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(colorTextureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		GLfloat borderColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
+		glTexParameterfv(colorTextureTarget, GL_TEXTURE_BORDER_COLOR, borderColor);
+		glTexParameteri(colorTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(colorTextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glBindTexture(colorTextureTarget, 0);
+
+		// create depth buffer texture
+		glGenTextures(1, &el->DepthTexture);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, el->DepthTexture);
+		glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_DEPTH_COMPONENT24, dd_width, dd_height, 2);
+		glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+
+		// create frame buffer
+		glGenFramebuffers(1, &el->FrameBufferObject);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, el->FrameBufferObject);
+		if (o->Multisamples > 1 && (glFramebufferTextureMultisampleMultiviewOVR != 0)) {
+			glFramebufferTextureMultisampleMultiviewOVR(
+				GL_DRAW_FRAMEBUFFER,
+				GL_DEPTH_ATTACHMENT,
+				el->DepthTexture,
+				0,
+				o->Multisamples,
+				0,
+				2
+			);
+			glFramebufferTextureMultisampleMultiviewOVR(
+				GL_DRAW_FRAMEBUFFER,
+				GL_COLOR_ATTACHMENT0,
+				el->ColorTexture,
+				0,
+				o->Multisamples,
+				0,
+				2
+			);
+		} else {
+			glFramebufferTextureMultiviewOVR(
+				GL_DRAW_FRAMEBUFFER,
+				GL_DEPTH_ATTACHMENT,
+				el->DepthTexture,
+				0,
+				0,
+				2
+			);
+			glFramebufferTextureMultiviewOVR(
+				GL_DRAW_FRAMEBUFFER,
+				GL_COLOR_ATTACHMENT0,
+				el->ColorTexture,
+				0,
+				0,
+				2
+			);
+		}
+
+		GLenum renderFramebufferStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		if (renderFramebufferStatus != GL_FRAMEBUFFER_COMPLETE) {
+			dd_log("avdl error: could not get framebuffer status");
+			return -1;
+		}
+	}
+
+	#endif
 
 	return 0;
 }
@@ -198,6 +384,23 @@ int avdl_engine_clean(struct avdl_engine *o) {
 		avdl_steam_shutdown();
 	}
 	#endif
+
+	#if defined(AVDL_QUEST2)
+	glDeleteBuffers(1, &o->SceneMatrices);
+
+	for (int i = 0; i < o->SwapChainLength; i++) {
+		struct Element *el = &o->Elements[i];
+		glDeleteFramebuffers(1, &el->FrameBufferObject);
+		glDeleteTextures(1, &el->DepthTexture);
+	}
+	free(o->Elements);
+	o->Elements = 0;
+
+	xrDestroySession(o->session);
+	xrDestroySpace(o->HeadSpace);
+	xrDestroySpace(o->LocalSpace);
+	#endif
+
 	return 0;
 }
 
@@ -208,6 +411,63 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	if (dd_flag_exit) {
 		return 0;
 	}
+	#endif
+
+	#if defined(AVDL_QUEST2)
+
+	glUnmapBuffer(GL_UNIFORM_BUFFER);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+	// Render the eye images.
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, o->Elements[o->swapChainIndex].FrameBufferObject);
+
+	glEnable(GL_SCISSOR_TEST);
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	//GL(glEnable(GL_CULL_FACE));
+	glDisable(GL_CULL_FACE);
+	//GL(glCullFace(GL_BACK));
+	glDisable(GL_BLEND);
+	glViewport(0, 0, dd_window_width(), dd_window_height());
+	glScissor(0, 0, dd_window_width(), dd_window_height());
+
+	glUseProgram(defaultProgram);
+
+	// update controller matrices
+	for (int i = 0; i < 2; ++i) {
+		if (o->RenderController[i]) {
+			dd_matrix_setControllerMatrix(i, &o->ControllerPoses[i]);
+			dd_matrix_setControllerVisible(i, 1);
+		}
+	}
+
+	// multiview implementation
+	GLuint viewIdLoc = glGetUniformLocation(currentProgram, "ViewID");
+	if (viewIdLoc >= 0) {
+		glUniform1i(viewIdLoc, 0);
+	}
+
+	// Update the scene matrices.
+	glBindBuffer(GL_UNIFORM_BUFFER, o->SceneMatrices);
+	struct dd_matrix* sceneMatrices = (struct dd_matrix*)glMapBufferRange(
+		GL_UNIFORM_BUFFER,
+		0,
+		4 * sizeof(struct dd_matrix),
+		GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT
+	);
+
+	if (sceneMatrices != 0) {
+		memcpy((char*)sceneMatrices, &o->View, 4 * sizeof(struct dd_matrix));
+	}
+
+	// eye matrices
+	GLuint sceneMatricesLoc = glGetUniformBlockIndex(currentProgram, "SceneMatrices");
+	glBindBufferBase(
+		GL_UNIFORM_BUFFER,
+		sceneMatricesLoc,
+		o->SceneMatrices
+	);
 	#endif
 
 	// clear everything
@@ -225,6 +485,11 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	#if DD_PLATFORM_NATIVE
 	// show result
 	SDL_GL_SwapWindow(o->window);
+	#endif
+
+	#if defined(AVDL_QUEST2)
+	glUseProgram(0);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	#endif
 
 	return 0;
@@ -277,7 +542,10 @@ int avdl_engine_resize(struct avdl_engine *o, int w, int h) {
 	return 0;
 }
 
-int avdl_engine_update(struct avdl_engine *o) {
+int avdl_engine_update(struct avdl_engine *o, float dt) {
+
+	avdl_time_end(&o->end_of_update_time);
+	float dt2 = avdl_time_getTimeDouble(&o->end_of_update_time);
 
 	#if DD_PLATFORM_NATIVE
 	if (avdl_engine_isPaused(o)) {
@@ -385,10 +653,12 @@ int avdl_engine_update(struct avdl_engine *o) {
 
 	}
 
+	avdl_input_update(&o->input);
+
 	// handle key input
-	if (o->cworld && o->cworld->key_input && o->input_key) {
-		o->cworld->key_input(o->cworld, o->input_key);
-		o->input_key = 0;
+	if (o->cworld && o->cworld->key_input && o->input.input_key) {
+		o->cworld->key_input(o->cworld, o->input.input_key);
+		o->input.input_key = 0;
 	}
 
 	// handle mouse input
@@ -402,13 +672,15 @@ int avdl_engine_update(struct avdl_engine *o) {
 
 	// update world
 	if (o->cworld && o->cworld->update) {
-		o->cworld->update(o->cworld);
+		o->cworld->update(o->cworld, dt2);
 	}
 
 	// asset loader will load any new assets
 	if (avdl_assetManager_hasAssetsToLoad() && !avdl_assetManager_isLoading()) {
 		avdl_assetManager_loadAll();
 	}
+
+	avdl_time_start(&o->end_of_update_time);
 
 	return 0;
 }
@@ -525,54 +797,54 @@ int avdl_engine_loop(struct avdl_engine *o) {
 			case SDL_KEYDOWN:
 				// temporary keyboard controls
 				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-					o->input_key = 27;
+					o->input.input_key = 27;
 				}
 				else
 				if (event.key.keysym.scancode == SDL_SCANCODE_A) {
-					o->input_key = 97;
+					o->input.input_key = 97;
 				}
 				else
 				if (event.key.keysym.scancode == SDL_SCANCODE_D) {
-					o->input_key = 100;
+					o->input.input_key = 100;
 				}
 				else
 				if (event.key.keysym.scancode == SDL_SCANCODE_W) {
-					o->input_key = 119;
+					o->input.input_key = 119;
 				}
 				else
 				if (event.key.keysym.scancode == SDL_SCANCODE_S) {
-					o->input_key = 115;
+					o->input.input_key = 115;
 				}
 				else
 				if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
-					o->input_key = 32;
+					o->input.input_key = 32;
 				}
 				else
 				if (event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
-					o->input_key = 13;
+					o->input.input_key = 13;
 				}
 				else
 				if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
-					o->input_key = 1;
+					o->input.input_key = 1;
 				}
 				else
 				if (event.key.keysym.scancode == SDL_SCANCODE_UP) {
-					o->input_key = 2;
+					o->input.input_key = 2;
 				}
 				else
 				if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
-					o->input_key = 3;
+					o->input.input_key = 3;
 				}
 				else
 				if (event.key.keysym.scancode == SDL_SCANCODE_DOWN) {
-					o->input_key = 4;
+					o->input.input_key = 4;
 				}
 				break;
 			}
 		}
 
 		//update();
-		avdl_engine_update(o);
+		avdl_engine_update(o, 1);
 
 		// prepare next frame
 		#if DD_PLATFORM_NATIVE

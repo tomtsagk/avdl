@@ -28,6 +28,11 @@ struct dd_mesh {
 	int dirtyVertices;
 	float *v;
 
+	GLuint buffer;
+	GLuint array;
+
+	int openglContextId;
+
 	void (*draw)(struct dd_mesh *);
 	void (*clean)(struct dd_mesh *);
 	void (*set_primitive)(struct dd_mesh *m, enum dd_primitives shape);

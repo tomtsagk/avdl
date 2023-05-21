@@ -10,11 +10,11 @@ extern "C" {
 extern struct dd_world {
 	void (*create)(struct dd_world *);
 	void (*onload)(struct dd_world *);
-	void (*update)(struct dd_world *);
+	void (*update)(struct dd_world *, float);
 	void (*resize)(struct dd_world *);
 	void (*draw)(struct dd_world *);
 
-	void (*key_input)(struct dd_world *, unsigned char key);
+	void (*key_input)(struct dd_world *, int key);
 	void (*mouse_input)(struct dd_world *, int button, int type);
 	void (*clean)(struct dd_world *);
 
@@ -43,9 +43,9 @@ void dd_world_change(int size, void (*constructor)(struct dd_world *));
 
 void dd_world_create(struct dd_world *);
 void dd_world_onload(struct dd_world *);
-void dd_world_update(struct dd_world *);
+void dd_world_update(struct dd_world *, float dt);
 void dd_world_draw(struct dd_world *);
-void dd_world_key_input(struct dd_world *, unsigned char key);
+void dd_world_key_input(struct dd_world *, int key);
 void dd_world_mouse_input(struct dd_world *, int button, int type);
 void dd_world_clean(struct dd_world *);
 

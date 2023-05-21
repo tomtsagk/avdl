@@ -19,7 +19,7 @@ void dd_music_create(struct dd_music *o) {
 	o->playLoop = dd_music_playLoop;
 	o->stop = dd_music_stop;
 
-	#ifndef AVDL_DIRECT3D11
+	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	o->filename[0] = '\0';
 	#if DD_PLATFORM_ANDROID
@@ -32,7 +32,7 @@ void dd_music_create(struct dd_music *o) {
 }
 
 void dd_music_load(struct dd_music *o, const char *filename, int type) {
-	#ifndef AVDL_DIRECT3D11
+	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	if (strlen(filename) >= 100) {
 		dd_log("avdl: asset name can't be more than 100 characters: %s", filename);
@@ -58,7 +58,7 @@ void dd_music_load(struct dd_music *o, const char *filename, int type) {
 }
 
 void dd_music_clean(struct dd_music *o) {
-	#ifndef AVDL_DIRECT3D11
+	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
 	#else
@@ -71,7 +71,7 @@ void dd_music_clean(struct dd_music *o) {
 }
 
 void dd_music_play(struct dd_music *o) {
-	#ifndef AVDL_DIRECT3D11
+	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	if (avdl_music_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
@@ -103,7 +103,7 @@ void dd_music_play(struct dd_music *o) {
 }
 
 void dd_music_playLoop(struct dd_music *o, int loops) {
-	#ifndef AVDL_DIRECT3D11
+	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	if (avdl_music_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
@@ -135,7 +135,7 @@ void dd_music_playLoop(struct dd_music *o, int loops) {
 }
 
 void dd_music_stop(struct dd_music *o) {
-	#ifndef AVDL_DIRECT3D11
+	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
 	if (o->index == -1) return;
@@ -153,7 +153,7 @@ void dd_music_stop(struct dd_music *o) {
 
 	// get string from asset (in java)
 	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "StopAudio", "(I)V");
-	jint *parameter = o->index;
+	jint *parameter = &o->index;
 	(*(*env)->CallStaticVoidMethod)(env, clazz, MethodID, parameter);
 
 	o->index = -1;
@@ -168,7 +168,7 @@ void dd_music_stop(struct dd_music *o) {
 }
 
 void avdl_music_setVolume(int volume) {
-	#ifndef AVDL_DIRECT3D11
+	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	if (volume < 0) volume = 0;
 	if (volume > 100) volume = 100;
@@ -181,7 +181,7 @@ void avdl_music_setVolume(int volume) {
 }
 
 int avdl_music_getVolume() {
-	#ifndef AVDL_DIRECT3D11
+	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return 0;
 	#if DD_PLATFORM_ANDROID
 	return avdl_music_volume;

@@ -7,10 +7,21 @@ extern "C" {
 
 #include "dd_mesh.h"
 
+struct dd_vertex_col {
+	float pos[3];
+#if defined(DD_PLATFORM_ANDROID)
+	float col[4];
+#else
+	float col[3];
+#endif
+};
+
 struct dd_meshColour {
 	struct dd_mesh parent;
 	int dirtyColours;
 	float *c;
+	struct dd_vertex_col *verticesCol;
+	int dirtyColourArrayObject;
 	void (*set_colour)(struct dd_mesh *m, float r, float g, float b);
 };
 

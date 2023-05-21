@@ -24,8 +24,11 @@ extern pthread_mutex_t jniMutex;
 
 #if DD_PLATFORM_ANDROID
 #include <jni.h>
+extern JNIEnv *jniEnv;
 extern JavaVM* jvm;
 extern jclass *clazz;
+extern jmethodID BitmapMethodId;
+extern jmethodID ReadPlyMethodId;
 #endif
 
 /*
@@ -125,6 +128,8 @@ void avdl_assetManager_loadAssets() {
 		//dd_log("loading asset type: %d", m->meshType);
 
 		#if DD_PLATFORM_ANDROID
+
+		#if !defined(AVDL_QUEST2)
 		/*
 		 * attempt to get hold of a valid jni
 		 * will most likely matter during
@@ -137,16 +142,25 @@ void avdl_assetManager_loadAssets() {
 			sleep(1);
 			pthread_mutex_lock(&jniMutex);
 		}
+		#endif
 
 		JNIEnv *env;
+
+		// temporarily have different jni versions for android and quest 2
+		// should both be 1.6 once tested
+		#if defined(AVDL_QUEST2)
+		int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
+		#else
 		int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
+		#endif
 
 		if (getEnvStat == JNI_EDETACHED) {
 			if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
 				dd_log("avdl: failed to attach thread for new world");
 			}
+		// thread already attached to jni
 		} else if (getEnvStat == JNI_OK) {
-			dd_log("avdl: thread attached to JNI");
+		// wrong version
 		} else if (getEnvStat == JNI_EVERSION) {
 			dd_log("avdl: GetEnv: version not supported");
 		}
@@ -155,9 +169,14 @@ void avdl_assetManager_loadAssets() {
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
 			struct dd_image *mesh = m->object;
 
+			#if defined(AVDL_QUEST2)
+			jstring *parameter = (*jniEnv)->NewStringUTF(env, m->filename);
+			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, BitmapMethodId, parameter);
+			#else
 			jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
 			jstring *parameter = (*env)->NewStringUTF(env, m->filename);
 			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, MethodID, parameter);
+			#endif
 
 			if (result) {
 
@@ -200,13 +219,18 @@ void avdl_assetManager_loadAssets() {
 				mesh->pixelsb = pixelsb;
 				pthread_mutex_unlock(&updateDrawMutex);
 			}
+			else {
+				dd_log("avdl: error loading texture: %s", m->filename);
+			}
 			//dd_log("done: %s", m->filename);
 		}
 		// load mesh
 		else {
 
 			// get string from asset (in java)
+			#if !defined(AVDL_QUEST2)
 			jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "ReadPly", "(Ljava/lang/String;I)[Ljava/lang/Object;");
+			#endif
 			jstring *parameter = (*env)->NewStringUTF(env, m->filename);
 			jint parameterSettings = DD_FILETOMESH_SETTINGS_POSITION;
 			if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
@@ -217,7 +241,11 @@ void avdl_assetManager_loadAssets() {
 				parameterSettings |= DD_FILETOMESH_SETTINGS_COLOUR;
 				parameterSettings |= DD_FILETOMESH_SETTINGS_TEX_COORD;
 			}
+			#if defined(AVDL_QUEST2)
+			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, ReadPlyMethodId, parameter, &parameterSettings);
+			#else
 			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, MethodID, parameter, &parameterSettings);
+			#endif
 
 			/*
 			 * Reading the asset was successfull,
@@ -322,10 +350,13 @@ void avdl_assetManager_loadAssets() {
 			}
 		}
 
+		//#if !defined(AVDL_QUEST2)
 		if (jvm && getEnvStat == JNI_EDETACHED) {
 			//dd_log("detach thread");
 			(*jvm)->DetachCurrentThread(jvm);
 		}
+		//#endif
+
 		#else
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {

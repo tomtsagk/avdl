@@ -4,8 +4,10 @@
 // import opengl on android
 #if DD_PLATFORM_ANDROID
 #include <EGL/egl.h>
-#include <GLES2/gl2.h>
-#include <GLES2/gl2ext.h>
+//#include <GLES2/gl2.h>
+//#include <GLES2/gl2ext.h>
+#include <GLES3/gl3.h>
+#include <GLES3/gl3ext.h>
 
 // direct3d 11
 #elif AVDL_DIRECT3D11
@@ -39,8 +41,6 @@
 #endif
 
 #endif
-
-#include "dd_image.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -83,7 +83,6 @@ void avdl_graphics_UseProgram(int program);
 
 int avdl_graphics_GetUniformLocation(int program, const char *uniform);
 
-void avdl_graphics_ImageToGpu(struct dd_image *);
 void avdl_graphics_DeleteTexture(unsigned int tex);
 
 void avdl_graphics_BindTexture(unsigned int tex);
@@ -96,6 +95,9 @@ void avdl_graphics_DisableVertexAttribArray(int attrib);
 void avdl_graphics_VertexAttribPointer(int p, int size, int format, int, int, void *data);
 
 void avdl_graphics_DrawArrays(int vcount);
+
+#include "dd_image.h"
+void avdl_graphics_ImageToGpu(struct dd_image *);
 
 #ifdef __cplusplus
 }

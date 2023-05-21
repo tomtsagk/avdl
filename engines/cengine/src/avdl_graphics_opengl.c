@@ -162,13 +162,21 @@ int avdl_graphics_generateContext() {
 	/*
 	 * load shaders
 	 */
+	#if defined(AVDL_QUEST2)
+	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex_q2, avdl_shaderDefault_fragment_q2);
+	#else
 	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
+	#endif
 	if (!defaultProgram) {
 		dd_log("avdl: error loading shaders");
 		return -1;
 	}
 
+	#if defined(AVDL_QUEST2)
+	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex_q2, avdl_shaderFont_fragment_q2);
+	#else
 	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex, avdl_shaderFont_fragment);
+	#endif
 	if (!fontProgram) {
 		dd_log("avdl: error loading font shaders");
 		return -1;

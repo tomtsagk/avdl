@@ -92,7 +92,8 @@ static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 	 *
 	 * temporary solution
 	 */
-	if (avdl_platform_temp == AVDL_PLATFORM_ANDROID) {
+	if (avdl_platform_temp == AVDL_PLATFORM_ANDROID
+	||  avdl_platform_temp == AVDL_PLATFORM_QUEST2) {
 		char buffer[500];
 		strcpy(buffer, ast_getLex(assetName));
 
@@ -147,7 +148,9 @@ static struct ast_node *expect_command_savefile(struct avdl_lexer *l) {
 	 *
 	 * temporary solution
 	 */
-	if (avdl_platform_temp == AVDL_PLATFORM_ANDROID) {
+	if (avdl_platform_temp == AVDL_PLATFORM_ANDROID
+	||  avdl_platform_temp == AVDL_PLATFORM_QUEST2) {
+		/*
 		char buffer[500];
 		strcpy(buffer, ast_getLex(savefile));
 
@@ -171,6 +174,7 @@ static struct ast_node *expect_command_savefile(struct avdl_lexer *l) {
 		lastDot[0] = '\0';
 
 		ast_setLex(savefile, lastSlash);
+		*/
 	}
 	else
 	// on linux and windows, attach the custom install location as the asset's prefix

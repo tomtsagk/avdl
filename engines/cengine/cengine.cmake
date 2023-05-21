@@ -45,6 +45,7 @@ install(FILES
 	engines/cengine/src/avdl_graphics_direct3d11.cpp
 	engines/cengine/src/avdl_engine.c
 	engines/cengine/src/avdl_engine_cpp.cpp
+	engines/cengine/src/avdl_time.c
 	DESTINATION
 	share/avdl/cengine
 )
@@ -89,6 +90,7 @@ install(FILES
 	engines/cengine/include/avdl_rigidbody.h
 	engines/cengine/include/avdl_graphics.h
 	engines/cengine/include/avdl_engine.h
+	engines/cengine/include/avdl_time.h
 	DESTINATION
 	include
 )
