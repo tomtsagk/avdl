@@ -3,6 +3,7 @@
 #include "avdl_collider.h"
 #include "avdl_collider_aabb.h"
 #include "avdl_collider_sphere.h"
+#include "dd_log.h"
 
 struct manifold {
 	int collide;

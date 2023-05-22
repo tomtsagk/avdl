@@ -113,6 +113,7 @@ int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 	const char *findString, const char *replaceString) {
 
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	//return file_copy_at(src_at, src, dest_at, dest, 0);
 	#else
 	int s;
 	if (src_at) {
@@ -574,4 +575,36 @@ int Avdl_FileOp_IsFileOlderThan(const char *source, const char *target) {
 	return 0;
 
 	#endif
+}
+
+int file_write(const char *filename, const char *content) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	FILE *f = fopen(filename, "w");
+	if (f == NULL)
+	{
+		printf("can't open %s: %s\n", filename, strerror(errno));
+		return -1;
+	}
+
+	fprintf(f, "%s", content);
+
+	fclose(f);
+
+	return 0;
+	#else
+	int flags = O_WRONLY | O_CREAT;
+	int d;
+	d = open(filename, flags, S_IRUSR | S_IWUSR);
+	if (!d) {
+		printf("can't open %s: %s\n", filename, strerror(errno));
+		return -1;
+	}
+
+	if (write(d, content, strlen(content)) == -1) {
+		printf("avdl error: %s\n", strerror(errno));
+	}
+
+	close(d);
+	#endif
+	return 0;
 }

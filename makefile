@@ -2,7 +2,7 @@
 # package data
 #
 PACKAGE_NAME=avdl
-PACKAGE_VERSION=0.8.1
+PACKAGE_VERSION=0.9.0
 
 #
 # system data
@@ -50,6 +50,11 @@ ENGINE_FILES_SRC_CPP=$(wildcard engines/cengine/src/*.cpp)
 ENGINE_FILES_HEADERS=$(wildcard engines/cengine/include/*.h)
 ENGINE_FILES_ANDROID=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=engine/%.h)\
 	$(ENGINE_FILES_SRC:engines/cengine/src/%.c=engine/%.c)
+ENGINE_FILES_QUEST2=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=../../../src/%.h)\
+	$(ENGINE_FILES_SRC:engines/cengine/src/%.c=../../../src/%.c) \
+	$(ENGINE_FILES_SRC_CPP:engines/cengine/src/%.cpp=../../../src/%.cpp)
+ENGINE_FILES_QUEST2_SRC=$(ENGINE_FILES_SRC:engines/cengine/src/%.c=../../../src/%.c) \
+	$(ENGINE_FILES_SRC_CPP:engines/cengine/src/%.cpp=../../../src/%.cpp)
 
 #
 # executable
@@ -99,7 +104,10 @@ ${EXECUTABLE}: ${OBJ} | ${DIRECTORY_EXE}
 INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/man/man1/ \
 	${DESTDIR}${prefix}/share/avdl/cengine \
 	${DESTDIR}${prefix}/share/avdl/android \
+	${DESTDIR}${prefix}/share/avdl/quest2 \
+	${DESTDIR}${prefix}/share/avdl/quest2/src \
 	${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine \
+	${DESTDIR}${prefix}/share/avdl/templates \
 	${DESTDIR}${prefix}/share/vim/vimfiles/syntax/ \
 	${DESTDIR}${prefix}/share/vim/vimfiles/ftdetect/ \
 	${DESTDIR}${prefix}/include
@@ -114,6 +122,9 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	@# avdl files
 	install ${EXECUTABLE} ${DESTDIR}${prefix}/bin/
 	install manual/avdl.1 ${DESTDIR}${prefix}/share/man/man1/
+	@# templates
+	install -m644 templates/makefile ${DESTDIR}${prefix}/share/avdl/templates
+	install -m644 templates/CMakeLists.txt ${DESTDIR}${prefix}/share/avdl/templates
 	@# c engine
 	install -m644 ${ENGINE_FILES_HEADERS} ${DESTDIR}${prefix}/include
 	install -m644 ${ENGINE_FILES_SRC} ${ENGINE_FILES_SRC_CPP} ${DESTDIR}${prefix}/share/avdl/cengine
@@ -123,6 +134,12 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine
 	sed -i '/%AVDL_ENGINE_FILES%/ s#%AVDL_ENGINE_FILES%#${ENGINE_FILES_ANDROID}#'\
 		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/CMakeLists.txt.in
+	@# quest2 engine
+	cp -r engines/quest2/* ${DESTDIR}${prefix}/share/avdl/quest2
+	cp -r engines/cengine/src/*.c engines/cengine/src/*.cpp engines/cengine/include/*.h\
+		${DESTDIR}${prefix}/share/avdl/quest2/src
+	sed -i '/%AVDL_ENGINE_FILES%/ s#%AVDL_ENGINE_FILES%#${ENGINE_FILES_QUEST2_SRC}#'\
+		${DESTDIR}${prefix}/share/avdl/quest2/Projects/Android/jni/Android.mk.in
 	@# vim syntax files
 	install vim/syntax/avdl.vim ${DESTDIR}${prefix}/share/vim/vimfiles/syntax/
 	install vim/ftdetect/avdl.vim ${DESTDIR}${prefix}/share/vim/vimfiles/ftdetect/

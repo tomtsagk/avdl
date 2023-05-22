@@ -9,6 +9,16 @@ extern "C" {
 #include "dd_image.h"
 #include "avdl_graphics.h"
 
+struct dd_vertex_tex {
+	float pos[3];
+#if defined(DD_PLATFORM_ANDROID)
+	float col[4];
+#else
+	float col[3];
+#endif
+	float tex[2];
+};
+
 struct dd_meshTexture {
 	struct dd_meshColour parent;
 
@@ -20,6 +30,9 @@ struct dd_meshTexture {
 	float *t;
 
 	int hasTransparency;
+
+	struct dd_vertex_tex *verticesTex;
+	int dirtyTextureArrayObject;
 
 	void (*load)(struct dd_mesh *m, const char *filename, int type);
 	void (*set_primitive_texcoords)(struct dd_meshTexture *m, float offsetX, float offsetY, float sizeX, float sizeY);

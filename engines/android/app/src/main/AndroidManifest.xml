@@ -21,16 +21,14 @@
 
 		</activity>
 
+		<!-- Google Play Services
+		<meta-data android:name="com.google.android.gms.games.APP_ID"
+			android:value="@string/game_services_project_id"/>
+		-->
+
 	</application>
 
-		<!-- Tell the system this app requires OpenGL ES 2.0. -->
-		<uses-feature android:glEsVersion="0x00020000" android:required="true" />
-
-		<!-- Tell the system this app requires OpenGL ES 3.0.
-		<uses-feature android:glEsVersion="0x00030000" android:required="true" />
-
-		 Tell the system this app requires OpenGL ES 3.1.
-		<uses-feature android:glEsVersion="0x00030001" android:required="true" />
-		-->
+	<!-- Tell the system this app requires OpenGL ES 3.1. -->
+	<uses-feature android:glEsVersion="0x00030001" android:required="true" />
 
 </manifest>

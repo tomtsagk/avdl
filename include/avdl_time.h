@@ -1,9 +1,12 @@
 #ifndef AVDL_TIME_H
 #define AVDL_TIME_H
 
-#include <avdl_settings.h>
-
 #include <time.h>
+#include "avdl_settings.h"
+
+#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+#include <windows.h>
+#endif
 
 struct avdl_time {
 	#if AVDL_IS_OS(AVDL_OS_LINUX)

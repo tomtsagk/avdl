@@ -14,6 +14,8 @@ struct dd_matrix {
 void dd_matrix_create(struct dd_matrix *m);
 void dd_matrix_clean(struct dd_matrix *m);
 
+#include "dd_vec4.h"
+
 /*
  * matrix setters
  */
@@ -41,10 +43,24 @@ void dd_matrix_print(struct dd_matrix *m);
 extern struct dd_matrix dd_cam[];
 extern int dd_cam_index;
 
+#if defined(AVDL_QUEST2)
+extern struct dd_matrix dd_cam_controllers[];
+extern int dd_cam_controller_active[];
+extern struct dd_vec4 dd_cam_controllers_position[];
+#endif
+void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m);
+struct dd_matrix *dd_matrix_getControllerMatrix(int controllerIndex);
+void dd_matrix_applyControllerMatrix(int controllerIndex);
+int dd_matrix_hasVisibleControllers();
+int dd_matrix_isControllerVisible(int index);
+void dd_matrix_setControllerVisible(int index, int state);
+struct dd_vec4 *dd_matrix_getControllerPosition(int index);
+
 void dd_matrix_globalInit();
 void dd_matrix_push();
 void dd_matrix_pop ();
 struct dd_matrix *dd_matrix_globalGet();
+struct dd_matrix *dd_matrix_globalVRGet();
 
 #define dd_pushMatrix() dd_matrix_push()
 #define dd_popMatrix() dd_matrix_pop()

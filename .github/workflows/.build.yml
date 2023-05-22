@@ -106,7 +106,6 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
-        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${PNG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${PNG_VERSION_LINUX_SONAME}
     - name: ogg - linux
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -123,7 +122,6 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
-        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${OGG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OGG_VERSION_LINUX_SONAME}
     - name: vorbis - linux
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -136,7 +134,6 @@ jobs:
         make
         make install
         cd ..
-        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${VORBIS_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${VORBIS_VERSION_LINUX_SONAME}
     - name: vorbis2 - linux
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -164,7 +161,6 @@ jobs:
         make
         sudo make install
         cd ..
-        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${OPUS_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OPUS_VERSION_LINUX_SONAME}
     - name: opusfile - linux
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -177,7 +173,6 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
-        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${OPUSFILE_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OPUSFILE_VERSION_LINUX_SONAME}
     - name: sdl - linux
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -193,7 +188,6 @@ jobs:
         make -j6
         make -j6 install
         cd ../..
-        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${SDL_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_VERSION_LINUX_SONAME}
     - name: sdl_mixer - linux
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -207,7 +201,6 @@ jobs:
         make -j6
         make -j6 install
         cd ../..
-        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib/${SDL_MIXER_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_MIXER_VERSION_LINUX_SONAME}
     - name: glew - linux
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -221,7 +214,6 @@ jobs:
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
-        ls -lhR ${HOME}/AVDL_DEPENDENCIES/lib*/
         cp ${HOME}/AVDL_DEPENDENCIES/lib64/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
     - name: steamworks
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -241,7 +233,6 @@ jobs:
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
         cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/linux/include
-        ls avdl_dependencies_linux/linux/lib
     - uses: actions/upload-artifact@v3
       with:
         name: avdl_dependencies_linux
@@ -445,6 +436,10 @@ jobs:
       with:
         name: avdl_build_linux
         path: avdl_build_linux
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'oracle'
+        java-version: '17'
     - name: get_rue
       shell: bash
       run: |
@@ -483,6 +478,65 @@ jobs:
         name: rue_android_debug
         path: rue_output_debug
 
+  # Quest 2
+  rue_build_quest2:
+    runs-on: ubuntu-latest
+    needs: [build_linux]
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_linux
+        path: avdl_build_linux
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'oracle'
+        java-version: '17'
+    - name: get_rue
+      shell: bash
+      run: |
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout develop
+        cd ..
+    - name: set_avdl
+      run: |
+        mkdir AVDL_BUILD
+        mv avdl_build_linux/* AVDL_BUILD
+        rmdir avdl_build_linux
+        chmod +x AVDL_BUILD/bin/avdl
+    - name: generate_quest2_project
+      run: |
+        cd rue
+        ../AVDL_BUILD/bin/avdl --quest2
+    - name: get_oculus_sdk
+      env:
+        oculus_api_link: ${{ secrets.OCULUS_API_LINK }}
+      run: |
+        wget ${oculus_api_link} --quiet
+        mkdir avdl_oculus_build
+        mv oculus_mobile_sdk.zip avdl_oculus_build
+        cd avdl_oculus_build
+        unzip oculus_mobile_sdk.zip
+        cp ../rue/avdl_build_quest2/ -r avdl_vr_bk/AvdlProject
+    - name: compile_apk
+      run: |
+        cd avdl_oculus_build/avdl_vr_bk/AvdlProject/Projects/Android
+        chmod +x ../../../gradlew
+        ../../../gradlew assembleDebug
+        mv build/outputs/apk/debug/Android-debug.apk ../../../../../rue_quest2_debug.apk
+        ../../../gradlew assembleRelease
+        mv build/outputs/apk/release/Android-release.apk ../../../../../rue_quest2.apk
+    - name: upload_artifact_debug
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_quest2_debug
+        path: rue_quest2_debug.apk
+    - name: upload_artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_quest2
+        path: rue_quest2.apk
+
   # Linux
   rue_build_linux:
     runs-on: ubuntu-20.04
@@ -498,7 +552,6 @@ jobs:
     - name: get_rue
       run: |
         chmod +x avdl_build_linux/bin/avdl
-        ls -R avdl_build_linux
         git clone https://github.com/tomtsagk/rue rue
         cd rue
         git checkout develop
@@ -530,7 +583,6 @@ jobs:
     - name: get_rue
       run: |
         chmod +x avdl_build_linux/bin/avdl
-        ls -R avdl_build_linux
         git clone https://github.com/tomtsagk/rue rue
         cd rue
         git checkout develop
@@ -617,6 +669,7 @@ jobs:
         cp -r ../AVDL_BUILD/share/avdl/cengine/*.c ../AVDL_BUILD/share/avdl/cengine/*.cpp ../AVDL_BUILD/include/*.h cengine
         mkdir build
         ../AVDL_BUILD/bin/avdl.exe -t
+        ../AVDL_BUILD/bin/avdl.exe --cmake
         cp .avdl_cache/*.c src/
         for i in src/*.c; do mv $i ${i/.dd.c/.c}; done
         cd build
@@ -707,6 +760,7 @@ jobs:
         cp -r ./AVDL_BUILD/share/avdl/cengine/*.c ./AVDL_BUILD/share/avdl/cengine/*.cpp ./AVDL_BUILD/include/*.h cengine
         mkdir build
         ./AVDL_BUILD/bin/avdl.exe -t
+        ./AVDL_BUILD/bin/avdl.exe --cmake
         cp .avdl_cache/*.c src/
         for i in src/*.c; do mv $i ${i/.dd.c/.c}; done
         cd build

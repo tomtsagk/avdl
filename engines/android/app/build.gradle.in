@@ -10,7 +10,7 @@ android {
 
 	defaultConfig {
 		applicationId '%AVDL_PACKAGE_NAME%'
-		minSdkVersion 18
+		minSdkVersion 19
 		targetSdkVersion 33
 		versionCode  %AVDL_VERSION_CODE%
 		versionName  "%AVDL_VERSION_NAME%"
@@ -45,3 +45,6 @@ android {
 	}
 }
 
+dependencies {
+        //implementation 'com.google.android.gms:play-services-games-v2:17.0.0'
+}

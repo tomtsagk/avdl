@@ -76,6 +76,8 @@ int AvdlSettings_Create(struct AvdlSettings *o) {
 	o->cpp_mode = 0;
 	o->standalone = 0;
 	o->quiet_mode = 0;
+	o->makefile_mode = 0;
+	o->cmake_mode = 0;
 	o->asset_prefix[0] = '\0';
 
 	o->translate_only = 0;

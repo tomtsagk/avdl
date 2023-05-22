@@ -6,6 +6,7 @@
 #include "dd_log.h"
 #include <string.h>
 #include "dd_vec3.h"
+#include "dd_vec4.h"
 
 void dd_matrix_create(struct dd_matrix *m) {}
 void dd_matrix_clean(struct dd_matrix *m) {}
@@ -51,9 +52,17 @@ void dd_matrix_translatea(struct dd_matrix *m, float x, float y, float z) {
 
 /* Translate - Set */
 void dd_matrix_translates(struct dd_matrix *m, float x, float y, float z) {
+	// the quest 2 engine is using different ways to organise
+	// matrices, this is a temp solution
+	#if defined(AVDL_QUEST2)
+	m->cell[ 3] = x;
+	m->cell[ 7] = y;
+	m->cell[11] = z;
+	#else
 	m->cell[12] = x;
 	m->cell[13] = y;
 	m->cell[14] = z;
+	#endif
 }
 
 /* Translate - Multiply */
@@ -164,6 +173,24 @@ void dd_matrix_rotatelocal_z(struct dd_matrix *m, float rad) {
 void dd_matrix_rotate(struct dd_matrix *m, float angle, float x, float y, float z) {
 	struct dd_matrix m2;
 	float angleRadians = 3.14/180.0 *(-angle);
+	#if defined(AVDL_QUEST2)
+	m2.cell[ 0] = pow(x, 2) *(1-cos(angleRadians))+cos(angleRadians);
+	m2.cell[ 1] = y*x*(1-cos(angleRadians))+z*sin(angleRadians);
+	m2.cell[ 2] = x*z*(1-cos(angleRadians))-y*sin(angleRadians);
+	m2.cell[ 3] = 0;
+	m2.cell[ 4] = x*y*(1-cos(angleRadians))-z*sin(angleRadians);
+	m2.cell[ 5] = pow(y, 2)*(1-cos(angleRadians))+cos(angleRadians);
+	m2.cell[ 6] = y*z*(1-cos(angleRadians))+x*sin(angleRadians);
+	m2.cell[ 7] = 0;
+	m2.cell[ 8] = x*z*(1-cos(angleRadians))+y*sin(angleRadians);
+	m2.cell[ 9] = y*z*(1-cos(angleRadians))-x*sin(angleRadians);
+	m2.cell[10] = pow(z, 2)*(1-cos(angleRadians))+cos(angleRadians);
+	m2.cell[11] = 0;
+	m2.cell[12] = 0;
+	m2.cell[13] = 0;
+	m2.cell[14] = 0;
+	m2.cell[15] = 1;
+	#else
 	m2.cell[ 0] = pow(x, 2) *(1-cos(angleRadians))+cos(angleRadians);
 	m2.cell[ 1] = x*y*(1-cos(angleRadians))-z*sin(angleRadians);
 	m2.cell[ 2] = x*z*(1-cos(angleRadians))+y*sin(angleRadians);
@@ -180,6 +207,7 @@ void dd_matrix_rotate(struct dd_matrix *m, float angle, float x, float y, float 
 	m2.cell[13] = 0;
 	m2.cell[14] = 0;
 	m2.cell[15] = 1;
+	#endif
 	dd_matrix_mult(m, &m2);
 }
 /* Matrix multiplication */
@@ -187,11 +215,19 @@ void dd_matrix_mult(struct dd_matrix *m1, struct dd_matrix *m2) {
 	struct dd_matrix new_mat;
 	int x;
 	for (x = 0; x < 16; x++) {
+		#if defined(AVDL_QUEST2)
+		new_mat.cell[x] =
+			(m2->cell[(x%4)+ 0] *m1->cell[(x/4)*4+0]) +
+			(m2->cell[(x%4)+ 4] *m1->cell[(x/4)*4+1]) +
+			(m2->cell[(x%4)+ 8] *m1->cell[(x/4)*4+2]) +
+			(m2->cell[(x%4)+12] *m1->cell[(x/4)*4+3]);
+		#else
 		new_mat.cell[x] =
 			(m1->cell[(x%4)+ 0] *m2->cell[(x/4)*4+0]) +
 			(m1->cell[(x%4)+ 4] *m2->cell[(x/4)*4+1]) +
 			(m1->cell[(x%4)+ 8] *m2->cell[(x/4)*4+2]) +
 			(m1->cell[(x%4)+12] *m2->cell[(x/4)*4+3]);
+		#endif
 	}
 
 	for (x = 0; x < 16; x++) {
@@ -254,7 +290,14 @@ extern struct dd_matrix matPerspective;
 
 void dd_matrix_globalInit() {
 	dd_cam_index = 0;
+
+	// for the time being, on quest 2, the engine is giving the default matrix
+	// (where the headset is) so don't create perspective
+	#if defined(AVDL_QUEST2)
+	dd_matrix_identity(&dd_cam[0]);
+	#else
 	dd_matrix_copy(&dd_cam[0], &matPerspective);
+	#endif
 }
 
 void dd_matrix_push() {
@@ -308,15 +351,118 @@ void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float t
 	dd_vec3_cross(&up, &forward, &right);
 	dd_vec3_normalise(&up);
 
+	#if defined(AVDL_QUEST2)
+	float rot_mat[] = {
+		right.x, up.x, forward.x, 0,
+		right.y, up.y, forward.y, 0,
+		right.z, up.z, forward.z, 0,
+		0, 0, 0, 1
+	};
+	#else
 	float rot_mat[] = {
 		right.x, right.y, right.z, 0,
 		up.x, up.y, up.z, 0,
 		forward.x, forward.y, forward.z, 0,
 		0, 0, 0, 1,
 	};
+	#endif
 
 	for (int i = 0; i < 16; i++) {
 		m->cell[i] = rot_mat[i];
 	}
 
+}
+
+// Quest 2 controllers
+#if defined(AVDL_QUEST2)
+struct dd_matrix dd_cam_controllers[2];
+int dd_cam_controller_active[2];
+struct dd_vec4 dd_cam_controllers_position[2];
+#endif
+
+void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m) {
+
+#if defined(AVDL_QUEST2)
+	if (controllerIndex > 2) {
+		dd_log("too many controllers: %d", controllerIndex);
+		return;
+	}
+
+	dd_matrix_copy(&dd_cam_controllers[controllerIndex], m);
+
+	// controller position
+	dd_vec4_set(&dd_cam_controllers_position[controllerIndex],
+		0,
+		0,
+		0,
+		1
+	);
+	dd_vec4_multiply(&dd_cam_controllers_position[controllerIndex],
+		&dd_cam_controllers[controllerIndex]
+	);
+#endif
+
+}
+
+int dd_matrix_hasVisibleControllers() {
+#if defined(AVDL_QUEST2)
+	return 1;
+#else
+	return 0;
+#endif
+}
+
+void dd_matrix_applyControllerMatrix(int controllerIndex) {
+
+#if defined(AVDL_QUEST2)
+	if (controllerIndex > 2) {
+		return;
+	}
+	dd_multMatrixf(&dd_cam_controllers[controllerIndex]);
+#endif
+
+}
+
+struct dd_matrix *dd_matrix_getControllerMatrix(int controllerIndex) {
+#if defined(AVDL_QUEST2)
+	if (controllerIndex > 2) {
+		return 0;
+	}
+	return &dd_cam_controllers[controllerIndex];
+#endif
+}
+
+int dd_matrix_isControllerVisible(int index) {
+#if defined(AVDL_QUEST2)
+	if (index > 2) {
+		return 0;
+	}
+	return dd_cam_controller_active[index];
+#else
+	return 0;
+#endif
+
+}
+
+void dd_matrix_setControllerVisible(int index, int state) {
+#if defined(AVDL_QUEST2)
+	if (index > 2) {
+		return;
+	}
+	dd_cam_controller_active[index] = state;
+#else
+	return;
+#endif
+}
+
+struct dd_vec4 *dd_matrix_getControllerPosition(int index) {
+#if defined(AVDL_QUEST2)
+	if (index > 2) {
+		return 0;
+	}
+
+	return &dd_cam_controllers_position[index];
+#else
+	return 0;
+#endif
 }

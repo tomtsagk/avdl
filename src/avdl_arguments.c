@@ -44,6 +44,21 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 					avdl_settings->target_platform = AVDL_PLATFORM_ANDROID;
 				}
 				else
+				// compiling for quest 2
+				if (strcmp(argv[i], "--quest2") == 0) {
+					avdl_settings->target_platform = AVDL_PLATFORM_QUEST2;
+				}
+				else
+				// makefile generation
+				if (strcmp(argv[i], "--makefile") == 0) {
+					avdl_settings->makefile_mode = 1;
+				}
+				else
+				// cmake generation
+				if (strcmp(argv[i], "--cmake") == 0) {
+					avdl_settings->cmake_mode = 1;
+				}
+				else
 				// show version number
 				if (strcmp(argv[i], "--version") == 0) {
 					avdl_log(PKG_NAME " v%s", PKG_VERSION);

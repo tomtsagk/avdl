@@ -22,6 +22,15 @@ import java.io.IOException;
 import java.util.*;
 
 /*
+// google play services
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.games.PlayGamesSdk;
+import com.google.android.gms.games.PlayGames;
+import com.google.android.gms.games.GamesSignInClient;
+*/
+
+/*
  * The only activity that starts a window and
  * takes cares of events
  */
@@ -61,6 +70,62 @@ public class AvdlActivity extends Activity {
 
 		surfaceView = new AvdlGLSurfaceView(this);
 		setContentView(surfaceView);
+
+//		//isGooglePlayServicesAvailable(AvdlActivity.context);
+//                //GoogleApiAvailability.isGooglePlayServicesAvailable(this);
+//                GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+//                int result = googleApiAvailability.isGooglePlayServicesAvailable(this);
+//                switch (result) {
+//                        // Success: return true
+//                        case ConnectionResult.SUCCESS:
+//                                //Log.w("avdl", "success google play");
+//                                break;
+//                                //return true;
+//                        // Play Services unavailable, show an error dialog is the Play Services Lib needs an update
+//                        case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
+//                                /*
+//                                Dialog dialog = googleApiAvailability.getErrorDialog(activity, result, 0);
+//                                if (dialog != null) {
+//                                        dialog.show();
+//                                }
+//                                */
+//                                break;
+//                        // fall through
+//                        default:
+//                        case ConnectionResult.SERVICE_MISSING:
+//                        case ConnectionResult.SERVICE_DISABLED:
+//                        case ConnectionResult.SERVICE_INVALID:
+//                                //Log.w("avdl", "Google Play Services unavailable, connection result: "
+//                                        //+ googleApiAvailability.getErrorString(result));
+//                }
+//
+//                PlayGamesSdk.initialize(this);
+//
+//		GamesSignInClient gamesSignInClient = PlayGames.getGamesSignInClient(this);
+//                gamesSignInClient.isAuthenticated().addOnCompleteListener(isAuthenticatedTask -> {
+//                        boolean isAuthenticated =
+//                                (isAuthenticatedTask.isSuccessful() &&
+//                                isAuthenticatedTask.getResult().isAuthenticated());
+//
+//                        if (isAuthenticated) {
+//                                // Continue with Play Games Services
+//                                Log.w("avdl", "logged in to play games services");
+//                        } else {
+//                                // Disable your integration with Play Games Services or show a
+//                                // login button to ask  players to sign-in. Clicking it should
+//                                // call GamesSignInClient.signIn().
+//                                Log.w("avdl", "not logged in to play games services");
+//                        }
+//                });
+
+		// manual sign in
+		//GamesSignInClient gamesSignInClient = PlayGames.getGamesSignInClient(this);
+		//gamesSignInClient.signIn();
+		//Log.w("avdl", "google play sign in");
+
+		// achievement unlock
+		//PlayGames.getAchievementsClient(this).unlock(getString(R.string.my_achievement_id));
+		//PlayGames.getAchievementsClient(this).unlock("achievementid");
 	}
 
 	@Override

@@ -25,8 +25,8 @@ target_link_libraries(
 	android
 	dl
 	EGL
-	GLESv2
-	#GLESv3
+	#GLESv2
+	GLESv3
 	log
 	m
 )

@@ -63,12 +63,16 @@ void dd_mesh_create(struct dd_mesh *m) {
 	m->vcount = 0;
 	m->v = 0;
 	m->dirtyVertices = 0;
+	m->openglContextId = -1;
 
 	m->draw = dd_mesh_draw;
 	m->clean = dd_mesh_clean;
 	m->set_primitive = dd_mesh_set_primitive;
 	m->load = dd_mesh_load;
 	m->copy = dd_mesh_copy;
+
+	m->buffer = 0;
+	m->array = 0;
 }
 
 void dd_mesh_set_primitive(struct dd_mesh *m, enum dd_primitives shape) {
@@ -90,6 +94,7 @@ void dd_mesh_set_primitive(struct dd_mesh *m, enum dd_primitives shape) {
 			m->vcount = sizeof(shape_box) /sizeof(float) /3;
 			break;
 	}
+
 }
 
 /* Free mesh from allocated memory
@@ -110,9 +115,40 @@ void dd_mesh_clean(struct dd_mesh *m) {
 void dd_mesh_draw(struct dd_mesh *m) {
 
 	#ifndef AVDL_DIRECT3D11
-	avdl_graphics_EnableVertexAttribArray(0);
-	avdl_graphics_VertexAttribPointer(0, 3, GL_FLOAT, 0, 0, m->v);
 
+	if (m->array == 0 || m->openglContextId != avdl_graphics_getContextId()) {
+
+                m->openglContextId = avdl_graphics_getContextId();
+
+		glGenVertexArrays(1, &m->array);
+		glBindVertexArray(m->array);
+	
+		glGenBuffers(1, &m->buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, m->buffer);
+	
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) *m->vcount *3, m->v, GL_STATIC_DRAW);
+	
+		int pos = glGetAttribLocation(currentProgram, "position");
+		glVertexAttribPointer(pos, 3, GL_FLOAT, 0, 0, 0);
+		glEnableVertexAttribArray(pos);
+	}
+
+	glBindVertexArray(m->array);
+
+	#if defined(AVDL_QUEST2)
+	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
+	if (MatrixID < 0) {
+		dd_log("avdl: dd_mesh: location of `matrix` not found in current program");
+	}
+	else {
+		glUniformMatrix4fv(
+			MatrixID,
+			1,
+			GL_TRUE,
+			(float *)dd_matrix_globalGet()
+		);
+	}
+	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
 		dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
@@ -120,10 +156,9 @@ void dd_mesh_draw(struct dd_mesh *m) {
 	else {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 	}
-
-	avdl_graphics_DrawArrays(m->vcount);
-
-	avdl_graphics_DisableVertexAttribArray(0);
+	#endif
+	glDrawArrays(GL_TRIANGLES, 0, m->vcount);
+	glBindVertexArray(0);
 	#endif
 }
 

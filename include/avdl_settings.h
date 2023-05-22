@@ -64,6 +64,7 @@ enum AVDL_PLATFORM {
 	AVDL_PLATFORM_LINUX,
 	AVDL_PLATFORM_WINDOWS,
 	AVDL_PLATFORM_ANDROID,
+	AVDL_PLATFORM_QUEST2,
 
 	AVDL_PLATFORM_UNKNOWN,
 };
@@ -108,6 +109,8 @@ struct AvdlSettings {
 	int cpp_mode;
 	int standalone;
 	int quiet_mode;
+	int makefile_mode;
+	int cmake_mode;
 
 	// where to look for assets
 	// For exampe "share/avdl/" would search for assets in "share/avdl/assets/"

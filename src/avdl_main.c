@@ -24,6 +24,8 @@
 #include <unistd.h>
 #endif
 
+char big_buffer[2048];
+
 extern enum AVDL_PLATFORM avdl_platform_temp;
 
 const char cache_dir[] = ".avdl_cache/";
@@ -41,6 +43,8 @@ char buffer[DD_BUFFER_SIZE];
 struct ast_node *game_node;
 
 int create_android_directory(const char *androidDirName);
+int create_quest2_directory(const char *dirName);
+int collect_src_files(const char *dirname, const char *filename, int fileIndex, int filesTotal);
 
 char *cengine_files[] = {
 	"avdl_assetManager.c",
@@ -88,6 +92,7 @@ char *cengine_files[] = {
 	"avdl_multiplayer.c",
 	"avdl_multiplayer_steam.cpp",
 	"avdl_engine_cpp.cpp",
+	"avdl_time.c",
 };
 unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 
@@ -132,6 +137,7 @@ char *cengine_headers[] = {
 	"avdl_rigidbody.h",
 	"avdl_graphics.h",
 	"avdl_engine.h",
+	"avdl_time.h",
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 
@@ -142,6 +148,7 @@ int avdl_compile_cengine(struct AvdlSettings *);
 int avdl_link(struct AvdlSettings *);
 int avdl_assets(struct AvdlSettings *);
 int avdl_android_object(struct AvdlSettings *);
+int avdl_quest2_object(struct AvdlSettings *);
 
 const char *avdl_project_path;
 
@@ -204,6 +211,103 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	avdl_log("~ Project Details end ~");
 	avdl_log("");
 
+	// makefile generation
+	if (avdl_settings.makefile_mode) {
+		avdl_log("Generating makefile ...");
+		struct avdl_string makefilePath;
+		avdl_string_create(&makefilePath, 1024);
+		avdl_string_cat(&makefilePath, avdl_pkg_GetProjectPath());
+		avdl_string_cat(&makefilePath, "/share/avdl/templates/makefile");
+		if ( !avdl_string_isValid(&makefilePath) ) {
+			avdl_log_error("could not construct makefile path");
+			avdl_string_clean(&makefilePath);
+			return -1;
+		}
+		file_copy(avdl_string_toCharPtr(&makefilePath), ".makefile", 0);
+		file_replace(0, ".makefile", 0, ".makefile1", "%AVDL_PROJECT_NAME%", avdl_settings.project_name);
+		file_replace(0, ".makefile1", 0, ".makefile2", "%AVDL_VERSION_NAME%", avdl_settings.version_name);
+		file_replace(0, ".makefile2", 0, ".makefile3", "%AVDL_VERSION_CODE%", avdl_settings.version_code_str);
+		file_replace(0, ".makefile3", 0, "makefile", "%AVDL_PACKAGE_NAME%", avdl_settings.package);
+		file_remove(".makefile");
+		file_remove(".makefile1");
+		file_remove(".makefile2");
+		file_remove(".makefile3");
+		avdl_log(BLU "makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated" RESET, avdl_settings.project_name);
+		return 0;
+	}
+
+	// cmake generation
+	if (avdl_settings.cmake_mode) {
+
+		struct avdl_string path;
+		avdl_string_create(&path, 1024);
+		avdl_string_cat(&path, avdl_pkg_GetProjectPath());
+		avdl_string_cat(&path, "/share/avdl/templates/CMakeLists.txt");
+		if ( !avdl_string_isValid(&path) ) {
+			avdl_log_error("could not construct cmake path");
+			avdl_string_clean(&path);
+			return -1;
+		}
+
+		// collect avdl source
+		struct avdl_string avdl_src;
+		avdl_string_create(&avdl_src, 5024);
+		for (int i = 0; i < cengine_files_total; i++) {
+			avdl_string_cat(&avdl_src, "cengine/");
+			avdl_string_cat(&avdl_src, cengine_files[i]);
+			avdl_string_cat(&avdl_src, " ");
+		}
+		if ( !avdl_string_isValid(&avdl_src) ) {
+			avdl_log_error("could not construct avdl_src path");
+			avdl_string_clean(&avdl_src);
+			return -1;
+		}
+
+		// collect avdl project source
+		big_buffer[0] = '\0';
+		if ( Avdl_FileOp_ForFileInDirectory(".avdl_cache", collect_src_files) != 0 ) {
+			avdl_log_error("failed to collect source files");
+			return -1;
+		}
+
+		// project data in cmake
+		struct avdl_string cmake_data;
+		avdl_string_create(&cmake_data, 5024);
+		avdl_string_cat(&cmake_data, "set(AVDL_PROJECT_NAME ");
+		avdl_string_cat(&cmake_data, avdl_settings.project_name);
+		avdl_string_cat(&cmake_data, ")\n");
+		avdl_string_cat(&cmake_data, "set(AVDL_VERSION_NAME ");
+		avdl_string_cat(&cmake_data, avdl_settings.version_name);
+		avdl_string_cat(&cmake_data, ")\n");
+		avdl_string_cat(&cmake_data, "set(AVDL_SRC ");
+		avdl_string_cat(&cmake_data, avdl_string_toCharPtr(&avdl_src));
+		avdl_string_cat(&cmake_data, big_buffer);
+		avdl_string_cat(&cmake_data, avdl_settings.project_name);
+		avdl_string_cat(&cmake_data, ".rc ");
+		avdl_string_cat(&cmake_data, ")\n");
+		if ( !avdl_string_isValid(&cmake_data) ) {
+			avdl_log_error("could not construct cmake_data");
+			avdl_string_clean(&cmake_data);
+			return -1;
+		}
+
+		file_write("avdl_project.cmake", avdl_string_toCharPtr(&cmake_data));
+		file_copy(avdl_string_toCharPtr(&path), "CMakeLists.txt", 0);
+		/*
+		file_copy(avdl_string_toCharPtr(&path), ".cmake", 0);
+		file_replace(0, ".cmake", 0, ".cmake1", "%AVDL_PROJECT_NAME%", avdl_settings.project_name);
+		file_replace(0, ".cmake1", 0, ".cmake2", "%AVDL_VERSION_NAME%", avdl_settings.version_name);
+		file_replace(0, ".cmake2", 0, ".cmake3", "%AVDL_SRC%", avdl_string_toCharPtr(&avdl_src));
+		file_replace(0, ".cmake3", 0, "CMakeLists.txt", "%AVDL_PROJECT_SRC%", big_buffer);
+		file_remove(".cmake");
+		file_remove(".cmake1");
+		file_remove(".cmake2");
+		file_remove(".cmake3");
+		*/
+		avdl_log(BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated" RESET, avdl_settings.project_name);
+		return 0;
+	}
+
 	if (!is_dir("avdl_build")) {
 		dir_create("avdl_build");
 	}
@@ -231,6 +335,22 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		}
 
 		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for android at " BLU "./avdl_build_android/" RESET, avdl_settings.project_name);
+
+		return 0;
+	}
+	// quest2
+	else if (avdl_settings.target_platform == AVDL_PLATFORM_QUEST2) {
+		create_quest2_directory("avdl_build_quest2");
+
+		avdl_quest2_object(&avdl_settings);
+
+		// handle assets
+		if ( avdl_assets(&avdl_settings) != 0) {
+			avdl_log_error("could not handle project assets for android\n");
+			return -1;
+		}
+
+		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for quest2 at " BLU "./avdl_build_quest2/" RESET, avdl_settings.project_name);
 
 		return 0;
 	}
@@ -293,6 +413,34 @@ int create_android_directory(const char *androidDirName) {
 	else
 	if (isDir < 0) {
 		avdl_log_error("file '%s' not a directory", androidDirName);
+		return -1;
+	}
+	#endif
+
+	return 0;
+}
+
+int create_quest2_directory(const char *dirName) {
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	#else
+	int isDir = is_dir(dirName);
+	if (isDir == 0) {
+		dir_create(dirName);
+		struct avdl_string cenginePath;
+		avdl_string_create(&cenginePath, 1024);
+		avdl_string_cat(&cenginePath, avdl_pkg_GetProjectPath());
+		avdl_string_cat(&cenginePath, "/share/avdl/quest2");
+		if ( !avdl_string_isValid(&cenginePath) ) {
+			avdl_log_error("cannot construct path of quest2: %s", avdl_string_getError(&cenginePath));
+			avdl_string_clean(&cenginePath);
+			return -1;
+		}
+		dir_copy_recursive(0, avdl_string_toCharPtr(&cenginePath), 0, dirName);
+		avdl_string_clean(&cenginePath);
+	}
+	else
+	if (isDir < 0) {
+		avdl_log_error("file '%s' not a directory", dirName);
 		return -1;
 	}
 	#endif
@@ -1081,7 +1229,49 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 			return -1;
 		}
 		dir_create(avdl_string_toCharPtr(&androidFilePath));
-		strcat(avdl_string_toCharPtr(&androidFilePath), filename);
+		avdl_string_cat(&androidFilePath, filename);
+
+		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
+		avdl_string_clean(&androidFilePath);
+
+		avdl_string_clean(&srcFilePath);
+		return 0;
+	}
+	else
+	// on quest2, put assets in a specific directory
+	if (avdl_target_platform == AVDL_PLATFORM_QUEST2) {
+		char *assetDir = "raw";
+
+		if (strcmp(filename +strlen(filename) -4, ".ply") == 0
+		||  strcmp(filename +strlen(filename) -4, ".ogg") == 0
+		||  strcmp(filename +strlen(filename) -5, ".opus") == 0
+		||  strcmp(filename +strlen(filename) -4, ".wav") == 0) {
+			assetDir = "raw";
+		}
+		else
+		if (strcmp(filename +strlen(filename) -4, ".bmp") == 0
+		||  strcmp(filename +strlen(filename) -4, ".png") == 0) {
+			assetDir = "drawable";
+		}
+		else {
+			assetDir = "raw";
+		}
+
+		// android file full path
+		struct avdl_string androidFilePath;
+		avdl_string_create(&androidFilePath, 1024);
+		avdl_string_cat(&androidFilePath, "avdl_build_quest2/");
+		avdl_string_cat(&androidFilePath, "/res/");
+		avdl_string_cat(&androidFilePath, assetDir);
+		avdl_string_cat(&androidFilePath, "/");
+		if ( !avdl_string_isValid(&androidFilePath) ) {
+			avdl_log_error("cannot construct quest2 file path: %s", avdl_string_getError(&androidFilePath));
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&androidFilePath);
+			return -1;
+		}
+		dir_create(avdl_string_toCharPtr(&androidFilePath));
+		avdl_string_cat(&androidFilePath, filename);
 
 		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
 		avdl_string_clean(&androidFilePath);
@@ -1179,7 +1369,6 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	return 0;
 }
 
-char big_buffer[2048];
 int android_object_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
 
 	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
@@ -1213,6 +1402,55 @@ int android_object_file(const char *dirname, const char *filename, int fileIndex
 	struct avdl_string dstFilePath;
 	avdl_string_create(&dstFilePath, 1024);
 	avdl_string_cat(&dstFilePath, "avdl_build_android/app/src/main/cpp/game/");
+	avdl_string_cat(&dstFilePath, filename);
+	if ( !avdl_string_isValid(&dstFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", "avdl_build_android/app/src/main/cpp/game/", filename, avdl_string_getError(&dstFilePath));
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+		return -1;
+	}
+
+	file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
+	avdl_string_clean(&srcFilePath);
+	avdl_string_clean(&dstFilePath);
+	#endif
+
+	return 0;
+}
+
+int quest2_object_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
+
+	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
+	// ignore `.` and `..`
+	if (strcmp(filename, ".") == 0
+	||  strcmp(filename, "..") == 0) {
+		return 0;
+	}
+
+	// only keep `.c` files
+	if (strcmp(filename +strlen(filename) -2, ".c") != 0) {
+		return 0;
+	}
+
+	// src file full path
+	struct avdl_string srcFilePath;
+	avdl_string_create(&srcFilePath, 1024);
+	avdl_string_cat(&srcFilePath, dirname);
+	avdl_string_cat(&srcFilePath, filename);
+	if ( !avdl_string_isValid(&srcFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return -1;
+	}
+
+	strcat(big_buffer, "../../../src/");
+	strcat(big_buffer, filename);
+	strcat(big_buffer, " ");
+
+	// dst file full path
+	struct avdl_string dstFilePath;
+	avdl_string_create(&dstFilePath, 1024);
+	avdl_string_cat(&dstFilePath, "avdl_build_quest2/src/");
 	avdl_string_cat(&dstFilePath, filename);
 	if ( !avdl_string_isValid(&dstFilePath) ) {
 		avdl_log_error("cannot construct path '%s%s': %s", "avdl_build_android/app/src/main/cpp/game/", filename, avdl_string_getError(&dstFilePath));
@@ -1298,5 +1536,134 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	file_remove(buffer);
 	close(outDir);
 	#endif
+	return 0;
+}
+
+int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
+
+	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
+	// put all object files to android
+	strcpy(buffer, "avdl_build_quest2/");
+	strcat(buffer, "/src/");
+	dir_create(buffer);
+
+	// copy project src files
+	big_buffer[0] = '\0';
+	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", quest2_object_file);
+
+	// Android.mk directory
+	struct avdl_string cppFilePath;
+	avdl_string_create(&cppFilePath, 1024);
+	avdl_string_cat(&cppFilePath, "avdl_build_quest2/");
+	avdl_string_cat(&cppFilePath, "/Projects/Android/jni/");
+	if ( !avdl_string_isValid(&cppFilePath) ) {
+		avdl_log_error("cannot construct quest2 src path: %s", avdl_string_getError(&cppFilePath));
+		avdl_string_clean(&cppFilePath);
+		return -1;
+	}
+
+	// folder to edit
+	int outDir = open(avdl_string_toCharPtr(&cppFilePath), O_DIRECTORY);
+	if (!outDir) {
+		avdl_log_error("can't open %s: %s\n", avdl_string_toCharPtr(&cppFilePath), strerror(errno));
+		avdl_string_clean(&cppFilePath);
+		return -1;
+	}
+
+	// add in the avdl-compiled source files
+	file_replace(outDir, "Android.mk.in", outDir, "Android.mk", "%AVDL_GAME_FILES%", big_buffer);
+	close(outDir);
+
+	avdl_string_clean(&cppFilePath);
+
+	// handle versioning
+	strcpy(buffer, "avdl_build_quest2/");
+	strcat(buffer, "/Projects/Android/");
+	outDir = open(buffer, O_DIRECTORY);
+	file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
+	file_replace(outDir, "build.gradle.in2", outDir, "build.gradle.in3", "%AVDL_VERSION_CODE%", avdl_settings->version_code_str);
+	file_replace(outDir, "build.gradle.in3", outDir, "build.gradle", "%AVDL_VERSION_NAME%", avdl_settings->version_name);
+	file_remove("avdl_build_quest2/Projects/Android/build.gradle.in");
+	file_remove("avdl_build_quest2/Projects/Android/build.gradle.in2");
+	file_remove("avdl_build_quest2/Projects/Android/build.gradle.in3");
+	close(outDir);
+
+	strcpy(buffer, "avdl_build_quest2/");
+	strcat(buffer, "/res/drawable/");
+	strcat(buffer, avdl_settings->icon_path);
+	file_copy(avdl_settings->icon_path, buffer, 0);
+
+	strcpy(buffer, "avdl_build_quest2/");
+	strcat(buffer, "/res/drawable/");
+	strcat(buffer, avdl_settings->icon_foreground_path);
+	file_copy(avdl_settings->icon_foreground_path, buffer, 0);
+
+	strcpy(buffer, "avdl_build_quest2/");
+	strcat(buffer, "/res/drawable/");
+	strcat(buffer, avdl_settings->icon_background_path);
+	file_copy(avdl_settings->icon_background_path, buffer, 0);
+
+	// project name
+	strcpy(buffer, "avdl_build_quest2/");
+	strcat(buffer, "/res/values/");
+	outDir = open(buffer, O_DIRECTORY);
+	file_replace(outDir, "strings.xml.in", outDir, "strings.xml", "%AVDL_PROJECT_NAME%", avdl_settings->project_name);
+	strcat(buffer, "strings.xml.in");
+	file_remove("avdl_build_quest2/res/values/strings.xml.in");
+	close(outDir);
+	#endif
+	return 0;
+}
+
+int collect_src_files(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
+
+	// ignore `.` and `..`
+	if (strcmp(filename, ".") == 0
+	||  strcmp(filename, "..") == 0) {
+		return 0;
+	}
+
+	// src file full path
+	struct avdl_string srcFilePath;
+	avdl_string_create(&srcFilePath, 1024);
+	avdl_string_cat(&srcFilePath, dirname);
+	avdl_string_cat(&srcFilePath, "/");
+	avdl_string_cat(&srcFilePath, filename);
+	if ( !avdl_string_isValid(&srcFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return -1;
+	}
+
+	// check file type
+	struct stat statbuf;
+	if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
+		avdl_log_error("Unable to stat file '%s': %s", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
+		avdl_string_clean(&srcFilePath);
+		return -1;
+	}
+
+	// is directory - skip - maybe recursive compilation at some point?
+	if (Avdl_FileOp_IsDirStat(&statbuf)) {
+		avdl_log("skipping directory: %s", avdl_string_toCharPtr(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return 0;
+	}
+	else
+	// is regular file - do nothing
+	if (Avdl_FileOp_IsRegStat(&statbuf)) {
+	}
+	// not supporting other file types - skip
+	else {
+		avdl_log_error("Unsupported file type '%s' - skip\n", avdl_string_toCharPtr(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return 0;
+	}
+
+	strcat(big_buffer, avdl_string_toCharPtr(&srcFilePath));
+	strcat(big_buffer, " ");
+
+	avdl_string_clean(&srcFilePath);
+
 	return 0;
 }

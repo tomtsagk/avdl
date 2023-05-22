@@ -6,6 +6,10 @@
 extern "C" {
 #endif
 
+#ifndef AVDL_VR
+#define AVDL_VR 0
+#endif
+
 #include "dd_dynamic_array.h"
 #include "dd_filetomesh.h"
 #include "dd_matrix.h"
@@ -40,6 +44,7 @@ extern "C" {
 #include "avdl_rigidbody.h"
 #include "avdl_graphics.h"
 #include "avdl_engine.h"
+#include "whereami.h"
 
 int dd_main(int argc, char *argv[]);
 

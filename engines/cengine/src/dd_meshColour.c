@@ -19,6 +19,8 @@ void dd_meshColour_create(struct dd_meshColour *m) {
 	dd_mesh_create(&m->parent);
 	m->dirtyColours = 0;
 	m->c = 0;
+	m->verticesCol = 0;
+	m->dirtyColourArrayObject = 0;
 	m->parent.set_primitive = (void (*)(struct dd_mesh *, enum dd_primitives)) dd_meshColour_set_primitive;
 	m->parent.clean = (void (*)(struct dd_mesh *)) dd_meshColour_clean;
 	m->parent.draw = (void (*)(struct dd_mesh *)) dd_meshColour_draw;
@@ -69,24 +71,88 @@ void dd_meshColour_clean(struct dd_meshColour *m) {
 		m->c = 0;
 		m->dirtyColours = 0;
 	}
+
+	if (m->dirtyColourArrayObject) {
+		free(m->verticesCol);
+		m->verticesCol = 0;
+		m->dirtyColourArrayObject = 0;
+	}
 }
 
 /* draw the mesh itself */
 void dd_meshColour_draw(struct dd_meshColour *m) {
 
 	#ifndef AVDL_DIRECT3D11
-	avdl_graphics_EnableVertexAttribArray(0);
-	avdl_graphics_VertexAttribPointer(0, 3, GL_FLOAT, 0, 0, m->parent.v);
 
-	if (m->c) {
-		avdl_graphics_EnableVertexAttribArray(1);
-		#if DD_PLATFORM_ANDROID
-		avdl_graphics_VertexAttribPointer(1, 4, GL_FLOAT, 1, 0, m->c);
-		#else
-		avdl_graphics_VertexAttribPointer(1, 3, GL_FLOAT, 1, 0, m->c);
-		#endif
+	if (m->parent.array == 0 || m->parent.openglContextId != avdl_graphics_getContextId()) {
+
+                m->parent.openglContextId = avdl_graphics_getContextId();
+
+		m->verticesCol = malloc( sizeof(struct dd_vertex_col) *m->parent.vcount );
+		m->dirtyColourArrayObject = 1;
+		for (int i = 0; i < m->parent.vcount; i++) {
+			m->verticesCol[i].pos[0] = m->parent.v[i *3 +0];
+			m->verticesCol[i].pos[1] = m->parent.v[i *3 +1];
+			m->verticesCol[i].pos[2] = m->parent.v[i *3 +2];
+			#if DD_PLATFORM_ANDROID
+			if (m->c) {
+				m->verticesCol[i].col[0] = m->c[i *4 +0];
+				m->verticesCol[i].col[1] = m->c[i *4 +1];
+				m->verticesCol[i].col[2] = m->c[i *4 +2];
+				m->verticesCol[i].col[3] = m->c[i *4 +3];
+			}
+			else {
+				m->verticesCol[i].col[0] = 0;
+				m->verticesCol[i].col[1] = 0;
+				m->verticesCol[i].col[2] = 0;
+				m->verticesCol[i].col[3] = 0;
+			}
+			#else
+			if (m->c) {
+				m->verticesCol[i].col[0] = m->c[i *3 +0];
+				m->verticesCol[i].col[1] = m->c[i *3 +1];
+				m->verticesCol[i].col[2] = m->c[i *3 +2];
+			}
+			else {
+				m->verticesCol[i].col[0] = 0;
+				m->verticesCol[i].col[1] = 0;
+				m->verticesCol[i].col[2] = 0;
+			}
+			#endif
+		}
+
+		glGenVertexArrays(1, &m->parent.array);
+		glBindVertexArray(m->parent.array);
+	
+		glGenBuffers(1, &m->parent.buffer);
+		glBindBuffer(GL_ARRAY_BUFFER, m->parent.buffer);
+	
+		glBufferData(GL_ARRAY_BUFFER, sizeof(struct dd_vertex_col) *m->parent.vcount, m->verticesCol, GL_STATIC_DRAW);
+	
+		int pos = glGetAttribLocation(currentProgram, "position");
+		glVertexAttribPointer(pos, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_col), (void *)offsetof(struct dd_vertex_col, pos));
+		glEnableVertexAttribArray(pos);
+
+		int col = glGetAttribLocation(currentProgram, "colour");
+		glVertexAttribPointer(col, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_col), (void *)offsetof(struct dd_vertex_col, col));
+		glEnableVertexAttribArray(col);
 	}
 
+	glBindVertexArray(m->parent.array);
+	#if defined(AVDL_QUEST2)
+	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
+	if (MatrixID < 0) {
+		dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
+	}
+	else {
+		glUniformMatrix4fv(
+			MatrixID,
+			1,
+			GL_TRUE,
+			(float *)dd_matrix_globalGet()
+		);
+	}
+	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
 		dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
@@ -94,13 +160,10 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 	else {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 	}
+	#endif
+	glDrawArrays(GL_TRIANGLES, 0, m->parent.vcount);
+	glBindVertexArray(0);
 
-	avdl_graphics_DrawArrays(m->parent.vcount);
-
-	if (m->c) {
-		avdl_graphics_DisableVertexAttribArray(1);
-	}
-	avdl_graphics_DisableVertexAttribArray(0);
 	#endif
 }
 
