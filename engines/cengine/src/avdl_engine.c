@@ -544,8 +544,10 @@ int avdl_engine_resize(struct avdl_engine *o, int w, int h) {
 
 int avdl_engine_update(struct avdl_engine *o, float dt) {
 
+	#if !defined(AVDL_QUEST2)
 	avdl_time_end(&o->end_of_update_time);
 	float dt2 = avdl_time_getTimeDouble(&o->end_of_update_time);
+	#endif
 
 	#if DD_PLATFORM_NATIVE
 	if (avdl_engine_isPaused(o)) {
@@ -672,7 +674,11 @@ int avdl_engine_update(struct avdl_engine *o, float dt) {
 
 	// update world
 	if (o->cworld && o->cworld->update) {
+		#if defined(AVDL_QUEST2)
+		o->cworld->update(o->cworld, 1.0/72);
+		#else
 		o->cworld->update(o->cworld, dt2);
+		#endif
 	}
 
 	// asset loader will load any new assets
@@ -680,7 +686,9 @@ int avdl_engine_update(struct avdl_engine *o, float dt) {
 		avdl_assetManager_loadAll();
 	}
 
+	#if !defined(AVDL_QUEST2)
 	avdl_time_start(&o->end_of_update_time);
+	#endif
 
 	return 0;
 }

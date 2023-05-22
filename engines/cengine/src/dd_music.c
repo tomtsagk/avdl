@@ -8,6 +8,8 @@
 #include <jni.h>
 extern jclass *clazz;
 extern JavaVM *jvm;
+extern jmethodID PlayAudioMethodId;
+extern jmethodID StopAudioMethodId;
 #endif
 
 int avdl_music_volume = 100;
@@ -76,7 +78,11 @@ void dd_music_play(struct dd_music *o) {
 	if (avdl_music_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
 	JNIEnv *env;
+	#if defined(AVDL_QUEST2)
+	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
+	#else
 	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
+	#endif
 
 	if (getEnvStat == JNI_EDETACHED) {
 		if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
@@ -88,9 +94,13 @@ void dd_music_play(struct dd_music *o) {
 	}
 
 	// get string from asset (in java)
-	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
 	jstring *parameter = (*env)->NewStringUTF(env, o->filename);
+	#if defined(AVDL_QUEST2)
+	jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, PlayAudioMethodId, parameter, 0);
+	#else
+	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
 	jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, MethodID, parameter, 0);
+	#endif
 	o->index = result;
 
 	if (getEnvStat == JNI_EDETACHED) {
@@ -108,7 +118,11 @@ void dd_music_playLoop(struct dd_music *o, int loops) {
 	if (avdl_music_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
 	JNIEnv *env;
+	#if defined(AVDL_QUEST2)
+	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
+	#else
 	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
+	#endif
 
 	if (getEnvStat == JNI_EDETACHED) {
 		if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
@@ -140,7 +154,11 @@ void dd_music_stop(struct dd_music *o) {
 	#if DD_PLATFORM_ANDROID
 	if (o->index == -1) return;
 	JNIEnv *env;
+	#if defined(AVDL_QUEST2)
+	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
+	#else
 	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
+	#endif
 
 	if (getEnvStat == JNI_EDETACHED) {
 		if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
@@ -152,9 +170,13 @@ void dd_music_stop(struct dd_music *o) {
 	}
 
 	// get string from asset (in java)
+	jint *parameter = o->index;
+	#if defined(AVDL_QUEST2)
+	(*(*env)->CallStaticVoidMethod)(env, clazz, StopAudioMethodId, parameter);
+	#else
 	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "StopAudio", "(I)V");
-	jint *parameter = &o->index;
 	(*(*env)->CallStaticVoidMethod)(env, clazz, MethodID, parameter);
+	#endif
 
 	o->index = -1;
 

@@ -37,6 +37,8 @@ pthread_mutex_t updateDrawMutex;
 	#if defined(AVDL_QUEST2)
 	jmethodID BitmapMethodId;
 	jmethodID ReadPlyMethodId;
+	jmethodID PlayAudioMethodId;
+	jmethodID StopAudioMethodId;
 	#endif
 
 	// Reconstruct engine to use one JNIEnv per world
@@ -417,6 +419,8 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 
 	BitmapMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
 	ReadPlyMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadPly", "(Ljava/lang/String;I)[Ljava/lang/Object;");
+	PlayAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
+	StopAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "StopAudio", "(I)V");
 
 	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
 	{
