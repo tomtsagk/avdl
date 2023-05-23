@@ -49,7 +49,6 @@
 #define PKG_LOCATION ""
 #endif
 
-
 /*
  * compiling platform
  *
@@ -67,6 +66,12 @@ enum AVDL_PLATFORM {
 	AVDL_PLATFORM_QUEST2,
 
 	AVDL_PLATFORM_UNKNOWN,
+};
+
+#define AVDL_GOOGLE_PLAY_ACHIEVEMENTS_MAX 20
+struct avdl_google_play_achievement {
+	char id[100];
+	char api[100];
 };
 
 /*
@@ -128,6 +133,8 @@ struct AvdlSettings {
 
 	int googleplay_mode;
 	char googleplay_id[100];
+	struct avdl_google_play_achievement googleplay_achievement[AVDL_GOOGLE_PLAY_ACHIEVEMENTS_MAX];
+	int googleplay_achievement_count;
 
 };
 

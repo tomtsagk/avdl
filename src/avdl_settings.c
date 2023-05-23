@@ -96,6 +96,9 @@ int AvdlSettings_Create(struct AvdlSettings *o) {
 	o->googleplay_id[0] = '\0';
 	o->googleplay_mode = 0;
 
+	// google play achievements
+	o->googleplay_achievement_count = 0;
+
 	return 0;
 }
 

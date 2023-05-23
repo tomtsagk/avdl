@@ -64,6 +64,39 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 					}
 				}
 				else
+				// add google play achievement
+				if (strcmp(argv[i], "--google-play-achievement") == 0) {
+					if (argc > i+2) {
+						avdl_log("count: %d", avdl_settings->googleplay_achievement_count);
+						if (strlen(argv[i+1]) > 99) {
+							avdl_log_error("google play achievement api too long");
+							return -1;
+						}
+						if (strlen(argv[i+2]) > 99) {
+							avdl_log_error("google play achievement id too long");
+							return -1;
+						}
+						if (avdl_settings->googleplay_achievement_count >= AVDL_GOOGLE_PLAY_ACHIEVEMENTS_MAX) {
+							avdl_log_error("too many google play achievements, maximum number is: %d", AVDL_GOOGLE_PLAY_ACHIEVEMENTS_MAX);
+							return -1;
+						}
+						if (avdl_settings->googleplay_achievement_count < 0) {
+							avdl_log_error("google play achievement count is invalid: %d", avdl_settings->googleplay_achievement_count);
+							return -1;
+						}
+						strcpy(avdl_settings->googleplay_achievement[avdl_settings->googleplay_achievement_count].id, argv[i+2]);
+						avdl_settings->googleplay_achievement[avdl_settings->googleplay_achievement_count].id[99] = '\0';
+						strcpy(avdl_settings->googleplay_achievement[avdl_settings->googleplay_achievement_count].api, argv[i+1]);
+						avdl_settings->googleplay_achievement[avdl_settings->googleplay_achievement_count].api[99] = '\0';
+						avdl_settings->googleplay_achievement_count++;
+					}
+					else {
+						avdl_log_error(BLU "%s" RESET " expects a google play id", argv[i]);
+						return -1;
+					}
+					i += 2;
+				}
+				else
 				// compiling for quest 2
 				if (strcmp(argv[i], "--quest2") == 0) {
 					avdl_settings->target_platform = AVDL_PLATFORM_QUEST2;

@@ -168,6 +168,13 @@ public class AvdlActivity extends Activity {
 		System.loadLibrary("avdl");
 	}
 
+	static int UnlockAchievement(String achievementName) {
+		Resources res = AvdlActivity.context.getApplicationContext().getResources();
+		int id = res.getIdentifier(achievementName, "string", context.getPackageName());
+		PlayGames.getAchievementsClient(AvdlActivity.activity).unlock(res.getString(id));
+		return 1;
+	}
+
 	static Object[] ReadPly(String assetName, int settings) {
 		//assetName = "box";
 		//Log.w("avdl", assetName);

@@ -1549,14 +1549,21 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 		avdl_string_cat(&values_file, avdl_settings->googleplay_id);
 		avdl_string_cat(&values_file, "</string>\n");
 
-		avdl_string_cat(&values_file, "	<string translatable=\"false\" name=\"ACHIEVEMENT_ROSE_SELECTED\">");
-		avdl_string_cat(&values_file, "test");
-		avdl_string_cat(&values_file, "</string>\n");
+		for (int i = 0; i < avdl_settings->googleplay_achievement_count; i++) {
+			avdl_string_cat(&values_file, "	<string translatable=\"false\" name=\"");
+			avdl_string_cat(&values_file, avdl_settings->googleplay_achievement[i].api);
+			avdl_string_cat(&values_file, "\">");
+			avdl_string_cat(&values_file, avdl_settings->googleplay_achievement[i].id);
+			avdl_string_cat(&values_file, "</string>\n");
+		}
 	}
 	avdl_string_cat(&values_file, "</resources>\n");
 	if (!avdl_string_isValid(&values_file)) {
 		avdl_log_error("could not construct `strings.xml`");
 		return -1;
+	}
+	if (!is_dir("avdl_build_android/app/src/main/res/values/")) {
+		dir_create("avdl_build_android/app/src/main/res/values/");
 	}
 	file_write("avdl_build_android/app/src/main/res/values/strings.xml", avdl_string_toCharPtr(&values_file));
 
