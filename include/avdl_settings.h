@@ -126,6 +126,9 @@ struct AvdlSettings {
 	// what platform to compile for
 	enum AVDL_PLATFORM target_platform;
 
+	int googleplay_mode;
+	char googleplay_id[100];
+
 };
 
 int AvdlSettings_Create(struct AvdlSettings *);

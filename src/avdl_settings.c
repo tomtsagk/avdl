@@ -93,6 +93,9 @@ int AvdlSettings_Create(struct AvdlSettings *o) {
 	o->target_platform = AVDL_PLATFORM_UNKNOWN;
 	#endif
 
+	o->googleplay_id[0] = '\0';
+	o->googleplay_mode = 0;
+
 	return 0;
 }
 

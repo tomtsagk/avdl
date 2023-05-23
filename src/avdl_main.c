@@ -1507,9 +1507,18 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	strcpy(buffer, "avdl_build_android/");
 	strcat(buffer, "/app/");
 	outDir = open(buffer, O_DIRECTORY);
-	file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
+	if (avdl_settings->googleplay_mode) {
+		file_replace(outDir, "build.gradle.in.googleplay", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
+	}
+	else {
+		file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
+	}
 	file_replace(outDir, "build.gradle.in2", outDir, "build.gradle.in3", "%AVDL_VERSION_CODE%", avdl_settings->version_code_str);
 	file_replace(outDir, "build.gradle.in3", outDir, "build.gradle", "%AVDL_VERSION_NAME%", avdl_settings->version_name);
+	file_remove("avdl_build_android/app/build.gradle.in");
+	file_remove("avdl_build_android/app/build.gradle.in2");
+	file_remove("avdl_build_android/app/build.gradle.in3");
+	file_remove("avdl_build_android/app/build.gradle.in.googleplay");
 	close(outDir);
 
 	strcpy(buffer, "avdl_build_android/");
@@ -1527,14 +1536,55 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	strcat(buffer, avdl_settings->icon_background_path);
 	file_copy(avdl_settings->icon_background_path, buffer, 0);
 
-	// project name
-	strcpy(buffer, "avdl_build_android/");
-	strcat(buffer, "/app/src/main/res/values/");
-	outDir = open(buffer, O_DIRECTORY);
-	file_replace(outDir, "strings.xml.in", outDir, "strings.xml", "%AVDL_PROJECT_NAME%", avdl_settings->project_name);
-	strcat(buffer, "strings.xml.in");
-	file_remove(buffer);
-	close(outDir);
+	// strings
+	struct avdl_string values_file;
+	avdl_string_create(&values_file, 1024);
+	avdl_string_cat(&values_file, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+	avdl_string_cat(&values_file, "<resources>\n");
+	avdl_string_cat(&values_file, "	<string name=\"app_name\">");
+	avdl_string_cat(&values_file, avdl_settings->project_name);
+	avdl_string_cat(&values_file, "</string>\n");
+	if (avdl_settings->googleplay_mode) {
+		avdl_string_cat(&values_file, "	<string translatable=\"false\" name=\"game_services_project_id\">");
+		avdl_string_cat(&values_file, avdl_settings->googleplay_id);
+		avdl_string_cat(&values_file, "</string>\n");
+
+		avdl_string_cat(&values_file, "	<string translatable=\"false\" name=\"ACHIEVEMENT_ROSE_SELECTED\">");
+		avdl_string_cat(&values_file, "test");
+		avdl_string_cat(&values_file, "</string>\n");
+	}
+	avdl_string_cat(&values_file, "</resources>\n");
+	if (!avdl_string_isValid(&values_file)) {
+		avdl_log_error("could not construct `strings.xml`");
+		return -1;
+	}
+	file_write("avdl_build_android/app/src/main/res/values/strings.xml", avdl_string_toCharPtr(&values_file));
+
+	// modify Android Manifest based on google play mode or not
+	if (avdl_settings->googleplay_mode) {
+		file_copy(
+			"avdl_build_android/app/src/main/AndroidManifest.xml.in.googleplay",
+			"avdl_build_android/app/src/main/AndroidManifest.xml",
+			0
+		);
+		file_copy(
+			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in.googleplay",
+			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java",
+			0
+		);
+	}
+	else {
+		file_copy(
+			"avdl_build_android/app/src/main/AndroidManifest.xml.in",
+			"avdl_build_android/app/src/main/AndroidManifest.xml",
+			0
+		);
+		file_copy(
+			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in",
+			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java",
+			0
+		);
+	}
 	#endif
 	return 0;
 }

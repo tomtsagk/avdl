@@ -44,6 +44,26 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 					avdl_settings->target_platform = AVDL_PLATFORM_ANDROID;
 				}
 				else
+				// compiling for android + google play services
+				if (strcmp(argv[i], "--android-google-play") == 0) {
+					if (argc > i+1) {
+						if (strlen(argv[i+1]) > 99) {
+							avdl_log_error("google play id too long");
+							return -1;
+						}
+						avdl_settings->target_platform = AVDL_PLATFORM_ANDROID;
+						avdl_settings->googleplay_mode = 1;
+						strcpy(avdl_settings->googleplay_id, argv[i+1]);
+						avdl_settings->googleplay_id[99] = '\0';
+						avdl_log("google play id: %s", avdl_settings->googleplay_id);
+						i++;
+					}
+					else {
+						avdl_log_error(BLU "%s" RESET " expects a google play id", argv[i]);
+						return -1;
+					}
+				}
+				else
 				// compiling for quest 2
 				if (strcmp(argv[i], "--quest2") == 0) {
 					avdl_settings->target_platform = AVDL_PLATFORM_QUEST2;
