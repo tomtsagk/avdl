@@ -94,6 +94,7 @@ char *cengine_files[] = {
 	"avdl_engine_cpp.cpp",
 	"avdl_time.c",
 	"avdl_webapi.c",
+	"avdl_webapi_cpp.cpp",
 };
 unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 

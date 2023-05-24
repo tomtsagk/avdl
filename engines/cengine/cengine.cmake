@@ -47,6 +47,7 @@ install(FILES
 	engines/cengine/src/avdl_engine_cpp.cpp
 	engines/cengine/src/avdl_time.c
 	engines/cengine/src/avdl_webapi.c
+	engines/cengine/src/avdl_webapi_cpp.cpp
 	DESTINATION
 	share/avdl/cengine
 )
