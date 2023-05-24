@@ -30,16 +30,18 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 /usr/bin/avdl
 /usr/include/dd_*
 /usr/include/avdl_*
+/usr/include/whereami.h
 /usr/share/avdl/android/*
 /usr/share/avdl/quest2/*
 /usr/share/avdl/cengine/*
+/usr/share/avdl/templates/*
 /usr/share/vim/vimfiles/ftdetect/avdl.vim
 /usr/share/vim/vimfiles/syntax/avdl.vim
 %license LICENSE
 %doc /usr/share/man/man1/avdl.1.gz
 
 %changelog
-* Wed Apr 24 2023 Tom Tsagkatos <tomtsagkatos@afloof.dev>
+* Wed May 24 2023 Tom Tsagkatos <tomtsagkatos@afloof.dev>
 - Add support for VR with Quest 2
 - Can now open URL links from game
 - Add Google Play Achievements
@@ -62,7 +64,7 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 - Separate music and sound audio
 - Separate textures and meshes, to make them easier to manage.
 
-* Fri Feb 18 2022 Tom Tsagk <tomtsagk@darkdimension.org>
+* Sat Feb 18 2022 Tom Tsagk <tomtsagk@darkdimension.org>
 - Fix bug that caused shaders to not render meshes on some hardware
 - Add save/load functionality for android too
 

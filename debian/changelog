@@ -4,7 +4,7 @@ avdl (0.9.4-1) focal; urgency=low
   * Can now open URL links from game
   * Add Google Play Achievements
 
- -- Tom Tsagkatos <tomtsagkatos@afloof.dev>  Wed, 24 Apr 2023 18:00:00 +0100
+ -- Tom Tsagkatos <tomtsagkatos@afloof.dev>  Wed, 24 May 2023 18:00:00 +0100
 
 avdl (0.7.2-1) focal; urgency=low
 
@@ -52,7 +52,7 @@ avdl (0.3.4-1) focal; urgency=low
   * Fixed a big that caused shaders to not render meshes on some platforms
   * Update android compilation, to support save files
 
- -- Tom Tsagk <tomtsagk@darkdimension.org>  Fri, 18 Feb 2022 12:52:00 +0100
+ -- Tom Tsagk <tomtsagk@darkdimension.org>  Sat, 18 Feb 2022 12:52:00 +0100
 
 avdl (0.3.1-1) focal; urgency=low
 
