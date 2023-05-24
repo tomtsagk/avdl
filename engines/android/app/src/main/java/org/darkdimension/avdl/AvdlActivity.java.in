@@ -21,6 +21,10 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.*;
 
+// open url
+import android.content.Intent;
+import android.net.Uri;
+
 /*
  * The only activity that starts a window and
  * takes cares of events
@@ -103,6 +107,12 @@ public class AvdlActivity extends Activity {
 	// ???
 	static {
 		System.loadLibrary("avdl");
+	}
+
+	static int OpenUrl(String url) {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+		AvdlActivity.activity.startActivity(browserIntent);
+		return 1;
 	}
 
 	static Object[] ReadPly(String assetName, int settings) {

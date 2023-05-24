@@ -18,6 +18,10 @@ import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.*;
 
+// open url
+import android.content.Intent;
+import android.net.Uri;
+
 public class AvdlActivity extends android.app.NativeActivity {
 	public static AvdlActivity activity;
 	public static Context context;
@@ -66,6 +70,12 @@ public class AvdlActivity extends android.app.NativeActivity {
 		b.getPixels(array1, 0, b.getWidth(), 0, 0, b.getWidth(), b.getHeight());
 
 		return new Object[] {arraySize, array1};
+	}
+
+	static int OpenUrl(String url) {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+		AvdlActivity.activity.startActivity(browserIntent);
+		return 1;
 	}
 
 	static Object[] ReadPly(String assetName, int settings) {

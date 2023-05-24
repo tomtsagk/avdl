@@ -28,6 +28,10 @@ import com.google.android.gms.games.PlayGamesSdk;
 import com.google.android.gms.games.PlayGames;
 import com.google.android.gms.games.GamesSignInClient;
 
+// open url
+import android.content.Intent;
+import android.net.Uri;
+
 /*
  * The only activity that starts a window and
  * takes cares of events
@@ -172,6 +176,12 @@ public class AvdlActivity extends Activity {
 		Resources res = AvdlActivity.context.getApplicationContext().getResources();
 		int id = res.getIdentifier(achievementName, "string", context.getPackageName());
 		PlayGames.getAchievementsClient(AvdlActivity.activity).unlock(res.getString(id));
+		return 1;
+	}
+
+	static int OpenUrl(String url) {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+		AvdlActivity.activity.startActivity(browserIntent);
 		return 1;
 	}
 

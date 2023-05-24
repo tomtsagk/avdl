@@ -93,6 +93,7 @@ char *cengine_files[] = {
 	"avdl_multiplayer_steam.cpp",
 	"avdl_engine_cpp.cpp",
 	"avdl_time.c",
+	"avdl_webapi.c",
 };
 unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 
@@ -138,6 +139,7 @@ char *cengine_headers[] = {
 	"avdl_graphics.h",
 	"avdl_engine.h",
 	"avdl_time.h",
+	"avdl_webapi.h",
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 
@@ -1645,6 +1647,10 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	file_remove("avdl_build_quest2/Projects/Android/build.gradle.in3");
 	close(outDir);
 
+	if (!is_dir("avdl_build_quest2/res/drawable/")) {
+		dir_create("avdl_build_quest2/res/drawable/");
+	}
+
 	strcpy(buffer, "avdl_build_quest2/");
 	strcat(buffer, "/res/drawable/");
 	strcat(buffer, avdl_settings->icon_path);
@@ -1659,6 +1665,10 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	strcat(buffer, "/res/drawable/");
 	strcat(buffer, avdl_settings->icon_background_path);
 	file_copy(avdl_settings->icon_background_path, buffer, 0);
+
+	if (!is_dir("avdl_build_quest2/res/values/")) {
+		dir_create("avdl_build_quest2/res/values/");
+	}
 
 	// project name
 	strcpy(buffer, "avdl_build_quest2/");
