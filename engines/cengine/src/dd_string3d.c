@@ -80,6 +80,7 @@ void dd_string3d_create(struct dd_string3d *o) {
 	dd_da_init(&o->textMeshes, sizeof(struct dd_word_mesh));
 
 	o->align = DD_STRING3D_ALIGN_LEFT;
+	o->alignv = DD_STRING3D_ALIGN_TOP;
 	o->colorFront[0] = 1.0;
 	o->colorFront[1] = 1.0;
 	o->colorFront[2] = 1.0;
@@ -88,6 +89,7 @@ void dd_string3d_create(struct dd_string3d *o) {
 	o->colorBack[2] = 0.0;
 
 	o->setAlign = dd_string3d_setAlign;
+	o->setAlignVertical = dd_string3d_setAlignVertical;
 	o->clean = dd_string3d_clean;
 	o->draw = dd_string3d_draw;
 	o->drawInt = dd_string3d_drawInt;
@@ -98,6 +100,10 @@ void dd_string3d_create(struct dd_string3d *o) {
 
 void dd_string3d_setAlign(struct dd_string3d *o, enum dd_string3d_align al) {
 	o->align = al;
+}
+
+void dd_string3d_setAlignVertical(struct dd_string3d *o, enum dd_string3d_align al) {
+	o->alignv = al;
 }
 
 void dd_string3d_draw(struct dd_string3d *o) {
@@ -154,7 +160,47 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 	dd_matrix_push();
 
 	int wordsTotal = 0;
+	int linesTotal = 0;
 
+	// for each line
+	do {
+		int lineWords = 0;
+		int lineWidth = 0;
+		linesTotal++;
+
+		for (int i = wordsTotal; i < o->textMeshes.elements; i++) {
+			struct dd_word_mesh *m = dd_da_get(&o->textMeshes, i);
+
+			// fits in the same line
+			if (!limit
+			|| (!lineWords && m->width > limit)
+			|| lineWidth +m->width <= limit) {
+				// not first word, add space
+				if (lineWords != 0) {
+					lineWidth++;
+				}
+				lineWidth += m->width;
+				lineWords++;
+			}
+			// doesn't fit in line
+			else {
+				break;
+			}
+		}
+		wordsTotal += lineWords;
+	} while (wordsTotal < o->textMeshes.elements);
+	switch (o->alignv) {
+	case DD_STRING3D_ALIGN_TOP:
+		break;
+	case DD_STRING3D_ALIGN_CENTER:
+		dd_translatef(0, ((linesTotal -1) *0.5), 0);
+		break;
+	case DD_STRING3D_ALIGN_BOTTOM:
+		dd_translatef(0, linesTotal -1, 0);
+		break;
+	}
+
+	wordsTotal = 0;
 	// for each line
 	do {
 		int lineWords = 0;
@@ -192,7 +238,6 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 			break;
 		}
 
-		//for (int i = 0; i < o->textMeshes.elements; i++) {
 		for (int i = 0; i < lineWords; i++) {
 			struct dd_word_mesh *m = dd_da_get(&o->textMeshes, wordsTotal +i);
 
