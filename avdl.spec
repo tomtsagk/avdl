@@ -1,5 +1,5 @@
 Name:           avdl
-Version:        0.7.2
+Version:        0.9.3
 Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
@@ -31,6 +31,7 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 /usr/include/dd_*
 /usr/include/avdl_*
 /usr/share/avdl/android/*
+/usr/share/avdl/quest2/*
 /usr/share/avdl/cengine/*
 /usr/share/vim/vimfiles/ftdetect/avdl.vim
 /usr/share/vim/vimfiles/syntax/avdl.vim
@@ -38,6 +39,11 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 %doc /usr/share/man/man1/avdl.1.gz
 
 %changelog
+* Wed Apr 24 2023 Tom Tsagkatos <tomtsagkatos@afloof.dev>
+- Add support for VR with Quest 2
+- Can now open URL links from game
+- Add Google Play Achievements
+
 * Tue Feb 14 2023 Tom Tsagk <tomtsagk@afloofdev.com>
 - Improve online functionality
 - Automate builds
