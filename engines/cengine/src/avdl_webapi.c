@@ -14,6 +14,11 @@ extern jmethodID BitmapMethodId;
 extern jmethodID ReadPlyMethodId;
 #endif
 
+#if defined(AVDL_OS_WINDOWS)
+#include <windows.h>
+#include <shellapi.h>
+#endif
+
 #if !defined(AVDL_STEAM)
 void avdl_webapi_openurl(const char *url) {
 
@@ -21,14 +26,15 @@ void avdl_webapi_openurl(const char *url) {
 
 	#if defined(AVDL_OS_LINUX)
 	const char *opener = "xdg-open ";
-	#elif defined(AVDL_OS_WINDOWS)
-	const char *opener = "start ";
-	#endif
 	char *final_cmd = malloc(strlen(opener) +strlen(url) +1);
 	strcpy(final_cmd, opener);
 	strcat(final_cmd, url);
 	system(final_cmd);
 	free(final_cmd);
+	#elif defined(AVDL_OS_WINDOWS)
+	//const char *opener = "start ";
+	ShellExecuteA(NULL, "open", url, NULL, NULL, SW_SHOW);
+	#endif
 
 	#elif defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
 
