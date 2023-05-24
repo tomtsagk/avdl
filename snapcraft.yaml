@@ -1,6 +1,6 @@
 name: avdl
 base: core18
-version: '0.9.4'
+version: '0.9.5'
 summary: Abstract video-game development language compiler
 description: |
   A high level video game programming language.
@@ -16,7 +16,7 @@ apps:
 
 parts:
   avdl:
-    source: https://github.com/tomtsagk/avdl/archive/refs/tags/v0.9.4.tar.gz
+    source: https://github.com/tomtsagk/avdl/archive/refs/tags/v0.9.5.tar.gz
     plugin: make
     make-parameters: [ 'prefix=' ]
     build-packages:

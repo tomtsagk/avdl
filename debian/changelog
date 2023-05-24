@@ -1,4 +1,4 @@
-avdl (0.9.4-1) focal; urgency=low
+avdl (0.9.5-1) focal; urgency=low
 
   * Add support for VR with Quest 2
   * Can now open URL links from game

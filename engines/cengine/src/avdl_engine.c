@@ -179,7 +179,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 		}
 		// audio initialisation succeeded
 		else {
-			Mix_Init(MIX_INIT_OPUS | MIX_INIT_OGG);
+			Mix_Init(MIX_INIT_OGG);
 
 			// make sure there's at least 8 channels
 			dd_numberOfAudioChannels = Mix_AllocateChannels(-1);
