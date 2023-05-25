@@ -438,6 +438,58 @@ jobs:
         name: rue_android_debug
         path: rue_output_debug
 
+  # Android - Google Play Games Services
+  rue_build_android_googleplay:
+    runs-on: ubuntu-latest
+    needs: [build_linux]
+    if: ${{ github.ref == 'refs/heads/develop' }}
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_linux
+        path: avdl_build_linux
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'oracle'
+        java-version: '17'
+    - name: get_rue
+      shell: bash
+      run: |
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout develop
+        cd ..
+    - name: set_avdl
+      run: |
+        mkdir AVDL_BUILD
+        mv avdl_build_linux/* AVDL_BUILD
+        rmdir avdl_build_linux
+        chmod +x AVDL_BUILD/bin/avdl
+    - name: generate_android_project
+      run: |
+        cd rue
+        ../AVDL_BUILD/bin/avdl --android-google-play "123"
+    - name: compile_apk
+      run: |
+        cd rue/avdl_build_android/
+        chmod +x gradlew
+        ./gradlew build
+        cd ../../
+        mkdir rue_output
+        mv rue/avdl_build_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk rue_output
+        mkdir rue_output_debug
+        mv rue/avdl_build_android/app/build/outputs/apk/debug/app-universal-debug.apk rue_output_debug
+    - name: upload_artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_android
+        path: rue_output
+    - name: upload_artifact_debug
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_android_googleplay_debug
+        path: rue_output_debug
+
   # Quest 2
   rue_build_quest2:
     runs-on: ubuntu-latest
