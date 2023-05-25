@@ -1,5 +1,5 @@
 Name:           avdl
-Version:        0.9.9
+Version:        0.9.10
 Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
@@ -42,6 +42,7 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 %changelog
 * Thu May 25 2023 Tom Tsagkatos <tomtsagkatos@afloof.dev>
 - Fix performance issue on Quest 2
+- Add ability for non oculus quest 2 builds
 
 * Wed May 24 2023 Tom Tsagkatos <tomtsagkatos@afloof.dev>
 - Add support for VR with Quest 2

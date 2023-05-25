@@ -1,6 +1,7 @@
-avdl (0.9.9-1) focal; urgency=low
+avdl (0.9.10-1) focal; urgency=low
 
   * Fix performance issue on Quest 2
+  * Add ability to make non-oculus Quest 2 builds
 
  -- Tom Tsagkatos <tomtsagkatos@afloof.dev>  Thu, 25 May 2023 18:00:00 +0100
 
