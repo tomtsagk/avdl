@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "dd_log.h"
 #include "avdl_engine.h"
-#include "whereami.h"
+#include "avdl_whereami.h"
 
 extern struct avdl_engine engine;
 

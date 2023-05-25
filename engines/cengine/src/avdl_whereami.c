@@ -3,9 +3,9 @@
 //   by Gregory Pakosz (@gpakosz)
 // https://github.com/gpakosz/whereami
 
-// in case you want to #include "whereami.c" in a larger compilation unit
+// in case you want to #include "avdl_whereami.c" in a larger compilation unit
 #if !defined(WHEREAMI_H)
-#include <whereami.h>
+#include <avdl_whereami.h>
 #endif
 
 #ifdef AVDL_DIRECT3D11

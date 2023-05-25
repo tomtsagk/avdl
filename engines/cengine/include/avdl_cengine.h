@@ -44,7 +44,7 @@ extern "C" {
 #include "avdl_rigidbody.h"
 #include "avdl_graphics.h"
 #include "avdl_engine.h"
-#include "whereami.h"
+#include "avdl_whereami.h"
 #include "avdl_webapi.h"
 
 int dd_main(int argc, char *argv[]);
