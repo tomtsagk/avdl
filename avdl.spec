@@ -30,7 +30,6 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 /usr/bin/avdl
 /usr/include/dd_*
 /usr/include/avdl_*
-/usr/include/whereami.h
 /usr/share/avdl/android/*
 /usr/share/avdl/quest2/*
 /usr/share/avdl/cengine/*
