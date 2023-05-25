@@ -390,6 +390,7 @@ jobs:
   rue_build_android:
     runs-on: ubuntu-latest
     needs: [build_linux]
+    if: ${{ github.ref == 'refs/heads/develop' }}
     steps:
     - uses: actions/download-artifact@v3
       with:
@@ -441,6 +442,7 @@ jobs:
   rue_build_quest2:
     runs-on: ubuntu-latest
     needs: [build_linux]
+    if: ${{ github.ref == 'refs/heads/develop' }}
     steps:
     - uses: actions/download-artifact@v3
       with:
@@ -500,6 +502,7 @@ jobs:
   rue_build_quest2_oculus:
     runs-on: ubuntu-latest
     needs: [build_linux]
+    if: ${{ github.ref == 'refs/heads/develop' }}
     steps:
     - uses: actions/download-artifact@v3
       with:
@@ -559,6 +562,7 @@ jobs:
   rue_build_linux:
     runs-on: ubuntu-20.04
     needs: [build_linux]
+    if: ${{ github.ref == 'refs/heads/develop' }}
     steps:
     - name: update packages
       run: |
@@ -590,6 +594,7 @@ jobs:
   rue_build_linux_steam:
     runs-on: ubuntu-20.04
     needs: [build_linux]
+    if: ${{ github.ref == 'refs/heads/develop' }}
     steps:
     - name: update packages
       run: |
@@ -620,6 +625,7 @@ jobs:
   rue_build_windows:
     runs-on: windows-latest
     needs: [build_windows]
+    if: ${{ github.ref == 'refs/heads/develop' }}
     steps:
     - uses: actions/download-artifact@v3
       with:
@@ -710,6 +716,7 @@ jobs:
   rue_build_windows_steam:
     runs-on: windows-latest
     needs: [build_windows]
+    if: ${{ github.ref == 'refs/heads/develop' }}
     steps:
     - uses: actions/download-artifact@v3
       with:
