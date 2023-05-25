@@ -1,5 +1,5 @@
 Name:           avdl
-Version:        0.9.6
+Version:        0.9.7
 Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
@@ -8,7 +8,7 @@ URL:            https://afloofdev.com/avdl
 Source0:        https://github.com/tomtsagk/%{name}/archive/refs/tags/v%{version}.tar.gz
 
 BuildRequires:  make, gcc, glew-devel, SDL2-devel, SDL2_mixer-devel
-Requires:       glew-devel, SDL2-devel, SDL2_mixer-devel, libpng-devel, libvorbis-devel, opus, opus-tools, libopusenc, libogg-devel, opusfile
+Requires:       glew-devel, SDL2-devel, SDL2_mixer-devel, libpng-devel, libvorbis-devel, libogg-devel
 
 %description
 A compiler for the high level programming language with the same name.

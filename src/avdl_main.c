@@ -228,13 +228,15 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		}
 		file_copy(avdl_string_toCharPtr(&makefilePath), ".makefile", 0);
 		file_replace(0, ".makefile", 0, ".makefile1", "%AVDL_PROJECT_NAME%", avdl_settings.project_name);
-		file_replace(0, ".makefile1", 0, ".makefile2", "%AVDL_VERSION_NAME%", avdl_settings.version_name);
-		file_replace(0, ".makefile2", 0, ".makefile3", "%AVDL_VERSION_CODE%", avdl_settings.version_code_str);
-		file_replace(0, ".makefile3", 0, "makefile", "%AVDL_PACKAGE_NAME%", avdl_settings.package);
+		file_replace(0, ".makefile1", 0, ".makefile2", "%AVDL_PROJECT_NAME_CODE%", avdl_settings.project_name_code);
+		file_replace(0, ".makefile2", 0, ".makefile3", "%AVDL_VERSION_NAME%", avdl_settings.version_name);
+		file_replace(0, ".makefile3", 0, ".makefile4", "%AVDL_VERSION_CODE%", avdl_settings.version_code_str);
+		file_replace(0, ".makefile4", 0, "makefile", "%AVDL_PACKAGE_NAME%", avdl_settings.package);
 		file_remove(".makefile");
 		file_remove(".makefile1");
 		file_remove(".makefile2");
 		file_remove(".makefile3");
+		file_remove(".makefile4");
 		avdl_log(BLU "makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated" RESET, avdl_settings.project_name);
 		return 0;
 	}

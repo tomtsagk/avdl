@@ -2,6 +2,7 @@
 # project data
 #
 NAME=%AVDL_PROJECT_NAME%
+NAME_CODE=%AVDL_PROJECT_NAME_CODE%
 VERSION=%AVDL_VERSION_NAME%
 REVISION=0
 VERSION_CODE=%AVDL_VERSION_CODE%
@@ -11,7 +12,7 @@ PACKAGE=%AVDL_PACKAGE_NAME%
 # system data
 #
 prefix=/usr/local/
-assetprefix=share/${NAME}/
+assetprefix=share/${NAME_CODE}/
 
 #
 # compiler flags
@@ -41,7 +42,7 @@ metadatafile=metadata/${PACKAGE}.metainfo.xml
 #
 # avdl files
 #
-NATIVE_BIN=${DIRECTORY_NATIVE}/bin/${NAME}
+NATIVE_BIN=${DIRECTORY_NATIVE}/bin/${NAME_CODE}
 
 #
 # default build - native only
@@ -57,7 +58,7 @@ native:
 android:
 	${AVDL_BIN} --android ${COMPILER_CUSTOM_FLAGS}
 
-INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/${NAME}/assets \
+INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/${NAME_CODE}/assets \
 	${DESTDIR}${prefix}/share/applications ${DESTDIR}${prefix}/share/metainfo \
 	${DESTDIR}${prefix}/share/icons/hicolor/512x512/apps/ \
 	${DESTDIR}${prefix}/share/icons/hicolor/256x256/apps/ \
@@ -70,8 +71,8 @@ ${INSTALL_DIRS}:
 	mkdir -p $@
 
 install: ${INSTALL_DIRS}
-	install ${NATIVE_BIN} ${DESTDIR}${prefix}/bin/${NAME}
-	install ${DIRECTORY_NATIVE}/assets/* ${DESTDIR}${prefix}/share/${NAME}/assets
+	install ${NATIVE_BIN} ${DESTDIR}${prefix}/bin/${NAME_CODE}
+	install ${DIRECTORY_NATIVE}/assets/* ${DESTDIR}${prefix}/share/${NAME_CODE}/assets
 	install ${desktopfile} ${DESTDIR}${prefix}/share/applications
 	install ${metadatafile} ${DESTDIR}${prefix}/share/metainfo/
 	install ${icon512x512} ${DESTDIR}${prefix}/share/icons/hicolor/512x512/apps/${PACKAGE}.png
@@ -82,8 +83,8 @@ install: ${INSTALL_DIRS}
 	install ${icon16x16} ${DESTDIR}${prefix}/share/icons/hicolor/16x16/apps/${PACKAGE}.png
 
 uninstall:
-	rm -f ${DESTDIR}${prefix}/bin/${NAME}
-	rm -rf ${DESTDIR}${prefix}/share/${NAME}
+	rm -f ${DESTDIR}${prefix}/bin/${NAME_CODE}
+	rm -rf ${DESTDIR}${prefix}/share/${NAME_CODE}
 	rm -f ${DESTDIR}${prefix}/share/applications/${PACKAGE}.desktop
 	rm -f ${DESTDIR}${prefix}/share/metainfo/${PACKAGE}.metainfo.xml
 	rm -f ${DESTDIR}${prefix}/share/icons/hicolor/512x512/apps/${PACKAGE}.png
