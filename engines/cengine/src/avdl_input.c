@@ -138,13 +138,7 @@ void avdl_input_Init(struct AvdlInput *o) {
 	attachInfo.countActionSets = 1;
 	attachInfo.actionSets = &o->actionSet;
 	xrAttachSessionActionSets(o->session, &attachInfo);
-#endif
 
-}
-
-void avdl_input_update(struct AvdlInput *o) {
-
-#if defined(AVDL_QUEST2)
 	XrActionSpaceCreateInfo asciL = {XR_TYPE_ACTION_SPACE_CREATE_INFO};
 	asciL.action = o->gripPoseL;
 	asciL.poseInActionSpace.orientation.w = 1.0f;
@@ -177,6 +171,13 @@ void avdl_input_update(struct AvdlInput *o) {
 	xrCreateActionSpace(o->session, &asciR2, &actionSpaceR2);
 	o->aimPoseSpaceR = actionSpaceR2;
 
+#endif
+
+}
+
+void avdl_input_update(struct AvdlInput *o) {
+
+#if defined(AVDL_QUEST2)
 	// sync action data
 	XrActiveActionSet activeActionSet = {};
 	activeActionSet.actionSet = o->actionSet;
