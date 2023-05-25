@@ -1,3 +1,9 @@
+avdl (0.9.9-1) focal; urgency=low
+
+  * Fix performance issue on Quest 2
+
+ -- Tom Tsagkatos <tomtsagkatos@afloof.dev>  Thu, 25 May 2023 18:00:00 +0100
+
 avdl (0.9.8-1) focal; urgency=low
 
   * Add support for VR with Quest 2
