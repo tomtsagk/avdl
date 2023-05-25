@@ -9,6 +9,7 @@
 #include <math.h>
 #include <string.h>
 
+#if defined(AVDL_QUEST2)
 // EXT_texture_border_clamp
 #ifndef GL_CLAMP_TO_BORDER
 #define GL_CLAMP_TO_BORDER 0x812D
@@ -79,6 +80,7 @@ static void EglInitExtensions() {
 		glExtensions.EXT_sRGB_write_control = strstr(allExtensions, "GL_EXT_sRGB_write_control");
 	}
 }
+#endif
 
 extern int totalAssets;
 extern int totalAssetsLoaded;
