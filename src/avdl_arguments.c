@@ -102,6 +102,12 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 					avdl_settings->target_platform = AVDL_PLATFORM_QUEST2;
 				}
 				else
+				// include oculus platform sdk
+				if (strcmp(argv[i], "--quest2-oculus") == 0) {
+					avdl_settings->target_platform = AVDL_PLATFORM_QUEST2;
+					avdl_settings->oculus_mode = 1;
+				}
+				else
 				// makefile generation
 				if (strcmp(argv[i], "--makefile") == 0) {
 					avdl_settings->makefile_mode = 1;

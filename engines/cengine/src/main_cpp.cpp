@@ -53,8 +53,6 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
 #include "avdl_cengine.h"
 
-#define AVDL_OCULUS_PLATFORM_SDK 1;
-
 #include <android_native_app_glue.h>
 void avdl_handle_cmd(struct android_app* androidApp, int32_t cmd) {
 	struct avdl_engine *engine = (struct avdl_engine*)androidApp->userData;
@@ -224,7 +222,7 @@ void android_main(struct android_app* androidApp) {
 	// get save location
 	set_android_save_dir(androidApp->activity->clazz);
 
-	#if defined(AVDL_OCULUS_PLATFORM_SDK)
+	#if defined(AVDL_OCULUS)
 	// meta oculus platform sdk
 	// at some point try "ovr_PlatformInitializeAndroidAsynchronous" for async
 	if (ovr_PlatformInitializeAndroid("6262323890531927", androidApp->activity->clazz, jniEnv) != ovrPlatformInitialize_Success) {
@@ -571,7 +569,7 @@ void android_main(struct android_app* androidApp) {
 	while (androidApp->destroyRequested == 0 && !dd_flag_exit) {
 		engine.frameCount++;
 
-		#if defined(AVDL_OCULUS_PLATFORM_SDK)
+		#if defined(AVDL_OCULUS)
 		// check ovr messages
 		ovrMessage* message = nullptr;
 		while ((message = ovr_PopMessage()) != nullptr) {

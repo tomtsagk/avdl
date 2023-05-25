@@ -31,7 +31,11 @@ void avdl_achievements_set(struct avdl_achievements *o, const char *achievementI
 		printf("avdl: failed to upload steam achievement: '%s'\n", achievementId);
 	}
 	#elif defined(AVDL_QUEST2)
+
+	#if defined(AVDL_OCULUS_PLATFORM_SDK)
 	ovr_Achievements_Unlock(achievementId);
+	#endif
+
 	#endif
 }
 

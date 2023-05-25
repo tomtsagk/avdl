@@ -1631,7 +1631,13 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	}
 
 	// add in the avdl-compiled source files
-	file_replace(outDir, "Android.mk.in", outDir, "Android.mk", "%AVDL_GAME_FILES%", big_buffer);
+	if (avdl_settings->oculus_mode) {
+		file_replace(outDir, "Android.mk.in", outDir, "Android.mk.in2", "%AVDL_OCULUS_FLAG%", "-DAVDL_OCULUS");
+	}
+	else {
+		file_replace(outDir, "Android.mk.in", outDir, "Android.mk.in2", "%AVDL_OCULUS_FLAG%", "");
+	}
+	file_replace(outDir, "Android.mk.in2", outDir, "Android.mk", "%AVDL_GAME_FILES%", big_buffer);
 	close(outDir);
 
 	avdl_string_clean(&cppFilePath);

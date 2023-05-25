@@ -136,6 +136,8 @@ struct AvdlSettings {
 	struct avdl_google_play_achievement googleplay_achievement[AVDL_GOOGLE_PLAY_ACHIEVEMENTS_MAX];
 	int googleplay_achievement_count;
 
+	int oculus_mode;
+
 };
 
 int AvdlSettings_Create(struct AvdlSettings *);

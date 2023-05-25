@@ -496,6 +496,65 @@ jobs:
         name: rue_quest2
         path: rue_quest2.apk
 
+  # Quest 2 + oculus platform services
+  rue_build_quest2_oculus:
+    runs-on: ubuntu-latest
+    needs: [build_linux]
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_build_linux
+        path: avdl_build_linux
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'oracle'
+        java-version: '17'
+    - name: get_rue
+      shell: bash
+      run: |
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout develop
+        cd ..
+    - name: set_avdl
+      run: |
+        mkdir AVDL_BUILD
+        mv avdl_build_linux/* AVDL_BUILD
+        rmdir avdl_build_linux
+        chmod +x AVDL_BUILD/bin/avdl
+    - name: generate_quest2_project
+      run: |
+        cd rue
+        ../AVDL_BUILD/bin/avdl --quest2-oculus
+    - name: get_oculus_sdk
+      env:
+        oculus_api_link: ${{ secrets.OCULUS_API_LINK }}
+      run: |
+        wget ${oculus_api_link} --quiet
+        mkdir avdl_oculus_build
+        mv oculus_mobile_sdk.zip avdl_oculus_build
+        cd avdl_oculus_build
+        unzip oculus_mobile_sdk.zip
+        cp ../rue/avdl_build_quest2/ -r avdl_vr_bk/AvdlProject
+    - name: compile_apk
+      run: |
+        cd avdl_oculus_build/avdl_vr_bk/AvdlProject/Projects/Android
+        chmod +x ../../../gradlew
+        ../../../gradlew assembleDebug
+        mv build/outputs/apk/debug/Android-debug.apk ../../../../../rue_quest2_debug.apk
+        ../../../gradlew assembleRelease
+        mv build/outputs/apk/release/Android-release.apk ../../../../../rue_quest2_oculus.apk
+    - name: upload_artifact_debug
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_quest2_oculus_debug
+        path: rue_quest2_oculus_debug.apk
+    - name: upload_artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rue_quest2_oculus
+        path: rue_quest2_oculus.apk
+
   # Linux
   rue_build_linux:
     runs-on: ubuntu-20.04
