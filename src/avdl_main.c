@@ -45,6 +45,7 @@ struct ast_node *game_node;
 int create_android_directory(const char *androidDirName);
 int create_quest2_directory(const char *dirName);
 int collect_src_files(const char *dirname, const char *filename, int fileIndex, int filesTotal);
+int collect_asset_files(const char *dirname, const char *filename, int fileIndex, int filesTotal);
 
 char *cengine_files[] = {
 	"avdl_assetManager.c",
@@ -289,6 +290,17 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		avdl_string_cat(&cmake_data, big_buffer);
 		avdl_string_cat(&cmake_data, avdl_settings.project_name);
 		avdl_string_cat(&cmake_data, ".rc ");
+		avdl_string_cat(&cmake_data, ")\n");
+		avdl_string_cat(&cmake_data, "set(AVDL_ASSETS ");
+
+		// collect avdl project assets
+		big_buffer[0] = '\0';
+		if ( Avdl_FileOp_ForFileInDirectory("assets", collect_asset_files) != 0 ) {
+			avdl_log_error("failed to collect source files");
+			return -1;
+		}
+
+		avdl_string_cat(&cmake_data, big_buffer);
 		avdl_string_cat(&cmake_data, ")\n");
 		if ( !avdl_string_isValid(&cmake_data) ) {
 			avdl_log_error("could not construct cmake_data");
@@ -1718,6 +1730,59 @@ int collect_src_files(const char *dirname, const char *filename, int fileIndex, 
 	}
 
 	// is directory - skip - maybe recursive compilation at some point?
+	if (Avdl_FileOp_IsDirStat(&statbuf)) {
+		avdl_log("skipping directory: %s", avdl_string_toCharPtr(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return 0;
+	}
+	else
+	// is regular file - do nothing
+	if (Avdl_FileOp_IsRegStat(&statbuf)) {
+	}
+	// not supporting other file types - skip
+	else {
+		avdl_log_error("Unsupported file type '%s' - skip\n", avdl_string_toCharPtr(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return 0;
+	}
+
+	strcat(big_buffer, avdl_string_toCharPtr(&srcFilePath));
+	strcat(big_buffer, " ");
+
+	avdl_string_clean(&srcFilePath);
+
+	return 0;
+}
+
+int collect_asset_files(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
+
+	// ignore `.` and `..`
+	if (strcmp(filename, ".") == 0
+	||  strcmp(filename, "..") == 0) {
+		return 0;
+	}
+
+	// src file full path
+	struct avdl_string srcFilePath;
+	avdl_string_create(&srcFilePath, 1024);
+	avdl_string_cat(&srcFilePath, dirname);
+	avdl_string_cat(&srcFilePath, "/");
+	avdl_string_cat(&srcFilePath, filename);
+	if ( !avdl_string_isValid(&srcFilePath) ) {
+		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
+		avdl_string_clean(&srcFilePath);
+		return -1;
+	}
+
+	// check file type
+	struct stat statbuf;
+	if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
+		avdl_log_error("Unable to stat file '%s': %s", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
+		avdl_string_clean(&srcFilePath);
+		return -1;
+	}
+
+	// is directory - skip - maybe recursive at some point?
 	if (Avdl_FileOp_IsDirStat(&statbuf)) {
 		avdl_log("skipping directory: %s", avdl_string_toCharPtr(&srcFilePath));
 		avdl_string_clean(&srcFilePath);

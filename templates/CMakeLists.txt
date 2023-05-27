@@ -121,69 +121,7 @@ endif()
 install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION bin/)
 
 # install assets
-install(FILES
-	assets/button_click_big.ogg
-	assets/button_click_small.ogg
-	assets/button_disabled.ply
-	assets/button_exit.ply
-	assets/button_hover.ogg
-	assets/button_minus.ply
-	assets/button_options.ply
-	assets/button_play.ply
-	assets/button_plus.ply
-	assets/button.ply
-	assets/card_01_single_step.png
-	assets/card_02_triple_step.png
-	assets/card_03_trade.png
-	assets/card_04_one_step_cond.png
-	assets/card_05_replace.png
-	assets/card_06_grab.png
-	assets/card_07_grab_gen.png
-	assets/card_08_approach.png
-	assets/card_09_win.png
-	assets/card_10_always_one.png
-	assets/card_11_next_hand.png
-	assets/card_12_ignore_move.png
-	assets/card_13_steal.png
-	assets/card_14_empty.png
-	assets/card_border.ply
-	assets/card_border_texture.png
-	assets/card_corner_frown.png
-	assets/card_corner_heart.png
-	assets/card_corner_tear.png
-	assets/card_corner_thunder.png
-	assets/card_deselect.ogg
-	assets/card_look.ogg
-	assets/card_place.ogg
-	assets/card.ply
-	assets/card_select.ogg
-	assets/card_tutorial.png
-	assets/character_1.png
-	assets/character.ply
-	assets/dd_theme.ogg
-	assets/eng_white.png
-	assets/eye.ply
-	assets/game_theme.ogg
-	assets/logo_rue_texture.png
-	assets/looking_at.ply
-	assets/main_menu_theme.ogg
-	assets/menu_copy.json
-	assets/overlay_background.ply
-	assets/particle.ply
-	assets/rose.png
-	assets/rue_logo.png
-	assets/stage_2.ply
-	assets/table_2.ply
-	assets/table_arrow_decoration.ply
-	assets/table_arrow.ply
-	assets/table_rose.png
-	assets/ui_particle.ply
-	assets/ui_particle_start.ply
-	assets/bg_exit_menu.png
-	assets/afloofdev_logo_texture.png
-	DESTINATION
-	assets
-)
+install(FILES ${AVDL_ASSETS} DESTINATION assets)
 
 # packaging using `cpack`
 include(InstallRequiredSystemLibraries)
