@@ -181,10 +181,11 @@ void dd_meshColour_load(struct dd_meshColour *m, const char *asset, int type) {
 }
 
 void dd_meshColour_copy(struct dd_meshColour *dest, struct dd_meshColour *src) {
+	dd_meshColour_clean(dest);
 	dd_mesh_copy((struct dd_mesh *) dest, (struct dd_mesh *) src);
 	if (src->c) {
-		dest->c = malloc(sizeof(float) *dest->parent.vcount *4);
-		memcpy(dest->c, src->c, sizeof(float) *dest->parent.vcount *4);
+		dest->c = malloc(sizeof(float) *src->parent.vcount *4);
+		memcpy(dest->c, src->c, sizeof(float) *src->parent.vcount *4);
 		dest->dirtyColours = 1;
 	}
 }

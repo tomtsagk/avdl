@@ -108,6 +108,13 @@ void dd_mesh_clean(struct dd_mesh *m) {
 		m->v = 0;
 		m->dirtyVertices = 0;
 	}
+
+	if (m->array) {
+		glDeleteVertexArrays(1, &m->array);
+		glDeleteBuffers(1, &m->buffer);
+		m->array = 0;
+		m->buffer = 0;
+	}
 }
 
 /* draw the mesh itself
@@ -176,6 +183,7 @@ void dd_mesh_load(struct dd_mesh *m, const char *asset, int type) {
 }
 
 void dd_mesh_copy(struct dd_mesh *dest, struct dd_mesh *src) {
+	dd_mesh_clean(dest);
 	dest->vcount = src->vcount;
 	dest->v = malloc(src->vcount *sizeof(float) *3);
 	memcpy(dest->v, src->v, sizeof(float) *src->vcount *3);
