@@ -184,8 +184,13 @@ void dd_meshColour_copy(struct dd_meshColour *dest, struct dd_meshColour *src) {
 	dd_meshColour_clean(dest);
 	dd_mesh_copy((struct dd_mesh *) dest, (struct dd_mesh *) src);
 	if (src->c) {
+		#if DD_PLATFORM_ANDROID
 		dest->c = malloc(sizeof(float) *src->parent.vcount *4);
 		memcpy(dest->c, src->c, sizeof(float) *src->parent.vcount *4);
+		#else
+		dest->c = malloc(sizeof(float) *src->parent.vcount *3);
+		memcpy(dest->c, src->c, sizeof(float) *src->parent.vcount *3);
+		#endif
 		dest->dirtyColours = 1;
 	}
 }
