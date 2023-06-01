@@ -1,5 +1,5 @@
 Name:           avdl
-Version:        0.9.12
+Version:        0.9.13
 Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
