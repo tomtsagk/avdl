@@ -65,3 +65,10 @@ void dd_vec4_multiply(struct dd_vec4 *o, struct dd_matrix *m) {
                 o->cell[x] = new_vec.cell[x];
         }
 }
+
+float dd_vec4_dot(struct dd_vec4 *a, struct dd_vec4 *b) {
+	return a->cell[0] *b->cell[0]
+		+a->cell[1] *b->cell[1]
+		+a->cell[2] *b->cell[2]
+		+a->cell[3] *b->cell[3];
+}

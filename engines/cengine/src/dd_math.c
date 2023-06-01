@@ -65,3 +65,19 @@ float dd_math_dot2(struct dd_vec2 *v1, struct dd_vec2 *v2) {
 float dd_math_dot3(struct dd_vec3 *v1, struct dd_vec3 *v2) {
 	return v1->x *v2->x +v1->y *v2->y +v1->z *v2->z;
 }
+
+int dd_math_plane_ray_intersect(struct dd_vec4 *rayPos, struct dd_vec4 *rayDir,
+	struct dd_vec4 *planePos, struct dd_vec4 *planeNormal, struct dd_vec4 *out) {
+
+	float d = dd_vec4_dot(planePos, planeNormal);
+	float t = ((d +dd_vec4_dot(rayPos, planeNormal)) *-1) / dd_vec4_dot(rayDir, planeNormal);
+
+	dd_vec4_set(out,
+		dd_vec4_getX(rayPos) +(dd_vec4_getX(rayDir) *t),
+		dd_vec4_getY(rayPos) +(dd_vec4_getY(rayDir) *t),
+		dd_vec4_getZ(rayPos) +(dd_vec4_getZ(rayDir) *t),
+		0
+	);
+
+	return 0;
+}

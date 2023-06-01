@@ -47,6 +47,7 @@ extern int dd_cam_index;
 extern struct dd_matrix dd_cam_controllers[];
 extern int dd_cam_controller_active[];
 extern struct dd_vec4 dd_cam_controllers_position[];
+extern struct dd_vec4 dd_cam_controllers_direction[];
 #endif
 void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m);
 struct dd_matrix *dd_matrix_getControllerMatrix(int controllerIndex);
@@ -55,6 +56,7 @@ int dd_matrix_hasVisibleControllers();
 int dd_matrix_isControllerVisible(int index);
 void dd_matrix_setControllerVisible(int index, int state);
 struct dd_vec4 *dd_matrix_getControllerPosition(int index);
+struct dd_vec4 *dd_matrix_getControllerDirection(int index);
 
 void dd_matrix_globalInit();
 void dd_matrix_push();

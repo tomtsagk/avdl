@@ -378,6 +378,7 @@ void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float t
 struct dd_matrix dd_cam_controllers[2];
 int dd_cam_controller_active[2];
 struct dd_vec4 dd_cam_controllers_position[2];
+struct dd_vec4 dd_cam_controllers_direction[2];
 #endif
 
 void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m) {
@@ -399,6 +400,26 @@ void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m) {
 	);
 	dd_vec4_multiply(&dd_cam_controllers_position[controllerIndex],
 		&dd_cam_controllers[controllerIndex]
+	);
+
+	// controller direction
+	dd_vec4_set(&dd_cam_controllers_direction[controllerIndex],
+		0,
+		0,
+		-1,
+		1
+	);
+	dd_vec4_multiply(&dd_cam_controllers_direction[controllerIndex],
+		&dd_cam_controllers[controllerIndex]
+	);
+	dd_vec4_set(&dd_cam_controllers_direction[controllerIndex],
+		dd_vec4_getX(&dd_cam_controllers_direction[controllerIndex])
+			-dd_vec4_getX(&dd_cam_controllers_position[controllerIndex]),
+		dd_vec4_getY(&dd_cam_controllers_direction[controllerIndex])
+			-dd_vec4_getY(&dd_cam_controllers_position[controllerIndex]),
+		dd_vec4_getZ(&dd_cam_controllers_direction[controllerIndex])
+			-dd_vec4_getZ(&dd_cam_controllers_position[controllerIndex]),
+		1
 	);
 #endif
 
@@ -462,6 +483,18 @@ struct dd_vec4 *dd_matrix_getControllerPosition(int index) {
 	}
 
 	return &dd_cam_controllers_position[index];
+#else
+	return 0;
+#endif
+}
+
+struct dd_vec4 *dd_matrix_getControllerDirection(int index) {
+#if defined(AVDL_QUEST2)
+	if (index > 2) {
+		return 0;
+	}
+
+	return &dd_cam_controllers_direction[index];
 #else
 	return 0;
 #endif
