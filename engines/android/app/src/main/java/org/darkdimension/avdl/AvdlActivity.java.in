@@ -110,6 +110,7 @@ public class AvdlActivity extends Activity {
 	}
 
 	static int UnlockAchievement(String achievementName) {
+		return 1;
 	}
 
 	static int OpenUrl(String url) {
