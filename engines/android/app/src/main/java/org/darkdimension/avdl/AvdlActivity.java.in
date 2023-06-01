@@ -109,6 +109,9 @@ public class AvdlActivity extends Activity {
 		System.loadLibrary("avdl");
 	}
 
+	static int UnlockAchievement(String achievementName) {
+	}
+
 	static int OpenUrl(String url) {
 		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
 		AvdlActivity.activity.startActivity(browserIntent);
