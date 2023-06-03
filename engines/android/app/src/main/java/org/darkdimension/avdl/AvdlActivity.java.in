@@ -405,6 +405,7 @@ public class AvdlActivity extends Activity {
 			}
 			// previous sound already there, clear it
 			else
+			// can throw illegal state exception
 			if (!mediaPlayer[i].isPlaying()) {
 				StopAudio(i);
 				desiredIndex = i;
