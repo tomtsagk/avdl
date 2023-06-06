@@ -217,7 +217,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	}
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP;
 	int width = dd_gameInitWindowWidth;
 	int height = dd_gameInitWindowHeight;
 	o->window = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
