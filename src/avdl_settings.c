@@ -132,7 +132,21 @@ int AvdlSettings_SetFromFile(struct AvdlSettings *o, char *filename) {
 		fscanf(f, "%*[ \t]");
 
 		// find value
-		fscanf(f, "%99[^\n\r \t]", value);
+		if (strcmp(key, "name") == 0) {
+			fscanf(f, "%99[^\n\r]", value);
+			char *c = value +strlen(value) -1;
+			while (c >= key) {
+				if (c[0] == ' ' || c[0] == '\t') {
+					c[0] = '\0';
+				}
+				else {
+					break;
+				}
+			}
+		}
+		else {
+			fscanf(f, "%99[^\n\r \t]", value);
+		}
 		//printf("Found value: %s.\n", value);
 
 		// remove white space / new line
