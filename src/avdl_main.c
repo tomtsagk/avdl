@@ -279,8 +279,11 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		// project data in cmake
 		struct avdl_string cmake_data;
 		avdl_string_create(&cmake_data, 5024);
-		avdl_string_cat(&cmake_data, "set(AVDL_PROJECT_NAME ");
+		avdl_string_cat(&cmake_data, "set(AVDL_PROJECT_NAME \"");
 		avdl_string_cat(&cmake_data, avdl_settings.project_name);
+		avdl_string_cat(&cmake_data, "\")\n");
+		avdl_string_cat(&cmake_data, "set(AVDL_PROJECT_NAME_CODE ");
+		avdl_string_cat(&cmake_data, avdl_settings.project_name_code);
 		avdl_string_cat(&cmake_data, ")\n");
 		avdl_string_cat(&cmake_data, "set(AVDL_VERSION_NAME ");
 		avdl_string_cat(&cmake_data, avdl_settings.version_name);
