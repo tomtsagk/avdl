@@ -291,7 +291,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		avdl_string_cat(&cmake_data, "set(AVDL_SRC ");
 		avdl_string_cat(&cmake_data, avdl_string_toCharPtr(&avdl_src));
 		avdl_string_cat(&cmake_data, big_buffer);
-		avdl_string_cat(&cmake_data, avdl_settings.project_name);
+		avdl_string_cat(&cmake_data, avdl_settings.project_name_code);
 		avdl_string_cat(&cmake_data, ".rc ");
 		avdl_string_cat(&cmake_data, ")\n");
 		avdl_string_cat(&cmake_data, "set(AVDL_ASSETS ");
