@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.19)
 include("avdl_project.cmake")
 
 # set the project name
-project(${AVDL_PROJECT_NAME_CODE} VERSION ${AVDL_VERSION_NAME})
+project("${AVDL_PROJECT_NAME_CODE}" VERSION ${AVDL_VERSION_NAME})
 
 # compile for windows, with dynamic location
 add_compile_definitions(
@@ -19,7 +19,7 @@ if (${AVDL_STEAM})
 endif()
 
 # add the executable
-add_executable(${CMAKE_PROJECT_NAME} WIN32
+add_executable("${CMAKE_PROJECT_NAME}" WIN32
 	${AVDL_SRC}
 )
 
