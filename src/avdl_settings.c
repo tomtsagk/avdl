@@ -100,6 +100,7 @@ int AvdlSettings_Create(struct AvdlSettings *o) {
 	o->googleplay_achievement_count = 0;
 
 	o->oculus_mode = 0;
+	o->oculus_project_id[0] = '\0';
 
 	return 0;
 }

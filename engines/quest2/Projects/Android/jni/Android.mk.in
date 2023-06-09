@@ -12,7 +12,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := avdlproject
 
-LOCAL_CFLAGS += -DDD_PLATFORM_ANDROID -DAVDL_QUEST2 -DAVDL_VR=1 -Wfatal-errors -fexceptions -Wno-incompatible-pointer-types -Wno-parentheses-equality %AVDL_OCULUS_FLAG%
+LOCAL_CFLAGS += -DDD_PLATFORM_ANDROID -DAVDL_QUEST2 -DAVDL_VR=1 -Wfatal-errors -fexceptions -Wno-incompatible-pointer-types -Wno-parentheses-equality %AVDL_OCULUS_FLAG% %AVDL_OCULUS_PROJECT_ID%
 
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/../../../src \

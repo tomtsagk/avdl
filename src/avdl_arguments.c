@@ -55,7 +55,6 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 						avdl_settings->googleplay_mode = 1;
 						strcpy(avdl_settings->googleplay_id, argv[i+1]);
 						avdl_settings->googleplay_id[99] = '\0';
-						avdl_log("google play id: %s", avdl_settings->googleplay_id);
 						i++;
 					}
 					else {
@@ -104,8 +103,21 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 				else
 				// include oculus platform sdk
 				if (strcmp(argv[i], "--quest2-oculus") == 0) {
-					avdl_settings->target_platform = AVDL_PLATFORM_QUEST2;
-					avdl_settings->oculus_mode = 1;
+					if (argc > i+1) {
+						if (strlen(argv[i+1]) > 99) {
+							avdl_log_error("oculus project id too long");
+							return -1;
+						}
+						avdl_settings->target_platform = AVDL_PLATFORM_QUEST2;
+						avdl_settings->oculus_mode = 1;
+						strcpy(avdl_settings->oculus_project_id, argv[i+1]);
+						avdl_settings->oculus_project_id[99] = '\0';
+						i++;
+					}
+					else {
+						avdl_log_error(BLU "%s" RESET " expects an oculus project id", argv[i]);
+						return -1;
+					}
 				}
 				else
 				// makefile generation

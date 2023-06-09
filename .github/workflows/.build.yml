@@ -580,7 +580,7 @@ jobs:
     - name: generate_quest2_project
       run: |
         cd rue
-        ../AVDL_BUILD/bin/avdl --quest2-oculus
+        ../AVDL_BUILD/bin/avdl --quest2-oculus "123"
     - name: get_oculus_sdk
       env:
         oculus_api_link: ${{ secrets.OCULUS_API_LINK }}

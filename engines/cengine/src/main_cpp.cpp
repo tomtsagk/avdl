@@ -225,7 +225,7 @@ void android_main(struct android_app* androidApp) {
 	#if defined(AVDL_OCULUS)
 	// meta oculus platform sdk
 	// at some point try "ovr_PlatformInitializeAndroidAsynchronous" for async
-	if (ovr_PlatformInitializeAndroid("6262323890531927", androidApp->activity->clazz, jniEnv) != ovrPlatformInitialize_Success) {
+	if (ovr_PlatformInitializeAndroid(AVDL_OCULUS_PROJECT_ID, androidApp->activity->clazz, jniEnv) != ovrPlatformInitialize_Success) {
 		// should exit
 		dd_log("avdl error: cannot initiale oculus platform sdk");
 		exit(-1);

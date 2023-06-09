@@ -137,6 +137,7 @@ struct AvdlSettings {
 	int googleplay_achievement_count;
 
 	int oculus_mode;
+	char oculus_project_id[100];
 
 };
 
