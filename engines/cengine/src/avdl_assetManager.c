@@ -170,7 +170,7 @@ void avdl_assetManager_loadAssets() {
 			struct dd_image *mesh = m->object;
 
 			#if defined(AVDL_QUEST2)
-			jstring *parameter = (*jniEnv)->NewStringUTF(env, m->filename);
+			jstring *parameter = (*env)->NewStringUTF(env, m->filename);
 			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, BitmapMethodId, parameter);
 			#else
 			jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
