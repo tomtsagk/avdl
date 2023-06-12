@@ -80,7 +80,7 @@ void dd_string3d_create(struct dd_string3d *o) {
 	dd_da_init(&o->textMeshes, sizeof(struct dd_word_mesh));
 
 	o->align = DD_STRING3D_ALIGN_LEFT;
-	o->alignv = DD_STRING3D_ALIGN_TOP;
+	o->alignv = DD_STRING3D_ALIGN_VERTICAL_TOP;
 	o->colorFront[0] = 1.0;
 	o->colorFront[1] = 1.0;
 	o->colorFront[2] = 1.0;
@@ -102,7 +102,7 @@ void dd_string3d_setAlign(struct dd_string3d *o, enum dd_string3d_align al) {
 	o->align = al;
 }
 
-void dd_string3d_setAlignVertical(struct dd_string3d *o, enum dd_string3d_align al) {
+void dd_string3d_setAlignVertical(struct dd_string3d *o, enum dd_string3d_align_vertical al) {
 	o->alignv = al;
 }
 
@@ -190,12 +190,12 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 		wordsTotal += lineWords;
 	} while (wordsTotal < o->textMeshes.elements);
 	switch (o->alignv) {
-	case DD_STRING3D_ALIGN_TOP:
+	case DD_STRING3D_ALIGN_VERTICAL_TOP:
 		break;
-	case DD_STRING3D_ALIGN_CENTER:
+	case DD_STRING3D_ALIGN_VERTICAL_CENTER:
 		dd_translatef(0, ((linesTotal -1) *0.5), 0);
 		break;
-	case DD_STRING3D_ALIGN_BOTTOM:
+	case DD_STRING3D_ALIGN_VERTICAL_BOTTOM:
 		dd_translatef(0, linesTotal -1, 0);
 		break;
 	}

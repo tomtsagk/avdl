@@ -170,7 +170,7 @@ void dd_music_stop(struct dd_music *o) {
 	}
 
 	// get string from asset (in java)
-	jint *parameter = o->index;
+	jint *parameter = (jint *)o->index;
 	#if defined(AVDL_QUEST2)
 	(*(*env)->CallStaticVoidMethod)(env, clazz, StopAudioMethodId, parameter);
 	#else

@@ -11,6 +11,7 @@
 		<activity android:name=".AvdlActivity"
 			android:label="@string/app_name"
 			android:exported="true"
+			android:configChanges="orientation|screenSize|screenLayout|layoutDirection|smallestScreenSize"
 			android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
 
 			<!-- Launcher Activity -->

@@ -1,5 +1,6 @@
 #include "avdl_webapi.h"
 #include <string.h>
+#include "dd_log.h"
 
 #if defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
 #include <pthread.h>

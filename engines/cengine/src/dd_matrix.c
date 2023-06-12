@@ -450,6 +450,8 @@ struct dd_matrix *dd_matrix_getControllerMatrix(int controllerIndex) {
 		return 0;
 	}
 	return &dd_cam_controllers[controllerIndex];
+#else
+	return 0;
 #endif
 }
 

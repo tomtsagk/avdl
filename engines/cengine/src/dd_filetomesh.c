@@ -90,8 +90,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 		{"ushort", PLY_FORMAT_USHORT, "[0-9]"},
 		{"int", PLY_FORMAT_INT, "[-0-9]"},
 		{"uint", PLY_FORMAT_UINT, "[0-9]"},
-		{"float", PLY_FORMAT_FLOAT, "[-0-9\.]"},
-		{"double", PLY_FORMAT_DOUBLE, "[-0-9\.]"},
+		{"float", PLY_FORMAT_FLOAT, "[-0-9.]"},
+		{"double", PLY_FORMAT_DOUBLE, "[-0-9.]"},
 		{"none", PLY_FORMAT_NONE, ""},
 	};
 	int formats_total = sizeof(format_description) /sizeof(struct ply_format_desc);

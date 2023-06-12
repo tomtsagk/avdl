@@ -1,5 +1,7 @@
 #include "avdl_achievements.h"
 
+#include "dd_log.h"
+
 #if !defined(AVDL_STEAM) && !defined(AVDL_QUEST2)
 
 #if defined(DD_PLATFORM_ANDROID)

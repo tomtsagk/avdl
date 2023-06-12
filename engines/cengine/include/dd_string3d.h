@@ -18,8 +18,12 @@ enum dd_string3d_align {
 	DD_STRING3D_ALIGN_LEFT,
 	DD_STRING3D_ALIGN_CENTER,
 	DD_STRING3D_ALIGN_RIGHT,
-	DD_STRING3D_ALIGN_TOP,
-	DD_STRING3D_ALIGN_BOTTOM,
+};
+
+enum dd_string3d_align_vertical {
+	DD_STRING3D_ALIGN_VERTICAL_TOP,
+	DD_STRING3D_ALIGN_VERTICAL_CENTER,
+	DD_STRING3D_ALIGN_VERTICAL_BOTTOM,
 };
 
 struct dd_word_mesh {
@@ -33,7 +37,7 @@ struct dd_string3d {
 
 	// Align
 	enum dd_string3d_align align;
-	enum dd_string3d_align alignv;
+	enum dd_string3d_align_vertical alignv;
 
 	float colorFront[3];
 	float colorBack[3];
@@ -43,7 +47,7 @@ struct dd_string3d {
 	void (*setText)(struct dd_string3d *, const char *text);
 
 	void (*setAlign)(struct dd_string3d *, enum dd_string3d_align);
-	void (*setAlignVertical)(struct dd_string3d *, enum dd_string3d_align);
+	void (*setAlignVertical)(struct dd_string3d *, enum dd_string3d_align_vertical);
 	void (*draw)(struct dd_string3d *);
 	void (*drawInt)(struct dd_string3d *, int num);
 	void (*drawLimit)(struct dd_string3d *, int limit);
@@ -53,7 +57,7 @@ struct dd_string3d {
 
 void dd_string3d_create(struct dd_string3d *o);
 void dd_string3d_setAlign(struct dd_string3d *o, enum dd_string3d_align al);
-void dd_string3d_setAlignVertical(struct dd_string3d *o, enum dd_string3d_align al);
+void dd_string3d_setAlignVertical(struct dd_string3d *o, enum dd_string3d_align_vertical al);
 
 void dd_string3d_draw(struct dd_string3d *o);
 void dd_string3d_drawInt(struct dd_string3d *o, int num);

@@ -129,20 +129,10 @@ void avdl_assetManager_loadAssets() {
 		//wprintf(L"loading asset: %lS", m->filenameW);
 		//dd_log("loading asset type: %d", m->meshType);
 
-		#if DD_PLATFORM_ANDROID
-
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
-			/*
-			struct dd_image *mesh = m->object;
-			if (m->type == AVDL_IMAGETYPE_BMP) {
-				dd_image_load_bmp(mesh, m->filename);
-			}
-			else
-			if (m->type == AVDL_IMAGETYPE_PNG) {
-				dd_image_load_png(mesh, m->filename);
-			}
-			*/
+			#if DD_PLATFORM_ANDROID
+
 			#if !defined(AVDL_QUEST2)
 			/*
 			 * attempt to get hold of a valid jni
@@ -242,55 +232,7 @@ void avdl_assetManager_loadAssets() {
 				(*jvm)->DetachCurrentThread(jvm);
 			}
 			//#endif
-		}
-		// load mesh
-		else {
-			// mesh
-			if (m->meshType == AVDL_ASSETMANAGER_MESH) {
-				struct dd_mesh *mesh = m->object;
-				dd_mesh_clean(mesh);
-				struct dd_loaded_mesh lm;
-				dd_filetomesh(&lm, m->filename, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY);
-				mesh->vcount = lm.vcount;
-				mesh->v = lm.v;
-				mesh->dirtyVertices = 1;
-			}
-			else
-			// mesh colour
-			if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
-				struct dd_meshColour *mesh = m->object;
-				dd_meshColour_clean(mesh);
-				struct dd_loaded_mesh lm;
-				dd_filetomesh(&lm, m->filename,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
-				mesh->parent.vcount = lm.vcount;
-				mesh->parent.v = lm.v;
-				mesh->parent.dirtyVertices = 1;
-				mesh->c = lm.c;
-				mesh->dirtyColours = 1;
-			}
-			else
-			// mesh texture
-			if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
-				struct dd_meshTexture *mesh = m->object;
-				dd_meshTexture_clean(mesh);
-				struct dd_loaded_mesh lm;
-				dd_filetomesh(&lm, m->filename,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
-					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
-				mesh->parent.parent.vcount = lm.vcount;
-				mesh->parent.parent.v = lm.v;
-				mesh->parent.parent.dirtyVertices = 1;
-				mesh->parent.c = lm.c;
-				mesh->parent.dirtyColours = 1;
-				mesh->t = lm.t;
-				mesh->dirtyTextures = 1;
-			}
-		}
-
-		#else
-		// load texture
-		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
+			#else
 			struct dd_image *mesh = m->object;
 			if (m->type == AVDL_IMAGETYPE_BMP) {
 				dd_image_load_bmp(mesh, m->filename);
@@ -299,6 +241,7 @@ void avdl_assetManager_loadAssets() {
 			if (m->type == AVDL_IMAGETYPE_PNG) {
 				dd_image_load_png(mesh, m->filename);
 			}
+			#endif
 		}
 		// load mesh
 		else {
@@ -344,7 +287,6 @@ void avdl_assetManager_loadAssets() {
 				mesh->dirtyTextures = 1;
 			}
 		}
-		#endif
 
 		#if defined(DD_PLATFORM_ANDROID)
 		pthread_mutex_unlock(&jniMutex);
