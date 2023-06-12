@@ -8,37 +8,33 @@
 #include <stdlib.h>
 
 #if DD_PLATFORM_ANDROID
-int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings);
+
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+extern AAssetManager *aassetManager;
+
+int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings);
 
 /* Select the right function depending on file_type */
 int dd_filetomesh(struct dd_loaded_mesh *m, const char *asset, int settings, int file_type) {
 
 	switch (file_type) {
-		case DD_PLY: return dd_loadstring_ply(m, asset, settings);
+		case DD_PLY: return dd_load_ply(m, asset, settings);
 	}
 
 	return -1;
 }
 
 /* Parse PLY string */
-int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
+int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 
-	/*
 	//Open file and check error
-	FILE *f = fopen(path, "r");
+	AAsset *f = AAssetManager_open(aassetManager, asset, AASSET_MODE_UNKNOWN);
 	if (!f)
 	{
-		fail = 1;
-		//dd_log("load_ply: error opening file: %s", path);
-		//return -1;
+		dd_log("load_ply: error opening file: %s: %s", asset, "unknown error");
+		return -1;
 	}
-	*/
-
-	const char *f = asset;
-	int charRead;
-
-	//Buffer
-	char buff[1024];
 
 	//Data for parsing
 	unsigned int vertices = 0, faces = 0;
@@ -88,14 +84,14 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 		enum ply_format format;
 		char *parseSymbol;
 	} format_description[] = {
-		{"char", PLY_FORMAT_CHAR, "hhd"},
-		{"uchar", PLY_FORMAT_UCHAR, "hhu"},
-		{"short", PLY_FORMAT_SHORT, "hd"},
-		{"ushort", PLY_FORMAT_USHORT, "hu"},
-		{"int", PLY_FORMAT_INT, "d"},
-		{"uint", PLY_FORMAT_UINT, "u"},
-		{"float", PLY_FORMAT_FLOAT, "f"},
-		{"double", PLY_FORMAT_DOUBLE, "lf"},
+		{"char", PLY_FORMAT_CHAR, "[0-9]"},
+		{"uchar", PLY_FORMAT_UCHAR, "[-0-9]"},
+		{"short", PLY_FORMAT_SHORT, "[0-9]"},
+		{"ushort", PLY_FORMAT_USHORT, "[0-9]"},
+		{"int", PLY_FORMAT_INT, "[-0-9]"},
+		{"uint", PLY_FORMAT_UINT, "[0-9]"},
+		{"float", PLY_FORMAT_FLOAT, "[-0-9\.]"},
+		{"double", PLY_FORMAT_DOUBLE, "[-0-9\.]"},
 		{"none", PLY_FORMAT_NONE, ""},
 	};
 	int formats_total = sizeof(format_description) /sizeof(struct ply_format_desc);
@@ -120,46 +116,59 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 
 	int elementCurrent = -1;
 
+	//Buffer
+	char buff[1024];
+	char buff2[1024];
+	char *fc = AAsset_getBuffer(f);
+	char *p = fc;
+
+	//AAsset_read(f, buff, 1023);
+	//buff[1023] = '\0';
+
 	/* Check ply magic number:
 	 *		Get 3 first chars. (ignore new line char)
 	 *		Add terminating byte.
 	 *		Compare with "ply".
 	 */
-	if ( sscanf(f, "%3c%*1c%n", buff, &charRead) == EOF) {
-		dd_log("end of file?");
+	if ( sscanf(p, "%3c", buff) == EOF)
 		goto error;
-	}
-	f += charRead;
+	p += strlen(buff);
 
 	buff[3] = '\0';
-	if ( strcmp(buff, "ply") != 0) {
-		dd_log("not ply file: %s", buff);
-		goto error;
-	}
+	if ( strcmp(buff, "ply") != 0) goto error;
 
 	//Check format (let's skip it for now, assume "ascii 1.0")
 
 	/* What this parser reads:
 	 *		element vertex
-				x, y, z
+	 			x, y, z
 				red, green, blue
 	 *		element face
 				property vertex_indices
 	 */
 
-	//Read words until end of file or end of header
+	buff[0] = '\0';
 	buff[1023] = '\0';
-	while ( sscanf(f, "%1022s%n", buff, &charRead) != EOF
-		&& strcmp(buff, "end_header") != 0
-		&& f[0] != '\0')
+	if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+		p += strlen(buff2);
+	}
+	//Read words until end of file or end of header
+	while ( sscanf(p, "%1022[^ \t\n]", buff) != EOF
+		&& strcmp(buff, "end_header") != 0 )
 	{
-		f += charRead;
+		p += strlen(buff);
+
+		// skip whitespace
+		if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+			p += strlen(buff2);
+		}
+
 		// Found comment - Skip line
 		if ( strcmp(buff, "comment") == 0 ) {
-			if ( sscanf(f, "%*[^\n]%*1c%n", &charRead) == EOF) {
+			if ( sscanf(p, "%1022[^\n]%*1c", buff) == EOF) {
 				goto error;
 			}
-			f += charRead;
+			p += strlen(buff) +1;
 		}
 		else
 		// Found an element
@@ -169,37 +178,55 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 
 			//Get next word
 			buff[1023] = '\0';
-			if (sscanf(f, "%1022s%n", buff, &charRead) == EOF ) {
+			if ( sscanf(p, "%1022[^ \t\n]", buff) == EOF ) {
 				goto error;
 			}
-			f += charRead;
+			p += strlen(buff);
 
 			strncpy(elements[elementCurrent].name, buff, 99);
 			elements[elementCurrent].name[99] = '\0';
 
+			// skip whitespace
+			if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+				p += strlen(buff2);
+			}
+
 			//Found vertices - save number of vertices
 			if ( strcmp(buff, "vertex") == 0 ) {
-				if ( sscanf(f, "%u%n", &vertices, &charRead) == EOF ) {
+				if ( sscanf(p, "%1022[0-9]", buff) == EOF ) {
 					goto error;
 				}
-				f += charRead;
+				vertices = atoi(buff);
+				p += strlen(buff);
 				elements[elementCurrent].amount = vertices;
 				v_pos_index = malloc(sizeof(struct dd_vec3) *vertices);
 				v_col_index = malloc(sizeof(struct dd_vec3) *vertices);
 				v_col_index_d = malloc(sizeof(int) *vertices *3);
 				memset(v_col_index_d, 0, sizeof(int) *vertices *3);
 				v_tex_index = malloc(sizeof(struct dd_vec2) *vertices);
+
+				// skip whitespace
+				if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+					p += strlen(buff2);
+				}
+
 			}
 			else
 			//Found faces - save number of faces
 			if ( strcmp(buff, "face") == 0 ) {
-				if ( sscanf(f, "%u%n", &faces, &charRead) == EOF ) {
+				if ( sscanf(p, "%1022[0-9]", buff) == EOF ) {
 					goto error;
 				}
-				f += charRead;
+				p += strlen(buff);
+				faces = atoi(buff);
 				elements[elementCurrent].amount = faces;
 				v_pos_face2 = malloc(sizeof(unsigned int) *faces *MAX_FACE_VERTICES);
 				memset(v_pos_face2, 0, sizeof(unsigned int) *faces *MAX_FACE_VERTICES);
+
+				// skip whitespace
+				if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+					p += strlen(buff2);
+				}
 			}
 		}
 		else
@@ -211,19 +238,29 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 
 			// Get format/list
 			buff[1023] = '\0';
-			if ( sscanf(f, "%1022s%n", buff, &charRead) == EOF ) {
+			if ( sscanf(p, "%1022[^ \t\n]", buff) == EOF ) {
 				goto error;
 			}
-			f += charRead;
+			p += strlen(buff);
+
+			// skip whitespace
+			if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+				p += strlen(buff2);
+			}
 
 			// if list, get list's format
 			property->list_format = PLY_FORMAT_NONE;
 			if (strcmp(buff, "list") == 0) {
 				buff[1023] = '\0';
-				if ( sscanf(f, "%1022s%n", buff, &charRead) == EOF ) {
+				if ( sscanf(p, "%1022[^ \t\n]", buff) == EOF ) {
 					goto error;
 				}
-				f += charRead;
+				p += strlen(buff);
+
+				// skip whitespace
+				if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+					p += strlen(buff2);
+				}
 
 				for (int i = 0; i < formats_total; i++) {
 					if (strcmp(buff, format_description[i].name) == 0) {
@@ -234,10 +271,16 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 
 				// next word is format
 				buff[1023] = '\0';
-				if ( sscanf(f, "%1022s%n", buff, &charRead) == EOF ) {
+				if ( sscanf(p, "%1022[^ \t\n]", buff) == EOF ) {
 					goto error;
 				}
-				f += charRead;
+				p += strlen(buff);
+
+				// skip whitespace
+				if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+					p += strlen(buff2);
+				}
+
 			}
 
 			// get format or property
@@ -250,10 +293,11 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 			}
 
 			// Get property name
-			if ( sscanf(f, "%s%n", buff, &charRead) == EOF ) {
+			buff[1023] = '\0';
+			if ( sscanf(p, "%1022[^ \t\n]", buff) == EOF ) {
 				goto error;
 			}
-			f += charRead;
+			p += strlen(buff) +1;
 
 			strncpy(property->name, buff, 99);
 			property->name[99] = '\0';
@@ -310,73 +354,158 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 			}
 		}
 	}
-	f += charRead;
+	p += strlen(buff);
+
+	// skip whitespace
+	if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+		p += strlen(buff2);
+	}
 
 	// print elements and properties
 	for (int i = 0; i <= elementCurrent; i++) {
 		struct ply_element *element = &elements[i];
-		//dd_log("element %s amount: %d", element->name, element->amount);
 
-		for (int p = 0; p < element->amount; p++) {
+		for (int pn = 0; pn < element->amount; pn++) {
 
 			for (int j = 0; j <= element->propertyCurrent; j++) {
 				struct ply_property *property = &element->p[j];
-				//if (i == 1) dd_log("\tproperty: %s %s", property->name, format_description[property->format].name);
 
 				int iterator = 1;
 				// is list
 				if (property->list_format != PLY_FORMAT_NONE) {
-					//dd_log("\t\tis list: %s", format_description[property->list_format].name);
 
 					if (property->list_format == PLY_FORMAT_FLOAT
 					||  property->list_format == PLY_FORMAT_DOUBLE) {
-						//dd_log("dd_filetomesh.c: %s error parsing: list is float or double", path);
-						//exit(-1);
+						dd_log("dd_filetomesh.c: %s error parsing: list is float or double", asset);
+						exit(-1);
+					}
+
+					// skip whitespace
+					if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+						p += strlen(buff2);
 					}
 
 					strcpy(buff, "%");
+					strcat(buff, "1022");
 					strcat(buff, format_description[property->list_format].parseSymbol);
-					strcat(buff, "%n");
-					sscanf(f, buff, &iterator, &charRead);
+					sscanf(p, buff, buff2);
+					p += strlen(buff2);
 
-					f += charRead;
+					if (property->list_format == PLY_FORMAT_INT
+					||  property->list_format == PLY_FORMAT_UINT
+					||  property->list_format == PLY_FORMAT_SHORT
+					||  property->list_format == PLY_FORMAT_USHORT
+					||  property->list_format == PLY_FORMAT_CHAR
+					||  property->list_format == PLY_FORMAT_UCHAR) {
+						iterator = atoi(buff2);
+					}
+					else {
+						iterator = 0;
+					}
+
 					if (iterator > 3) {
-						//dd_log("dd_filetomesh.c: %s error parsing: only triangulated meshes are supported", path);
-						//exit(-1);
+						dd_log("dd_filetomesh.c: %s error parsing: only triangulated meshes are supported", asset);
+						exit(-1);
 					}
 				}
 
 				for (int list_iterator = 0; list_iterator < iterator; list_iterator++) {
 					// has target
 					if (property->target) {
-						strcpy(buff, "%");
-						strcat(buff, format_description[property->format].parseSymbol);
-						strcat(buff, "%n");
-						//if (i == 1) dd_log("\tparsing %s", buff);
-						//fscanf(f, buff, (char*) property->target +(j *property->offsetSize +list_iterator));
-						sscanf(f, buff, (char*) property->target +(p *(property->offsetSize *iterator)) +(list_iterator *property->offsetSize), &charRead);
-						f += charRead;
-						if (property->format == PLY_FORMAT_FLOAT) {
-							//dd_log("parsed float: %f", ((float *) property->target)[p]);
+
+						// skip whitespace
+						if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+							p += strlen(buff2);
 						}
-						else
-						if (property->format == PLY_FORMAT_UCHAR) {
-							//dd_log("parsed uchar: %d", ((unsigned char *) property->target)[p]);
+
+						strcpy(buff, "%");
+						strcat(buff, "1022");
+						strcat(buff, format_description[property->format].parseSymbol);
+						sscanf(p, buff, buff2);
+						p += strlen(buff2);
+
+						if (property->format == PLY_FORMAT_INT) {
+							int temp = atoi(buff2);
+							memcpy((char*) property->target
+								+(pn *(property->offsetSize *iterator))
+								+(list_iterator *property->offsetSize),
+								&temp,
+								sizeof(int)
+							);
 						}
 						else
 						if (property->format == PLY_FORMAT_UINT) {
-							//dd_log("parsed uint: %d", ((unsigned int *) property->target)[0]);
+							int temp = atoi(buff2);
+							memcpy((char*) property->target
+								+(pn *(property->offsetSize *iterator))
+								+(list_iterator *property->offsetSize),
+								&temp,
+								sizeof(unsigned int)
+							);
+						}
+						else
+						if (property->format == PLY_FORMAT_SHORT) {
+							int temp = atoi(buff2);
+							memcpy((char*) property->target
+								+(pn *(property->offsetSize *iterator))
+								+(list_iterator *property->offsetSize),
+								&temp,
+								sizeof(short)
+							);
+						}
+						else
+						if (property->format == PLY_FORMAT_USHORT) {
+							int temp = atoi(buff2);
+							memcpy((char*) property->target
+								+(pn *(property->offsetSize *iterator))
+								+(list_iterator *property->offsetSize),
+								&temp,
+								sizeof(unsigned short)
+							);
+						}
+						else
+						if (property->format == PLY_FORMAT_CHAR) {
+							int temp = atoi(buff2);
+							memcpy((char*) property->target
+								+(pn *(property->offsetSize *iterator))
+								+(list_iterator *property->offsetSize),
+								&temp,
+								sizeof(char)
+							);
+						}
+						else
+						if (property->format == PLY_FORMAT_UCHAR) {
+							int temp = atoi(buff2);
+							memcpy((char*) property->target
+								+(pn *(property->offsetSize *iterator))
+								+(list_iterator *property->offsetSize),
+								&temp,
+								sizeof(unsigned char)
+							);
+						}
+						else
+						if (property->format == PLY_FORMAT_FLOAT) {
+							float temp = atof(buff2);
+							memcpy((char*) property->target
+								+(pn *(property->offsetSize *iterator))
+								+(list_iterator *property->offsetSize),
+								&temp,
+								sizeof(float)
+							);
 						}
 					}
+					// skipping
 					else {
-						strcpy(buff, "%*");
+						// skip whitespace
+						if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
+							p += strlen(buff2);
+						}
+						strcpy(buff, "%");
+						strcat(buff, "1022");
 						strcat(buff, format_description[property->format].parseSymbol);
-						strcat(buff, "%n");
-						sscanf(f, buff, &charRead);
-						f += charRead;
-						//dd_log("\tskipping %s", buff);
+						sscanf(p, buff, buff2);
+						p += strlen(buff2);
 					}
-					//dd_log("");
 				}
 			}
 		}
@@ -410,10 +539,9 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 		tex.y = v_tex_index[v_pos_face2[i]].y;
 		dd_da_add(&v_tex_face, &tex);
 	}
-/*
+
 	//Close file
-	fclose(f);
-	*/
+	AAsset_close(f);
 
 	// cleanup
 	free(v_pos_face2);
@@ -424,23 +552,8 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 
 	//Mesh to return
 	m->vcount = v_pos_face.elements;
-	//m->vcount = 5;
 	if (settings & DD_FILETOMESH_SETTINGS_POSITION) {
 		m->v = malloc(sizeof(float) *m->vcount *3);
-
-		/*
-		m->v[0] = 1.5;
-		m->v[1] = 0.5;
-		m->v[2] = 0;
-
-		m->v[3] = -0.5;
-		m->v[4] = 0.5;
-		m->v[5] = 0;
-
-		m->v[6] = 0;
-		m->v[7] = -0.5;
-		m->v[8] = 0;
-		*/
 	}
 	else {
 		m->v = 0;
@@ -448,23 +561,6 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 
 	if (settings & DD_FILETOMESH_SETTINGS_COLOUR) {
 		m->c = malloc(sizeof(float) *m->vcount *4);
-
-		/*
-		m->c[0] = 1.0;
-		m->c[1] = 0.0;
-		m->c[2] = 1.0;
-		m->c[3] = 0.0;
-
-		m->c[4] = 0.0;
-		m->c[5] = 1.0;
-		m->c[6] = 1.0;
-		m->c[7] = 0.0;
-
-		m->c[8] = 1.0;
-		m->c[9] = 1.0;
-		m->c[10] = 0.0;
-		m->c[11] = 0.0;
-		*/
 	}
 	else {
 		m->c = 0;
@@ -477,7 +573,7 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 		m->t = 0;
 	}
 
-	for (unsigned int i = 0; i < m->vcount; i++) {
+	for (unsigned int i = 0; i < v_pos_face.elements; i++) {
 		if (settings & DD_FILETOMESH_SETTINGS_POSITION) {
 			struct dd_vec3 *vec = dd_da_get(&v_pos_face, i);
 			m->v[(i*3)] = vec->x;
@@ -490,7 +586,7 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 			m->c[(i*4)] = col->x;
 			m->c[(i*4)+1] = col->y;
 			m->c[(i*4)+2] = col->z;
-			m->c[(i*4)+3] = 0;
+			m->c[(i*4)+3] = 1;
 		}
 
 		if (settings & DD_FILETOMESH_SETTINGS_TEX_COORD) {
@@ -509,21 +605,19 @@ int dd_loadstring_ply(struct dd_loaded_mesh *m, const char *asset, int settings)
 
 	//Error handling
 	error:
-	dd_log("error loading file");
-	/*
-	if (ferror(f)) {
-		dd_log("load_ply: error while parsing %s: %s", path,
-			strerror(errno));
-	} else
-	if (feof(f)) {
-		dd_log("load_ply: unexpected end of file on %s", path);
-	}
-	else {
-		dd_log("load_ply: unexpected error on %s", path);
-	}
-	fclose(f);
-	*/
+//	if (ferror(f)) {
+//		dd_log("load_ply: error while parsing %s: %s", path, strerror(errno));
+//	} else
+//	if (feof(f)) {
+//		dd_log("load_ply: unexpected end of file on %s", path);
+//	}
+//	else {
+//		dd_log("load_ply: unexpected error on %s", path);
+//	}
+	//fclose(f);
+	AAsset_close(asset);
 	return -1;
+
 }
 #else
 

@@ -28,7 +28,9 @@ extern JNIEnv *jniEnv;
 extern JavaVM* jvm;
 extern jclass *clazz;
 extern jmethodID BitmapMethodId;
-extern jmethodID ReadPlyMethodId;
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+extern AAssetManager *aassetManager;
 #endif
 
 /*
@@ -129,44 +131,54 @@ void avdl_assetManager_loadAssets() {
 
 		#if DD_PLATFORM_ANDROID
 
-		#if !defined(AVDL_QUEST2)
-		/*
-		 * attempt to get hold of a valid jni
-		 * will most likely matter during
-		 * screen orientation
-		 */
-		pthread_mutex_lock(&jniMutex);
-		while (!jvm) {
-			pthread_mutex_unlock(&jniMutex);
-			//dd_log("sleeping");
-			sleep(1);
-			pthread_mutex_lock(&jniMutex);
-		}
-		#endif
-
-		JNIEnv *env;
-
-		// temporarily have different jni versions for android and quest 2
-		// should both be 1.6 once tested
-		#if defined(AVDL_QUEST2)
-		int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
-		#else
-		int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
-		#endif
-
-		if (getEnvStat == JNI_EDETACHED) {
-			if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
-				dd_log("avdl: failed to attach thread for new world");
-			}
-		// thread already attached to jni
-		} else if (getEnvStat == JNI_OK) {
-		// wrong version
-		} else if (getEnvStat == JNI_EVERSION) {
-			dd_log("avdl: GetEnv: version not supported");
-		}
-
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
+			/*
+			struct dd_image *mesh = m->object;
+			if (m->type == AVDL_IMAGETYPE_BMP) {
+				dd_image_load_bmp(mesh, m->filename);
+			}
+			else
+			if (m->type == AVDL_IMAGETYPE_PNG) {
+				dd_image_load_png(mesh, m->filename);
+			}
+			*/
+			#if !defined(AVDL_QUEST2)
+			/*
+			 * attempt to get hold of a valid jni
+			 * will most likely matter during
+			 * screen orientation
+			 */
+			pthread_mutex_lock(&jniMutex);
+			while (!jvm) {
+				pthread_mutex_unlock(&jniMutex);
+				//dd_log("sleeping");
+				sleep(1);
+				pthread_mutex_lock(&jniMutex);
+			}
+			#endif
+
+			JNIEnv *env;
+
+			// temporarily have different jni versions for android and quest 2
+			// should both be 1.6 once tested
+			#if defined(AVDL_QUEST2)
+			int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
+			#else
+			int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
+			#endif
+
+			if (getEnvStat == JNI_EDETACHED) {
+				if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
+					dd_log("avdl: failed to attach thread for new world");
+				}
+			// thread already attached to jni
+			} else if (getEnvStat == JNI_OK) {
+			// wrong version
+			} else if (getEnvStat == JNI_EVERSION) {
+				dd_log("avdl: GetEnv: version not supported");
+			}
+
 			struct dd_image *mesh = m->object;
 
 			#if defined(AVDL_QUEST2)
@@ -223,139 +235,58 @@ void avdl_assetManager_loadAssets() {
 				dd_log("avdl: error loading texture: %s", m->filename);
 			}
 			//dd_log("done: %s", m->filename);
+
+			//#if !defined(AVDL_QUEST2)
+			if (jvm && getEnvStat == JNI_EDETACHED) {
+				//dd_log("detach thread");
+				(*jvm)->DetachCurrentThread(jvm);
+			}
+			//#endif
 		}
 		// load mesh
 		else {
-
-			// get string from asset (in java)
-			#if !defined(AVDL_QUEST2)
-			jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "ReadPly", "(Ljava/lang/String;I)[Ljava/lang/Object;");
-			#endif
-			jstring *parameter = (*env)->NewStringUTF(env, m->filename);
-			jint parameterSettings = DD_FILETOMESH_SETTINGS_POSITION;
-			if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
-				parameterSettings |= DD_FILETOMESH_SETTINGS_COLOUR;
-			}
-			else
-			if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
-				parameterSettings |= DD_FILETOMESH_SETTINGS_COLOUR;
-				parameterSettings |= DD_FILETOMESH_SETTINGS_TEX_COORD;
-			}
-			#if defined(AVDL_QUEST2)
-			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, ReadPlyMethodId, parameter, &parameterSettings);
-			#else
-			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, MethodID, parameter, &parameterSettings);
-			#endif
-
-			/*
-			 * Reading the asset was successfull,
-			 * load the asset with it.
-			 */
-			if (result && (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE)) {
-
-				struct dd_meshTexture *mesh = m->object;
-
-				// the first object describes the size of the texture
-				const jintArray pos  = (*(*env)->GetObjectArrayElement)(env, result, 0);
-				const jfloat *posValues = (*(*env)->GetFloatArrayElements)(env, pos, 0);
-
-				const jintArray col  = (*(*env)->GetObjectArrayElement)(env, result, 1);
-				const jint *colValues = (*(*env)->GetIntArrayElements)(env, col, 0);
-
-				const jintArray tex  = (*(*env)->GetObjectArrayElement)(env, result, 2);
-				const jfloat *texValues = (*(*env)->GetFloatArrayElements)(env, tex, 0);
-
-				jsize len = (*env)->GetArrayLength(env, pos) /3;
-				pthread_mutex_lock(&updateDrawMutex);
-				mesh->parent.parent.vcount = len;
-				mesh->parent.parent.v = malloc(sizeof(float) *len *3);
-				mesh->parent.c = malloc(sizeof(float) *len *4);
-				mesh->t = malloc(sizeof(float) *len *2);
-				for (int i = 0; i < len; i++) {
-					mesh->parent.parent.v[i*3+0] = posValues[i*3+0];
-					mesh->parent.parent.v[i*3+1] = posValues[i*3+1];
-					mesh->parent.parent.v[i*3+2] = posValues[i*3+2];
-					mesh->parent.c[i*4+0] = (float) (colValues[i*3+0] /255.0);
-					mesh->parent.c[i*4+1] = (float) (colValues[i*3+1] /255.0);
-					mesh->parent.c[i*4+2] = (float) (colValues[i*3+2] /255.0);
-					mesh->parent.c[i*4+3] = 1;
-					mesh->t[i*2+0] = texValues[i*2+0];
-					mesh->t[i*2+1] = texValues[i*2+1];
-				}
-				mesh->parent.parent.dirtyVertices = 1;
-				mesh->parent.dirtyColours = 1;
-				mesh->dirtyTextures = 1;
-				pthread_mutex_unlock(&updateDrawMutex);
-
-				(*env)->ReleaseFloatArrayElements(env, pos, posValues, JNI_ABORT);
-				(*env)->ReleaseIntArrayElements(env, col, colValues, JNI_ABORT);
-			}
-			else
-			if (result && (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR)) {
-
-				struct dd_meshColour *mesh = m->object;
-
-				// the first object describes the size of the texture
-				const jintArray pos  = (*(*env)->GetObjectArrayElement)(env, result, 0);
-				const jfloat *posValues = (*(*env)->GetFloatArrayElements)(env, pos, 0);
-
-				const jintArray col  = (*(*env)->GetObjectArrayElement)(env, result, 1);
-				const jint *colValues = (*(*env)->GetIntArrayElements)(env, col, 0);
-
-				jsize len = (*env)->GetArrayLength(env, pos) /3;
-				pthread_mutex_lock(&updateDrawMutex);
-				mesh->parent.vcount = len;
-				mesh->parent.v = malloc(sizeof(float) *len *3);
-				mesh->c = malloc(sizeof(float) *len *4);
-				for (int i = 0; i < len; i++) {
-					mesh->parent.v[i*3+0] = posValues[i*3+0];
-					mesh->parent.v[i*3+1] = posValues[i*3+1];
-					mesh->parent.v[i*3+2] = posValues[i*3+2];
-					mesh->c[i*4+0] = (float) (colValues[i*3+0] /255.0);
-					mesh->c[i*4+1] = (float) (colValues[i*3+1] /255.0);
-					mesh->c[i*4+2] = (float) (colValues[i*3+2] /255.0);
-					mesh->c[i*4+3] = 1;
-				}
-				mesh->parent.dirtyVertices = 1;
-				mesh->dirtyColours = 1;
-				pthread_mutex_unlock(&updateDrawMutex);
-
-				(*env)->ReleaseFloatArrayElements(env, pos, posValues, JNI_ABORT);
-				(*env)->ReleaseIntArrayElements(env, col, colValues, JNI_ABORT);
-
-			}
-			else
-			if (result) {
-
+			// mesh
+			if (m->meshType == AVDL_ASSETMANAGER_MESH) {
 				struct dd_mesh *mesh = m->object;
-
-				// the first object describes the size of the texture
-				const jintArray pos  = (*(*env)->GetObjectArrayElement)(env, result, 0);
-				const jfloat *posValues = (*(*env)->GetFloatArrayElements)(env, pos, 0);
-
-				jsize len = (*env)->GetArrayLength(env, pos) /3;
-				pthread_mutex_lock(&updateDrawMutex);
-				mesh->vcount = len;
-				mesh->v = malloc(sizeof(float) *len *3);
-				for (int i = 0; i < len; i++) {
-					mesh->v[i*3+0] = posValues[i*3+0];
-					mesh->v[i*3+1] = posValues[i*3+1];
-					mesh->v[i*3+2] = posValues[i*3+2];
-				}
+				dd_mesh_clean(mesh);
+				struct dd_loaded_mesh lm;
+				dd_filetomesh(&lm, m->filename, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY);
+				mesh->vcount = lm.vcount;
+				mesh->v = lm.v;
 				mesh->dirtyVertices = 1;
-				pthread_mutex_unlock(&updateDrawMutex);
-
-				(*env)->ReleaseFloatArrayElements(env, pos, posValues, JNI_ABORT);
-
+			}
+			else
+			// mesh colour
+			if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
+				struct dd_meshColour *mesh = m->object;
+				dd_meshColour_clean(mesh);
+				struct dd_loaded_mesh lm;
+				dd_filetomesh(&lm, m->filename,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
+				mesh->parent.vcount = lm.vcount;
+				mesh->parent.v = lm.v;
+				mesh->parent.dirtyVertices = 1;
+				mesh->c = lm.c;
+				mesh->dirtyColours = 1;
+			}
+			else
+			// mesh texture
+			if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
+				struct dd_meshTexture *mesh = m->object;
+				dd_meshTexture_clean(mesh);
+				struct dd_loaded_mesh lm;
+				dd_filetomesh(&lm, m->filename,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
+					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
+				mesh->parent.parent.vcount = lm.vcount;
+				mesh->parent.parent.v = lm.v;
+				mesh->parent.parent.dirtyVertices = 1;
+				mesh->parent.c = lm.c;
+				mesh->parent.dirtyColours = 1;
+				mesh->t = lm.t;
+				mesh->dirtyTextures = 1;
 			}
 		}
-
-		//#if !defined(AVDL_QUEST2)
-		if (jvm && getEnvStat == JNI_EDETACHED) {
-			//dd_log("detach thread");
-			(*jvm)->DetachCurrentThread(jvm);
-		}
-		//#endif
 
 		#else
 		// load texture

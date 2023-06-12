@@ -12,7 +12,6 @@ extern JNIEnv *jniEnv;
 extern JavaVM* jvm;
 extern jclass *clazz;
 extern jmethodID BitmapMethodId;
-extern jmethodID ReadPlyMethodId;
 #endif
 
 struct avdl_achievements *avdl_achievements_create() {

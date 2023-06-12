@@ -11,7 +11,6 @@ extern JNIEnv *jniEnv;
 extern JavaVM* jvm;
 extern jclass *clazz;
 extern jmethodID BitmapMethodId;
-extern jmethodID ReadPlyMethodId;
 #endif
 
 #if defined(AVDL_OS_WINDOWS)

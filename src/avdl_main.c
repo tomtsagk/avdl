@@ -1220,25 +1220,24 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	if (avdl_target_platform == AVDL_PLATFORM_ANDROID) {
 		char *assetDir;
 
-		if (strcmp(filename +strlen(filename) -4, ".ply") == 0
-		||  strcmp(filename +strlen(filename) -4, ".ogg") == 0
+		if (strcmp(filename +strlen(filename) -4, ".ogg") == 0
 		||  strcmp(filename +strlen(filename) -4, ".wav") == 0) {
-			assetDir = "raw";
+			assetDir = "res/raw";
 		}
 		else
 		if (strcmp(filename +strlen(filename) -4, ".bmp") == 0
 		||  strcmp(filename +strlen(filename) -4, ".png") == 0) {
-			assetDir = "drawable";
+			assetDir = "res/drawable";
 		}
 		else {
-			assetDir = "raw";
+			assetDir = "assets";
 		}
 
 		// android file full path
 		struct avdl_string androidFilePath;
 		avdl_string_create(&androidFilePath, 1024);
 		avdl_string_cat(&androidFilePath, "avdl_build_android/");
-		avdl_string_cat(&androidFilePath, "/app/src/main/res/");
+		avdl_string_cat(&androidFilePath, "/app/src/main/");
 		avdl_string_cat(&androidFilePath, assetDir);
 		avdl_string_cat(&androidFilePath, "/");
 		if ( !avdl_string_isValid(&androidFilePath) ) {

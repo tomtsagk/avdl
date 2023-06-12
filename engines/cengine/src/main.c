@@ -36,7 +36,6 @@ pthread_mutex_t updateDrawMutex;
 
 	#if defined(AVDL_QUEST2)
 	jmethodID BitmapMethodId;
-	jmethodID ReadPlyMethodId;
 	jmethodID PlayAudioMethodId;
 	jmethodID StopAudioMethodId;
 	#endif
@@ -47,6 +46,11 @@ pthread_mutex_t updateDrawMutex;
 	jobject activity = 0;
 
 	pthread_mutex_t jniMutex;
+
+	#include <android/asset_manager.h>
+	#include <android/asset_manager_jni.h>
+
+	AAssetManager *aassetManager;
 
 /*
  * cengine includes
@@ -409,6 +413,10 @@ void Java_org_darkdimension_avdl_AvdlActivity_nativeKeyDown(JNIEnv*  env, jobjec
 	}
 }
 
+void Java_org_darkdimension_avdl_AvdlActivity_nativeSetAssetManager(JNIEnv* env, jobject thiz, jobject assetManager) {
+	aassetManager = AAssetManager_fromJava(env, assetManager);
+}
+
 #if defined(AVDL_QUEST2)
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 	//dd_log("JNI_OnLoad");
@@ -418,7 +426,6 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 	clazz = (*jniEnv)->NewGlobalRef(jniEnv, classLocal);
 
 	BitmapMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
-	ReadPlyMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadPly", "(Ljava/lang/String;I)[Ljava/lang/Object;");
 	PlayAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
 	StopAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "StopAudio", "(I)V");
 

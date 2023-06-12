@@ -97,26 +97,42 @@ static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 		char buffer[500];
 		strcpy(buffer, ast_getLex(assetName));
 
-		char *lastSlash = buffer;
-		char *p = buffer;
-		while (p[0] != '\0') {
-			if (p[0] == '/') {
-				lastSlash = p+1;
+		if (strcmp(buffer +strlen(buffer) -4, ".ply") == 0
+		||  strcmp(buffer +strlen(buffer) -5, ".json") == 0) {
+			char *lastSlash = buffer;
+			char *p = buffer;
+			while (p[0] != '\0') {
+				if (p[0] == '/') {
+					lastSlash = p+1;
+				}
+				p++;
 			}
-			p++;
-		}
 
-		char *lastDot = buffer;
-		p = buffer;
-		while (p[0] != '\0') {
-			if (p[0] == '.') {
-				lastDot = p;
+			ast_setLex(assetName, lastSlash);
+		}
+		else {
+
+			char *lastSlash = buffer;
+			char *p = buffer;
+			while (p[0] != '\0') {
+				if (p[0] == '/') {
+					lastSlash = p+1;
+				}
+				p++;
 			}
-			p++;
-		}
-		lastDot[0] = '\0';
 
-		ast_setLex(assetName, lastSlash);
+			char *lastDot = buffer;
+			p = buffer;
+			while (p[0] != '\0') {
+				if (p[0] == '.') {
+					lastDot = p;
+				}
+				p++;
+			}
+			lastDot[0] = '\0';
+
+			ast_setLex(assetName, lastSlash);
+		}
 	}
 	else
 	// on linux and windows, attach the custom install location as the asset's prefix
