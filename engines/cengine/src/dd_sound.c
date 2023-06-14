@@ -10,6 +10,10 @@ extern jclass *clazz;
 extern JavaVM *jvm;
 extern jmethodID PlayAudioMethodId;
 extern jmethodID StopAudioMethodId;
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
+static pthread_t soundThread = 0;
 #endif
 
 int dd_hasAudio = 1;
@@ -76,40 +80,99 @@ void dd_sound_clean(struct dd_sound *o) {
 	#endif
 }
 
+#if DD_PLATFORM_ANDROID
+static int is_thread_waiting = 0;
+static pthread_cond_t cond;
+static pthread_mutex_t mutex;
+static char playingAudio[150];
+
+void *play_sound_thread_function(void *data) {
+
+	int keep_sound_thread = 1;
+	while (keep_sound_thread) {
+		JNIEnv *env;
+		#if defined(AVDL_QUEST2)
+		int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
+		#else
+		int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
+		#endif
+
+		if (getEnvStat == JNI_EDETACHED) {
+			if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
+				dd_log("avdl: failed to attach thread for new world");
+			}
+		} else if (getEnvStat == JNI_OK) {
+		} else if (getEnvStat == JNI_EVERSION) {
+			dd_log("avdl: GetEnv: version not supported");
+		}
+
+		// get string from asset (in java)
+		jstring *parameter = (*env)->NewStringUTF(env, playingAudio);
+		#if defined(AVDL_QUEST2)
+		jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, PlayAudioMethodId, parameter, 0);
+		#else
+		jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
+		jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, MethodID, parameter, 0);
+		#endif
+		//o->index = result;
+
+		if (getEnvStat == JNI_EDETACHED) {
+			(*jvm)->DetachCurrentThread(jvm);
+		}
+
+		pthread_mutex_lock(&mutex);
+
+		// wait for new audio to come
+		is_thread_waiting = 1;
+		pthread_cond_wait(&cond, &mutex);
+
+		// reset pthread condition
+		pthread_cond_destroy(&cond);
+		pthread_cond_init(&cond, 0);
+
+		pthread_mutex_unlock(&mutex);
+
+	}
+
+	return 0;
+}
+
+static int is_thread_running = 0;
+#endif
+
 void dd_sound_play(struct dd_sound *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	if (avdl_sound_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
-	JNIEnv *env;
-	#if defined(AVDL_QUEST2)
-	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
-	#else
-	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
-	#endif
 
-	if (getEnvStat == JNI_EDETACHED) {
-		if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
-			dd_log("avdl: failed to attach thread for new world");
+	if (avdl_sound_volume <= 1) return;
+
+	// no thread active - create one and play audio
+	if (!is_thread_running) {
+		is_thread_running = 1;
+		strcpy(playingAudio, o->filename);
+		pthread_mutex_init(&mutex, NULL);
+		pthread_cond_init(&cond, 0);
+		pthread_create(&soundThread, NULL, play_sound_thread_function, 0);
+		pthread_detach(soundThread); // do not wait for thread result code
+	}
+	// thread active - play audio on it
+	else {
+		pthread_mutex_lock(&mutex);
+
+		// thread is waiting for next audio - give it one
+		if (is_thread_waiting) {
+			strcpy(playingAudio, o->filename);
+			is_thread_waiting = 0;
+			pthread_cond_signal(&cond);
 		}
-	} else if (getEnvStat == JNI_OK) {
-	} else if (getEnvStat == JNI_EVERSION) {
-		dd_log("avdl: GetEnv: version not supported");
+		// thread is busy, potentially queue next sound
+		else {
+		}
+		pthread_mutex_unlock(&mutex);
 	}
 
-	// get string from asset (in java)
-	jstring *parameter = (*env)->NewStringUTF(env, o->filename);
-	#if defined(AVDL_QUEST2)
-	jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, PlayAudioMethodId, parameter, 0);
-	#else
-	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
-	jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, MethodID, parameter, 0);
-	#endif
-	o->index = result;
-
-	if (getEnvStat == JNI_EDETACHED) {
-		(*jvm)->DetachCurrentThread(jvm);
-	}
 	#else
 	o->playingChannel = Mix_PlayChannel(-1, o->sound, 0);
 	#endif
@@ -121,31 +184,7 @@ void dd_sound_playLoop(struct dd_sound *o, int loops) {
 	if (!dd_hasAudio) return;
 	if (avdl_sound_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
-	JNIEnv *env;
-	#if defined(AVDL_QUEST2)
-	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
-	#else
-	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
-	#endif
-
-	if (getEnvStat == JNI_EDETACHED) {
-		if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
-			dd_log("avdl: failed to attach thread for new world");
-		}
-	} else if (getEnvStat == JNI_OK) {
-	} else if (getEnvStat == JNI_EVERSION) {
-		dd_log("avdl: GetEnv: version not supported");
-	}
-
-	// get string from asset (in java)
-	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
-	jstring *parameter = (*env)->NewStringUTF(env, o->filename);
-	jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, MethodID, parameter, 1);
-	o->index = result;
-
-	if (getEnvStat == JNI_EDETACHED) {
-		(*jvm)->DetachCurrentThread(jvm);
-	}
+	dd_sound_play(o);
 	#else
 	o->playingChannel = Mix_PlayChannel(-1, o->sound, loops);
 	#endif
@@ -156,6 +195,7 @@ void dd_sound_stop(struct dd_sound *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
+	/*
 	if (o->index == -1) return;
 	JNIEnv *env;
 	#if defined(AVDL_QUEST2)
@@ -187,6 +227,7 @@ void dd_sound_stop(struct dd_sound *o) {
 	if (getEnvStat == JNI_EDETACHED) {
 		(*jvm)->DetachCurrentThread(jvm);
 	}
+	*/
 	#else
 	Mix_HaltChannel(o->playingChannel);
 	#endif
