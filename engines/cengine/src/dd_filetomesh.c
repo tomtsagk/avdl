@@ -6,6 +6,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include "avdl_time.h"
 
 #if DD_PLATFORM_ANDROID
 
@@ -25,8 +26,15 @@ int dd_filetomesh(struct dd_loaded_mesh *m, const char *asset, int settings, int
 	return -1;
 }
 
-/* Parse PLY string */
+/* Parse PLY file
+ * sscanf seems to be heavy, should be replaced with custom solution
+ */
 int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
+
+	/*
+	struct avdl_time t;
+	avdl_time_start(&t);
+	*/
 
 	//Open file and check error
 	AAsset *f = AAssetManager_open(aassetManager, asset, AASSET_MODE_UNKNOWN);
@@ -116,11 +124,23 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 
 	int elementCurrent = -1;
 
+	/*
+	avdl_time_end(&t);
+	dd_log("** initialised everything in %f", avdl_time_getTimeDouble(&t));
+	avdl_time_start(&t);
+	*/
+
 	//Buffer
 	char buff[1024];
 	char buff2[1024];
 	char *fc = AAsset_getBuffer(f);
 	char *p = fc;
+
+	/*
+	avdl_time_end(&t);
+	dd_log("** got buffer in %f", avdl_time_getTimeDouble(&t));
+	avdl_time_start(&t);
+	*/
 
 	//AAsset_read(f, buff, 1023);
 	//buff[1023] = '\0';
@@ -152,6 +172,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 	if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
 		p += strlen(buff2);
 	}
+
+	/*
+	avdl_time_end(&t);
+	dd_log("** check magic number in %f", avdl_time_getTimeDouble(&t));
+	avdl_time_start(&t);
+	*/
+
 	//Read words until end of file or end of header
 	while ( sscanf(p, "%1022[^ \t\n]", buff) != EOF
 		&& strcmp(buff, "end_header") != 0 )
@@ -159,8 +186,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 		p += strlen(buff);
 
 		// skip whitespace
-		if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-			p += strlen(buff2);
+		while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+			p++;
 		}
 
 		// Found comment - Skip line
@@ -187,8 +214,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 			elements[elementCurrent].name[99] = '\0';
 
 			// skip whitespace
-			if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-				p += strlen(buff2);
+			while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+				p++;
 			}
 
 			//Found vertices - save number of vertices
@@ -206,8 +233,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 				v_tex_index = malloc(sizeof(struct dd_vec2) *vertices);
 
 				// skip whitespace
-				if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-					p += strlen(buff2);
+				while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+					p++;
 				}
 
 			}
@@ -224,8 +251,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 				memset(v_pos_face2, 0, sizeof(unsigned int) *faces *MAX_FACE_VERTICES);
 
 				// skip whitespace
-				if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-					p += strlen(buff2);
+				while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+					p++;
 				}
 			}
 		}
@@ -244,8 +271,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 			p += strlen(buff);
 
 			// skip whitespace
-			if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-				p += strlen(buff2);
+			while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+				p++;
 			}
 
 			// if list, get list's format
@@ -258,8 +285,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 				p += strlen(buff);
 
 				// skip whitespace
-				if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-					p += strlen(buff2);
+				while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+					p++;
 				}
 
 				for (int i = 0; i < formats_total; i++) {
@@ -277,8 +304,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 				p += strlen(buff);
 
 				// skip whitespace
-				if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-					p += strlen(buff2);
+				while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+					p++;
 				}
 
 			}
@@ -357,9 +384,15 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 	p += strlen(buff);
 
 	// skip whitespace
-	if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-		p += strlen(buff2);
+	while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+		p++;
 	}
+
+	/*
+	avdl_time_end(&t);
+	dd_log("** read header in %f", avdl_time_getTimeDouble(&t));
+	avdl_time_start(&t);
+	*/
 
 	// print elements and properties
 	for (int i = 0; i <= elementCurrent; i++) {
@@ -381,22 +414,73 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 					}
 
 					// skip whitespace
-					if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-						p += strlen(buff2);
+					while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+						p++;
 					}
 
-					strcpy(buff, "%");
-					strcat(buff, "1022");
-					strcat(buff, format_description[property->list_format].parseSymbol);
-					sscanf(p, buff, buff2);
-					p += strlen(buff2);
-
-					if (property->list_format == PLY_FORMAT_INT
-					||  property->list_format == PLY_FORMAT_UINT
-					||  property->list_format == PLY_FORMAT_SHORT
-					||  property->list_format == PLY_FORMAT_USHORT
-					||  property->list_format == PLY_FORMAT_CHAR
-					||  property->list_format == PLY_FORMAT_UCHAR) {
+					if (property->format == PLY_FORMAT_INT) {
+						char *end = p;
+						while (end[0] >= '0'&& end[0] <= '9') {
+							end++;
+						}
+						strncpy(buff2, p, end -p);
+						buff2[end -p] = '\0';
+						p = end;
+						iterator = atoi(buff2);
+					}
+					else
+					if (property->format == PLY_FORMAT_UINT) {
+						char *end = p;
+						while (end[0] >= '0'&& end[0] <= '9') {
+							end++;
+						}
+						strncpy(buff2, p, end -p);
+						buff2[end -p] = '\0';
+						p = end;
+						iterator = atoi(buff2);
+					}
+					else
+					if (property->format == PLY_FORMAT_SHORT) {
+						char *end = p;
+						while (end[0] >= '0'&& end[0] <= '9') {
+							end++;
+						}
+						strncpy(buff2, p, end -p);
+						buff2[end -p] = '\0';
+						p = end;
+						iterator = atoi(buff2);
+					}
+					else
+					if (property->format == PLY_FORMAT_USHORT) {
+						char *end = p;
+						while (end[0] >= '0'&& end[0] <= '9') {
+							end++;
+						}
+						strncpy(buff2, p, end -p);
+						buff2[end -p] = '\0';
+						p = end;
+						iterator = atoi(buff2);
+					}
+					else
+					if (property->format == PLY_FORMAT_CHAR) {
+						char *end = p;
+						while (end[0] >= '0'&& end[0] <= '9') {
+							end++;
+						}
+						strncpy(buff2, p, end -p);
+						buff2[end -p] = '\0';
+						p = end;
+						iterator = atoi(buff2);
+					}
+					else
+					if (property->format == PLY_FORMAT_UCHAR) {
+						char *end = p;
+						while (end[0] >= '0'&& end[0] <= '9') {
+							end++;
+						}
+						strncpy(buff2, p, end -p);
+						buff2[end -p] = '\0';
+						p = end;
 						iterator = atoi(buff2);
 					}
 					else {
@@ -414,17 +498,18 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 					if (property->target) {
 
 						// skip whitespace
-						if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-							p += strlen(buff2);
+						while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+							p++;
 						}
 
-						strcpy(buff, "%");
-						strcat(buff, "1022");
-						strcat(buff, format_description[property->format].parseSymbol);
-						sscanf(p, buff, buff2);
-						p += strlen(buff2);
-
 						if (property->format == PLY_FORMAT_INT) {
+							char *end = p;
+							while (end[0] >= '0'&& end[0] <= '9') {
+								end++;
+							}
+							strncpy(buff2, p, end -p);
+							buff2[end -p] = '\0';
+							p = end;
 							int temp = atoi(buff2);
 							memcpy((char*) property->target
 								+(pn *(property->offsetSize *iterator))
@@ -435,6 +520,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 						}
 						else
 						if (property->format == PLY_FORMAT_UINT) {
+							char *end = p;
+							while (end[0] >= '0'&& end[0] <= '9') {
+								end++;
+							}
+							strncpy(buff2, p, end -p);
+							buff2[end -p] = '\0';
+							p = end;
 							int temp = atoi(buff2);
 							memcpy((char*) property->target
 								+(pn *(property->offsetSize *iterator))
@@ -445,6 +537,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 						}
 						else
 						if (property->format == PLY_FORMAT_SHORT) {
+							char *end = p;
+							while (end[0] >= '0'&& end[0] <= '9') {
+								end++;
+							}
+							strncpy(buff2, p, end -p);
+							buff2[end -p] = '\0';
+							p = end;
 							int temp = atoi(buff2);
 							memcpy((char*) property->target
 								+(pn *(property->offsetSize *iterator))
@@ -455,6 +554,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 						}
 						else
 						if (property->format == PLY_FORMAT_USHORT) {
+							char *end = p;
+							while (end[0] >= '0'&& end[0] <= '9') {
+								end++;
+							}
+							strncpy(buff2, p, end -p);
+							buff2[end -p] = '\0';
+							p = end;
 							int temp = atoi(buff2);
 							memcpy((char*) property->target
 								+(pn *(property->offsetSize *iterator))
@@ -465,6 +571,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 						}
 						else
 						if (property->format == PLY_FORMAT_CHAR) {
+							char *end = p;
+							while (end[0] >= '0'&& end[0] <= '9') {
+								end++;
+							}
+							strncpy(buff2, p, end -p);
+							buff2[end -p] = '\0';
+							p = end;
 							int temp = atoi(buff2);
 							memcpy((char*) property->target
 								+(pn *(property->offsetSize *iterator))
@@ -475,6 +588,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 						}
 						else
 						if (property->format == PLY_FORMAT_UCHAR) {
+							char *end = p;
+							while (end[0] >= '0'&& end[0] <= '9') {
+								end++;
+							}
+							strncpy(buff2, p, end -p);
+							buff2[end -p] = '\0';
+							p = end;
 							int temp = atoi(buff2);
 							memcpy((char*) property->target
 								+(pn *(property->offsetSize *iterator))
@@ -485,6 +605,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 						}
 						else
 						if (property->format == PLY_FORMAT_FLOAT) {
+							char *end = p;
+							while ((end[0] >= '0'&& end[0] <= '9') || end[0] == '.' || end[0] == '-') {
+								end++;
+							}
+							strncpy(buff2, p, end -p);
+							buff2[end -p] = '\0';
+							p = end;
 							float temp = atof(buff2);
 							memcpy((char*) property->target
 								+(pn *(property->offsetSize *iterator))
@@ -497,8 +624,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 					// skipping
 					else {
 						// skip whitespace
-						if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-							p += strlen(buff2);
+						while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+							p++;
 						}
 						strcpy(buff, "%");
 						strcat(buff, "1022");
@@ -508,8 +635,21 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 					}
 				}
 			}
+
 		}
+
+		/*
+		avdl_time_end(&t);
+		dd_log("*** element: %s in %f", element->name, avdl_time_getTimeDouble(&t));
+		avdl_time_start(&t);
+		*/
 	}
+
+	/*
+	avdl_time_end(&t);
+	dd_log("** read body in %f", avdl_time_getTimeDouble(&t));
+	avdl_time_start(&t);
+	*/
 
 	for (int i = 0; i < vertices; i++) {
 		int colr = v_col_index_d[i*3+0];
@@ -540,6 +680,12 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 		dd_da_add(&v_tex_face, &tex);
 	}
 
+	/*
+	avdl_time_end(&t);
+	dd_log("** set indices in %f", avdl_time_getTimeDouble(&t));
+	avdl_time_start(&t);
+	*/
+
 	//Close file
 	AAsset_close(f);
 
@@ -549,6 +695,12 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 	free(v_col_index);
 	free(v_col_index_d);
 	free(v_tex_index);
+
+	/*
+	avdl_time_end(&t);
+	dd_log("** cleanup in %f", avdl_time_getTimeDouble(&t));
+	avdl_time_start(&t);
+	*/
 
 	//Mesh to return
 	m->vcount = v_pos_face.elements;
@@ -599,6 +751,11 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 	dd_da_free(&v_pos_face);
 	dd_da_free(&v_col_face);
 	dd_da_free(&v_tex_face);
+
+	/*
+	avdl_time_end(&t);
+	dd_log("** complete mesh to return in %f", avdl_time_getTimeDouble(&t));
+	*/
 
 	//Success!
 	return 0;
