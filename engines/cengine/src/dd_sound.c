@@ -85,8 +85,9 @@ static int is_thread_waiting = 0;
 static pthread_cond_t cond;
 static pthread_mutex_t mutex;
 static char playingAudio[150];
+static int isLooping = 0;
 
-void *play_sound_thread_function(void *data) {
+static void *play_sound_thread_function(void *data) {
 
 	int keep_sound_thread = 1;
 	while (keep_sound_thread) {
@@ -109,10 +110,10 @@ void *play_sound_thread_function(void *data) {
 		// get string from asset (in java)
 		jstring *parameter = (*env)->NewStringUTF(env, playingAudio);
 		#if defined(AVDL_QUEST2)
-		jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, PlayAudioMethodId, parameter, 0);
+		jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, PlayAudioMethodId, parameter, isLooping);
 		#else
 		jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
-		jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, MethodID, parameter, 0);
+		jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, MethodID, parameter, isLooping);
 		#endif
 		//o->index = result;
 
@@ -152,6 +153,7 @@ void dd_sound_play(struct dd_sound *o) {
 	if (!is_thread_running) {
 		is_thread_running = 1;
 		strcpy(playingAudio, o->filename);
+		isLooping = 0;
 		pthread_mutex_init(&mutex, NULL);
 		pthread_cond_init(&cond, 0);
 		pthread_create(&soundThread, NULL, play_sound_thread_function, 0);
@@ -164,6 +166,7 @@ void dd_sound_play(struct dd_sound *o) {
 		// thread is waiting for next audio - give it one
 		if (is_thread_waiting) {
 			strcpy(playingAudio, o->filename);
+			isLooping = 0;
 			is_thread_waiting = 0;
 			pthread_cond_signal(&cond);
 		}
@@ -184,7 +187,34 @@ void dd_sound_playLoop(struct dd_sound *o, int loops) {
 	if (!dd_hasAudio) return;
 	if (avdl_sound_volume <= 1) return;
 	#if DD_PLATFORM_ANDROID
-	dd_sound_play(o);
+	if (avdl_sound_volume <= 1) return;
+
+	// no thread active - create one and play audio
+	if (!is_thread_running) {
+		is_thread_running = 1;
+		strcpy(playingAudio, o->filename);
+		isLooping = 1;
+		pthread_mutex_init(&mutex, NULL);
+		pthread_cond_init(&cond, 0);
+		pthread_create(&soundThread, NULL, play_sound_thread_function, 0);
+		pthread_detach(soundThread); // do not wait for thread result code
+	}
+	// thread active - play audio on it
+	else {
+		pthread_mutex_lock(&mutex);
+
+		// thread is waiting for next audio - give it one
+		if (is_thread_waiting) {
+			strcpy(playingAudio, o->filename);
+			isLooping = 1;
+			is_thread_waiting = 0;
+			pthread_cond_signal(&cond);
+		}
+		// thread is busy, potentially queue next sound
+		else {
+		}
+		pthread_mutex_unlock(&mutex);
+	}
 	#else
 	o->playingChannel = Mix_PlayChannel(-1, o->sound, loops);
 	#endif
