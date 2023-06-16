@@ -451,5 +451,10 @@ void set_android_save_dir(jobject activity) {
 	//dd_log("save dir: %s", avdl_data_saveDirectory);
 	(*(*jniEnv)->ReleaseStringUTFChars)(jniEnv, path, pathstr);
 }
+
+void Java_dev_afloof_avdl_AvdlActivity_nativeSetAssetManager(JNIEnv* env, jobject thiz, jobject assetManager) {
+	aassetManager = AAssetManager_fromJava(env, assetManager);
+}
+
 #endif
 #endif
