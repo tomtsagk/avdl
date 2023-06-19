@@ -28,7 +28,9 @@ public class AvdlActivity extends android.app.NativeActivity {
 	public static AvdlActivity activity;
 	public static Context context;
 
-	public static MediaPlayer mediaPlayer[] = new MediaPlayer[5];
+	public static final int AUDIO_MAX = 10;
+	public static MediaPlayer mediaPlayer[] = new MediaPlayer[AUDIO_MAX];
+	public static int mediaPlayerId[] = new int[AUDIO_MAX];
 
 	private AssetManager assetManager;
 
@@ -74,7 +76,7 @@ public class AvdlActivity extends android.app.NativeActivity {
 		return 1;
 	}
 
-	static int PlayAudio(String resourceName, int loop) {
+	static int PlayAudio(String resourceName, int loop, int avdl_id) {
 
 		int id = AvdlActivity.context.getApplicationContext().getResources().getIdentifier(
 			resourceName, "raw", AvdlActivity.context.getPackageName()
@@ -86,7 +88,7 @@ public class AvdlActivity extends android.app.NativeActivity {
 
 		// find index for this audio
 		int desiredIndex = -1;
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < AUDIO_MAX; i++) {
 			if (mediaPlayer[i] == null) {
 				desiredIndex = i;
 				break;
@@ -95,7 +97,7 @@ public class AvdlActivity extends android.app.NativeActivity {
 
 		// no index available - too many sounds playing
 		if (desiredIndex == -1) {
-			Log.w("avdl", "too many sounds playing");
+			Log.w("avdl", "warning: too many sounds playing - skipping audio");
 			return -1;
 		}
 
@@ -104,15 +106,17 @@ public class AvdlActivity extends android.app.NativeActivity {
 			mp.setLooping(true);
 		}
 		mediaPlayer[desiredIndex] = mp;
+		mediaPlayerId[desiredIndex] = avdl_id;
 		mp.start();
 
 		// on complete, remove media player
 		mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 			public void onCompletion(MediaPlayer mp) {
 				mp.release();
-				for (int i = 0; i < 5; i++) {
+				for (int i = 0; i < AUDIO_MAX; i++) {
 					if (mediaPlayer[i] == mp) {
 						mediaPlayer[i] = null;
+						mediaPlayerId[i] = 0;
 					}
 				}
 			}
@@ -122,13 +126,14 @@ public class AvdlActivity extends android.app.NativeActivity {
 
 	}
 
-	static void StopAudio(int index) {
-		if (index < 0 || index >= 5) {
-			return;
+	static void StopAudio(int avdl_id) {
+		for (int i = 0; i < AUDIO_MAX; i++) {
+			if (mediaPlayerId[i] == avdl_id) {
+				mediaPlayer[i].stop();
+				mediaPlayer[i].release();
+				mediaPlayer[i] = null;
+			}
 		}
-		mediaPlayer[index].stop();
-		mediaPlayer[index].release();
-		mediaPlayer[index] = null;
 	}
 
 	private static native void nativeSetAssetManager(AssetManager assetManager);

@@ -31,7 +31,7 @@ void dd_sound_create(struct dd_sound *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	o->filename[0] = '\0';
-	#if DD_PLATFORM_ANDROID
+	#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
 	o->index = -1;
 	#else
 	o->sound = 0;
@@ -41,6 +41,10 @@ void dd_sound_create(struct dd_sound *o) {
 	#endif
 }
 
+#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
+static int id_generator = 1;
+#endif
+
 void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_format format) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
@@ -49,6 +53,11 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 	}
 	#if DD_PLATFORM_ANDROID
 	strcpy(o->filename, filename);
+	o->index = id_generator;
+	id_generator++;
+	if (id_generator >= 65000) {
+		id_generator = 1;
+	}
 	#else
 
 	#if defined(_WIN32) || defined(WIN32)
@@ -70,7 +79,7 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 void dd_sound_clean(struct dd_sound *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
-	#if DD_PLATFORM_ANDROID
+	#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
 	#else
 	if (o->sound) {
 		Mix_FreeChunk(o->sound);
@@ -80,23 +89,30 @@ void dd_sound_clean(struct dd_sound *o) {
 	#endif
 }
 
-#if DD_PLATFORM_ANDROID
+#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
 static int is_thread_waiting = 0;
 static pthread_cond_t cond;
 static pthread_mutex_t mutex;
+
 static char playingAudio[150];
+static int playingAudioId = 0;
 static int isLooping = 0;
+static int stoppingAudioId = 0;
+
+#define AUDIO_MAX 10
+static char playingAudioQueue[AUDIO_MAX][150];
+static int playingAudioIdQueue[AUDIO_MAX];
+static int playingAudioLoopQueue[AUDIO_MAX];
+static int playingAudioCount = 0;
+static int stoppingAudioIdQueue[AUDIO_MAX];
+static int stoppingAudioCount = 0;
 
 static void *play_sound_thread_function(void *data) {
 
 	int keep_sound_thread = 1;
 	while (keep_sound_thread) {
 		JNIEnv *env;
-		#if defined(AVDL_QUEST2)
 		int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
-		#else
-		int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
-		#endif
 
 		if (getEnvStat == JNI_EDETACHED) {
 			if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
@@ -107,21 +123,41 @@ static void *play_sound_thread_function(void *data) {
 			dd_log("avdl: GetEnv: version not supported");
 		}
 
-		// get string from asset (in java)
-		jstring *parameter = (*env)->NewStringUTF(env, playingAudio);
-		#if defined(AVDL_QUEST2)
-		jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, PlayAudioMethodId, parameter, isLooping);
-		#else
-		jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
-		jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, MethodID, parameter, isLooping);
-		#endif
-		//o->index = result;
+		if (playingAudioId) {
+			// get string from asset (in java)
+			jstring *parameter = (*env)->NewStringUTF(env, playingAudio);
+			jint result = (jint)(*(*env)->CallStaticIntMethod)(env, clazz, PlayAudioMethodId, parameter, isLooping, playingAudioId);
+			playingAudioId = 0;
+		}
+
+		if (stoppingAudioId) {
+			// get string from asset (in java)
+			(*(*env)->CallStaticVoidMethod)(env, clazz, StopAudioMethodId, stoppingAudioId);
+			stoppingAudioId = 0;
+		}
 
 		if (getEnvStat == JNI_EDETACHED) {
 			(*jvm)->DetachCurrentThread(jvm);
 		}
 
 		pthread_mutex_lock(&mutex);
+
+		if (playingAudioCount > 0) {
+			strcpy(playingAudio, playingAudioQueue[playingAudioCount-1]);
+			playingAudioId = playingAudioIdQueue[playingAudioCount-1];
+			isLooping = playingAudioLoopQueue[playingAudioCount-1];
+			playingAudioCount--;
+		}
+
+		if (stoppingAudioCount > 0) {
+			stoppingAudioId = stoppingAudioIdQueue[stoppingAudioCount-1];
+			stoppingAudioCount--;
+		}
+
+		if (playingAudioId > 0 || stoppingAudioId > 0) {
+			pthread_mutex_unlock(&mutex);
+			continue;
+		}
 
 		// wait for new audio to come
 		is_thread_waiting = 1;
@@ -153,6 +189,7 @@ void dd_sound_play(struct dd_sound *o) {
 	if (!is_thread_running) {
 		is_thread_running = 1;
 		strcpy(playingAudio, o->filename);
+		playingAudioId = o->index;
 		isLooping = 0;
 		pthread_mutex_init(&mutex, NULL);
 		pthread_cond_init(&cond, 0);
@@ -166,12 +203,22 @@ void dd_sound_play(struct dd_sound *o) {
 		// thread is waiting for next audio - give it one
 		if (is_thread_waiting) {
 			strcpy(playingAudio, o->filename);
+			playingAudioId = o->index;
 			isLooping = 0;
 			is_thread_waiting = 0;
 			pthread_cond_signal(&cond);
 		}
 		// thread is busy, potentially queue next sound
 		else {
+			if (playingAudioCount < AUDIO_MAX) {
+				strcpy(playingAudioQueue[playingAudioCount], o->filename);
+				playingAudioIdQueue[playingAudioCount] = o->index;
+				playingAudioLoopQueue[playingAudioCount] = 0;
+				playingAudioCount++;
+			}
+			// too many sounds in queue - should never happen
+			else {
+			}
 		}
 		pthread_mutex_unlock(&mutex);
 	}
@@ -193,6 +240,7 @@ void dd_sound_playLoop(struct dd_sound *o, int loops) {
 	if (!is_thread_running) {
 		is_thread_running = 1;
 		strcpy(playingAudio, o->filename);
+		playingAudioId = o->index;
 		isLooping = 1;
 		pthread_mutex_init(&mutex, NULL);
 		pthread_cond_init(&cond, 0);
@@ -206,12 +254,22 @@ void dd_sound_playLoop(struct dd_sound *o, int loops) {
 		// thread is waiting for next audio - give it one
 		if (is_thread_waiting) {
 			strcpy(playingAudio, o->filename);
+			playingAudioId = o->index;
 			isLooping = 1;
 			is_thread_waiting = 0;
 			pthread_cond_signal(&cond);
 		}
 		// thread is busy, potentially queue next sound
 		else {
+			if (playingAudioCount < AUDIO_MAX) {
+				strcpy(playingAudioQueue[playingAudioCount], o->filename);
+				playingAudioIdQueue[playingAudioCount] = o->index;
+				playingAudioLoopQueue[playingAudioCount] = 1;
+				playingAudioCount++;
+			}
+			// too many sounds in queue - should never happen
+			else {
+			}
 		}
 		pthread_mutex_unlock(&mutex);
 	}
@@ -225,39 +283,39 @@ void dd_sound_stop(struct dd_sound *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
-	/*
-	if (o->index == -1) return;
-	JNIEnv *env;
-	#if defined(AVDL_QUEST2)
-	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
-	#else
-	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
-	#endif
+	if (avdl_sound_volume <= 1) return;
 
-	if (getEnvStat == JNI_EDETACHED) {
-		if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
-			dd_log("avdl: failed to attach thread for new world");
+	// no thread active - create one and play audio
+	if (!is_thread_running) {
+		is_thread_running = 1;
+		stoppingAudioId = o->index;
+		pthread_mutex_init(&mutex, NULL);
+		pthread_cond_init(&cond, 0);
+		pthread_create(&soundThread, NULL, play_sound_thread_function, 0);
+		pthread_detach(soundThread); // do not wait for thread result code
+	}
+	// thread active - play audio on it
+	else {
+		pthread_mutex_lock(&mutex);
+
+		// thread is waiting for next audio - give it one
+		if (is_thread_waiting) {
+			stoppingAudioId = o->index;
+			is_thread_waiting = 0;
+			pthread_cond_signal(&cond);
 		}
-	} else if (getEnvStat == JNI_OK) {
-	} else if (getEnvStat == JNI_EVERSION) {
-		dd_log("avdl: GetEnv: version not supported");
+		// thread is busy, potentially queue next sound
+		else {
+			if (stoppingAudioCount < AUDIO_MAX) {
+				stoppingAudioIdQueue[stoppingAudioCount] = o->index;
+				stoppingAudioCount++;
+			}
+			// too many sounds in queue - should never happen
+			else {
+			}
+		}
+		pthread_mutex_unlock(&mutex);
 	}
-
-	// get string from asset (in java)
-	jint *parameter = o->index;
-	#if defined(AVDL_QUEST2)
-	(*(*env)->CallStaticVoidMethod)(env, clazz, StopAudioMethodId, parameter);
-	#else
-	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "StopAudio", "(I)V");
-	(*(*env)->CallStaticVoidMethod)(env, clazz, MethodID, parameter);
-	#endif
-
-	o->index = -1;
-
-	if (getEnvStat == JNI_EDETACHED) {
-		(*jvm)->DetachCurrentThread(jvm);
-	}
-	*/
 	#else
 	Mix_HaltChannel(o->playingChannel);
 	#endif

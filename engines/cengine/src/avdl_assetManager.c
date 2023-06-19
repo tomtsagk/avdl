@@ -150,13 +150,7 @@ void avdl_assetManager_loadAssets() {
 
 			JNIEnv *env;
 
-			// temporarily have different jni versions for android and quest 2
-			// should both be 1.6 once tested
-			#if defined(AVDL_QUEST2)
 			int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
-			#else
-			int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
-			#endif
 
 			if (getEnvStat == JNI_EDETACHED) {
 				if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
@@ -171,14 +165,8 @@ void avdl_assetManager_loadAssets() {
 
 			struct dd_image *mesh = m->object;
 
-			#if defined(AVDL_QUEST2)
 			jstring *parameter = (*env)->NewStringUTF(env, m->filename);
 			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, BitmapMethodId, parameter);
-			#else
-			jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
-			jstring *parameter = (*env)->NewStringUTF(env, m->filename);
-			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, MethodID, parameter);
-			#endif
 
 			if (result) {
 
@@ -226,9 +214,7 @@ void avdl_assetManager_loadAssets() {
 			}
 			//dd_log("done: %s", m->filename);
 
-			//#if !defined(AVDL_QUEST2)
 			if (jvm && getEnvStat == JNI_EDETACHED) {
-				//dd_log("detach thread");
 				(*jvm)->DetachCurrentThread(jvm);
 			}
 			//#endif

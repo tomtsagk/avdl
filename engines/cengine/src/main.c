@@ -34,11 +34,9 @@ pthread_mutex_t updateDrawMutex;
 	#include <jni.h>
 	jclass *clazz;
 
-	#if defined(AVDL_QUEST2)
 	jmethodID BitmapMethodId;
 	jmethodID PlayAudioMethodId;
 	jmethodID StopAudioMethodId;
-	#endif
 
 	// Reconstruct engine to use one JNIEnv per world
 	JNIEnv *jniEnv;
@@ -317,6 +315,10 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 	jclass classLocal = (*(*jniEnv)->FindClass)(jniEnv, "org/darkdimension/avdl/AvdlActivity");
 	clazz = (*jniEnv)->NewGlobalRef(jniEnv, classLocal);
 
+	BitmapMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
+	PlayAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "PlayAudio", "(Ljava/lang/String;II)I");
+	StopAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "StopAudio", "(I)V");
+
 	// grab internal save path, for save/load functionality
 	jmethodID getFilesDir = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "getFilesDir", "()Ljava/io/File;");
 	jobject dirobj = (*(*jniEnv)->CallObjectMethod)(jniEnv, mainActivity,getFilesDir);
@@ -426,7 +428,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 	clazz = (*jniEnv)->NewGlobalRef(jniEnv, classLocal);
 
 	BitmapMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
-	PlayAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "PlayAudio", "(Ljava/lang/String;I)I");
+	PlayAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "PlayAudio", "(Ljava/lang/String;II)I");
 	StopAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "StopAudio", "(I)V");
 
 	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
