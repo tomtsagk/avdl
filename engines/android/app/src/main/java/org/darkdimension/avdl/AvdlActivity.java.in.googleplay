@@ -32,6 +32,8 @@ import com.google.android.gms.games.GamesSignInClient;
 import android.content.Intent;
 import android.net.Uri;
 
+import android.content.res.AssetManager;
+
 /*
  * The only activity that starts a window and
  * takes cares of events
@@ -50,6 +52,8 @@ public class AvdlActivity extends Activity {
 	public static MediaPlayer mediaPlayer[] = new MediaPlayer[AUDIO_MAX];
 	public static int mediaPlayerId[] = new int[AUDIO_MAX];
 
+	private AssetManager assetManager;
+
 	/*
 	 * create the surface view
 	 */
@@ -59,6 +63,8 @@ public class AvdlActivity extends Activity {
 
 		AvdlActivity.activity = this;
 		AvdlActivity.context = getApplicationContext();
+		assetManager = getResources().getAssets();
+		nativeSetAssetManager(assetManager);
 
 		surfaceView = new AvdlGLSurfaceView(this);
 		setContentView(surfaceView);
@@ -234,7 +240,7 @@ public class AvdlActivity extends Activity {
 		mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
 			public void onCompletion(MediaPlayer mp) {
 				mp.release();
-				for (int i = 0; i < 5; i++) {
+				for (int i = 0; i < AUDIO_MAX; i++) {
 					if (mediaPlayer[i] == mp) {
 						mediaPlayer[i] = null;
 						mediaPlayerId[i] = 0;
@@ -270,6 +276,7 @@ public class AvdlActivity extends Activity {
 		AvdlActivity.activity.finish();
 	}
 
+	private static native void nativeSetAssetManager(AssetManager assetManager);
 	private static native void nativeKeyDown(int key);
 	private static native void nativeDone();
 	private static native void nativePause();
