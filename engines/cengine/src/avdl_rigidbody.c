@@ -13,6 +13,7 @@ void avdl_rigidbody_create(struct avdl_rigidbody *o) {
 	o->getPositionX = avdl_rigidbody_getPositionX;
 	o->getPositionY = avdl_rigidbody_getPositionY;
 	o->getPositionZ = avdl_rigidbody_getPositionZ;
+	o->reset = avdl_rigidbody_reset;
 
 	o->setMass(o, 1);
 	o->setRestitution(o, 1);
@@ -64,4 +65,8 @@ float avdl_rigidbody_getPositionY(struct avdl_rigidbody *o) {
 
 float avdl_rigidbody_getPositionZ(struct avdl_rigidbody *o) {
 	return o->position.z;
+}
+
+void avdl_rigidbody_reset(struct avdl_rigidbody *o) {
+	dd_vec3_setf(&o->velocity, 0, 0, 0);
 }

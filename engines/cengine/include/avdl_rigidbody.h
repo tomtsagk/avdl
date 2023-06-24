@@ -27,6 +27,8 @@ struct avdl_rigidbody {
 	void (*setCollider)(struct avdl_rigidbody *, struct avdl_collider *);
 
 	void (*addVelocityf)(struct avdl_rigidbody *, float, float, float);
+
+	void (*reset)(struct avdl_rigidbody *);
 };
 
 void avdl_rigidbody_create(struct avdl_rigidbody *);
@@ -45,6 +47,8 @@ void avdl_rigidbody_addVelocityf(struct avdl_rigidbody *, float, float, float);
 float avdl_rigidbody_getPositionX(struct avdl_rigidbody *);
 float avdl_rigidbody_getPositionY(struct avdl_rigidbody *);
 float avdl_rigidbody_getPositionZ(struct avdl_rigidbody *);
+
+void avdl_rigidbody_reset(struct avdl_rigidbody *);
 
 #ifdef __cplusplus
 }

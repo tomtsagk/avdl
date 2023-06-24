@@ -167,7 +167,7 @@ void avdl_physics_collision_sphereVSsphere(struct manifold *m, struct avdl_rigid
 
 }
 
-void avdl_physics_update(struct avdl_physics *o) {
+void avdl_physics_update(struct avdl_physics *o, float dt) {
 
 	// move objects
 	for (int i = 0; i < o->object_count; i++) {
@@ -177,9 +177,9 @@ void avdl_physics_update(struct avdl_physics *o) {
 
 		// constant force
 		dd_vec3_addf(&acceleration,
-			o->constant_force.x *o->object[i]->mass_inv,
-			o->constant_force.y *o->object[i]->mass_inv,
-			o->constant_force.z *o->object[i]->mass_inv
+			o->constant_force.x *o->object[i]->mass_inv *dt,
+			o->constant_force.y *o->object[i]->mass_inv *dt,
+			o->constant_force.z *o->object[i]->mass_inv *dt
 		);
 
 		// add acceleration to velocity

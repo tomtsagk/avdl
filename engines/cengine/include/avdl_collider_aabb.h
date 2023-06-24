@@ -16,6 +16,10 @@ struct avdl_collider_aabb {
 
 	void (*setMin)(struct avdl_collider_aabb *, float, float, float);
 	void (*setMax)(struct avdl_collider_aabb *, float, float, float);
+
+	float (*getMaxX)(struct avdl_collider_aabb *);
+	float (*getMaxY)(struct avdl_collider_aabb *);
+	float (*getMaxZ)(struct avdl_collider_aabb *);
 };
 
 void avdl_collider_aabb_create(struct avdl_collider_aabb *o);
@@ -23,6 +27,10 @@ void avdl_collider_aabb_clean(struct avdl_collider_aabb *o);
 
 void avdl_collider_aabb_setMin(struct avdl_collider_aabb *o, float, float, float);
 void avdl_collider_aabb_setMax(struct avdl_collider_aabb *o, float, float, float);
+
+float avdl_collider_aabb_getMaxX(struct avdl_collider_aabb *o);
+float avdl_collider_aabb_getMaxY(struct avdl_collider_aabb *o);
+float avdl_collider_aabb_getMaxZ(struct avdl_collider_aabb *o);
 
 #ifdef __cplusplus
 }

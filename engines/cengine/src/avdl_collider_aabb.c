@@ -8,6 +8,10 @@ void avdl_collider_aabb_create(struct avdl_collider_aabb *o) {
 
 	o->setMin = avdl_collider_aabb_setMin;
 	o->setMax = avdl_collider_aabb_setMax;
+
+	o->getMaxX = avdl_collider_aabb_getMaxX;
+	o->getMaxY = avdl_collider_aabb_getMaxY;
+	o->getMaxZ = avdl_collider_aabb_getMaxZ;
 }
 
 void avdl_collider_aabb_clean(struct avdl_collider_aabb *o) {
@@ -23,4 +27,16 @@ void avdl_collider_aabb_setMax(struct avdl_collider_aabb *o, float x, float y, f
 	o->max.x = x;
 	o->max.y = y;
 	o->max.z = z;
+}
+
+float avdl_collider_aabb_getMaxX(struct avdl_collider_aabb *o) {
+	return o->max.x;
+}
+
+float avdl_collider_aabb_getMaxY(struct avdl_collider_aabb *o) {
+	return o->max.y;
+}
+
+float avdl_collider_aabb_getMaxZ(struct avdl_collider_aabb *o) {
+	return o->max.z;
 }
