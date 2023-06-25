@@ -231,6 +231,39 @@ int avdl_engine_init(struct avdl_engine *o) {
 		dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
 	}
 	//handleResize(dd_window_width(), dd_window_height());
+
+	// window icon
+	char filename[400];
+	strcpy(filename, avdl_getProjectLocation());
+	strcat(filename, GAME_ASSET_PREFIX);
+	strcat(filename, "assets/icon-64x64.png");
+
+	struct dd_image img;
+	dd_image_load_png(&img, filename);
+	if (img.pixels) {
+		SDL_Surface *surface;
+		int size = sizeof(GLubyte) *img.width *img.height *4;
+		GLubyte *pixels = malloc(size);
+		for (int h = 0; h < img.height; h++) {
+		for (int w = 0; w < img.width ; w++) {
+			int iterator = (img.width *h *4) +(w *4);
+			int iterator2 = (img.width *(img.height -1 -h) *4) +(w *4);
+			pixels[iterator +0] = img.pixels[iterator2 +0] *255.0;
+			pixels[iterator +1] = img.pixels[iterator2 +1] *255.0;
+			pixels[iterator +2] = img.pixels[iterator2 +2] *255.0;
+			pixels[iterator +3] = img.pixels[iterator2 +3] *255.0;
+		}
+		}
+		surface = SDL_CreateRGBSurfaceFrom(
+			pixels, // pixels
+			img.width, img.height, // width height
+			32, // depth
+			img.width *(sizeof(GLubyte) * 4), // pitch
+			0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000 // color masks
+		);
+		SDL_SetWindowIcon(o->window, surface);
+		free(pixels);
+	}
 	#endif
 
 	#if defined(DD_PLATFORM_NATIVE) || defined(AVDL_QUEST2)
