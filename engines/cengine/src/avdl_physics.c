@@ -299,6 +299,16 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 					o->object[j]->position.z - o->object[j]->mass_inv *correction.z
 				);
 
+				// friction emulation
+				dd_vec3_setf(&o->object[j]->velocity,
+					o->object[j]->velocity.x *0.99,
+					o->object[j]->velocity.y *0.99,
+					o->object[j]->velocity.z *0.99
+				);
+				if (dd_vec3_magnitude(&o->object[j]->velocity) < 0.005) {
+					dd_vec3_setf(&o->object[j]->velocity, 0, 0, 0);
+				}
+
 			}
 		}
 	}
