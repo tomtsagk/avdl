@@ -240,7 +240,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	struct dd_image img;
 	dd_image_load_png(&img, filename);
-	if (img.pixels) {
+	if (img.pixels && img.pixelFormat == GL_RGBA) {
 		SDL_Surface *surface;
 		int size = sizeof(GLubyte) *img.width *img.height *4;
 		GLubyte *pixels = malloc(size);
