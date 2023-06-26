@@ -3,6 +3,7 @@
 
 void avdl_rigidbody_create(struct avdl_rigidbody *o) {
 	o->collider = 0;
+	o->has_just_collided = 0;
 
 	o->matrixMultiply = avdl_rigidbody_matrixMultiply;
 	o->setPositionf = avdl_rigidbody_setPositionf;
@@ -14,6 +15,7 @@ void avdl_rigidbody_create(struct avdl_rigidbody *o) {
 	o->getPositionY = avdl_rigidbody_getPositionY;
 	o->getPositionZ = avdl_rigidbody_getPositionZ;
 	o->reset = avdl_rigidbody_reset;
+	o->hasJustCollided = avdl_rigidbody_hasJustCollided;
 
 	o->setMass(o, 1);
 	o->setRestitution(o, 1);
@@ -69,4 +71,8 @@ float avdl_rigidbody_getPositionZ(struct avdl_rigidbody *o) {
 
 void avdl_rigidbody_reset(struct avdl_rigidbody *o) {
 	dd_vec3_setf(&o->velocity, 0, 0, 0);
+}
+
+int avdl_rigidbody_hasJustCollided(struct avdl_rigidbody *o) {
+	return o->has_just_collided;
 }

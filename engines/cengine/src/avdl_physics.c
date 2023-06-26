@@ -234,10 +234,14 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 					dd_log("sphere vs ???");
 				}
 			}
+			o->object[i]->has_just_collided = 0;
+			o->object[j]->has_just_collided = 0;
 
 			// radius smaller than distance - no collision
 			if (m.collide) {
 				//dd_log("Collision!");
+				o->object[i]->has_just_collided = 1;
+				o->object[j]->has_just_collided = 1;
 
 				// total mass
 				float mass_total = o->object[i]->mass +o->object[j]->mass;
