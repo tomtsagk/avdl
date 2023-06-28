@@ -10,6 +10,7 @@ void avdl_rigidbody_create(struct avdl_rigidbody *o) {
 	o->setMass = avdl_rigidbody_setMass;
 	o->setRestitution = avdl_rigidbody_setRestitution;
 	o->setCollider = avdl_rigidbody_setCollider;
+	o->addAngularVelocityf = avdl_rigidbody_addAngularVelocityf;
 	o->addVelocityf = avdl_rigidbody_addVelocityf;
 	o->getPositionX = avdl_rigidbody_getPositionX;
 	o->getPositionY = avdl_rigidbody_getPositionY;
@@ -22,6 +23,9 @@ void avdl_rigidbody_create(struct avdl_rigidbody *o) {
 
 	dd_vec3_setf(&o->position, 0, 0, 0);
 	dd_vec3_setf(&o->velocity, 0, 0, 0);
+
+	dd_matrix_identity(&o->rotation);
+	dd_matrix_identity(&o->angularVelocity);
 }
 
 void avdl_rigidbody_clean(struct avdl_rigidbody *o) {
@@ -29,6 +33,7 @@ void avdl_rigidbody_clean(struct avdl_rigidbody *o) {
 
 void avdl_rigidbody_matrixMultiply(struct avdl_rigidbody *o) {
 	dd_translatef(o->position.x, o->position.y, o->position.z);
+	dd_multMatrixf(&o->rotation);
 }
 
 void avdl_rigidbody_setPositionf(struct avdl_rigidbody *o, float x, float y, float z) {
@@ -55,6 +60,18 @@ void avdl_rigidbody_setCollider(struct avdl_rigidbody *o, struct avdl_collider *
 
 void avdl_rigidbody_addVelocityf(struct avdl_rigidbody *o, float x, float y, float z) {
 	dd_vec3_addf(&o->velocity, x, y, z);
+}
+
+void avdl_rigidbody_addAngularVelocityf(struct avdl_rigidbody *o, float x, float y, float z) {
+	struct dd_matrix m;
+	dd_matrix_identity(&m);
+	dd_matrix_rotate(&m, x, 1, 0, 0);
+	dd_matrix_rotate(&m, y, 0, 1, 0);
+	dd_matrix_rotate(&m, z, 0, 0, 1);
+	//dd_matrix_mult(&m, &o->rotation);
+	//dd_matrix_copy(&o->rotation, &m);
+	dd_matrix_mult(&m, &o->angularVelocity);
+	dd_matrix_copy(&o->angularVelocity, &m);
 }
 
 float avdl_rigidbody_getPositionX(struct avdl_rigidbody *o) {

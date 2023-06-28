@@ -187,11 +187,27 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 
 		// apply velocity to position
 		dd_vec3_add(&o->object[i]->position, &o->object[i]->position, &o->object[i]->velocity);
+
+		// rotation
+		struct dd_matrix m;
+		dd_matrix_copy(&m, &o->object[i]->angularVelocity);
+		dd_matrix_mult(&m, &o->object[i]->rotation);
+		dd_matrix_copy(&o->object[i]->rotation, &m);
+		//dd_matrix_mult(&o->object[i]->rotation, &o->object[i]->angularVelocity);
+	}
+
+	for (int i = 0; i < o->object_count; i++) {
+		o->object[i]->has_just_collided = 0;
 	}
 
 	// collisions
 	for (int i = 0; i < o->object_count-1; i++) {
 		for (int j = i+1; j < o->object_count; j++) {
+
+			// both objects not moving - no collisions
+			if (o->object[i]->mass == 0 && o->object[j]->mass == 0) {
+				continue;
+			}
 
 			int collision = 0;
 			struct manifold m;
@@ -234,8 +250,6 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 					dd_log("sphere vs ???");
 				}
 			}
-			o->object[i]->has_just_collided = 0;
-			o->object[j]->has_just_collided = 0;
 
 			// radius smaller than distance - no collision
 			if (m.collide) {
@@ -261,12 +275,28 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				float z = -(1 +e) *velAlongNormal;
 				z /= o->object[i]->mass_inv +o->object[j]->mass_inv;
 
+				struct dd_vec4 normal2;
+				dd_vec4_set(&normal2,
+					m.normal.x,
+					m.normal.y,
+					m.normal.z,
+					0
+				);
+				dd_vec4_multiply(&normal2, &o->object[j]->angularVelocity);
+//				dd_log("normals:");
+//				dd_matrix_print(&o->object[i]->angularVelocity);
+//				dd_vec3_print(&m.normal);
+//				dd_vec4_print(&normal2);
+
 				// calculate impulse
 				struct dd_vec3 impulse;
 				dd_vec3_setf(&impulse,
-					m.normal.x *z,
-					m.normal.y *z,
-					m.normal.z *z
+					//m.normal.x *z,
+					//m.normal.y *z,
+					//m.normal.z *z
+					normal2.cell[0] *z,
+					normal2.cell[1] *z,
+					normal2.cell[2] *z
 				);
 				//dd_log("impulse: %f - %f - %f", impulse.x, impulse.y, impulse.z);
 

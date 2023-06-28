@@ -69,6 +69,7 @@ void struct_table_init() {
 	struct_table_push_member("getY", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getW", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("print", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_string3d", 0);
 	struct_table_push_member("setAlign", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setAlignVertical", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -124,6 +125,7 @@ void struct_table_init() {
 	struct_table_push_member("setMass", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setRestitution", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("addVelocityf", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("addAngularVelocityf", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("matrixMultiply", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setCollider", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getPositionX", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

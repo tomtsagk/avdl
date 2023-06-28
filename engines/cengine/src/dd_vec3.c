@@ -83,3 +83,11 @@ void dd_vec3_substractf(struct dd_vec3 *o, float x, float y, float z) {
 	o->y -= y;
 	o->z -= z;
 }
+
+void dd_vec3_print(struct dd_vec3 *o) {
+	dd_log("dd_vec3: %f %f %f",
+		o->x,
+		o->y,
+		o->z
+	);
+}

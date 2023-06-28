@@ -53,12 +53,20 @@ void dd_vec4_multiply(struct dd_vec4 *o, struct dd_matrix *m) {
         struct dd_vec4 new_vec;
         int x;
         for (x = 0; x < 4; x++) {
-		// Quest 2 only ?
+		#if defined(AVDL_QUEST2)
+		// Quest 2 only
                 new_vec.cell[x] =
                         (o->cell[0] *m->cell[(x *4) +0]) +
                         (o->cell[1] *m->cell[(x *4) +1]) +
                         (o->cell[2] *m->cell[(x *4) +2]) +
                         (o->cell[3] *m->cell[(x *4) +3]);
+		#else
+                new_vec.cell[x] =
+                        (o->cell[0] *m->cell[(x %4) +0]) +
+                        (o->cell[1] *m->cell[(x %4) +4]) +
+                        (o->cell[2] *m->cell[(x %4) +8]) +
+                        (o->cell[3] *m->cell[(x %4) +12]);
+		#endif
         }
 
         for (x = 0; x < 4; x++) {
@@ -71,4 +79,13 @@ float dd_vec4_dot(struct dd_vec4 *a, struct dd_vec4 *b) {
 		+a->cell[1] *b->cell[1]
 		+a->cell[2] *b->cell[2]
 		+a->cell[3] *b->cell[3];
+}
+
+void dd_vec4_print(struct dd_vec4 *o) {
+	dd_log("dd_vec4: %f %f %f %f",
+		o->cell[0],
+		o->cell[1],
+		o->cell[2],
+		o->cell[3]
+	);
 }
