@@ -1,4 +1,5 @@
 #include "dd_vec4.h"
+#include "dd_math.h"
 
 void dd_vec4_create(struct dd_vec4 *o) {
 	o->cell[0] = 0;
@@ -88,4 +89,16 @@ void dd_vec4_print(struct dd_vec4 *o) {
 		o->cell[2],
 		o->cell[3]
 	);
+}
+
+void dd_vec4_normalise(struct dd_vec4 *o) {
+	float magn = dd_vec3_magnitude(o);
+	o->cell[0] /= magn;
+	o->cell[1] /= magn;
+	o->cell[2] /= magn;
+	o->cell[3] /= magn;
+}
+
+float dd_vec4_magnitude(struct dd_vec4 *o) {
+	return dd_math_sqrt(dd_math_pow(o->cell[0], 2) +dd_math_pow(o->cell[1], 2) +dd_math_pow(o->cell[2], 2) +dd_math_pow(o->cell[3], 2));
 }

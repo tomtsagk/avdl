@@ -291,12 +291,15 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				// calculate impulse
 				struct dd_vec3 impulse;
 				dd_vec3_setf(&impulse,
-					//m.normal.x *z,
-					//m.normal.y *z,
-					//m.normal.z *z
-					normal2.cell[0] *z,
-					normal2.cell[1] *z,
-					normal2.cell[2] *z
+					m.normal.x *z -(o->object[j]->angularVelocityVec3.z -o->object[i]->angularVelocityVec3.z) *0.001,
+					m.normal.y *z +(o->object[j]->angularVelocityVec3.y -o->object[i]->angularVelocityVec3.y) *0.001,
+					m.normal.z *z +(o->object[j]->angularVelocityVec3.x -o->object[i]->angularVelocityVec3.x) *0.001
+					//m.normal.x *z -normal2.cell[0] *0.01,
+					//m.normal.y *z +0,//normal2.cell[1] *0.1,
+					//m.normal.z *z -normal2.cell[2] *0.01
+					//normal2.cell[0] *z,
+					//normal2.cell[1] *z,
+					//normal2.cell[2] *z
 				);
 				//dd_log("impulse: %f - %f - %f", impulse.x, impulse.y, impulse.z);
 

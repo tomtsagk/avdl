@@ -20,6 +20,7 @@ struct avdl_rigidbody {
 	// rotation
 	struct dd_matrix rotation;
 	struct dd_matrix angularVelocity;
+	struct dd_vec3 angularVelocityVec3;
 
 	float mass;
 	float mass_inv;

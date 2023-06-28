@@ -34,6 +34,9 @@ float dd_vec4_dot(struct dd_vec4 *a, struct dd_vec4 *b);
 
 void dd_vec4_print(struct dd_vec4 *);
 
+void dd_vec4_normalise(struct dd_vec4 *o);
+float dd_vec4_magnitude(struct dd_vec4 *o);
+
 #ifdef __cplusplus
 }
 #endif
