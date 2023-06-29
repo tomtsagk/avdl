@@ -91,6 +91,9 @@ float avdl_rigidbody_getPositionZ(struct avdl_rigidbody *o) {
 
 void avdl_rigidbody_reset(struct avdl_rigidbody *o) {
 	dd_vec3_setf(&o->velocity, 0, 0, 0);
+	dd_vec3_setf(&o->angularVelocityVec3, 0, 0, 0);
+	dd_matrix_identity(&o->rotation);
+	dd_matrix_identity(&o->angularVelocity);
 }
 
 int avdl_rigidbody_hasJustCollided(struct avdl_rigidbody *o) {
