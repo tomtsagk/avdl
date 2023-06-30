@@ -1691,7 +1691,6 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 			"\n\t\tMobileAds.initialize(this, new OnInitializationCompleteListener() {\n"
 			"\t\t	@Override\n"
 			"\t\t	public void onInitializationComplete(InitializationStatus initializationStatus) {\n"
-			"\t\t		Log.w(\"avdl\", \"google ads init complete\");\n"
 			"\t\t	}\n"
 			"\t\t});\n"
 		);
