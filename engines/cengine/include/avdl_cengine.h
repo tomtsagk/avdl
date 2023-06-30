@@ -46,6 +46,7 @@ extern "C" {
 #include "avdl_engine.h"
 #include "avdl_whereami.h"
 #include "avdl_webapi.h"
+#include "avdl_ads.h"
 
 int dd_main(int argc, char *argv[]);
 

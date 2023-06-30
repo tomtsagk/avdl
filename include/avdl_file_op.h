@@ -9,7 +9,7 @@ int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 	const char *findString, const char *replaceString);
 int file_remove(const char *filename);
 
-int file_write(const char *filename, const char *content);
+int file_write(const char *filename, const char *content, int append);
 
 int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst);
 int dir_create(const char *filename);

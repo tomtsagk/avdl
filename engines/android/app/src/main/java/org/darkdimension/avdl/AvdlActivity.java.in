@@ -27,6 +27,8 @@ import android.net.Uri;
 
 import android.content.res.AssetManager;
 
+%AVDL_ADS_IMPORT%
+
 /*
  * The only activity that starts a window and
  * takes cares of events
@@ -47,6 +49,8 @@ public class AvdlActivity extends Activity {
 
 	private AssetManager assetManager;
 
+	%AVDL_ADS_DECLARATIONS%
+
 	/*
 	 * create the surface view
 	 */
@@ -61,6 +65,8 @@ public class AvdlActivity extends Activity {
 
 		surfaceView = new AvdlGLSurfaceView(this);
 		setContentView(surfaceView);
+
+		%AVDL_ADS_INIT%
 	}
 
 	@Override
@@ -209,6 +215,8 @@ public class AvdlActivity extends Activity {
 	static void CloseApplication() {
 		AvdlActivity.activity.finish();
 	}
+
+	%AVDL_ADS_FUNCTIONS%
 
 	private static native void nativeSetAssetManager(AssetManager assetManager);
 	private static native void nativeKeyDown(int key);

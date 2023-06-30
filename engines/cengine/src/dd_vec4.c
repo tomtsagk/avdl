@@ -1,5 +1,6 @@
 #include "dd_vec4.h"
 #include "dd_math.h"
+#include "dd_log.h"
 
 void dd_vec4_create(struct dd_vec4 *o) {
 	o->cell[0] = 0;

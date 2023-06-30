@@ -577,7 +577,7 @@ int Avdl_FileOp_IsFileOlderThan(const char *source, const char *target) {
 	#endif
 }
 
-int file_write(const char *filename, const char *content) {
+int file_write(const char *filename, const char *content, int append) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	FILE *f = fopen(filename, "w");
 	if (f == NULL)
@@ -593,6 +593,9 @@ int file_write(const char *filename, const char *content) {
 	return 0;
 	#else
 	int flags = O_WRONLY | O_CREAT;
+	if (append) {
+		flags |= O_APPEND;
+	}
 	int d;
 	d = open(filename, flags, S_IRUSR | S_IWUSR);
 	if (!d) {

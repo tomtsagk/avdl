@@ -20,6 +20,8 @@ add_library(avdl SHARED
 	%AVDL_GAME_FILES%
 )
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} %AVDL_C_FLAGS%")
+
 target_link_libraries(
 	avdl
 	android

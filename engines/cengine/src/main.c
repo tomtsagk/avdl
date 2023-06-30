@@ -33,10 +33,14 @@ pthread_mutex_t updateDrawMutex;
 
 	#include <jni.h>
 	jclass *clazz;
+	jclass mainActivityp;
 
 	jmethodID BitmapMethodId;
 	jmethodID PlayAudioMethodId;
 	jmethodID StopAudioMethodId;
+
+	jmethodID loadFullscreenAdMethodId;
+	jmethodID showFullscreenAdMethodId;
 
 	// Reconstruct engine to use one JNIEnv per world
 	JNIEnv *jniEnv;
@@ -311,13 +315,17 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 	pthread_mutex_lock(&jniMutex);
 	// Global variables to access Java virtual machine and environment
 	(*env)->GetJavaVM(env, &jvm);
-	(*jvm)->GetEnv(jvm, &jniEnv, JNI_VERSION_1_4);
+	(*jvm)->GetEnv(jvm, &jniEnv, JNI_VERSION_1_6);
 	jclass classLocal = (*(*jniEnv)->FindClass)(jniEnv, "org/darkdimension/avdl/AvdlActivity");
 	clazz = (*jniEnv)->NewGlobalRef(jniEnv, classLocal);
+	mainActivityp = (*jniEnv)->NewGlobalRef(jniEnv, mainActivity);
 
 	BitmapMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "ReadBitmap", "(Ljava/lang/String;)[Ljava/lang/Object;");
 	PlayAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "PlayAudio", "(Ljava/lang/String;II)I");
 	StopAudioMethodId = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "StopAudio", "(I)V");
+
+	loadFullscreenAdMethodId = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "loadFullscreenAd", "(I)V");
+	showFullscreenAdMethodId = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "showFullscreenAd", "(I)V");
 
 	// grab internal save path, for save/load functionality
 	jmethodID getFilesDir = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "getFilesDir", "()Ljava/io/File;");

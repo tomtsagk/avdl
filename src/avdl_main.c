@@ -96,6 +96,7 @@ char *cengine_files[] = {
 	"avdl_time.c",
 	"avdl_webapi.c",
 	"avdl_webapi_cpp.cpp",
+	"avdl_ads.c",
 };
 unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 
@@ -142,6 +143,7 @@ char *cengine_headers[] = {
 	"avdl_engine.h",
 	"avdl_time.h",
 	"avdl_webapi.h",
+	"avdl_ads.h",
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 
@@ -311,7 +313,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 			return -1;
 		}
 
-		file_write("avdl_project.cmake", avdl_string_toCharPtr(&cmake_data));
+		file_write("avdl_project.cmake", avdl_string_toCharPtr(&cmake_data), 0);
 		file_copy(avdl_string_toCharPtr(&path), "CMakeLists.txt", 0);
 		/*
 		file_copy(avdl_string_toCharPtr(&path), ".cmake", 0);
@@ -1513,7 +1515,26 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	}
 
 	// add in the avdl-compiled source files
-	file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt", "%AVDL_GAME_FILES%", big_buffer);
+	file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt.in2", "%AVDL_GAME_FILES%", big_buffer);
+
+	// add C flags
+	{
+		struct avdl_string cflags;
+		avdl_string_create(&cflags, 1024);
+
+		// admob ads
+		if (avdl_settings->admob_ads) {
+			avdl_string_cat(&cflags, " -DAVDL_ADMOB ");
+		}
+
+		if (!avdl_string_isValid(&cflags)) {
+			avdl_log_error("unable to construct cflags for android: %s", avdl_string_getError(&cflags));
+			avdl_string_clean(&cflags);
+			return -1;
+		}
+		file_replace(outDir, "CMakeLists.txt.in2", outDir, "CMakeLists.txt", "%AVDL_C_FLAGS%", avdl_string_toCharPtr(&cflags));
+	}
+
 	close(outDir);
 
 	avdl_string_clean(&cppFilePath);
@@ -1522,12 +1543,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	strcpy(buffer, "avdl_build_android/");
 	strcat(buffer, "/app/");
 	outDir = open(buffer, O_DIRECTORY);
-	if (avdl_settings->googleplay_mode) {
-		file_replace(outDir, "build.gradle.in.googleplay", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
-	}
-	else {
-		file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
-	}
+	file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
 	file_replace(outDir, "build.gradle.in2", outDir, "build.gradle.in3", "%AVDL_VERSION_CODE%", avdl_settings->version_code_str);
 	file_replace(outDir, "build.gradle.in3", outDir, "build.gradle", "%AVDL_VERSION_NAME%", avdl_settings->version_name);
 	file_remove("avdl_build_android/app/build.gradle.in");
@@ -1535,6 +1551,19 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	file_remove("avdl_build_android/app/build.gradle.in3");
 	file_remove("avdl_build_android/app/build.gradle.in.googleplay");
 	close(outDir);
+
+	// add dependencies if needed
+	if (avdl_settings->googleplay_mode || avdl_settings->admob_ads) {
+		file_write("avdl_build_android/app/build.gradle", "\ndependencies {\n", 1);
+		if (avdl_settings->googleplay_mode) {
+			file_write("avdl_build_android/app/build.gradle", "\timplementation 'com.google.android.gms:play-services-games-v2:17.0.0'\n", 1);
+		}
+
+		if (avdl_settings->admob_ads) {
+			file_write("avdl_build_android/app/build.gradle", "\timplementation 'com.google.android.gms:play-services-ads:22.1.0'\n", 1);
+		}
+		file_write("avdl_build_android/app/build.gradle", "}\n", 1);
+	}
 
 	strcpy(buffer, "avdl_build_android/");
 	strcat(buffer, "/app/src/main/res/drawable/");
@@ -1571,7 +1600,23 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 			avdl_string_cat(&values_file, avdl_settings->googleplay_achievement[i].id);
 			avdl_string_cat(&values_file, "</string>\n");
 		}
+
 	}
+
+	// admob project id
+	if (avdl_settings->admob_ads) {
+		avdl_string_cat(&values_file, "	<string translatable=\"false\" name=\"game_services_ad_project_id\">");
+		avdl_string_cat(&values_file, avdl_settings->admob_ads_id);
+		avdl_string_cat(&values_file, "</string>\n");
+
+		// fullscreen ad id
+		if (avdl_settings->admob_ads_fullscreen) {
+			avdl_string_cat(&values_file, "	<string translatable=\"false\" name=\"game_services_fullscreen_ad_id\">");
+			avdl_string_cat(&values_file, avdl_settings->admob_ads_fullscreen_id);
+			avdl_string_cat(&values_file, "</string>\n");
+		}
+	}
+
 	avdl_string_cat(&values_file, "</resources>\n");
 	if (!avdl_string_isValid(&values_file)) {
 		avdl_log_error("could not construct `strings.xml`");
@@ -1580,33 +1625,239 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	if (!is_dir("avdl_build_android/app/src/main/res/values/")) {
 		dir_create("avdl_build_android/app/src/main/res/values/");
 	}
-	file_write("avdl_build_android/app/src/main/res/values/strings.xml", avdl_string_toCharPtr(&values_file));
+	file_write("avdl_build_android/app/src/main/res/values/strings.xml", avdl_string_toCharPtr(&values_file), 0);
+
+	// collect metadata and permissions
+	struct avdl_string metadata;
+	avdl_string_create(&metadata, 1024);
+
+	struct avdl_string permissions;
+	avdl_string_create(&permissions, 1024);
+
+	struct avdl_string ads_imports;
+	avdl_string_create(&ads_imports, 1024);
+
+	struct avdl_string ads_declarations;
+	avdl_string_create(&ads_declarations, 1024);
+
+	struct avdl_string ads_init;
+	avdl_string_create(&ads_init, 1024);
+
+	struct avdl_string ads_functions;
+	avdl_string_create(&ads_functions, 2048);
 
 	// modify Android Manifest based on google play mode or not
 	if (avdl_settings->googleplay_mode) {
-		file_copy(
-			"avdl_build_android/app/src/main/AndroidManifest.xml.in.googleplay",
-			"avdl_build_android/app/src/main/AndroidManifest.xml",
-			0
+		avdl_string_cat(&metadata,
+			"\n\t\t<!-- Google Play Services -->\n"
+			"\t\t<meta-data android:name=\"com.google.android.gms.games.APP_ID\"\n"
+			"\t\t	android:value=\"@string/game_services_project_id\"\n"
+			"\t\t/>\n"
 		);
-		file_copy(
-			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in.googleplay",
-			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java",
-			0
+	}
+
+	if (avdl_settings->admob_ads) {
+		avdl_string_cat(&metadata,
+			"\n\t\t<!-- Admob Ads -->\n"
+			"\t\t<meta-data\n"
+			"\t\t	android:name=\"com.google.android.gms.ads.APPLICATION_ID\"\n"
+			"\t\t	android:value=\"@string/game_services_ad_project_id\"\n"
+			"\t\t/>\n"
+		);
+
+		avdl_string_cat(&permissions,
+			"\n\t<!-- Admob Ads -->\n"
+			"\t<uses-permission android:name=\"com.google.android.gms.permission.AD_ID\"/>\n"
+		);
+
+		avdl_string_cat(&ads_imports,
+			"// ads\n"
+			"import com.google.android.gms.ads.MobileAds;\n"
+			"import com.google.android.gms.ads.initialization.InitializationStatus;\n"
+			"import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;\n"
+			"import com.google.android.gms.ads.interstitial.InterstitialAd;\n"
+			"import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;\n"
+			"import com.google.android.gms.ads.AdRequest;\n"
+			"import com.google.android.gms.ads.LoadAdError;\n"
+			"import com.google.android.gms.ads.FullScreenContentCallback;\n"
+			"import com.google.android.gms.ads.AdError;\n"
+		);
+
+		avdl_string_cat(&ads_declarations,
+			"\n\tpublic static InterstitialAd mInterstitialAd;\n"
+		);
+
+		avdl_string_cat(&ads_init,
+			"\n\t\tMobileAds.initialize(this, new OnInitializationCompleteListener() {\n"
+			"\t\t	@Override\n"
+			"\t\t	public void onInitializationComplete(InitializationStatus initializationStatus) {\n"
+			"\t\t		Log.w(\"avdl\", \"google ads init complete\");\n"
+			"\t\t	}\n"
+			"\t\t});\n"
+		);
+
+		avdl_string_cat(&ads_functions,
+			"public void loadFullscreenAd(int X) {\n"
+			"	// ad already loaded - skip\n"
+			"	if ( mInterstitialAd != null ) {\n"
+			"		return;\n"
+			"	}\n"
+			"	runOnUiThread(() -> {\n"
+			"		AdRequest adRequest = new AdRequest.Builder().build();\n"
+			"		InterstitialAd.load(AvdlActivity.activity, getString(R.string.game_services_fullscreen_ad_id), adRequest,\n"
+			"			new InterstitialAdLoadCallback() {\n"
+			"				@Override\n"
+			"				public void onAdLoaded(InterstitialAd interstitialAd) {\n"
+			"					AvdlActivity.mInterstitialAd = interstitialAd;\n"
+			"				}\n"
+			"				@Override\n"
+			"				public void onAdFailedToLoad(LoadAdError loadAdError) {\n"
+			"					AvdlActivity.mInterstitialAd = null;\n"
+			"				}\n"
+			"			}\n"
+			"		);\n"
+			"	});\n"
+			"}\n"
+			"public void showFullscreenAd(int X) {\n"
+			"	// no ad loaded to show\n"
+			"	if (AvdlActivity.mInterstitialAd == null) {\n"
+			"		return;\n"
+			"	}\n"
+			"	runOnUiThread(() -> {\n"
+			"		if (AvdlActivity.mInterstitialAd != null) {\n"
+			"			AvdlActivity.mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {\n"
+			"				// ad clicked\n"
+			"				@Override\n"
+			"				public void onAdClicked() {\n"
+			"				}\n"
+			"				// ad dismissed\n"
+			"				@Override\n"
+			"				public void onAdDismissedFullScreenContent() {\n"
+			"					AvdlActivity.mInterstitialAd = null;\n"
+			"				}\n"
+			"				// failed\n"
+			"				@Override\n"
+			"				public void onAdFailedToShowFullScreenContent(AdError adError) {\n"
+			"					AvdlActivity.mInterstitialAd = null;\n"
+			"				}\n"
+			"				// impression\n"
+			"				@Override\n"
+			"				public void onAdImpression() {\n"
+			"				}\n"
+			"				// success\n"
+			"				@Override\n"
+			"				public void onAdShowedFullScreenContent() {\n"
+			"				}\n"
+			"			});\n"
+			"			AvdlActivity.mInterstitialAd.show(AvdlActivity.activity);\n"
+			"		} else {\n"
+			"			// ad is not loaded\n"
+			"		}\n"
+			"	});\n"
+			"}\n"
 		);
 	}
 	else {
-		file_copy(
-			"avdl_build_android/app/src/main/AndroidManifest.xml.in",
-			"avdl_build_android/app/src/main/AndroidManifest.xml",
-			0
-		);
-		file_copy(
-			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in",
-			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java",
-			0
+		avdl_string_cat(&ads_functions,
+			"public void loadFullscreenAd(int X) {\n"
+			"}\n"
+			"public void showFullscreenAd(int X) {\n"
+			"}\n"
 		);
 	}
+
+	if ( !avdl_string_isValid(&metadata) ) {
+		avdl_log_error("cannot construct android manifest metadata: %s", avdl_string_getError(&metadata));
+		avdl_string_clean(&metadata);
+		return -1;
+	}
+
+	if ( !avdl_string_isValid(&permissions) ) {
+		avdl_log_error("cannot construct android manifest permissions: %s", avdl_string_getError(&permissions));
+		avdl_string_clean(&permissions);
+		return -1;
+	}
+
+	if ( !avdl_string_isValid(&ads_imports) ) {
+		avdl_log_error("cannot construct admob imports: %s", avdl_string_getError(&ads_imports));
+		avdl_string_clean(&permissions);
+		return -1;
+	}
+
+	if ( !avdl_string_isValid(&ads_declarations) ) {
+		avdl_log_error("cannot construct admob declarations: %s", avdl_string_getError(&ads_declarations));
+		avdl_string_clean(&permissions);
+		return -1;
+	}
+
+	if ( !avdl_string_isValid(&ads_init) ) {
+		avdl_log_error("cannot construct admob init: %s", avdl_string_getError(&ads_init));
+		avdl_string_clean(&permissions);
+		return -1;
+	}
+
+	if ( !avdl_string_isValid(&ads_functions) ) {
+		avdl_log_error("cannot construct admob functions: %s", avdl_string_getError(&ads_functions));
+		avdl_string_clean(&permissions);
+		return -1;
+	}
+
+	if (avdl_settings->googleplay_mode) {
+		file_replace(0,
+			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in.googleplay", 0,
+			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2",
+			"%AVDL_ADS_IMPORT%",
+			avdl_string_toCharPtr(&ads_imports)
+		);
+	}
+	else {
+		file_replace(0,
+			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in", 0,
+			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2",
+			"%AVDL_ADS_IMPORT%",
+			avdl_string_toCharPtr(&ads_imports)
+		);
+	}
+	file_replace(0,
+		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2", 0,
+		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in3",
+		"%AVDL_ADS_DECLARATIONS%",
+		avdl_string_toCharPtr(&ads_declarations)
+	);
+	file_replace(0,
+		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in3", 0,
+		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in4",
+		"%AVDL_ADS_INIT%",
+		avdl_string_toCharPtr(&ads_init)
+	);
+	file_replace(0,
+		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in4", 0,
+		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java",
+		"%AVDL_ADS_FUNCTIONS%",
+		avdl_string_toCharPtr(&ads_functions)
+	);
+
+	file_replace(0,
+		"avdl_build_android/app/src/main/AndroidManifest.xml.in", 0,
+		"avdl_build_android/app/src/main/AndroidManifest.xml.in2",
+		"%AVDL_METADATA%",
+		avdl_string_toCharPtr(&metadata)
+	);
+
+	file_replace(0,
+		"avdl_build_android/app/src/main/AndroidManifest.xml.in2", 0,
+		"avdl_build_android/app/src/main/AndroidManifest.xml",
+		"%AVDL_PERMISSIONS%",
+		avdl_string_toCharPtr(&permissions)
+	);
+
+	file_remove(
+		"avdl_build_android/app/src/main/AndroidManifest.xml.in2"
+	);
+	file_remove(
+		"avdl_build_android/app/src/main/AndroidManifest.xml.in"
+	);
+
 	#endif
 	return 0;
 }
@@ -1642,22 +1893,28 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 		return -1;
 	}
 
-	// add in the avdl-compiled source files
-	if (avdl_settings->oculus_mode) {
-		file_replace(outDir, "Android.mk.in", outDir, "Android.mk.in2", "%AVDL_OCULUS_FLAG%", "-DAVDL_OCULUS");
-		// prepare oculus project id string
-		struct avdl_string oculusProjectIdStr;
-		avdl_string_create(&oculusProjectIdStr, 1024);
-		avdl_string_cat(&oculusProjectIdStr, "-DAVDL_OCULUS_PROJECT_ID=\\\"");
-		avdl_string_cat(&oculusProjectIdStr, avdl_settings->oculus_project_id);
-		avdl_string_cat(&oculusProjectIdStr, "\\\"");
-		file_replace(outDir, "Android.mk.in2", outDir, "Android.mk.in3", "%AVDL_OCULUS_PROJECT_ID%", avdl_string_toCharPtr(&oculusProjectIdStr));
+	// add C flags
+	{
+		struct avdl_string cflags;
+		avdl_string_create(&cflags, 1024);
+
+		// oculus mode
+		if (avdl_settings->oculus_mode) {
+			avdl_string_cat(&cflags, " -DAVDL_OCULUS ");
+			avdl_string_cat(&cflags, " -DAVDL_OCULUS_PROJECT_ID=\\\"");
+			avdl_string_cat(&cflags, avdl_settings->oculus_project_id);
+			avdl_string_cat(&cflags, "\\\" ");
+		}
+
+		if (!avdl_string_isValid(&cflags)) {
+			avdl_log_error("unable to construct cflags for android: %s", avdl_string_getError(&cflags));
+			avdl_string_clean(&cflags);
+			return -1;
+		}
+		file_replace(outDir, "Android.mk.in", outDir, "Android.mk.in2", "%AVDL_CFLAGS%", avdl_string_toCharPtr(&cflags));
 	}
-	else {
-		file_replace(outDir, "Android.mk.in", outDir, "Android.mk.in2", "%AVDL_OCULUS_FLAG%", "");
-		file_replace(outDir, "Android.mk.in2", outDir, "Android.mk.in3", "%AVDL_OCULUS_PROJECT_ID%", "");
-	}
-	file_replace(outDir, "Android.mk.in3", outDir, "Android.mk", "%AVDL_GAME_FILES%", big_buffer);
+
+	file_replace(outDir, "Android.mk.in2", outDir, "Android.mk", "%AVDL_GAME_FILES%", big_buffer);
 	close(outDir);
 
 	avdl_string_clean(&cppFilePath);

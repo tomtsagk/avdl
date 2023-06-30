@@ -131,10 +131,17 @@ struct AvdlSettings {
 	// what platform to compile for
 	enum AVDL_PLATFORM target_platform;
 
+	// google play
 	int googleplay_mode;
 	char googleplay_id[100];
 	struct avdl_google_play_achievement googleplay_achievement[AVDL_GOOGLE_PLAY_ACHIEVEMENTS_MAX];
 	int googleplay_achievement_count;
+
+	// admob ads
+	int admob_ads;
+	char admob_ads_id[100];
+	int admob_ads_fullscreen;
+	char admob_ads_fullscreen_id[100];
 
 	int oculus_mode;
 	char oculus_project_id[100];

@@ -96,6 +96,42 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 					i += 2;
 				}
 				else
+				// admob ads
+				if (strcmp(argv[i], "--admob-ads") == 0) {
+					if (argc > i+1) {
+						if (strlen(argv[i+1]) > 99) {
+							avdl_log_error("admob ads id too long");
+							return -1;
+						}
+						avdl_settings->admob_ads = 1;
+						strcpy(avdl_settings->admob_ads_id, argv[i+1]);
+						avdl_settings->admob_ads_id[99] = '\0';
+						i++;
+					}
+					else {
+						avdl_log_error(BLU "%s" RESET " expects an admob ads id", argv[i]);
+						return -1;
+					}
+				}
+				else
+				// admob ads - fullscreen
+				if (strcmp(argv[i], "--admob-ads-fullscreen") == 0) {
+					if (argc > i+1) {
+						if (strlen(argv[i+1]) > 99) {
+							avdl_log_error("admob ads fullscreen id too long");
+							return -1;
+						}
+						avdl_settings->admob_ads_fullscreen = 1;
+						strcpy(avdl_settings->admob_ads_fullscreen_id, argv[i+1]);
+						avdl_settings->admob_ads_fullscreen_id[99] = '\0';
+						i++;
+					}
+					else {
+						avdl_log_error(BLU "%s" RESET " expects an admob ads fullscreen id", argv[i]);
+						return -1;
+					}
+				}
+				else
 				// compiling for quest 2
 				if (strcmp(argv[i], "--quest2") == 0) {
 					avdl_settings->target_platform = AVDL_PLATFORM_QUEST2;

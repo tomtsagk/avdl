@@ -1,5 +1,6 @@
 #include "dd_vec3.h"
 #include "dd_math.h"
+#include "dd_log.h"
 
 void dd_vec3_create(struct dd_vec3 *o) {
 	o->x = 0;

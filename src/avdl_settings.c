@@ -93,11 +93,18 @@ int AvdlSettings_Create(struct AvdlSettings *o) {
 	o->target_platform = AVDL_PLATFORM_UNKNOWN;
 	#endif
 
+	// google play
 	o->googleplay_id[0] = '\0';
 	o->googleplay_mode = 0;
 
 	// google play achievements
 	o->googleplay_achievement_count = 0;
+
+	// admob ads
+	o->admob_ads = 0;
+	o->admob_ads_id[0] = '\0';
+	o->admob_ads_fullscreen = 0;
+	o->admob_ads_fullscreen_id[0] = '\0';
 
 	o->oculus_mode = 0;
 	o->oculus_project_id[0] = '\0';
