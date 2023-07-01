@@ -275,32 +275,12 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				float z = -(1 +e) *velAlongNormal;
 				z /= o->object[i]->mass_inv +o->object[j]->mass_inv;
 
-				// rotational impulse
-				struct dd_vec4 normal2;
-				dd_vec4_set(&normal2,
-					m.normal.x,
-					m.normal.y,
-					m.normal.z,
-					0
-				);
-				dd_vec4_multiply(&normal2, &o->object[j]->angularVelocity);
-//				dd_log("normals:");
-//				dd_matrix_print(&o->object[i]->angularVelocity);
-//				dd_vec3_print(&m.normal);
-//				dd_vec4_print(&normal2);
-
 				// calculate impulse
 				struct dd_vec3 impulse;
 				dd_vec3_setf(&impulse,
 					m.normal.x *z -(o->object[j]->angularVelocityVec3.z -o->object[i]->angularVelocityVec3.z) *0.005,
 					m.normal.y *z +(o->object[j]->angularVelocityVec3.y -o->object[i]->angularVelocityVec3.y) *0.005,
 					m.normal.z *z +(o->object[j]->angularVelocityVec3.x -o->object[i]->angularVelocityVec3.x) *0.005
-					//m.normal.x *z -normal2.cell[0] *0.01,
-					//m.normal.y *z +0,//normal2.cell[1] *0.1,
-					//m.normal.z *z -normal2.cell[2] *0.01
-					//normal2.cell[0] *z,
-					//normal2.cell[1] *z,
-					//normal2.cell[2] *z
 				);
 				float jrotx = o->object[j]->angularVelocityVec3.x * 0.1;
 				float jroty = o->object[j]->angularVelocityVec3.y * 0.1;
