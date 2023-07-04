@@ -150,11 +150,18 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 	 *		Add terminating byte.
 	 *		Compare with "ply".
 	 */
-	if ( sscanf(p, "%3c", buff) == EOF)
-		goto error;
-	p += strlen(buff);
+	int w = 0;
+	while (p[w] != '\0' && w < 3) {
+		w++;
+	}
+	if (w < 3) {
+		dd_log("error magic");
+		return -1;
+	}
+	strncpy(buff, p, 3);
 
 	buff[3] = '\0';
+	p += 3;
 	if ( strcmp(buff, "ply") != 0) goto error;
 
 	//Check format (let's skip it for now, assume "ascii 1.0")
@@ -169,8 +176,10 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 
 	buff[0] = '\0';
 	buff[1023] = '\0';
-	if (sscanf(p, "%100[ \t\n]", buff2) > 0) {
-		p += strlen(buff2);
+
+	// skip whitespace
+	while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
+		p++;
 	}
 
 	/*
@@ -180,10 +189,19 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 	*/
 
 	//Read words until end of file or end of header
-	while ( sscanf(p, "%1022[^ \t\n]", buff) != EOF
-		&& strcmp(buff, "end_header") != 0 )
+	while (1)
 	{
-		p += strlen(buff);
+		// grab lex
+		char *p2 = p;
+		while (p2[0] != ' ' && p2[0] != '\t' && p2[0] != '\n' && p2[0] != '\0') {
+			p2++;
+		}
+		strncpy(buff, p, p2 -p);
+		buff[p2-p] = '\0';
+		p = p2;
+		if (strcmp(buff, "end_header") == 0) {
+			break;
+		}
 
 		// skip whitespace
 		while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
@@ -192,10 +210,10 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 
 		// Found comment - Skip line
 		if ( strcmp(buff, "comment") == 0 ) {
-			if ( sscanf(p, "%1022[^\n]%*1c", buff) == EOF) {
-				goto error;
+			while (p[0] != '\n') {
+				p++;
 			}
-			p += strlen(buff) +1;
+			p++;
 		}
 		else
 		// Found an element
@@ -204,11 +222,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 			elements[elementCurrent].propertyCurrent = -1;
 
 			//Get next word
-			buff[1023] = '\0';
-			if ( sscanf(p, "%1022[^ \t\n]", buff) == EOF ) {
-				goto error;
+			p2 = p;
+			while (p2[0] != ' ' && p2[0] != '\t' && p2[0] != '\n' && p2[0] != '\0') {
+				p2++;
 			}
-			p += strlen(buff);
+			strncpy(buff, p, p2 -p);
+			buff[p2-p] = '\0';
+			p = p2;
 
 			strncpy(elements[elementCurrent].name, buff, 99);
 			elements[elementCurrent].name[99] = '\0';
@@ -220,11 +240,14 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 
 			//Found vertices - save number of vertices
 			if ( strcmp(buff, "vertex") == 0 ) {
-				if ( sscanf(p, "%1022[0-9]", buff) == EOF ) {
-					goto error;
+				p2 = p;
+				while (p2[0] >= '0' && p2[0] <= '9' && p2[0] != '\0') {
+					p2++;
 				}
+				strncpy(buff, p, p2 -p);
+				buff[p2-p] = '\0';
+				p = p2;
 				vertices = atoi(buff);
-				p += strlen(buff);
 				elements[elementCurrent].amount = vertices;
 				v_pos_index = malloc(sizeof(struct dd_vec3) *vertices);
 				v_col_index = malloc(sizeof(struct dd_vec3) *vertices);
@@ -241,10 +264,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 			else
 			//Found faces - save number of faces
 			if ( strcmp(buff, "face") == 0 ) {
-				if ( sscanf(p, "%1022[0-9]", buff) == EOF ) {
-					goto error;
+				p2 = p;
+				while (p2[0] >= '0' && p2[0] <= '9' && p2[0] != '\0') {
+					p2++;
 				}
-				p += strlen(buff);
+				strncpy(buff, p, p2 -p);
+				buff[p2-p] = '\0';
+				p = p2;
 				faces = atoi(buff);
 				elements[elementCurrent].amount = faces;
 				v_pos_face2 = malloc(sizeof(unsigned int) *faces *MAX_FACE_VERTICES);
@@ -264,11 +290,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 			struct ply_property *property = &element->p[element->propertyCurrent];
 
 			// Get format/list
-			buff[1023] = '\0';
-			if ( sscanf(p, "%1022[^ \t\n]", buff) == EOF ) {
-				goto error;
+			p2 = p;
+			while (p2[0] != ' ' && p2[0] != '\t' && p2[0] != '\n' && p2[0] != '\0') {
+				p2++;
 			}
-			p += strlen(buff);
+			strncpy(buff, p, p2 -p);
+			buff[p2-p] = '\0';
+			p = p2;
 
 			// skip whitespace
 			while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
@@ -278,11 +306,14 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 			// if list, get list's format
 			property->list_format = PLY_FORMAT_NONE;
 			if (strcmp(buff, "list") == 0) {
-				buff[1023] = '\0';
-				if ( sscanf(p, "%1022[^ \t\n]", buff) == EOF ) {
-					goto error;
+
+				p2 = p;
+				while (p2[0] != ' ' && p2[0] != '\t' && p2[0] != '\n' && p2[0] != '\0') {
+					p2++;
 				}
-				p += strlen(buff);
+				strncpy(buff, p, p2 -p);
+				buff[p2-p] = '\0';
+				p = p2;
 
 				// skip whitespace
 				while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
@@ -297,11 +328,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 				}
 
 				// next word is format
-				buff[1023] = '\0';
-				if ( sscanf(p, "%1022[^ \t\n]", buff) == EOF ) {
-					goto error;
+				p2 = p;
+				while (p2[0] != ' ' && p2[0] != '\t' && p2[0] != '\n' && p2[0] != '\0') {
+					p2++;
 				}
-				p += strlen(buff);
+				strncpy(buff, p, p2 -p);
+				buff[p2-p] = '\0';
+				p = p2;
 
 				// skip whitespace
 				while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
@@ -320,11 +353,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 			}
 
 			// Get property name
-			buff[1023] = '\0';
-			if ( sscanf(p, "%1022[^ \t\n]", buff) == EOF ) {
-				goto error;
+			p2 = p;
+			while (p2[0] != ' ' && p2[0] != '\t' && p2[0] != '\n' && p2[0] != '\0') {
+				p2++;
 			}
-			p += strlen(buff) +1;
+			strncpy(buff, p, p2 -p);
+			buff[p2-p] = '\0';
+			p = p2;
 
 			strncpy(property->name, buff, 99);
 			property->name[99] = '\0';
@@ -381,7 +416,6 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 			}
 		}
 	}
-	p += strlen(buff);
 
 	// skip whitespace
 	while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
@@ -627,11 +661,21 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 						while (p[0] == ' ' || p[0] == '\t' || p[0] == '\n') {
 							p++;
 						}
+						/*
 						strcpy(buff, "%");
 						strcat(buff, "1022");
 						strcat(buff, format_description[property->format].parseSymbol);
 						sscanf(p, buff, buff2);
 						p += strlen(buff2);
+
+						p2 = p;
+						while (p2[0] != ' ' && p2[0] != '\t' && p2[0] != '\n' && p2[0] != '\0') {
+							p2++;
+						}
+						strncpy(buff, p, p2 -p);
+						buff[p2-p] = '\0';
+						p = p2;
+						*/
 					}
 				}
 			}
@@ -772,7 +816,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 //		dd_log("load_ply: unexpected error on %s", path);
 //	}
 	//fclose(f);
-	AAsset_close(asset);
+	AAsset_close(f);
 	return -1;
 
 }
@@ -830,7 +874,7 @@ int my_min(num1, num2) {
 int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	#if defined(AVDL_DIRECT3D11)
-	return 0;
+	return -1;
 	#elif defined(_WIN32) || defined(WIN32)
 
 	//Open file and check error

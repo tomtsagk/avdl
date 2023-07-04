@@ -236,10 +236,14 @@ void avdl_assetManager_loadAssets() {
 				struct dd_mesh *mesh = m->object;
 				dd_mesh_clean(mesh);
 				struct dd_loaded_mesh lm;
-				dd_filetomesh(&lm, m->filename, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY);
-				mesh->vcount = lm.vcount;
-				mesh->v = lm.v;
-				mesh->dirtyVertices = 1;
+				if (dd_filetomesh(&lm, m->filename, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY) == -1) {
+					// error
+				}
+				else {
+					mesh->vcount = lm.vcount;
+					mesh->v = lm.v;
+					mesh->dirtyVertices = 1;
+				}
 			}
 			else
 			// mesh colour
@@ -247,13 +251,17 @@ void avdl_assetManager_loadAssets() {
 				struct dd_meshColour *mesh = m->object;
 				dd_meshColour_clean(mesh);
 				struct dd_loaded_mesh lm;
-				dd_filetomesh(&lm, m->filename,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY);
-				mesh->parent.vcount = lm.vcount;
-				mesh->parent.v = lm.v;
-				mesh->parent.dirtyVertices = 1;
-				mesh->c = lm.c;
-				mesh->dirtyColours = 1;
+				if (dd_filetomesh(&lm, m->filename,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY) == -1) {
+					// error loading file
+				}
+				else {
+					mesh->parent.vcount = lm.vcount;
+					mesh->parent.v = lm.v;
+					mesh->parent.dirtyVertices = 1;
+					mesh->c = lm.c;
+					mesh->dirtyColours = 1;
+				}
 			}
 			else
 			// mesh texture
@@ -261,16 +269,20 @@ void avdl_assetManager_loadAssets() {
 				struct dd_meshTexture *mesh = m->object;
 				dd_meshTexture_clean(mesh);
 				struct dd_loaded_mesh lm;
-				dd_filetomesh(&lm, m->filename,
+				if (dd_filetomesh(&lm, m->filename,
 					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
-					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY);
-				mesh->parent.parent.vcount = lm.vcount;
-				mesh->parent.parent.v = lm.v;
-				mesh->parent.parent.dirtyVertices = 1;
-				mesh->parent.c = lm.c;
-				mesh->parent.dirtyColours = 1;
-				mesh->t = lm.t;
-				mesh->dirtyTextures = 1;
+					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY) == -1) {
+					// error
+				}
+				else {
+					mesh->parent.parent.vcount = lm.vcount;
+					mesh->parent.parent.v = lm.v;
+					mesh->parent.parent.dirtyVertices = 1;
+					mesh->parent.c = lm.c;
+					mesh->parent.dirtyColours = 1;
+					mesh->t = lm.t;
+					mesh->dirtyTextures = 1;
+				}
 			}
 		}
 
