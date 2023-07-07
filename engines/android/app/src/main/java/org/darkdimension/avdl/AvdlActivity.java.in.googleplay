@@ -262,7 +262,7 @@ public class AvdlActivity extends Activity {
 
 	static void StopAudio(int avdl_id) {
 		for (int i = 0; i < AUDIO_MAX; i++) {
-			if (mediaPlayerId[i] == avdl_id) {
+			if (mediaPlayerId[i] == avdl_id && mediaPlayer[i] != null) {
 				mediaPlayer[i].stop();
 				mediaPlayer[i].release();
 				mediaPlayer[i] = null;
