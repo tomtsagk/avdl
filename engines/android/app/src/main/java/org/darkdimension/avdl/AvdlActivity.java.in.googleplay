@@ -236,6 +236,10 @@ public class AvdlActivity extends Activity {
 		}
 
 		MediaPlayer mp = MediaPlayer.create(AvdlActivity.context, id);
+		if (mp == null) {
+			Log.w("avdl", "warning: could not load audio - skipping");
+			return -1;
+		}
 		if (loop == 1) {
 			mp.setLooping(true);
 		}

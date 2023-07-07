@@ -102,6 +102,10 @@ public class AvdlActivity extends android.app.NativeActivity {
 		}
 
 		MediaPlayer mp = MediaPlayer.create(AvdlActivity.context, id);
+		if (mp == null) {
+			Log.w("avdl", "warning: could not load audio - skipping");
+			return -1;
+		}
 		if (loop == 1) {
 			mp.setLooping(true);
 		}
@@ -128,7 +132,7 @@ public class AvdlActivity extends android.app.NativeActivity {
 
 	static void StopAudio(int avdl_id) {
 		for (int i = 0; i < AUDIO_MAX; i++) {
-			if (mediaPlayerId[i] == avdl_id) {
+			if (mediaPlayerId[i] == avdl_id && mediaPlayer[i] != null) {
 				mediaPlayer[i].stop();
 				mediaPlayer[i].release();
 				mediaPlayer[i] = null;
