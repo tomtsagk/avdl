@@ -1528,9 +1528,9 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 		}
 
 		// game version
-		avdl_string_cat(&cflags, " -DAVDL_GAME_VERSION=\"\\\"");
+		avdl_string_cat(&cflags, " -DAVDL_GAME_VERSION=\\\\\\\"");
 		avdl_string_cat(&cflags, avdl_settings->version_name);
-		avdl_string_cat(&cflags, "\\\"\" ");
+		avdl_string_cat(&cflags, "\\\\\\\" ");
 
 		if (!avdl_string_isValid(&cflags)) {
 			avdl_log_error("unable to construct cflags for android: %s", avdl_string_getError(&cflags));
