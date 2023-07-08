@@ -283,7 +283,6 @@ void dd_sound_stop(struct dd_sound *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	#if DD_PLATFORM_ANDROID
-	if (avdl_sound_volume <= 1) return;
 
 	// no thread active - create one and play audio
 	if (!is_thread_running) {
