@@ -54,8 +54,14 @@ static struct ast_node *expect_command_multistring(struct avdl_lexer *l) {
 	ast_setValuei(multistringcmd, 0);
 	ast_setLex(multistringcmd, "multistring");
 
-	while (avdl_lexer_peek(l) == LEXER_TOKEN_STRING) {
-		ast_addChild(multistringcmd, expect_string(l));
+	while (avdl_lexer_peek(l) == LEXER_TOKEN_STRING || avdl_lexer_peek(l) == LEXER_TOKEN_IDENTIFIER) {
+		if (avdl_lexer_peek(l) == LEXER_TOKEN_STRING) {
+			ast_addChild(multistringcmd, expect_string(l));
+		}
+		else
+		if (avdl_lexer_peek(l) == LEXER_TOKEN_IDENTIFIER) {
+			ast_addChild(multistringcmd, expect_identifier(l));
+		}
 	}
 
 	return multistringcmd;

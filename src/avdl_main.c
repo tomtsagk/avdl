@@ -677,7 +677,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	struct avdl_string commandString;
 	avdl_string_create(&commandString, 1024);
 	avdl_string_cat(&commandString, "gcc -O3 -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
-	avdl_string_cat(&commandString, "0.0.0");
+	avdl_string_cat(&commandString, avdl_settings_ptr->version_name);
 	avdl_string_cat(&commandString, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
 	avdl_string_cat(&commandString, "0");
 	avdl_string_cat(&commandString, "\\\"\" -c -w ");
