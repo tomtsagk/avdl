@@ -1527,6 +1527,11 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 			avdl_string_cat(&cflags, " -DAVDL_ADMOB ");
 		}
 
+		// game version
+		avdl_string_cat(&cflags, " -DAVDL_GAME_VERSION=\"\\\"");
+		avdl_string_cat(&cflags, avdl_settings->version_name);
+		avdl_string_cat(&cflags, "\\\"\" ");
+
 		if (!avdl_string_isValid(&cflags)) {
 			avdl_log_error("unable to construct cflags for android: %s", avdl_string_getError(&cflags));
 			avdl_string_clean(&cflags);
@@ -1896,6 +1901,11 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	{
 		struct avdl_string cflags;
 		avdl_string_create(&cflags, 1024);
+
+		// game version
+		avdl_string_cat(&cflags, " -DAVDL_GAME_VERSION=\"\\\"");
+		avdl_string_cat(&cflags, avdl_settings->version_name);
+		avdl_string_cat(&cflags, "\\\"\" ");
 
 		// oculus mode
 		if (avdl_settings->oculus_mode) {

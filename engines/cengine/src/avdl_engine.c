@@ -236,7 +236,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	char filename[400];
 	strcpy(filename, avdl_getProjectLocation());
 	strcat(filename, GAME_ASSET_PREFIX);
-	strcat(filename, "assets/icon-64x64.png");
+	strcat(filename, "assets/icon_64x64.png");
 
 	struct dd_image img;
 	dd_image_load_png(&img, filename);
