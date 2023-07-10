@@ -285,6 +285,7 @@ jobs:
         mkdir avdl_build/dependencies
         cp ./avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
     - name: verify
+      if: ${{ matrix.build_type == 'linux' }}
       run: |
         cd avdl_build/
         chmod +x bin/${{ inputs.project_name }}
