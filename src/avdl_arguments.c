@@ -66,7 +66,6 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 				// add google play achievement
 				if (strcmp(argv[i], "--google-play-achievement") == 0) {
 					if (argc > i+2) {
-						avdl_log("count: %d", avdl_settings->googleplay_achievement_count);
 						if (strlen(argv[i+1]) > 99) {
 							avdl_log_error("google play achievement api too long");
 							return -1;
