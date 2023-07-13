@@ -52,6 +52,11 @@ on:
         default: 0
         required: false
         type: string
+      # if true, upload unsigned builds
+      include_unsigned:
+        default: false
+        required: false
+        type: boolean
     secrets:
       # required for android builds
       ANDROID_KEYSTORE:
@@ -109,7 +114,7 @@ jobs:
             build_android_googleplay_admob: false
     steps:
     - name: init_project
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
@@ -141,27 +146,28 @@ jobs:
         ./gradlew build
     - name: package_builds
       run: |
-        mkdir "game_output"
+        mkdir "game_output_unsigned"
         mkdir "game_output_debug"
-        mkdir "game_output_signed"
-        mv avdl_build_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk "game_output/game_android.apk"
+        mkdir "game_output"
+        mv avdl_build_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk "game_output_unsigned/game_android.apk"
         mv avdl_build_android/app/build/outputs/apk/debug/app-universal-debug.apk "game_output_debug/game_android_debug.apk"
-        cp avdl_build_android/app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip "game_output_signed/native-debug-symbols.zip"
-        cp avdl_build_android/app/build/outputs/mapping/release/mapping.txt "game_output_signed/mapping.txt"
+        cp avdl_build_android/app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip "game_output/native-debug-symbols.zip"
+        cp avdl_build_android/app/build/outputs/mapping/release/mapping.txt "game_output/mapping.txt"
         echo '${{ secrets.ANDROID_KEYSTORE }}' | base64 -d > keystore
-        zipalign -v 4 "game_output/game_android.apk" "game_output_signed/game_android_signed.apk"
-        apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' "game_output_signed/game_android_signed.apk"
+        zipalign -v 4 "game_output_unsigned/game_android.apk" "game_output/game_android.apk"
+        apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' "game_output/game_android.apk"
         rm keystore
+    - name: upload_artifact_unsigned
+      uses: actions/upload-artifact@v3
+      if: ${{ inputs.include_unsigned }}
+      with:
+        name: "${{ inputs.project_name }}_${{ matrix.build_type }}_unsigned"
+        path: game_output_unsigned/game_android.apk
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
         name: "${{ inputs.project_name }}_${{ matrix.build_type }}"
-        path: game_output/game_android.apk
-    - name: upload_artifact_signed
-      uses: actions/upload-artifact@v3
-      with:
-        name: "${{ inputs.project_name }}_${{ matrix.build_type }}_signed"
-        path: game_output_signed
+        path: game_output
     - name: upload_artifact_debug
       uses: actions/upload-artifact@v3
       with:
@@ -186,7 +192,7 @@ jobs:
             build_quest2_oculus: false
     steps:
     - name: init_project
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: apt packages
       run: |
          sudo apt update && sudo apt install -y zipalign apksigner
@@ -222,10 +228,10 @@ jobs:
         ../../../gradlew assembleDebug
         ../../../gradlew assembleRelease
         mv build/outputs/apk/debug/Android-debug.apk ../../../../../game_quest2_debug.apk
-        mv build/outputs/apk/release/Android-release.apk ../../../../../game_quest2.apk
+        mv build/outputs/apk/release/Android-release.apk ../../../../../game_quest2_unsigned.apk
         echo '${{ secrets.ANDROID_KEYSTORE }}' | base64 -d > keystore
-        zipalign -v 4 ../../../../../game_quest2.apk ../../../../../game_quest2_signed.apk
-        apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' ../../../../../game_quest2_signed.apk
+        zipalign -v 4 ../../../../../game_quest2_unsigned.apk ../../../../../game_quest2.apk
+        apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' ../../../../../game_quest2.apk
         rm keystore
     - name: upload_artifact_debug
       uses: actions/upload-artifact@v3
@@ -233,44 +239,45 @@ jobs:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}_debug
         path: game_quest2_debug.apk
     - name: upload_artifact
+      if: ${{ inputs.include_unsigned }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.project_name }}_${{ matrix.build_type }}_unsigned
+        path: game_quest2_unsigned.apk
+    - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}
         path: game_quest2.apk
-    - name: upload_artifact_signed
-      uses: actions/upload-artifact@v3
-      with:
-        name: ${{ inputs.project_name }}_${{ matrix.build_type }}_signed
-        path: game_quest2_signed.apk
 
   # Linux
-  linux_x86_64:
+  linux-x86_64:
     if: ${{ inputs.build_linux }}
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        build_type: [linux, linux_steam]
+        build_type: [linux-x86_64, linux_steam-x86_64]
         build_linux:
           - ${{ inputs.build_linux }}
         build_linux_steam:
           - ${{ (inputs.build_linux) && (inputs.build_steam) }}
         exclude:
-          - build_type: linux
+          - build_type: linux-x86_64
             build_linux: false
-          - build_type: linux_steam
+          - build_type: linux_steam-x86_64
             build_linux_steam: false
     steps:
     - name: update packages
       run: |
          sudo apt update && sudo apt install -y gcc libgl1-mesa-dev
     - name: init_project
-      uses: actions/checkout@v1
+      uses: actions/checkout@v3
     - name: get_avdl
       run: |
         wget $AVDL_BUILD_URL_LINUX -O avdl_build_linux.zip
         unzip avdl_build_linux.zip
     - name: compile_project
-      if: ${{ matrix.build_type == 'linux' }}
+      if: ${{ matrix.build_type == 'linux-x86_64' }}
       run: |
         chmod +x avdl_build_linux/bin/avdl
         ./avdl_build_linux/bin/avdl -i ./avdl_build_linux/dependencies/linux/include -L ./avdl_build_linux/dependencies/linux/lib --standalone
@@ -278,14 +285,14 @@ jobs:
         cp ./avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
         rm avdl_build/dependencies/*steam*
     - name: compile_project steam
-      if: ${{ matrix.build_type == 'linux_steam' }}
+      if: ${{ matrix.build_type == 'linux_steam-x86_64' }}
       run: |
         chmod +x avdl_build_linux/bin/avdl
         ./avdl_build_linux/bin/avdl -i ./avdl_build_linux/dependencies/linux/include -L ./avdl_build_linux/dependencies/linux/lib --standalone --steam
         mkdir avdl_build/dependencies
         cp ./avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
     - name: verify
-      if: ${{ matrix.build_type == 'linux' }}
+      if: ${{ matrix.build_type == 'linux-x86_64' }}
       run: |
         cd avdl_build/
         chmod +x bin/${{ inputs.project_name }}
@@ -294,16 +301,16 @@ jobs:
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.project_name }}_build_${{ matrix.build_type }}
+        name: ${{ inputs.project_name }}_${{ matrix.build_type }}
         path: avdl_build
 
   # Windows
-  windows_x86_64:
+  windows-x86_64:
     if: ${{ inputs.build_windows }}
     runs-on: windows-latest
     strategy:
       matrix:
-        build_type: [windows, windows_steam]
+        build_type: [windows-x86_64, windows_steam-x86_64]
         build_windows:
           - ${{ inputs.build_windows }}
         build_windows_steam:
@@ -315,7 +322,7 @@ jobs:
             build_windows_steam: false
     steps:
     - name: init_project
-      uses: actions/checkout@v1
+      uses: actions/checkout@v3
     - name: prepare_libraries
       shell: bash
       run: |
@@ -365,7 +372,7 @@ jobs:
         unzip SDL2_mixer-devel-2.6.0-VC.zip
         cd ..
     - name: compile_project
-      if: ${{ matrix.build_type == 'windows' }}
+      if: ${{ matrix.build_type == 'windows-x86_64' }}
       shell: bash
       run: |
         mkdir cengine
@@ -380,7 +387,7 @@ jobs:
         cmake --build . --config Release
         cmake --install .
     - name: compile_project steam
-      if: ${{ matrix.build_type == 'windows_steam' }}
+      if: ${{ matrix.build_type == 'windows_steam-x86_64' }}
       shell: bash
       run: |
         mkdir cengine
@@ -397,41 +404,47 @@ jobs:
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.project_name }}_build_windows
+        name: ${{ inputs.project_name }}_${{ matrix.build_type }}
         path: build/GAME_BUILD
     - name: upload_artifact_vs
       if: ${{ false }}
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ inputs.project_name }}_build_windows_vs
+        name: ${{ inputs.project_name }}_${{ matrix.build_type }}_vs
         path: build/
 
   # Itch.io release
   release_itchio:
     if: ${{ always() && !cancelled() && inputs.itchio_user != '' && inputs.itchio_project != '' && github.ref_type == 'tag' }}
     runs-on: ubuntu-20.04
-    needs: [linux_x86_64, windows_x86_64, android, quest2]
+    needs: [linux-x86_64, windows-x86_64, android, quest2]
+    strategy:
+      matrix:
+        build_type: [linux-x86_64, windows-x86_64, android, quest2]
+        build_android:
+          - ${{ inputs.build_android }}
+        build_linux-x86_64:
+          - ${{ inputs.build_linux }}
+        build_windows-x86_64:
+          - ${{ inputs.build_windows }}
+        build_quest2:
+          - ${{ inputs.build_quest2 }}
+        exclude:
+          - build_type: android
+            build_android: false
+          - build_type: linux-x86_64
+            build_linux-x86_64: false
+          - build_type: windows-x86_64
+            build_windows-x86_64: false
+          - build_type: quest2
+            build_quest2: false
     steps:
+    # get build
     - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_linux }}
       with:
-        name: ${{ inputs.project_name }}_build_linux
-        path: ${{ inputs.project_name }}_build_linux
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_windows }}
-      with:
-        name: ${{ inputs.project_name }}_build_windows
-        path: ${{ inputs.project_name }}_build_windows
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_android }}
-      with:
-        name: ${{ inputs.project_name }}_android_signed
-        path: ${{ inputs.project_name }}_android_signed
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_quest2 }}
-      with:
-        name: ${{ inputs.project_name }}_quest2_signed
-        path: ${{ inputs.project_name }}_quest2_signed
+        name: ${{ inputs.project_name }}_${{ matrix.build_type }}
+        path: ${{ inputs.project_name }}_${{ matrix.build_type }}
+    # prepare for publishing
     - name: prepare zipping
       run: sudo apt update && sudo apt install -y zip
     - name: get butler
@@ -440,314 +453,111 @@ jobs:
         unzip butler.zip
         chmod +x butler
         ./butler -V
-    # Linux
-    - name: prepare and upload linux
-      if: ${{ inputs.build_linux }}
+    # publish whole directory (linux & windows)
+    - name: prepare and upload
+      if: ${{ (inputs.build_linux) || (inputs.build_windows) }}
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
         VERSION=${{ github.ref_name }}
-        cd ${{ inputs.project_name }}_build_linux && zip ../${{ inputs.project_name }}_build_linux.zip * -r && cd ..
-        ./butler push ${{ inputs.project_name }}_build_linux.zip   ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:linux-x86_64 --userversion ${VERSION:1}
-    # Windows
-    - name: prepare and upload windows
-      if: ${{ inputs.build_windows }}
-      env:
-        BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-      run: |
-        VERSION=${{ github.ref_name }}
-        cd ${{ inputs.project_name }}_build_windows  && zip ../${{ inputs.project_name }}_build_windows.zip * -r && cd ..
-        ./butler push ${{ inputs.project_name }}_build_windows.zip ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:windows-x86_64 --userversion ${VERSION:1}
-    # Android
+        cd ${{ inputs.project_name }}_${{ matrix.build_type }} && zip ../${{ inputs.project_name }}_${{ matrix.build_type }}.zip * -r && cd ..
+        ./butler push ${{ inputs.project_name }}_${{ matrix.build_type }}.zip ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:${{ matrix.build_type }} --userversion ${VERSION:1}
+    # publish single .apk (android & quest 2)
     - name: prepare and upload android
-      if: ${{ inputs.build_android }}
+      if: ${{ (inputs.build_android) || (inputs.build_quest2) }}
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
         VERSION=${{ github.ref_name }}
-        mv ${{ inputs.project_name }}_android_signed/game_android_signed.apk ${{ inputs.project_name }}_android.apk
-        ./butler push ${{ inputs.project_name }}_android.apk ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:android              --userversion ${VERSION:1}
-    # Quest 2
-    - name: prepare and upload quest2
-      if: ${{ inputs.build_android }}
-      env:
-        BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
-      run: |
-        VERSION=${{ github.ref_name }}
-        mv ${{ inputs.project_name }}_quest2_signed/game_quest2_signed.apk ${{ inputs.project_name }}_quest2.apk
-        ./butler push ${{ inputs.project_name }}_quest2.apk  ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:quest2               --userversion ${VERSION:1}
+        mv ${{ inputs.project_name }}_${{ matrix.build_type }}/game_${{ matrix.build_type }}.apk ${{ inputs.project_name }}_${{ inputs.build_type }}.apk
+        ./butler push ${{ inputs.project_name }}_${{ matrix.build_type }}.apk ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:${{ matrix.build_type }} --userversion ${VERSION:1}
 
   # Github release
-  create_release:
+  release_github:
     if: ${{ always() && !cancelled() && github.ref_type == 'tag' }}
+    needs: [linux-x86_64, windows-x86_64, android, quest2]
     runs-on: ubuntu-20.04
-    needs: [linux_x86_64, windows_x86_64, android, quest2]
     steps:
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_linux }}
-      with:
-        name: ${{ inputs.project_name }}_build_linux
-        path: ${{ inputs.project_name }}_build_linux
-    - uses: actions/download-artifact@v3
-      if: ${{ (inputs.build_linux) && (inputs.build_steam) }}
-      with:
-        name: ${{ inputs.project_name }}_build_linux_steam
-        path: ${{ inputs.project_name }}_build_linux_steam
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_windows }}
-      with:
-        name: ${{ inputs.project_name }}_build_windows
-        path: ${{ inputs.project_name }}_build_windows
-    - uses: actions/download-artifact@v3
-      if: ${{ (inputs.build_windows) && (inputs.build_steam) }}
-      with:
-        name: ${{ inputs.project_name }}_build_windows_steam
-        path: ${{ inputs.project_name }}_build_windows_steam
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_android }}
-      with:
-        name: ${{ inputs.project_name }}_android
-        path: ${{ inputs.project_name }}_android
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_android }}
-      with:
-        name: ${{ inputs.project_name }}_android_signed
-        path: ${{ inputs.project_name }}_android_signed
-    - uses: actions/download-artifact@v3
-      if: ${{ (inputs.build_android) && (inputs.build_ads) }}
-      with:
-        name: ${{ inputs.project_name }}_android_admob_signed
-        path: ${{ inputs.project_name }}_android_admob_signed
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_android_googleplay }}
-      with:
-        name: ${{ inputs.project_name }}_android_googleplay
-        path: ${{ inputs.project_name }}_android_googleplay
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_android_googleplay }}
-      with:
-        name: ${{ inputs.project_name }}_android_googleplay_signed
-        path: ${{ inputs.project_name }}_android_googleplay_signed
-    - uses: actions/download-artifact@v3
-      if: ${{ (inputs.build_android_googleplay) && (inputs.build_ads) }}
-      with:
-        name: ${{ inputs.project_name }}_android_googleplay_admob_signed
-        path: ${{ inputs.project_name }}_android_googleplay_admob_signed
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_quest2 }}
-      with:
-        name: ${{ inputs.project_name }}_quest2
-        path: ${{ inputs.project_name }}_quest2
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_quest2 }}
-      with:
-        name: ${{ inputs.project_name }}_quest2_signed
-        path: ${{ inputs.project_name }}_quest2_signed
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_quest2_oculus }}
-      with:
-        name: ${{ inputs.project_name }}_quest2_oculus
-        path: ${{ inputs.project_name }}_quest2_oculus
-    - uses: actions/download-artifact@v3
-      if: ${{ inputs.build_quest2_oculus }}
-      with:
-        name: ${{ inputs.project_name }}_quest2_oculus_signed
-        path: ${{ inputs.project_name }}_quest2_oculus_signed
-    - name: prepare to zip packages
+    - name: init_project
+      uses: actions/checkout@v3
+    - name: Create release
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        tag: ${{ github.ref_name }}
       run: |
-         sudo apt update && sudo apt install -y zip
-    - name: zip linux
-      if: ${{ inputs.build_linux }}
+        gh release create "$tag" -F metadata/changelog.md --title="${GITHUB_REPOSITORY#*/} - ${tag}" -d
+
+  release_github_assets:
+    if: ${{ always() && !cancelled() && github.ref_type == 'tag' }}
+    needs: release_github
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        build_type: [linux-x86_64, linux_steam-x86_64, windows-x86_64, windows_steam-x86_64, android, android_admob, android_googleplay, android_googleplay_admob, quest2, quest2_oculus]
+        build_android:
+          - ${{ inputs.build_android }}
+        build_android_admob:
+          - ${{ (inputs.build_android) && (inputs.build_ads) }}
+        build_android_googleplay:
+          - ${{ inputs.build_android_googleplay }}
+        build_android_googleplay_admob:
+          - ${{ (inputs.build_android_googleplay) && (inputs.build_ads) }}
+        build_linux-x86_64:
+          - ${{ inputs.build_linux }}
+        build_linux_steam-x86_64:
+          - ${{ (inputs.build_linux) && (inputs.build_steam) }}
+        build_windows-x86_64:
+          - ${{ inputs.build_windows }}
+        build_windows_steam-x86_64:
+          - ${{ (inputs.build_windows) && (inputs.build_steam) }}
+        build_quest2:
+          - ${{ inputs.build_quest2 }}
+        build_quest2_oculus:
+          - ${{ inputs.build_quest2_oculus }}
+        exclude:
+          - build_type: android
+            build_android: false
+          - build_type: android_admob
+            build_android_admob: false
+          - build_type: android_googleplay
+            build_android_googleplay: false
+          - build_type: android_googleplay_admob
+            build_android_googleplay_admob: false
+          - build_type: linux-x86_64
+            build_linux-x86_64: false
+          - build_type: linux_steam-x86_64
+            build_linux_steam-x86_64: false
+          - build_type: windows-x86_64
+            build_windows-x86_64: false
+          - build_type: windows_steam-x86_64
+            build_windows_steam-x86_64: false
+          - build_type: quest2
+            build_quest2: false
+          - build_type: quest2_oculus
+            build_quest2_oculus: false
+    steps:
+    # possibly needs this ?
+    - name: init_project
+      uses: actions/checkout@v3
+    # get build
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.project_name }}_${{ matrix.build_type }}
+        path: ${{ inputs.project_name }}_${{ matrix.build_type }}
+    # prepare for publishing
+    - name: prepare zipping
+      run: sudo apt update && sudo apt install -y zip
+    # publish whole directory
+    - name: prepare and upload
+      if: ${{ (inputs.build_linux) || (inputs.build_windows) }}
+      env:
+        BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
-         cd ${{ inputs.project_name }}_build_linux && zip ../${{ inputs.project_name }}_build_linux.zip * -r && cd ..
-    - name: zip linux steam
-      if: ${{ (inputs.build_linux) && (inputs.build_steam) }}
+        cd ${{ inputs.project_name }}_${{ matrix.build_type }} && zip ../${{ inputs.project_name }}_${{ matrix.build_type }}.zip * -r && cd ..
+    # upload to release
+    - name: Upload to release
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        tag: ${{ github.ref_name }}
       run: |
-         cd ${{ inputs.project_name }}_build_linux_steam && zip ../${{ inputs.project_name }}_build_linux_steam.zip * -r && cd ..
-    - name: zip windows
-      if: ${{ inputs.build_windows }}
-      run: |
-         cd ${{ inputs.project_name }}_build_windows && zip ../${{ inputs.project_name }}_build_windows.zip * -r && cd ..
-    - name: zip windows steam
-      if: ${{ (inputs.build_windows) && (inputs.build_steam) }}
-      run: |
-         cd ${{ inputs.project_name }}_build_windows_steam && zip ../${{ inputs.project_name }}_build_windows_steam.zip * -r && cd ..
-    - name: zip android
-      if: ${{ inputs.build_android }}
-      run: |
-         cd ${{ inputs.project_name }}_android        && zip ../${{ inputs.project_name }}_build_android.zip            * -r && cd ..
-         cd ${{ inputs.project_name }}_android_signed && zip ../${{ inputs.project_name }}_build_android_signed.zip     * -r && cd ..
-    - name: zip android admob
-      if: ${{ (inputs.build_android) && (inputs.build_ads) }}
-      run: |
-         cd ${{ inputs.project_name }}_android_admob_signed && zip ../${{ inputs.project_name }}_build_android_admob_signed.zip * -r && cd ..
-    - name: zip googleplay
-      if: ${{ inputs.build_android_googleplay }}
-      run: |
-         cd ${{ inputs.project_name }}_android_googleplay         && zip ../${{ inputs.project_name }}_build_android_googleplay.zip * -r && cd ..
-         cd ${{ inputs.project_name }}_android_googleplay_signed  && zip ../${{ inputs.project_name }}_build_android_googleplay_signed.zip * -r && cd ..
-    - name: zip googleplay admob
-      if: ${{ (inputs.build_android_googleplay) && (inputs.build_ads) }}
-      run: |
-         cd ${{ inputs.project_name }}_android_googleplay_admob_signed && zip ../${{ inputs.project_name }}_build_android_googleplay_admob_signed.zip * -r && cd ..
-    - name: zip quest2
-      if: ${{ inputs.build_quest2 }}
-      run: |
-         cd ${{ inputs.project_name }}_quest2        && zip ../${{ inputs.project_name }}_build_quest2.zip        * -r && cd ..
-         cd ${{ inputs.project_name }}_quest2_signed && zip ../${{ inputs.project_name }}_build_quest2_signed.zip * -r && cd ..
-    - name: zip quest2 oculus
-      if: ${{ inputs.build_quest2_oculus }}
-      run: |
-         cd ${{ inputs.project_name }}_quest2_oculus        && zip ../${{ inputs.project_name }}_build_quest2_oculus.zip      * -r && cd ..
-         cd ${{ inputs.project_name }}_quest2_oculus_signed && zip ../${{ inputs.project_name }}_build_quest2_oculus_signed.zip * -r && cd ..
-    - name: create release
-      uses: actions/create-release@v1
-      id: create_release
-      with:
-        draft: true
-        prerelease: false
-        release_name: ${{ steps.version.outputs.version }}
-        tag_name: ${{ github.ref }}
-        #body_path: CHANGELOG.md
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-    - name: upload linux
-      if: ${{ inputs.build_linux }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_linux.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_linux.zip
-        asset_content_type: application/gzip
-    - name: upload linux steam artifact
-      if: ${{ (inputs.build_linux) && (inputs.build_steam) }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_linux_steam.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_linux_steam.zip
-        asset_content_type: application/gzip
-    - name: upload windows artifact
-      if: ${{ inputs.build_windows }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_windows.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_windows.zip
-        asset_content_type: application/gzip
-    - name: upload windows steam artifact
-      if: ${{ (inputs.build_windows) && (inputs.build_steam) }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_windows_steam.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_windows_steam.zip
-        asset_content_type: application/gzip
-    - name: upload android artifact
-      if: ${{ inputs.build_android }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_android.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_android.zip
-        asset_content_type: application/gzip
-    - name: upload android signed artifact
-      if: ${{ inputs.build_android }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_android_signed.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_android_signed.zip
-        asset_content_type: application/gzip
-    - name: upload android admob signed artifact
-      if: ${{ (inputs.build_android) && (inputs.build_ads) }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_android_admob_signed.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_android_admob_signed.zip
-        asset_content_type: application/gzip
-    - name: upload android_googleplay artifact
-      if: ${{ inputs.build_android_googleplay }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_android_googleplay.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_android_googleplay.zip
-        asset_content_type: application/gzip
-    - name: upload android_googleplay signed artifact
-      if: ${{ inputs.build_android_googleplay }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_android_googleplay_signed.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_android_googleplay_signed.zip
-        asset_content_type: application/gzip
-    - name: upload android_googleplay admob signed artifact
-      if: ${{ (inputs.build_android_googleplay) && (inputs.build_ads) }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_android_googleplay_admob_signed.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_android_googleplay_admob_signed.zip
-        asset_content_type: application/gzip
-    - name: upload quest2 artifact
-      if: ${{ inputs.build_quest2 }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_quest2.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_quest2.zip
-        asset_content_type: application/gzip
-    - name: upload quest2 signed artifact
-      if: ${{ inputs.build_quest2 }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_quest2_signed.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_quest2_signed.zip
-        asset_content_type: application/gzip
-    - name: upload quest2 oculus artifact
-      if: ${{ inputs.build_quest2_oculus }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_quest2_oculus.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_quest2_oculus.zip
-        asset_content_type: application/gzip
-    - name: upload quest2 oculus signed artifact
-      if: ${{ inputs.build_quest2_oculus }}
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{ inputs.project_name }}_build_quest2_oculus_signed.zip
-        asset_name: ${{ inputs.project_name }}_${{ github.ref_name }}_quest2_oculus_signed.zip
-        asset_content_type: application/gzip
+        gh release upload "$tag" ${{ inputs.project_name }}_${{ matrix.build_type }}.zip
