@@ -553,11 +553,11 @@ jobs:
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
-        cd ${{ inputs.project_name }}_${{ matrix.build_type }} && zip ../${{ inputs.project_name }}_${{ matrix.build_type }}.zip * -r && cd ..
+        cd ${{ inputs.project_name }}_${{ matrix.build_type }} && zip ../${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.zip * -r && cd ..
     # upload to release
     - name: Upload to release
       env:
         GITHUB_TOKEN: ${{ github.token }}
         tag: ${{ github.ref_name }}
       run: |
-        gh release upload "$tag" ${{ inputs.project_name }}_${{ matrix.build_type }}.zip
+        gh release upload "$tag" ${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.zip
