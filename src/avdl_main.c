@@ -368,7 +368,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 		// handle assets
 		if ( avdl_assets(&avdl_settings) != 0) {
-			avdl_log_error("could not handle project assets for android\n");
+			avdl_log_error("could not handle project assets for quest2\n");
 			return -1;
 		}
 
@@ -402,7 +402,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// handle assets
 	if ( avdl_assets(&avdl_settings) != 0) {
-		avdl_log_error("failed to handle assets in '" BLU "%s" RESET "'");
+		avdl_log_error("failed to handle assets");
 		return -1;
 	}
 
@@ -1207,6 +1207,14 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 		return 0;
 	}
 
+	// sanity check
+	for (const char *p = filename; p[0] != '\0'; p++) {
+		if (p[0] == '-') {
+			avdl_log_error("filename contains invalid character '-': " BLU "%s" RESET, filename);
+			return -1;
+		}
+	}
+
 	// src file full path
 	struct avdl_string srcFilePath;
 	avdl_string_create(&srcFilePath, 1024);
@@ -1378,7 +1386,9 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	printf("avdl: assets - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
-	Avdl_FileOp_ForFileInDirectory(avdl_settings->asset_dir, asset_file);
+	if (Avdl_FileOp_ForFileInDirectory(avdl_settings->asset_dir, asset_file) != 0) {
+		return -1;
+	}
 
 	printf("avdl: assets - " GRN "100%%" RESET "\n");
 	fflush(stdout);
