@@ -18,7 +18,7 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 
 	#ifndef AVDL_DIRECT3D11
 
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	return;
 	#endif
 

@@ -6,7 +6,7 @@
 #include <errno.h>
 
 #ifdef AVDL_DIRECT3D11
-#elif DD_PLATFORM_ANDROID
+#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #else
 #include <png.h>
 #endif
@@ -33,7 +33,7 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	#ifdef AVDL_DIRECT3D11
 	#else
 
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#else
 
 	// check signature
@@ -154,7 +154,7 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	#ifdef AVDL_DIRECT3D11
 	#else
 
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#else
 	struct bmp_header {
 		unsigned short int type;

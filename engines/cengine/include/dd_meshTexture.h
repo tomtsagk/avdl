@@ -11,7 +11,7 @@ extern "C" {
 
 struct dd_vertex_tex {
 	float pos[3];
-#if defined(DD_PLATFORM_ANDROID)
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	float col[4];
 #else
 	float col[3];

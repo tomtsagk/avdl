@@ -13,7 +13,7 @@ int dd_flag_focused = 0;
 int dd_flag_updateThread = 0;
 int dd_flag_exit = 0;
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 int dd_width = 0;
 int dd_height = 0;
 #else
@@ -100,12 +100,12 @@ void dd_fullscreenToggle() {
 	Uint32 FullscreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
 	int isFullscreen = SDL_GetWindowFlags(engine.window) & FullscreenFlag;
 	SDL_SetWindowFullscreen(engine.window, isFullscreen ? 0 : FullscreenFlag);
-	#elif DD_PLATFORM_ANDROID
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#endif
 }
 
 int dd_canFullscreenToggle() {
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	return 0;
 #endif
 	return 1;

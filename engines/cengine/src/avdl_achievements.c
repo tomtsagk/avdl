@@ -4,7 +4,7 @@
 
 #if !defined(AVDL_STEAM) && !defined(AVDL_QUEST2)
 
-#if defined(DD_PLATFORM_ANDROID)
+#if defined( AVDL_ANDROID )
 #include <pthread.h>
 #include <unistd.h>
 #include <jni.h>
@@ -25,7 +25,7 @@ void avdl_achievements_clean(struct avdl_achievements *o) {
 
 void avdl_achievements_set(struct avdl_achievements *o, const char *achievementId) {
 
-	#if defined(DD_PLATFORM_ANDROID)
+	#if defined( AVDL_ANDROID )
 	JNIEnv *env;
 
 	// temporarily have different jni versions for android and quest 2

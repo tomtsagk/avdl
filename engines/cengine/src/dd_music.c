@@ -4,7 +4,7 @@
 #include "dd_game.h"
 #include "avdl_assetManager.h"
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <jni.h>
 extern jclass *clazz;
 extern JavaVM *jvm;
@@ -24,7 +24,7 @@ void dd_music_create(struct dd_music *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	o->filename[0] = '\0';
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	o->index = -1;
 	#else
 	o->music = 0;
@@ -39,7 +39,7 @@ void dd_music_load(struct dd_music *o, const char *filename, int type) {
 	if (strlen(filename) >= 100) {
 		dd_log("avdl: asset name can't be more than 100 characters: %s", filename);
 	}
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	strcpy(o->filename, filename);
 	#else
 
@@ -62,7 +62,7 @@ void dd_music_load(struct dd_music *o, const char *filename, int type) {
 void dd_music_clean(struct dd_music *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#else
 	if (o->music) {
 		Mix_FreeMusic(o->music);
@@ -76,7 +76,7 @@ void dd_music_play(struct dd_music *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	if (avdl_music_volume <= 1) return;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	JNIEnv *env;
 	#if defined(AVDL_QUEST2)
 	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
@@ -116,9 +116,9 @@ void dd_music_playLoop(struct dd_music *o, int loops) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	if (avdl_music_volume <= 1) return;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	JNIEnv *env;
-	#if defined(AVDL_QUEST2)
+	#if defined( AVDL_QUEST2 )
 	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_6);
 	#else
 	int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
@@ -151,7 +151,7 @@ void dd_music_playLoop(struct dd_music *o, int loops) {
 void dd_music_stop(struct dd_music *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	if (o->index == -1) return;
 	JNIEnv *env;
 	#if defined(AVDL_QUEST2)
@@ -195,7 +195,7 @@ void avdl_music_setVolume(int volume) {
 	if (volume < 0) volume = 0;
 	if (volume > 100) volume = 100;
 	avdl_music_volume = volume;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#else
 	Mix_VolumeMusic((avdl_music_volume /100.0) *MIX_MAX_VOLUME);
 	#endif
@@ -205,7 +205,7 @@ void avdl_music_setVolume(int volume) {
 int avdl_music_getVolume() {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return 0;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	return avdl_music_volume;
 	#else
 	int volume = Mix_VolumeMusic(-1);

@@ -41,7 +41,7 @@ void parse_filename(char *buffer, const char *filename) {
 
 	return;
 
-	#elif defined(DD_PLATFORM_ANDROID)
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 
 	strcpy(buffer, avdl_data_saveDirectory);
 	strcat(buffer, "/");

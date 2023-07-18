@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #else
 #include "avdl_graphics.h"
 
@@ -31,7 +31,7 @@ struct dd_music {
 	char filename[400];
 	char filenameW[400];
 	#ifndef AVDL_DIRECT3D11
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	int index;
 	#else
 	Mix_Music *music;

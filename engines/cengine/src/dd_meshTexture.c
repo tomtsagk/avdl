@@ -103,7 +103,7 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 			m->verticesTex[i].pos[1] = m->parent.parent.v[i *3 +1];
 			m->verticesTex[i].pos[2] = m->parent.parent.v[i *3 +2];
 
-			#if DD_PLATFORM_ANDROID
+			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 			if (m->parent.c) {
 				m->verticesTex[i].col[0] = m->parent.c[i *4 +0];
 				m->verticesTex[i].col[1] = m->parent.c[i *4 +1];

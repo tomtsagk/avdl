@@ -22,7 +22,7 @@ extern pthread_mutex_t updateDrawMutex;
 extern pthread_mutex_t jniMutex;
 #endif
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <jni.h>
 extern JNIEnv *jniEnv;
 extern JavaVM* jvm;
@@ -36,14 +36,14 @@ extern AAssetManager *aassetManager;
 /*
  * load assets async
  */
-#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
 static pthread_t loadAssetsThread = 0;
 
 void *load_assets_thread_function(void *data) {
 	avdl_assetManager_loadAssets();
 	pthread_exit(NULL);
 }
-#elif defined(AVDL_OS_WINDOWS)
+#elif defined( AVDL_OS_WINDOWS )
 #include <windows.h>
 
 HANDLE thread;
@@ -84,7 +84,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	if (lockLoading) {
 		return;
 	}
-	//#if DD_PLATFORM_ANDROID
+	//#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	/*
 	if (assetManagerLoading) {
 		dd_log("error add new asset while loading: %s", assetname);
@@ -102,7 +102,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	#if defined(_WIN32) || defined(WIN32)
 	strcpy(meshToLoad.filename, assetname);
 	//dd_log("add asset: %s\n", meshToLoad.filename);
-	#elif DD_PLATFORM_ANDROID
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	strcpy(meshToLoad.filename, assetname);
 	//dd_log("add android asset: %s\n", meshToLoad.filename);
 	#else
@@ -131,9 +131,9 @@ void avdl_assetManager_loadAssets() {
 
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
-			#if DD_PLATFORM_ANDROID
+			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 
-			#if !defined(AVDL_QUEST2)
+			#if !defined( AVDL_QUEST2 )
 			/*
 			 * attempt to get hold of a valid jni
 			 * will most likely matter during
@@ -286,14 +286,14 @@ void avdl_assetManager_loadAssets() {
 			}
 		}
 
-		#if defined(DD_PLATFORM_ANDROID)
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		pthread_mutex_unlock(&jniMutex);
 		#endif
 
 		#ifdef AVDL_DIRECT3D11
-		#elif defined(AVDL_OS_WINDOWS)
+		#elif defined( AVDL_OS_WINDOWS )
 		WaitForSingleObject(updateDrawMutex, INFINITE);
-		#elif defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+		#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
 		pthread_mutex_lock(&updateDrawMutex);
 		#endif
 
@@ -301,9 +301,9 @@ void avdl_assetManager_loadAssets() {
 		if (interruptLoading) break;
 		//dd_log("assets loaded: %d / %d", totalAssetsLoaded, totalAssets);
 		#ifdef AVDL_DIRECT3D11
-		#elif defined(AVDL_OS_WINDOWS)
+		#elif defined( AVDL_OS_WINDOWS )
 		ReleaseMutex(updateDrawMutex);
-		#elif defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+		#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
 		pthread_mutex_unlock(&updateDrawMutex);
 		#endif
 
@@ -313,17 +313,17 @@ void avdl_assetManager_loadAssets() {
 	//dd_log("finished all loading");
 
 	#ifdef AVDL_DIRECT3D11
-	#elif defined(AVDL_OS_WINDOWS)
+	#elif defined( AVDL_OS_WINDOWS )
 	WaitForSingleObject(updateDrawMutex, INFINITE);
-	#elif defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
 	pthread_mutex_lock(&updateDrawMutex);
 	#endif
 	assetManagerLoading = 0;
 	#ifdef AVDL_DIRECT3D11
-	#elif defined(AVDL_OS_WINDOWS)
+	#elif defined( AVDL_OS_WINDOWS )
 	ReleaseMutex(updateDrawMutex);
 	CloseHandle(thread);
-	#elif defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
 	pthread_mutex_unlock(&updateDrawMutex);
 	#endif
 
@@ -345,10 +345,10 @@ void avdl_assetManager_loadAll() {
 		loadAssetsThread = 0;
 	}
 	*/
-	#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_OS_LINUX)
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
 	pthread_create(&loadAssetsThread, NULL, load_assets_thread_function, 0);
 	pthread_detach(loadAssetsThread); // do not wait for thread result code
-	#elif defined(AVDL_OS_WINDOWS)
+	#elif defined( AVDL_OS_WINDOWS )
 	HANDLE thread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, NULL);
 	#else
 	avdl_assetManager_loadAssets();

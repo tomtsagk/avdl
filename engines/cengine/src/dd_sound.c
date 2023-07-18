@@ -4,7 +4,7 @@
 #include "dd_game.h"
 #include "avdl_assetManager.h"
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <jni.h>
 extern jclass *clazz;
 extern JavaVM *jvm;
@@ -28,10 +28,10 @@ void dd_sound_create(struct dd_sound *o) {
 	o->playLoop = dd_sound_playLoop;
 	o->stop = dd_sound_stop;
 
-	#if !defined(AVDL_DIRECT3D11)
+	#if !defined( AVDL_DIRECT3D11 )
 	if (!dd_hasAudio) return;
 	o->filename[0] = '\0';
-	#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	o->index = -1;
 	#else
 	o->sound = 0;
@@ -41,7 +41,7 @@ void dd_sound_create(struct dd_sound *o) {
 	#endif
 }
 
-#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 static int id_generator = 1;
 #endif
 
@@ -51,7 +51,7 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 	if (strlen(filename) >= 100) {
 		dd_log("avdl: asset name can't be more than 100 characters: %s", filename);
 	}
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	strcpy(o->filename, filename);
 	o->index = id_generator;
 	id_generator++;
@@ -77,9 +77,9 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 }
 
 void dd_sound_clean(struct dd_sound *o) {
-	#if !defined(AVDL_DIRECT3D11)
+	#if !defined( AVDL_DIRECT3D11 )
 	if (!dd_hasAudio) return;
-	#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#else
 	if (o->sound) {
 		Mix_FreeChunk(o->sound);
@@ -89,7 +89,7 @@ void dd_sound_clean(struct dd_sound *o) {
 	#endif
 }
 
-#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 static int is_thread_waiting = 0;
 static pthread_cond_t cond;
 static pthread_mutex_t mutex;
@@ -181,7 +181,7 @@ void dd_sound_play(struct dd_sound *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	if (avdl_sound_volume <= 1) return;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 
 	if (avdl_sound_volume <= 1) return;
 
@@ -233,7 +233,7 @@ void dd_sound_playLoop(struct dd_sound *o, int loops) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	if (avdl_sound_volume <= 1) return;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	if (avdl_sound_volume <= 1) return;
 
 	// no thread active - create one and play audio
@@ -282,7 +282,7 @@ void dd_sound_playLoop(struct dd_sound *o, int loops) {
 void dd_sound_stop(struct dd_sound *o) {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 
 	// no thread active - create one and play audio
 	if (!is_thread_running) {
@@ -327,7 +327,7 @@ void avdl_sound_setVolume(int volume) {
 	if (volume < 0) volume = 0;
 	if (volume > 100) volume = 100;
 	avdl_sound_volume = volume;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#else
 	Mix_Volume(-1, (avdl_sound_volume /100.0) *MIX_MAX_VOLUME);
 	#endif
@@ -337,7 +337,7 @@ void avdl_sound_setVolume(int volume) {
 int avdl_sound_getVolume() {
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return 0;
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	return avdl_sound_volume;
 	#else
 	int volume = Mix_Volume(-1, -1);

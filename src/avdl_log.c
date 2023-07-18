@@ -15,7 +15,7 @@ void avdl_log(const char *msg, ...) {
 	/*
 	 * avdl is currently not designed to run on android
 	 * (it can compile games for android)
-	#if DD_PLATFORM_ANDROID
+	#if AVDL_ANDROID
 	__android_log_vprint(ANDROID_LOG_INFO, "avdl", msg, args);
 	 */
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
