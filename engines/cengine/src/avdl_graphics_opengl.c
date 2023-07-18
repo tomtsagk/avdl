@@ -95,7 +95,7 @@ void avdl_graphics_ImageToGpu(struct dd_image *o) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	#if DD_PLATFORM_NATIVE
 	glTexImage2D(GL_TEXTURE_2D, 0, o->pixelFormat, o->width, o->height, 0, o->pixelFormat, GL_FLOAT, o->pixels);
-	#elif DD_PLATFORM_ANDROID
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, o->width, o->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, o->pixelsb);
 	#endif
@@ -105,7 +105,7 @@ void avdl_graphics_ImageToGpu(struct dd_image *o) {
 	#if DD_PLATFORM_NATIVE
 	free(o->pixels);
 	o->pixels = 0;
-	#elif DD_PLATFORM_ANDROID
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	free(o->pixelsb);
 	o->pixelsb = 0;
 	#endif

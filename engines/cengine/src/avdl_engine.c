@@ -442,7 +442,7 @@ int avdl_engine_clean(struct avdl_engine *o) {
 #ifndef AVDL_DIRECT3D11
 int avdl_engine_draw(struct avdl_engine *o) {
 
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	if (dd_flag_exit) {
 		return 0;
 	}

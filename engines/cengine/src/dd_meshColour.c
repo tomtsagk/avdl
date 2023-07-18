@@ -39,7 +39,7 @@ void dd_meshColour_set_colour(struct dd_meshColour *m, float r, float g, float b
 		free(m->c);
 		m->c = 0;
 	}
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	m->c = malloc(m->parent.vcount *sizeof(float) *4);
 	m->dirtyColours = 1;
 	for (int i = 0; i < m->parent.vcount *4; i += 4) {
@@ -94,7 +94,7 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 			m->verticesCol[i].pos[0] = m->parent.v[i *3 +0];
 			m->verticesCol[i].pos[1] = m->parent.v[i *3 +1];
 			m->verticesCol[i].pos[2] = m->parent.v[i *3 +2];
-			#if DD_PLATFORM_ANDROID
+			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 			if (m->c) {
 				m->verticesCol[i].col[0] = m->c[i *4 +0];
 				m->verticesCol[i].col[1] = m->c[i *4 +1];
@@ -184,7 +184,7 @@ void dd_meshColour_copy(struct dd_meshColour *dest, struct dd_meshColour *src) {
 	dd_meshColour_clean(dest);
 	dd_mesh_copy((struct dd_mesh *) dest, (struct dd_mesh *) src);
 	if (src->c) {
-		#if DD_PLATFORM_ANDROID
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		dest->c = malloc(sizeof(float) *src->parent.vcount *4);
 		memcpy(dest->c, src->c, sizeof(float) *src->parent.vcount *4);
 		#else

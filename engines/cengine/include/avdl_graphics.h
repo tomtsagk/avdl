@@ -2,7 +2,7 @@
 #define AVDL_GRAPHICS_H
 
 // import opengl on android
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <EGL/egl.h>
 //#include <GLES2/gl2.h>
 //#include <GLES2/gl2ext.h>

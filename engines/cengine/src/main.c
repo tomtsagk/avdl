@@ -29,7 +29,7 @@ pthread_mutex_t updateDrawMutex;
 /*
  * android includes
  */
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 
 	#include <jni.h>
 	jclass *clazz;
@@ -113,7 +113,7 @@ int dd_main(int argc, char *argv[]) {
 	}
 	#endif
 
-	#if defined(DD_PLATFORM_ANDROID) && !defined(AVDL_QUEST2)
+	#if defined( AVDL_ANDROID )
 	// initialise pthread mutex for jni
 	if (pthread_mutex_init(&jniMutex, NULL) != 0)
 	{
@@ -182,7 +182,7 @@ struct dd_async_call dd_asyncCall = {0};
 int dd_isAsyncCallActive = 0;
 #endif
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 void updateThread();
 #endif
 
@@ -207,7 +207,7 @@ void onResume() {
 
 	if (avdl_engine_isPaused(&engine)) {
 		avdl_engine_setPaused(&engine, 0);
-		#if DD_PLATFORM_ANDROID
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		pthread_create(&updatePthread, NULL, &updateThread, NULL);
 		#elif DD_PLATFORM_NATIVE
 		// resume update with sdl?
@@ -230,7 +230,7 @@ void onPause() {
 
 	if (!avdl_engine_isPaused(&engine)) {
 		avdl_engine_setPaused(&engine, 1);
-		#if DD_PLATFORM_ANDROID
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		pthread_join(updatePthread, NULL);
 		#endif
 	}
@@ -253,7 +253,7 @@ void onPause() {
 /*
  * Android specific functions that call the engine's events
  */
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 
 void updateThread() {
 	while (!dd_flag_exit && !avdl_engine_isPaused(&engine)) {
@@ -282,7 +282,7 @@ void updateThread() {
 				(*jvm)->DetachCurrentThread(jvm);
 			}
 			*/
-			#if DD_PLATFORM_ANDROID
+			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 			if (!avdl_state_initialised) return;
 			avdl_state_initialised = 0;
 			avdl_engine_clean(&engine);

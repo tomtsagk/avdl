@@ -468,7 +468,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 		//draw();
 		#endif
 
-		#if DD_PLATFORM_ANDROID
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		if (dd_flag_exit) {
 			return 0;
 		}

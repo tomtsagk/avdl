@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include "avdl_time.h"
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>

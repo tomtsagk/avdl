@@ -29,7 +29,7 @@ int dd_mouse_y();
 float dd_mouse_xProportion();
 float dd_mouse_yProportion();
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #define DD_MOUSE_SHAPE_INHERIT 0
 #define DD_MOUSE_SHAPE_NONE 0
 #define dd_mouse_shape(shape)

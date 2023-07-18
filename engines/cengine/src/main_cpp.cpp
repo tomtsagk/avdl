@@ -87,7 +87,7 @@ void avdl_handle_cmd(struct android_app* androidApp, int32_t cmd) {
 	}
 }
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <jni.h>
 extern "C" {
 extern JNIEnv *jniEnv;

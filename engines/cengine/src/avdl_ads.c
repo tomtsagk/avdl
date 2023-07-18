@@ -1,6 +1,6 @@
 #include "avdl_ads.h"
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <jni.h>
 extern JNIEnv *jniEnv;
 extern JavaVM* jvm;
@@ -11,7 +11,7 @@ extern jmethodID showFullscreenAdMethodId;
 
 void avdl_ads_loadFullScreenAd() {
 
-	#if defined( DD_PLATFORM_ANDROID ) && defined( AVDL_ADMOB )
+	#if defined( AVDL_ANDROID ) && defined( AVDL_ADMOB )
 	JNIEnv *env;
 	int getEnvStat = (*jvm)->GetEnv(jvm, &jniEnv, JNI_VERSION_1_6);
 
@@ -35,7 +35,7 @@ void avdl_ads_loadFullScreenAd() {
 
 void avdl_ads_showFullScreenAd() {
 
-	#if defined( DD_PLATFORM_ANDROID ) && defined( AVDL_ADMOB )
+	#if defined( AVDL_ANDROID ) && defined( AVDL_ADMOB )
 	JNIEnv *env;
 	int getEnvStat = (*jvm)->GetEnv(jvm, &jniEnv, JNI_VERSION_1_6);
 

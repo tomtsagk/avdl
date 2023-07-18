@@ -2,7 +2,7 @@
 #include <string.h>
 #include "dd_log.h"
 
-#if defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <pthread.h>
 #include <unistd.h>
 #include <jni.h>
@@ -36,7 +36,7 @@ void avdl_webapi_openurl(const char *url) {
 	ShellExecuteA(NULL, "open", url, NULL, NULL, SW_SHOW);
 	#endif
 
-	#elif defined(DD_PLATFORM_ANDROID) || defined(AVDL_QUEST2)
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 
 	JNIEnv *env;
 

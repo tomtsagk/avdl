@@ -3,7 +3,7 @@
 
 #ifndef AVDL_DIRECT3D11
 
-#if DD_PLATFORM_ANDROID
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <android/log.h>
 #else
 #include <stdio.h>
@@ -18,7 +18,7 @@ void dd_log(const char *msg, ...) {
 	va_list args;
 	va_start(args, msg);
 
-	#if DD_PLATFORM_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	__android_log_vprint(ANDROID_LOG_INFO, "avdl", msg, args);
 	#elif defined(_WIN32) || defined(WIN32)
 	char buffer[1024];
