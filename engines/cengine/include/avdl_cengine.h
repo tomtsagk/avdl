@@ -17,7 +17,6 @@ extern "C" {
 #include "dd_meshColour.h"
 #include "dd_meshTexture.h"
 #include "dd_sound.h"
-#include "dd_music.h"
 #include "dd_world.h"
 #include "dd_math.h"
 #include "dd_fov.h"

@@ -190,7 +190,6 @@ int avdl_engine_init(struct avdl_engine *o) {
 			}
 
 			// start at full volume
-			avdl_music_setVolume(100);
 			avdl_sound_setVolume(100);
 
 		}
