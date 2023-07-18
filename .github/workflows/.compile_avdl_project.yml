@@ -549,9 +549,6 @@ jobs:
       run: sudo apt update && sudo apt install -y zip
     # publish whole directory
     - name: prepare and upload
-      if: ${{ (inputs.build_linux) || (inputs.build_windows) }}
-      env:
-        BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
         cd ${{ inputs.project_name }}_${{ matrix.build_type }} && zip ../${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.zip * -r && cd ..
     # upload to release

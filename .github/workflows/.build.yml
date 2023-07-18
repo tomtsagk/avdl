@@ -308,7 +308,7 @@ jobs:
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
     - uses: actions/upload-artifact@v3
       with:
-        name: avdl_build_linux
+        name: avdl_linux
         path: AVDL_BUILD
   build_windows:
     runs-on: windows-latest
@@ -335,57 +335,9 @@ jobs:
         path: build/AVDL_BUILD/dependencies
     - uses: actions/upload-artifact@v3
       with:
-        name: avdl_build_windows
+        name: avdl_windows
         path: build/AVDL_BUILD
-  create_release:
-    if: ${{ github.ref_type == 'tag' }}
-    runs-on: ubuntu-20.04
-    needs: [build_linux, build_windows]
-#    needs: [build_linux]
-    steps:
-    - uses: actions/download-artifact@v3
-      with:
-        name: avdl_build_linux
-        path: avdl_build_linux
-    - uses: actions/download-artifact@v3
-      with:
-        name: avdl_build_windows
-        path: avdl_build_windows
-    - name: zip packages
-      run: |
-         sudo apt update && sudo apt install -y zip
-         zip avdl_build_linux.zip avdl_build_linux -r
-         zip avdl_build_windows.zip avdl_build_windows -r
-    - name: create release
-      uses: actions/create-release@v1
-      id: create_release
-      with:
-        draft: true
-        prerelease: false
-        release_name: ${{ steps.version.outputs.version }}
-#        release_name: test_release
-        tag_name: ${{ github.ref }}
-#        body_path: CHANGELOG.md
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-    - name: upload linux artifact
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: avdl_build_linux.zip
-        asset_name: avdl_${{ github.ref_name }}_linux.zip
-        asset_content_type: application/gzip
-    - name: upload windows artifact
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: avdl_build_windows.zip
-        asset_name: avdl_${{ github.ref_name }}_windows.zip
-        asset_content_type: application/gzip
+
   # Android
   rue_build_android:
     runs-on: ubuntu-latest
@@ -394,8 +346,8 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_linux
-        path: avdl_build_linux
+        name: avdl_linux
+        path: avdl_linux
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
@@ -410,8 +362,8 @@ jobs:
     - name: set_avdl
       run: |
         mkdir AVDL_BUILD
-        mv avdl_build_linux/* AVDL_BUILD
-        rmdir avdl_build_linux
+        mv avdl_linux/* AVDL_BUILD
+        rmdir avdl_linux
         chmod +x AVDL_BUILD/bin/avdl
     - name: generate_android_project
       run: |
@@ -419,14 +371,14 @@ jobs:
         ../AVDL_BUILD/bin/avdl --android
     - name: compile_apk
       run: |
-        cd rue/avdl_build_android/
+        cd rue/avdl_android/
         chmod +x gradlew
         ./gradlew build
         cd ../../
         mkdir rue_output
-        mv rue/avdl_build_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk rue_output
+        mv rue/avdl_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk rue_output
         mkdir rue_output_debug
-        mv rue/avdl_build_android/app/build/outputs/apk/debug/app-universal-debug.apk rue_output_debug
+        mv rue/avdl_android/app/build/outputs/apk/debug/app-universal-debug.apk rue_output_debug
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
@@ -446,8 +398,8 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_linux
-        path: avdl_build_linux
+        name: avdl_linux
+        path: avdl_linux
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
@@ -462,8 +414,8 @@ jobs:
     - name: set_avdl
       run: |
         mkdir AVDL_BUILD
-        mv avdl_build_linux/* AVDL_BUILD
-        rmdir avdl_build_linux
+        mv avdl_linux/* AVDL_BUILD
+        rmdir avdl_linux
         chmod +x AVDL_BUILD/bin/avdl
     - name: generate_android_project
       run: |
@@ -471,14 +423,14 @@ jobs:
         ../AVDL_BUILD/bin/avdl --android-google-play "123"
     - name: compile_apk
       run: |
-        cd rue/avdl_build_android/
+        cd rue/avdl_android/
         chmod +x gradlew
         ./gradlew build
         cd ../../
         mkdir rue_output
-        mv rue/avdl_build_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk rue_output
+        mv rue/avdl_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk rue_output
         mkdir rue_output_debug
-        mv rue/avdl_build_android/app/build/outputs/apk/debug/app-universal-debug.apk rue_output_debug
+        mv rue/avdl_android/app/build/outputs/apk/debug/app-universal-debug.apk rue_output_debug
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
@@ -498,8 +450,8 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_linux
-        path: avdl_build_linux
+        name: avdl_linux
+        path: avdl_linux
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
@@ -514,8 +466,8 @@ jobs:
     - name: set_avdl
       run: |
         mkdir AVDL_BUILD
-        mv avdl_build_linux/* AVDL_BUILD
-        rmdir avdl_build_linux
+        mv avdl_linux/* AVDL_BUILD
+        rmdir avdl_linux
         chmod +x AVDL_BUILD/bin/avdl
     - name: generate_quest2_project
       run: |
@@ -530,7 +482,7 @@ jobs:
         mv oculus_mobile_sdk.zip avdl_oculus_build
         cd avdl_oculus_build
         unzip oculus_mobile_sdk.zip
-        cp ../rue/avdl_build_quest2/ -r avdl_vr_bk/AvdlProject
+        cp ../rue/avdl_quest2/ -r avdl_vr_bk/AvdlProject
     - name: compile_apk
       run: |
         cd avdl_oculus_build/avdl_vr_bk/AvdlProject/Projects/Android
@@ -558,8 +510,8 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_linux
-        path: avdl_build_linux
+        name: avdl_linux
+        path: avdl_linux
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
@@ -574,8 +526,8 @@ jobs:
     - name: set_avdl
       run: |
         mkdir AVDL_BUILD
-        mv avdl_build_linux/* AVDL_BUILD
-        rmdir avdl_build_linux
+        mv avdl_linux/* AVDL_BUILD
+        rmdir avdl_linux
         chmod +x AVDL_BUILD/bin/avdl
     - name: generate_quest2_project
       run: |
@@ -590,7 +542,7 @@ jobs:
         mv oculus_mobile_sdk.zip avdl_oculus_build
         cd avdl_oculus_build
         unzip oculus_mobile_sdk.zip
-        cp ../rue/avdl_build_quest2/ -r avdl_vr_bk/AvdlProject
+        cp ../rue/avdl_quest2/ -r avdl_vr_bk/AvdlProject
     - name: compile_apk
       run: |
         cd avdl_oculus_build/avdl_vr_bk/AvdlProject/Projects/Android
@@ -621,11 +573,11 @@ jobs:
          sudo apt update && sudo apt install -y gcc libgl1-mesa-dev
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_linux
-        path: avdl_build_linux
+        name: avdl_linux
+        path: avdl_linux
     - name: get_rue
       run: |
-        chmod +x avdl_build_linux/bin/avdl
+        chmod +x avdl_linux/bin/avdl
         git clone https://github.com/tomtsagk/rue rue
         cd rue
         git checkout develop
@@ -633,15 +585,15 @@ jobs:
     - name: compile_rue
       run: |
         cd rue
-        ../avdl_build_linux/bin/avdl -i ../avdl_build_linux/dependencies/linux/include -L ../avdl_build_linux/dependencies/linux/lib --standalone
-        mkdir avdl_build/dependencies
-        cp ../avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
-        rm avdl_build/dependencies/*steam*
+        ../avdl_linux/bin/avdl -i ../avdl_linux/dependencies/linux/include -L ../avdl_linux/dependencies/linux/lib --standalone
+        mkdir avdl/dependencies
+        cp ../avdl_linux/dependencies/linux/lib/*.so* avdl/dependencies
+        rm avdl/dependencies/*steam*
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
         name: rue_build_linux
-        path: rue/avdl_build
+        path: rue/avdl
   # Linux - steam
   rue_build_linux_steam:
     runs-on: ubuntu-20.04
@@ -653,11 +605,11 @@ jobs:
          sudo apt update && sudo apt install -y gcc libgl1-mesa-dev
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_linux
-        path: avdl_build_linux
+        name: avdl_linux
+        path: avdl_linux
     - name: get_rue
       run: |
-        chmod +x avdl_build_linux/bin/avdl
+        chmod +x avdl_linux/bin/avdl
         git clone https://github.com/tomtsagk/rue rue
         cd rue
         git checkout develop
@@ -665,14 +617,14 @@ jobs:
     - name: compile_rue
       run: |
         cd rue
-        ../avdl_build_linux/bin/avdl -i ../avdl_build_linux/dependencies/linux/include -L ../avdl_build_linux/dependencies/linux/lib --standalone --steam
-        mkdir avdl_build/dependencies
-        cp ../avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
+        ../avdl_linux/bin/avdl -i ../avdl_linux/dependencies/linux/include -L ../avdl_linux/dependencies/linux/lib --standalone --steam
+        mkdir avdl/dependencies
+        cp ../avdl_linux/dependencies/linux/lib/*.so* avdl/dependencies
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
         name: rue_build_linux_steam
-        path: rue/avdl_build
+        path: rue/avdl
   # Windows
   rue_build_windows:
     runs-on: windows-latest
@@ -681,8 +633,8 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_windows
-        path: avdl_build_windows
+        name: avdl_windows
+        path: avdl_windows
     - name: get_rue
       shell: bash
       run: |
@@ -698,8 +650,8 @@ jobs:
       shell: bash
       run: |
         mkdir AVDL_BUILD
-        mv avdl_build_windows/* AVDL_BUILD
-        rmdir avdl_build_windows
+        mv avdl_windows/* AVDL_BUILD
+        rmdir avdl_windows
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
     - name: zlib
@@ -772,8 +724,8 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_windows
-        path: avdl_build_windows
+        name: avdl_windows
+        path: avdl_windows
     - name: get_rue
       shell: bash
       run: |
@@ -789,8 +741,8 @@ jobs:
       shell: bash
       run: |
         mkdir AVDL_BUILD
-        mv avdl_build_windows/* AVDL_BUILD
-        rmdir avdl_build_windows
+        mv avdl_windows/* AVDL_BUILD
+        rmdir avdl_windows
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
     - name: zlib
@@ -858,8 +810,8 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_windows
-        path: avdl_build_windows
+        name: avdl_windows
+        path: avdl_windows
     - name: get_rue
       shell: bash
       run: |
@@ -875,8 +827,8 @@ jobs:
       shell: bash
       run: |
         mkdir AVDL_BUILD
-        mv avdl_build_windows/* AVDL_BUILD
-        rmdir avdl_build_windows
+        mv avdl_windows/* AVDL_BUILD
+        rmdir avdl_windows
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
     - name: zlib
@@ -976,8 +928,8 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_build_windows
-        path: avdl_build_windows
+        name: avdl_windows
+        path: avdl_windows
     - name: get_rue
       shell: bash
       run: |
@@ -993,8 +945,8 @@ jobs:
       shell: bash
       run: |
         mkdir AVDL_BUILD
-        mv avdl_build_windows/* AVDL_BUILD
-        rmdir avdl_build_windows
+        mv avdl_windows/* AVDL_BUILD
+        rmdir avdl_windows
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
     - name: zlib
@@ -1054,3 +1006,48 @@ jobs:
         name: rue_build_windows_steam_d3d11
         path: rue/build/RUE_BUILD
 
+  # Github release
+  release_github:
+    if: ${{ always() && !cancelled() && github.ref_type == 'tag' }}
+    needs: [build_linux, build_windows]
+    runs-on: ubuntu-20.04
+    steps:
+    - name: init_project
+      uses: actions/checkout@v3
+    - name: Create release
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        tag: ${{ github.ref_name }}
+      run: |
+        gh release create "$tag" -F metadata/changelog.md --title="${GITHUB_REPOSITORY#*/} - ${tag}" -d
+
+  release_github_assets:
+    if: ${{ always() && !cancelled() && github.ref_type == 'tag' }}
+    needs: release_github
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        build_type: [linux, windows]
+    steps:
+    # possibly needs this ?
+    - name: init_project
+      uses: actions/checkout@v3
+    # get build
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_${{ matrix.build_type }}
+        path: avdl_${{ matrix.build_type }}
+    # prepare for publishing
+    - name: prepare zipping
+      run: sudo apt update && sudo apt install -y zip
+    # publish whole directory
+    - name: prepare and upload
+      run: |
+        cd avdl_${{ matrix.build_type }} && zip ../avdl_${{ github.ref_name }}_${{ matrix.build_type }}.zip * -r && cd ..
+    # upload to release
+    - name: Upload to release
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        tag: ${{ github.ref_name }}
+      run: |
+        gh release upload "$tag" avdl_${{ github.ref_name }}_${{ matrix.build_type }}.zip
