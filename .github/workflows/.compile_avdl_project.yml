@@ -124,8 +124,11 @@ jobs:
          sudo apt update && sudo apt install -y zipalign apksigner
     - name: get_avdl
       run: |
-        wget $AVDL_BUILD_URL_LINUX -O avdl_linux.zip
+        mkdir avdl_linux
+        wget $AVDL_BUILD_URL_LINUX -O avdl_linux/avdl_linux.zip
+        cd avdl_linux
         unzip avdl_linux.zip
+        cd ..
         chmod +x avdl_linux/bin/avdl
     - name: generate_android_project
       if: ${{ matrix.build_type == 'android' }}
@@ -198,9 +201,11 @@ jobs:
          sudo apt update && sudo apt install -y zipalign apksigner
     - name: get_avdl
       run: |
-        wget $AVDL_BUILD_URL_LINUX -O avdl_linux.zip
+        mkdir avdl_linux
+        wget $AVDL_BUILD_URL_LINUX -O avdl_linux/avdl_linux.zip
+        cd avdl_linux
         unzip avdl_linux.zip
-        chmod +x avdl_linux/bin/avdl
+        chmod +x bin/avdl
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
@@ -274,7 +279,9 @@ jobs:
       uses: actions/checkout@v3
     - name: get_avdl
       run: |
-        wget $AVDL_BUILD_URL_LINUX -O avdl_linux.zip
+        mkdir avdl_linux
+        wget $AVDL_BUILD_URL_LINUX -O avdl_linux/avdl_linux.zip
+        cd avdl_linux
         unzip avdl_linux.zip
     - name: compile_project
       if: ${{ matrix.build_type == 'linux-x86_64' }}
@@ -333,8 +340,13 @@ jobs:
     - name: unpack_avdl
       shell: bash
       run: |
+        mkdir avdl_windows
+        mv avdl_windows.zip avdl_windows
+        cd avdl_windows
         unzip avdl_windows.zip
-        mv avdl_windows AVDL_BUILD
+        rm avdl_windows.zip
+        cd ..
+        mv avdl_windows/* AVDL_BUILD
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
     - name: zlib
