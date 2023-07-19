@@ -84,8 +84,8 @@ on:
         required: false
 
 env:
-  AVDL_BUILD_URL_LINUX: https://github.com/tomtsagk/avdl/releases/download/v0.13.3/avdl_v0.13.3_linux.zip
-  AVDL_BUILD_URL_WINDOWS: https://github.com/tomtsagk/avdl/releases/download/v0.13.3/avdl_v0.13.3_windows.zip
+  AVDL_BUILD_URL_LINUX: https://github.com/tomtsagk/avdl/releases/download/v0.13.4/avdl_v0.13.4_linux.zip
+  AVDL_BUILD_URL_WINDOWS: https://github.com/tomtsagk/avdl/releases/download/v0.13.4/avdl_v0.13.4_windows.zip
 
 jobs:
   # Android
@@ -485,7 +485,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         tag: ${{ github.ref_name }}
       run: |
-        gh release create "$tag" -F metadata/changelog.md --title="${GITHUB_REPOSITORY#*/} - ${tag}" -d
+        gh release create "$tag" -F metadata/changelog.md --title="${GITHUB_REPOSITORY#*/} - ${tag}"
 
   release_github_assets:
     if: ${{ always() && !cancelled() && github.ref_type == 'tag' }}

@@ -1019,7 +1019,7 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         tag: ${{ github.ref_name }}
       run: |
-        gh release create "$tag" -F metadata/changelog.md --title="${GITHUB_REPOSITORY#*/} - ${tag}" -d
+        gh release create "$tag" -F metadata/changelog.md --title="${GITHUB_REPOSITORY#*/} - ${tag}"
 
   release_github_assets:
     if: ${{ always() && !cancelled() && github.ref_type == 'tag' }}
