@@ -323,9 +323,9 @@ jobs:
         build_windows_steam:
           - ${{ (inputs.build_windows) && (inputs.build_steam) }}
         exclude:
-          - build_type: windows
+          - build_type: windows-x86_64
             build_windows: false
-          - build_type: windows_steam
+          - build_type: windows_steam-x86_64
             build_windows_steam: false
     steps:
     - name: init_project
@@ -346,7 +346,7 @@ jobs:
         unzip avdl_windows.zip
         rm avdl_windows.zip
         cd ..
-        mv avdl_windows/* AVDL_BUILD
+        mv avdl_windows AVDL_BUILD
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
     - name: zlib
