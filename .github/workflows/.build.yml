@@ -586,9 +586,9 @@ jobs:
       run: |
         cd rue
         ../avdl_linux/bin/avdl -i ../avdl_linux/dependencies/linux/include -L ../avdl_linux/dependencies/linux/lib --standalone
-        mkdir avdl/dependencies
-        cp ../avdl_linux/dependencies/linux/lib/*.so* avdl/dependencies
-        rm avdl/dependencies/*steam*
+        mkdir avdl_build/dependencies
+        cp ../avdl_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
+        rm avdl_build/dependencies/*steam*
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
