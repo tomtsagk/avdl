@@ -124,21 +124,21 @@ jobs:
          sudo apt update && sudo apt install -y zipalign apksigner
     - name: get_avdl
       run: |
-        wget $AVDL_BUILD_URL_LINUX -O avdl_build_linux.zip
-        unzip avdl_build_linux.zip
-        chmod +x avdl_build_linux/bin/avdl
+        wget $AVDL_BUILD_URL_LINUX -O avdl_linux.zip
+        unzip avdl_linux.zip
+        chmod +x avdl_linux/bin/avdl
     - name: generate_android_project
       if: ${{ matrix.build_type == 'android' }}
-      run: ./avdl_build_linux/bin/avdl --android
+      run: ./avdl_linux/bin/avdl --android
     - name: generate_android_project admob
       if: ${{ matrix.build_type == 'android_admob' }}
-      run: ./avdl_build_linux/bin/avdl --android --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }}
+      run: ./avdl_linux/bin/avdl --android --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }}
     - name: generate_android_project googleplay
       if: ${{ matrix.build_type == 'android_googleplay' }}
-      run: ./avdl_build_linux/bin/avdl --android-google-play ${{ secrets.GOOGLE_PLAY_ID }} ${{ secrets.AVDL_GOOGLE_PLAY_ACHIEVEMENTS }}
+      run: ./avdl_linux/bin/avdl --android-google-play ${{ secrets.GOOGLE_PLAY_ID }} ${{ secrets.AVDL_GOOGLE_PLAY_ACHIEVEMENTS }}
     - name: generate_android_project googleplay admob
       if: ${{ matrix.build_type == 'android_googleplay_admob' }}
-      run: ./avdl_build_linux/bin/avdl --android-google-play ${{ secrets.GOOGLE_PLAY_ID }} ${{ secrets.AVDL_GOOGLE_PLAY_ACHIEVEMENTS }} --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }}
+      run: ./avdl_linux/bin/avdl --android-google-play ${{ secrets.GOOGLE_PLAY_ID }} ${{ secrets.AVDL_GOOGLE_PLAY_ACHIEVEMENTS }} --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }}
     - name: compile
       run: |
         cd avdl_build_android
@@ -198,19 +198,19 @@ jobs:
          sudo apt update && sudo apt install -y zipalign apksigner
     - name: get_avdl
       run: |
-        wget $AVDL_BUILD_URL_LINUX -O avdl_build_linux.zip
-        unzip avdl_build_linux.zip
-        chmod +x avdl_build_linux/bin/avdl
+        wget $AVDL_BUILD_URL_LINUX -O avdl_linux.zip
+        unzip avdl_linux.zip
+        chmod +x avdl_linux/bin/avdl
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
         java-version: '17'
     - name: generate_quest2_project
       if: ${{ matrix.build_type == 'quest2' }}
-      run: ./avdl_build_linux/bin/avdl --quest2
+      run: ./avdl_linux/bin/avdl --quest2
     - name: generate_quest2_project
       if: ${{ matrix.build_type == 'quest2_oculus' }}
-      run: ./avdl_build_linux/bin/avdl --quest2-oculus ${{ secrets.OCULUS_PROJECT_ID }}
+      run: ./avdl_linux/bin/avdl --quest2-oculus ${{ secrets.OCULUS_PROJECT_ID }}
     - name: get_oculus_sdk
       env:
         oculus_api_link: ${{ secrets.OCULUS_API_LINK }}
@@ -274,23 +274,23 @@ jobs:
       uses: actions/checkout@v3
     - name: get_avdl
       run: |
-        wget $AVDL_BUILD_URL_LINUX -O avdl_build_linux.zip
-        unzip avdl_build_linux.zip
+        wget $AVDL_BUILD_URL_LINUX -O avdl_linux.zip
+        unzip avdl_linux.zip
     - name: compile_project
       if: ${{ matrix.build_type == 'linux-x86_64' }}
       run: |
-        chmod +x avdl_build_linux/bin/avdl
-        ./avdl_build_linux/bin/avdl -i ./avdl_build_linux/dependencies/linux/include -L ./avdl_build_linux/dependencies/linux/lib --standalone
+        chmod +x avdl_linux/bin/avdl
+        ./avdl_linux/bin/avdl -i ./avdl_linux/dependencies/linux/include -L ./avdl_linux/dependencies/linux/lib --standalone
         mkdir avdl_build/dependencies
-        cp ./avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
+        cp ./avdl_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
         rm avdl_build/dependencies/*steam*
     - name: compile_project steam
       if: ${{ matrix.build_type == 'linux_steam-x86_64' }}
       run: |
-        chmod +x avdl_build_linux/bin/avdl
-        ./avdl_build_linux/bin/avdl -i ./avdl_build_linux/dependencies/linux/include -L ./avdl_build_linux/dependencies/linux/lib --standalone --steam
+        chmod +x avdl_linux/bin/avdl
+        ./avdl_linux/bin/avdl -i ./avdl_linux/dependencies/linux/include -L ./avdl_linux/dependencies/linux/lib --standalone --steam
         mkdir avdl_build/dependencies
-        cp ./avdl_build_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
+        cp ./avdl_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
     - name: verify
       if: ${{ matrix.build_type == 'linux-x86_64' }}
       run: |
@@ -329,12 +329,12 @@ jobs:
         mkdir libraries
     - name: get_avdl
       run: |
-        C:\msys64\usr\bin\wget.exe -q $Env:AVDL_BUILD_URL_WINDOWS -O avdl_build_windows.zip
+        C:\msys64\usr\bin\wget.exe -q $Env:AVDL_BUILD_URL_WINDOWS -O avdl_windows.zip
     - name: unpack_avdl
       shell: bash
       run: |
-        unzip avdl_build_windows.zip
-        mv avdl_build_windows AVDL_BUILD
+        unzip avdl_windows.zip
+        mv avdl_windows AVDL_BUILD
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
     - name: zlib
