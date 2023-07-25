@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - develop
-      - feature/ttf-support
       - master
     tags:
       "v[0-9]+.[0-9]+.[0-9]+"
@@ -66,7 +65,7 @@ jobs:
       id: cache
       uses: actions/cache@v3
       with:
-        key: avdl_dependencies_linux_v0
+        key: avdl_dependencies_linux_v1
         path: avdl_dependencies_linux
     - name: update packages
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -218,6 +217,7 @@ jobs:
         name: avdl_dependencies_linux
         path: avdl_dependencies_linux
   dependencies_windows:
+    if: ${{ false }}
     runs-on: windows-latest
     steps:
     - name: cache
