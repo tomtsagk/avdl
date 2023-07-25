@@ -322,6 +322,7 @@ jobs:
         path: avdl_dependencies_windows
   build_linux:
     runs-on: ubuntu-20.04
+    if: ${{ false }}
     needs: [dependencies_windows, dependencies_linux]
     steps:
     - name: update packages
@@ -697,6 +698,10 @@ jobs:
       shell: bash
       run: |
         cp -r AVDL_BUILD/dependencies/windows/libpng "C:/Program Files (x86)/libpng"
+    - name: freetype
+      shell: bash
+      run: |
+        cp -r AVDL_BUILD/dependencies/windows/freetype "C:/Program Files (x86)/freetype"
     - name: get_libraries
       run: |
         C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip

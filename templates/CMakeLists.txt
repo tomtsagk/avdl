@@ -73,7 +73,7 @@ endif()
 install(FILES "C:/Program Files (x86)/zlib/bin/zlib.dll" DESTINATION bin/)
 
 # dependency freetype
-include("C:/Program Files/freetype/lib/cmake/freetype-config-release.cmake")
+include("C:/Program Files (x86)/freetype/lib/cmake/freetype-config-release.cmake")
 
 # dependency png
 set(PNG_LIBRARY "C:/Program Files (x86)/libpng/lib/libpng16.lib")
