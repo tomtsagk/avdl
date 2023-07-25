@@ -18,7 +18,7 @@ jobs:
     steps:
     - name: Dependencies
       run: |
-         sudo apt update && sudo apt install -y valgrind lcov gcc libglew-dev libsdl2-dev libsdl2-mixer-dev libpng-dev freetype*
+         sudo apt update && sudo apt install -y valgrind lcov gcc libglew-dev libsdl2-dev libsdl2-mixer-dev libpng-dev libfreetype-dev
 
     - uses: actions/checkout@v1
 

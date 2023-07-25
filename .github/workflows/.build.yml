@@ -251,6 +251,20 @@ jobs:
         cmake --build . --config Release
         cmake --install .
         cd ../../
+    # freetype
+    - name: freetype
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        git clone https://gitlab.freedesktop.org/freetype/freetype freetype
+        cd freetype
+        git checkout ${FREETYPE_VERSION_LINUX}
+        mkdir build
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/freetype"
+        cmake --build . --config Release
+        cmake --install .
+        cd ../../
+        ls -R "C:/Program Files/freetype"
     # libpng
     - name: libpng
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -295,6 +309,7 @@ jobs:
         mkdir avdl_dependencies_windows/windows/lib
         cp -r "C:/Program Files/zlib" avdl_dependencies_windows/windows
         cp -r "C:/Program Files/libpng" avdl_dependencies_windows/windows
+        cp -r "C:/Program Files/freetype" avdl_dependencies_windows/windows
         cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
         cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/windows/lib
         cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
