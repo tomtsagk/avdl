@@ -223,7 +223,7 @@ jobs:
       id: cache
       uses: actions/cache@v3
       with:
-        key: avdl_dependencies_windows_v3
+        key: avdl_dependencies_windows_v4
         path: avdl_dependencies_windows
     - name: get_dependencies
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -251,20 +251,6 @@ jobs:
         cmake --build . --config Release
         cmake --install .
         cd ../../
-    # freetype
-    - name: freetype
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        git clone https://gitlab.freedesktop.org/freetype/freetype freetype
-        cd freetype
-        git checkout ${FREETYPE_VERSION_LINUX}
-        mkdir build
-        cd build
-        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/freetype"
-        cmake --build . --config Release -DBUILD_SHARED_LIBS=true
-        cmake --install .
-        cd ../../
-        ls -R "C:/Program Files/freetype"
     # libpng
     - name: libpng
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -278,6 +264,20 @@ jobs:
         cmake --build . --config Release
         cmake --install .
         cd ../../
+    # freetype
+    - name: freetype
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        git clone https://gitlab.freedesktop.org/freetype/freetype freetype
+        cd freetype
+        git checkout ${FREETYPE_VERSION_LINUX}
+        mkdir build
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/freetype" -DBUILD_SHARED_LIBS=true -DCMAKE_BUILD_TYPE=Release
+        cmake --build . --config Release
+        cmake --install .
+        cd ../../
+        ls -R "C:/Program Files/freetype"
     # sdl
     - name: sdl - windows
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
