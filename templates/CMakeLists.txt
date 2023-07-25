@@ -96,7 +96,7 @@ if (${AVDL_STEAM})
 endif()
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${PNG_LIBRARY}         )
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${FREETPYE_LIBRARY}    )
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${FREETYPE_LIBRARY}    )
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${STEAM_LIBRARY}       )
 
 # add include directory, for binary, including dependencies
