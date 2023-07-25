@@ -785,6 +785,10 @@ jobs:
         rmdir avdl_windows
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
+    - name: freetype
+      shell: bash
+      run: |
+        cp -r AVDL_BUILD/dependencies/windows/freetype "C:/Program Files (x86)/freetype"
     - name: zlib
       shell: bash
       run: |
