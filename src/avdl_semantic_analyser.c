@@ -34,6 +34,7 @@ static struct ast_node *expect_command_include(struct avdl_lexer *l);
 static struct ast_node *expect_command_asset(struct avdl_lexer *l);
 static struct ast_node *expect_command_for(struct avdl_lexer *l);
 static struct ast_node *expect_command_multistring(struct avdl_lexer *l);
+static struct ast_node *expect_command_unicode(struct avdl_lexer *l);
 static struct ast_node *expect_command_return(struct avdl_lexer *l);
 static void semantic_error(struct avdl_lexer *l, const char *msg, ...);
 
@@ -65,6 +66,16 @@ static struct ast_node *expect_command_multistring(struct avdl_lexer *l) {
 	}
 
 	return multistringcmd;
+}
+
+static struct ast_node *expect_command_unicode(struct avdl_lexer *l) {
+	struct ast_node *unicodecmd = ast_create(AST_COMMAND_NATIVE);
+	ast_setValuei(unicodecmd, 0);
+	ast_setLex(unicodecmd, "unicode");
+
+	ast_addChild(unicodecmd, expect_string(l));
+
+	return unicodecmd;
 }
 
 static struct ast_node *expect_command_for(struct avdl_lexer *l) {
@@ -795,6 +806,10 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		else
 		if (strcmp(ast_getLex(cmdname), "multistring") == 0) {
 			cmd = expect_command_multistring(l);
+		}
+		else
+		if (strcmp(ast_getLex(cmdname), "unicode") == 0) {
+			cmd = expect_command_unicode(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "return") == 0) {

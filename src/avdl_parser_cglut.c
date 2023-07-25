@@ -21,6 +21,7 @@ static void print_command_echo(FILE *fd, struct ast_node *n);
 static void print_command_if(FILE *fd, struct ast_node *n);
 static void print_command_for(FILE *fd, struct ast_node *n);
 static void print_command_multistring(FILE *fd, struct ast_node *n);
+static void print_command_unicode(FILE *fd, struct ast_node *n);
 static void print_command_return(FILE *fd, struct ast_node *n);
 static void print_command_groupStatements(FILE *fd, struct ast_node *n);
 static void print_command_asset(FILE *fd, struct ast_node *n);
@@ -85,6 +86,14 @@ static void print_command_return(FILE *fd, struct ast_node *n) {
 }
 
 static void print_command_multistring(FILE *fd, struct ast_node *n) {
+	for (int i = 0; i < n->children.elements; i++) {
+		struct ast_node *string = dd_da_get(&n->children, i);
+		print_node(fd, string);
+	}
+}
+
+static void print_command_unicode(FILE *fd, struct ast_node *n) {
+	fprintf(fd, "L");
 	for (int i = 0; i < n->children.elements; i++) {
 		struct ast_node *string = dd_da_get(&n->children, i);
 		print_node(fd, string);
@@ -598,6 +607,10 @@ static void print_command_native(FILE *fd, struct ast_node *n) {
 	else
 	if (strcmp(n->lex, "multistring") == 0) {
 		print_command_multistring(fd, n);
+	}
+	else
+	if (strcmp(n->lex, "unicode") == 0) {
+		print_command_unicode(fd, n);
 	}
 	else
 	if (strcmp(n->lex, "return") == 0) {

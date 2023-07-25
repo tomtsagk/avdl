@@ -69,7 +69,6 @@ char *cengine_files[] = {
 	"dd_meshTexture.c",
 	"dd_mouse.c",
 	"dd_sound.c",
-	"dd_music.c",
 	"avdl_whereami.c",
 	"dd_string3d.c",
 	"dd_vec3.c",
@@ -97,6 +96,7 @@ char *cengine_files[] = {
 	"avdl_webapi.c",
 	"avdl_webapi_cpp.cpp",
 	"avdl_ads.c",
+	"avdl_font.c",
 };
 unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
 
@@ -124,7 +124,6 @@ char *cengine_headers[] = {
 	"dd_meshTexture.h",
 	"dd_mouse.h",
 	"dd_sound.h",
-	"dd_music.h",
 	"avdl_whereami.h",
 	"dd_string3d.h",
 	"dd_vec2.h",
@@ -144,6 +143,7 @@ char *cengine_headers[] = {
 	"avdl_time.h",
 	"avdl_webapi.h",
 	"avdl_ads.h",
+	"avdl_font.h",
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 
@@ -685,6 +685,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	avdl_string_cat(&commandString, " -I ");
 	avdl_string_cat(&commandString, avdl_project_path);
 	avdl_string_cat(&commandString, "/include ");
+	avdl_string_cat(&commandString, " -I /usr/include/freetype2 ");
 
 	avdl_string_cat(&commandString, avdl_string_toCharPtr(&srcFilePath));
 	avdl_string_cat(&commandString, " -o ");
@@ -827,6 +828,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		strcat(compile_command, " -I ");
 		strcat(compile_command, avdl_settings->pkg_path);
 		strcat(compile_command, "/include ");
+		strcat(compile_command, " -I /usr/include/freetype2 ");
 
 		// cengine extra directories (mostly for custom dependencies)
 		for (int i = 0; i < avdl_settings_ptr->total_include_directories; i++) {
@@ -1019,10 +1021,10 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 
 	if (avdl_settings->standalone) {
-		strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libpng16.so.16 -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2");
+		strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libpng16.so.16 -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2 -l:libfreetype.so.6");
 	}
 	else {
-		strcat(buffer, " -O3 -lm -logg -lpng -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW");
+		strcat(buffer, " -O3 -lm -logg -lpng -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lfreetype");
 	}
 
 	if (avdl_settings->steam_mode) {

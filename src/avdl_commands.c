@@ -44,6 +44,7 @@ const char *keywords[] = {
 
 	"extern",
 	"multistring",
+	"unicode",
 	"include",
 };
 unsigned int keywords_total = sizeof(keywords) /sizeof(char *);

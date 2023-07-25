@@ -40,6 +40,9 @@ struct dd_mesh {
 	void (*copy)(struct dd_mesh *, struct dd_mesh *);
 
 	void (*combine)(struct dd_mesh *dst, struct dd_mesh *src, float offsetX, float offsetY, float offsetZ);
+
+	void (*translatef)(struct dd_mesh *, float x, float y, float z);
+	void (*scalef)(struct dd_mesh *, float x, float y, float z);
 };
 
 // constructor
@@ -55,6 +58,9 @@ void dd_mesh_load(struct dd_mesh *m, const char *filename, int type);
 
 void dd_mesh_copy(struct dd_mesh *dest, struct dd_mesh *src);
 void dd_mesh_combine(struct dd_mesh *dest, struct dd_mesh *src, float offsetX, float offsetY, float offsetZ);
+
+void dd_mesh_translatef(struct dd_mesh *o, float x, float y, float z);
+void dd_mesh_scalef(struct dd_mesh *o, float x, float y, float z);
 
 #ifdef __cplusplus
 }

@@ -125,6 +125,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	}
 	#endif
 
+	// avdl input system
 	avdl_input_Init(&o->input);
 
 	#if defined(AVDL_DIRECT3D11)
@@ -190,7 +191,6 @@ int avdl_engine_init(struct avdl_engine *o) {
 			}
 
 			// start at full volume
-			avdl_music_setVolume(100);
 			avdl_sound_setVolume(100);
 
 		}
@@ -275,9 +275,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	/*
 	 * string3d initialisation for displaying text
 	 */
-	if (dd_string3d_isActive()) {
-		dd_string3d_init();
-	}
+	avdl_font_init();
 
 	#if defined(AVDL_QUEST2)
 
@@ -399,9 +397,7 @@ int avdl_engine_clean(struct avdl_engine *o) {
 		o->cworld = 0;
 	}
 
-	if (dd_string3d_isActive()) {
-		dd_string3d_deinit();
-	}
+	avdl_font_deinit();
 
 	#if DD_PLATFORM_NATIVE
 	// destroy window
