@@ -99,7 +99,7 @@ jobs:
         make -j6
         sudo make -j6 install
         cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/freetype/lib/${PNG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${PNG_VERSION_LINUX_SONAME}
+        cp ${HOME}/AVDL_DEPENDENCIES/freetype/lib/${FREETYPE_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${FREETYPE_VERSION_LINUX_SONAME}
     - name: libpng - linux
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
