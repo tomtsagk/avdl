@@ -217,7 +217,6 @@ jobs:
         name: avdl_dependencies_linux
         path: avdl_dependencies_linux
   dependencies_windows:
-    if: ${{ false }}
     runs-on: windows-latest
     steps:
     - name: cache
