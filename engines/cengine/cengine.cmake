@@ -26,7 +26,6 @@ install(FILES
 	engines/cengine/src/dd_meshColour.c
 	engines/cengine/src/dd_meshTexture.c
 	engines/cengine/src/dd_mouse.c
-	engines/cengine/src/dd_music.c
 	engines/cengine/src/dd_sound.c
 	engines/cengine/src/dd_string3d.c
 	engines/cengine/src/dd_vec3.c
@@ -77,7 +76,6 @@ install(FILES
 	engines/cengine/include/dd_mesh.h
 	engines/cengine/include/dd_meshTexture.h
 	engines/cengine/include/dd_mouse.h
-	engines/cengine/include/dd_music.h
 	engines/cengine/include/dd_sound.h
 	engines/cengine/include/dd_string3d.h
 	engines/cengine/include/dd_vec2.h
