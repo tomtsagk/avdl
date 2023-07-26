@@ -322,7 +322,6 @@ jobs:
         path: avdl_dependencies_windows
   build_linux:
     runs-on: ubuntu-20.04
-    if: ${{ false }}
     needs: [dependencies_windows, dependencies_linux]
     steps:
     - name: update packages
@@ -348,6 +347,7 @@ jobs:
         path: AVDL_BUILD
   build_windows:
     runs-on: windows-latest
+    if: ${{ false }}
     needs: [dependencies_windows, dependencies_linux]
     steps:
     - name: init_avdl
