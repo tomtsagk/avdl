@@ -234,9 +234,13 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	// window icon
 	char filename[400];
+	#if defined(_WIN32) || defined(WIN32)
+	strcpy(filename, "assets/icon_64x64.png");
+	#else
 	strcpy(filename, avdl_getProjectLocation());
 	strcat(filename, GAME_ASSET_PREFIX);
 	strcat(filename, "assets/icon_64x64.png");
+	#endif
 
 	struct dd_image img;
 	dd_image_load_png(&img, filename);
