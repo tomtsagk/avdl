@@ -408,7 +408,6 @@ jobs:
     - name: compile_apk
       run: |
         cd rue/avdl_build_android/
-        # temp freetype hack
         git clone https://gitlab.freedesktop.org/freetype/freetype app/build/src/main/cpp/freetype
         chmod +x gradlew
         ./gradlew build
