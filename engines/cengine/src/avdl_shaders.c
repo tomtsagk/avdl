@@ -358,7 +358,11 @@ const char *avdl_shaderDefault_fragment =
 "uniform sampler2D image;\n"
 
 "void main() {\n"
-"	avdl_frag_color = outColour +avdl_texture(image, outTexCoord);\n"
+"	vec4 finalCol = outColour +avdl_texture(image, outTexCoord);\n"
+"	if (finalCol.a < 0.02) {\n"
+"		discard;\n"
+"	}\n"
+"	avdl_frag_color = finalCol;\n"
 "}\n"
 ;
 
@@ -380,64 +384,12 @@ const char *avdl_shaderDefault_fragment_q2 =
 "out lowp vec4 outColor;\n"
 "uniform sampler2D image;\n"
 "void main() {\n"
-"	outColor = fragmentColor +texture(image, outTexCoord);\n"
-"}\n"
-;
-
-const char *avdl_shaderFont_vertex =
-"AVDL_IN vec2 texCoord;\n"
-
-"uniform vec3 colorFront;\n"
-"uniform vec3 colorBack;\n"
-
-"AVDL_OUT vec4 outColour;\n"
-"AVDL_OUT vec2 outTexCoord;\n"
-
-"void main() {\n"
-"	gl_Position = final_position();\n"
-"	outColour = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
-"	outTexCoord  = texCoord;\n"
-"}\n"
-;
-
-const char *avdl_shaderFont_fragment =
-"AVDL_IN vec4 outColour;\n"
-"AVDL_IN vec2 outTexCoord;\n"
-
-"uniform sampler2D image;\n"
-
-"void main() {\n"
-"	vec4 finalCol = avdl_texture(image, outTexCoord);\n"
-"	if (finalCol.r < 0.05 && finalCol.g < 0.05 && finalCol.b < 0.05) {\n"
-"		discard;\n"
-"	}\n"
-"	avdl_frag_color = finalCol;\n"
-"}\n"
-;
-
-const char *avdl_shaderFont_vertex_q2 =
-"in vec3 colour;\n"
-"in vec2 texCoord;\n"
-"out vec4 fragmentColour;\n"
-"out vec2 outTexCoord;\n"
-"void main() {\n"
-"	gl_Position = final_position();\n"
-"	fragmentColour = vec4(1.0f, 1.0f, 1.0f, 1.0f);\n"
-"	outTexCoord  = texCoord;\n"
-"}\n"
-;
-
-const char *avdl_shaderFont_fragment_q2 =
-"in lowp vec4 fragmentColour;\n"
-"in lowp vec2 outTexCoord;\n"
-"out lowp vec4 outColor;\n"
-"uniform sampler2D image;\n"
-"void main() {\n"
-"	vec4 finalCol = texture(image, outTexCoord);\n"
-"	if (finalCol.r < 0.05 && finalCol.g < 0.05 && finalCol.b < 0.05) {\n"
+"	vec4 finalCol = outColour +avdl_texture(image, outTexCoord);\n"
+"	if (finalCol.a < 0.02) {\n"
 "		discard;\n"
 "	}\n"
 "	outColor = finalCol;\n"
+//"	outColor = fragmentColor +texture(image, outTexCoord);\n"
 "}\n"
 ;
 

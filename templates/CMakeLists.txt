@@ -72,6 +72,11 @@ endif()
 # dependency zlib
 install(FILES "C:/Program Files (x86)/zlib/bin/zlib.dll" DESTINATION bin/)
 
+# dependency freetype
+set(FREETYPE_LIBRARY "C:/Program Files (x86)/freetype/lib/freetype.lib")
+set(FREETYPE_INCLUDE_DIR "C:/Program Files (x86)/freetype/include/freetype2")
+install(FILES "C:/Program Files (x86)/freetype/bin/freetype.dll" DESTINATION bin/)
+
 # dependency png
 set(PNG_LIBRARY "C:/Program Files (x86)/libpng/lib/libpng16.lib")
 set(PNG_PNG_INCLUDE_DIR "C:/Program Files (x86)/libpng/include")
@@ -91,6 +96,7 @@ if (${AVDL_STEAM})
 endif()
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${PNG_LIBRARY}         )
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${FREETYPE_LIBRARY}    )
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${STEAM_LIBRARY}       )
 
 # add include directory, for binary, including dependencies
@@ -98,6 +104,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
 	cengine
 	include
 	${PNG_PNG_INCLUDE_DIR}
+	${FREETYPE_INCLUDE_DIR}
 	${ZLIB_INCLUDE_DIR}
 	${STEAM_INCLUDE_DIR}
 )

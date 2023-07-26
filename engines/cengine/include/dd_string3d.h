@@ -7,12 +7,7 @@ extern "C" {
 
 #include "avdl_cengine.h"
 #include "dd_image.h"
-
-void dd_string3d_activate(const char *src, int src_type, float fColumns, float fRows, float fWidth, float fHeight);
-int dd_string3d_isActive();
-
-void dd_string3d_init();
-void dd_string3d_deinit();
+#include "avdl_font.h"
 
 enum dd_string3d_align {
 	DD_STRING3D_ALIGN_LEFT,
@@ -28,7 +23,9 @@ enum dd_string3d_align_vertical {
 
 struct dd_word_mesh {
 	struct dd_meshTexture m;
+	int glyph_ids[100];
 	int width;
+	float widthf;
 };
 
 struct dd_string3d {
@@ -43,14 +40,24 @@ struct dd_string3d {
 	float colorBack[3];
 
 	int len;
+	const char *text;
+	const wchar_t *textw;
+
+	struct avdl_font *font;
+
+	int is_int;
 
 	void (*setText)(struct dd_string3d *, const char *text);
+	void (*setTextUnicode)(struct dd_string3d *, const char *text);
+	void (*setTextInt)(struct dd_string3d *);
 
 	void (*setAlign)(struct dd_string3d *, enum dd_string3d_align);
 	void (*setAlignVertical)(struct dd_string3d *, enum dd_string3d_align_vertical);
 	void (*draw)(struct dd_string3d *);
 	void (*drawInt)(struct dd_string3d *, int num);
 	void (*drawLimit)(struct dd_string3d *, int limit);
+
+	void (*setFont)(struct dd_string3d *, struct avdl_font *);
 
 	void (*clean)(struct dd_string3d *);
 };
@@ -66,8 +73,10 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit);
 void dd_string3d_clean(struct dd_string3d *o);
 
 void dd_string3d_setText(struct dd_string3d *o, const char *text);
+void dd_string3d_setTextUnicode(struct dd_string3d *o, const wchar_t *text);
+void dd_string3d_setTextInt(struct dd_string3d *o);
 
-void dd_string3d_setKerning(float nkerning);
+void dd_string3d_setFont(struct dd_string3d *, struct avdl_font *);
 
 #ifdef __cplusplus
 }

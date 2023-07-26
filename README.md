@@ -20,7 +20,7 @@ These are games made by me, using `avdl`, to get an idea of what
 the language can do.
 
 * Rue -
-[Itch.io](https://afloofdev.itch.io/rue.html) |
+[Itch.io](https://afloofdev.itch.io/rue) |
 [GameJolt](https://gamejolt.com/games/rue/632453) |
 [Google Play](https://play.google.com/store/apps/details?id=org.darkdimension.rue)
 
@@ -139,7 +139,7 @@ value like below:
 ## Documentation
 
 There is a new tutorial that explains the basics here:
-[https://afloofdev.com/avdl.html](https://afloofdev.com/avdl.html)
+[https://afloofdev.com/avdl.html](https://afloof.dev/avdl)
 
 For how to use `avdl` through the command line, together
 with arguments, see the man page at `manual/avdl.1`. You can do

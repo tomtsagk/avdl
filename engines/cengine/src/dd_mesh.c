@@ -200,3 +200,31 @@ void dd_mesh_combine(struct dd_mesh *dst, struct dd_mesh *src, float offsetX, fl
 	}
 	dst->vcount += src->vcount;
 }
+
+void dd_mesh_translatef(struct dd_mesh *o, float x, float y, float z) {
+	if (o->v && !o->dirtyVertices) {
+		float *p = malloc(sizeof(float) *o->vcount *3);
+		memcpy(p, o->v, sizeof(float) *o->vcount *3);
+		o->v = p;
+		o->dirtyVertices = 1;
+	}
+	for (int i = 0; i < o->vcount; i++) {
+		o->v[i*3 +0] += x;
+		o->v[i*3 +1] += y;
+		o->v[i*3 +2] += z;
+	}
+}
+
+void dd_mesh_scalef(struct dd_mesh *o, float x, float y, float z) {
+	if (o->v && !o->dirtyVertices) {
+		float *p = malloc(sizeof(float) *o->vcount *3);
+		memcpy(p, o->v, sizeof(float) *o->vcount *3);
+		o->v = p;
+		o->dirtyVertices = 1;
+	}
+	for (int i = 0; i < o->vcount; i++) {
+		o->v[i*3 +0] *= x;
+		o->v[i*3 +1] *= y;
+		o->v[i*3 +2] *= z;
+	}
+}

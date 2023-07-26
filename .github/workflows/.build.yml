@@ -51,6 +51,11 @@ env:
   PNG_VERSION_WINDOWS: X
   # zlib
   ZLIB_VERSION_WINDOWS: 1.2.13
+  # freetype
+  FREETYPE_VERSION_LINUX: VER-2-13-1
+  FREETYPE_VERSION_LINUX_LINKER_NAME: libfreetype.so
+  FREETYPE_VERSION_LINUX_SONAME: libfreetype.so.6
+  FREETYPE_VERSION_LINUX_REAL_NAME: libfreetype.so.6.20.0
 
 jobs:
   dependencies_linux:
@@ -60,7 +65,7 @@ jobs:
       id: cache
       uses: actions/cache@v3
       with:
-        key: avdl_dependencies_linux_v0
+        key: avdl_dependencies_linux_v1
         path: avdl_dependencies_linux
     - name: update packages
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -80,6 +85,21 @@ jobs:
         mkdir avdl_dependencies_linux/windows
         mkdir avdl_dependencies_linux/windows/lib
         mkdir avdl_dependencies_linux/windows/include
+    - name: freetype - linux
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        git clone https://gitlab.freedesktop.org/freetype/freetype freetype
+        cd freetype
+        git checkout ${FREETYPE_VERSION_LINUX}
+        sh autogen.sh
+        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES/freetype
+        make -j6
+        make -j6 install
+        ./configure
+        make -j6
+        sudo make -j6 install
+        cd ..
+        cp ${HOME}/AVDL_DEPENDENCIES/freetype/lib/${FREETYPE_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${FREETYPE_VERSION_LINUX_SONAME}
     - name: libpng - linux
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
@@ -203,7 +223,7 @@ jobs:
       id: cache
       uses: actions/cache@v3
       with:
-        key: avdl_dependencies_windows_v0
+        key: avdl_dependencies_windows_v4
         path: avdl_dependencies_windows
     - name: get_dependencies
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -244,6 +264,20 @@ jobs:
         cmake --build . --config Release
         cmake --install .
         cd ../../
+    # freetype
+    - name: freetype
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
+      run: |
+        git clone https://gitlab.freedesktop.org/freetype/freetype freetype
+        cd freetype
+        git checkout ${FREETYPE_VERSION_LINUX}
+        mkdir build
+        cd build
+        cmake ../ . -DCMAKE_INSTALL_PREFIX="C:/Program Files/freetype" -DBUILD_SHARED_LIBS=true -DCMAKE_BUILD_TYPE=Release
+        cmake --build . --config Release
+        cmake --install .
+        cd ../../
+        ls -R "C:/Program Files/freetype"
     # sdl
     - name: sdl - windows
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -275,6 +309,7 @@ jobs:
         mkdir avdl_dependencies_windows/windows/lib
         cp -r "C:/Program Files/zlib" avdl_dependencies_windows/windows
         cp -r "C:/Program Files/libpng" avdl_dependencies_windows/windows
+        cp -r "C:/Program Files/freetype" avdl_dependencies_windows/windows
         cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
         cp -r "C:/Program Files/avdl_sdl2/SDL2-${SDL_VERSION_WINDOWS}/lib/"* avdl_dependencies_windows/windows/lib
         cp -r "C:/Program Files/avdl_sdl2_mixer/SDL2_mixer-${SDL_MIXER_VERSION_WINDOWS}/include/"* avdl_dependencies_windows/windows/include
@@ -287,6 +322,7 @@ jobs:
         path: avdl_dependencies_windows
   build_linux:
     runs-on: ubuntu-20.04
+    if: ${{ false }}
     needs: [dependencies_windows, dependencies_linux]
     steps:
     - name: update packages
@@ -662,6 +698,10 @@ jobs:
       shell: bash
       run: |
         cp -r AVDL_BUILD/dependencies/windows/libpng "C:/Program Files (x86)/libpng"
+    - name: freetype
+      shell: bash
+      run: |
+        cp -r AVDL_BUILD/dependencies/windows/freetype "C:/Program Files (x86)/freetype"
     - name: get_libraries
       run: |
         C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
@@ -745,6 +785,10 @@ jobs:
         rmdir avdl_windows
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
+    - name: freetype
+      shell: bash
+      run: |
+        cp -r AVDL_BUILD/dependencies/windows/freetype "C:/Program Files (x86)/freetype"
     - name: zlib
       shell: bash
       run: |

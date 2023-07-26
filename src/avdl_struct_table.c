@@ -74,9 +74,12 @@ void struct_table_init() {
 	struct_table_push_member("setAlign", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setAlignVertical", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setText", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setTextUnicode", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setTextInt", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("drawInt", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("drawLimit", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setFont", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_program", 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -133,6 +136,8 @@ void struct_table_init() {
 	struct_table_push_member("getPositionZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("reset", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("hasJustCollided", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("avdl_font", 0);
+	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

@@ -32,7 +32,6 @@ int avdl_graphics_getContextId() {
 
 // shaders
 GLuint defaultProgram;
-GLuint fontProgram;
 GLuint currentProgram;
 
 int avdl_graphics_Init() {
@@ -169,16 +168,6 @@ int avdl_graphics_generateContext() {
 	#endif
 	if (!defaultProgram) {
 		dd_log("avdl: error loading shaders");
-		return -1;
-	}
-
-	#if defined(AVDL_QUEST2)
-	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex_q2, avdl_shaderFont_fragment_q2);
-	#else
-	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex, avdl_shaderFont_fragment);
-	#endif
-	if (!fontProgram) {
-		dd_log("avdl: error loading font shaders");
 		return -1;
 	}
 
