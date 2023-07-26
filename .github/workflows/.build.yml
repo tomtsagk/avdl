@@ -408,6 +408,8 @@ jobs:
     - name: compile_apk
       run: |
         cd rue/avdl_build_android/
+        # temp freetype hack
+        git clone https://gitlab.freedesktop.org/freetype/freetype app/build/src/main/cpp/freetype
         chmod +x gradlew
         ./gradlew build
         cd ../../
@@ -428,6 +430,7 @@ jobs:
 
   # Android - Google Play Games Services
   rue_build_android_googleplay:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     needs: [build_linux]
     if: ${{ github.ref == 'refs/heads/develop' }}
@@ -540,6 +543,7 @@ jobs:
 
   # Quest 2 + oculus platform services
   rue_build_quest2_oculus:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     needs: [build_linux]
     if: ${{ github.ref == 'refs/heads/develop' }}
@@ -600,6 +604,7 @@ jobs:
 
   # Linux
   rue_build_linux:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     needs: [build_linux]
     if: ${{ github.ref == 'refs/heads/develop' }}
@@ -632,6 +637,7 @@ jobs:
         path: rue/avdl_build
   # Linux - steam
   rue_build_linux_steam:
+    if: ${{ false }}
     runs-on: ubuntu-20.04
     needs: [build_linux]
     if: ${{ github.ref == 'refs/heads/develop' }}

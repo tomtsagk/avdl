@@ -20,11 +20,23 @@ add_library(avdl SHARED
 	%AVDL_GAME_FILES%
 )
 
+## freetype
+set(FT_DISABLE_ZLIB TRUE)
+set(FT_DISABLE_BZIP2 TRUE)
+set(FT_DISABLE_PNG TRUE)
+set(FT_DISABLE_HARFBUZZ TRUE)
+add_subdirectory(freetype)
+
+target_include_directories(avdl PRIVATE
+	freetype/include
+)
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} %AVDL_C_FLAGS%")
 
 target_link_libraries(
 	avdl
 	android
+	freetype
 	dl
 	EGL
 	#GLESv2

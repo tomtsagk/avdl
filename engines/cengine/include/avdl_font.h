@@ -30,6 +30,8 @@ struct avdl_font {
 	FT_Face face;
 	int outline_thickness;
 
+	FT_Byte *fontData;
+
 	struct avdl_glyph glyphs[100];
 
 	void (*clean)(struct avdl_font *);

@@ -236,7 +236,7 @@ void dd_string3d_clean(struct dd_string3d *o) {
 }
 
 // dirty hack to look at the atlas
-int once = 1;
+int once = 0;
 
 void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 

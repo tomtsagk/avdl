@@ -1,5 +1,6 @@
 #include "avdl_font.h"
 #include "dd_math.h"
+#include "dd_log.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -50,9 +51,24 @@ void avdl_font_create(struct avdl_font *o) {
 	o->texture.width = FONT_ATLAS_WIDTH;
 	o->texture.height = FONT_ATLAS_HEIGHT;
 	o->texture.pixelFormat = GL_RGBA;
-	o->texture.pixels = malloc(sizeof(float) *4 *o->texture.width *o->texture.height);
 	o->texture.openglContextId = avdl_graphics_getContextId();
 	o->outline_thickness = 0;
+	o->fontData = 0;
+
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	o->texture.pixelsb = malloc(sizeof(GLubyte) *4 *o->texture.width *o->texture.height);
+
+	// clean the texture
+	for (int x = 0; x < o->texture.width ; x++)
+	for (int y = 0; y < o->texture.height; y++) {
+		o->texture.pixelsb[(y*o->texture.width*4) +x*4+0] = 0;
+		o->texture.pixelsb[(y*o->texture.width*4) +x*4+1] = 0;
+		o->texture.pixelsb[(y*o->texture.width*4) +x*4+2] = 0;
+		o->texture.pixelsb[(y*o->texture.width*4) +x*4+3] = 0;
+	}
+
+	#else
+	o->texture.pixels = malloc(sizeof(float) *4 *o->texture.width *o->texture.height);
 
 	// clean the texture
 	for (int x = 0; x < o->texture.width ; x++)
@@ -62,6 +78,8 @@ void avdl_font_create(struct avdl_font *o) {
 		o->texture.pixels[(y*o->texture.width*4) +x*4+2] = 1;
 		o->texture.pixels[(y*o->texture.width*4) +x*4+3] = 0;
 	}
+
+	#endif
 
 	o->face = 0;
 
@@ -107,6 +125,18 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		dd_log("error set pixel sizes");
 	}
 
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	// clear cell
+	for (int x = 0; x < FONT_GLYPH_SIZE; x++)
+	for (int y = 0; y < FONT_GLYPH_SIZE; y++) {
+		int ry = FONT_GLYPH_SIZE-1 -y;
+		int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%10)*FONT_GLYPH_SIZE*4 +((glyph_id/10)*o->texture.width*4*FONT_GLYPH_SIZE);
+		o->texture.pixelsb[index+0] = 255;
+		o->texture.pixelsb[index+1] = 255;
+		o->texture.pixelsb[index+2] = 255;
+		o->texture.pixelsb[index+3] = 0;
+	}
+	#else
 	// clear cell
 	for (int x = 0; x < FONT_GLYPH_SIZE; x++)
 	for (int y = 0; y < FONT_GLYPH_SIZE; y++) {
@@ -117,6 +147,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		o->texture.pixels[index+2] = 1.0;
 		o->texture.pixels[index+3] = 0.0;
 	}
+	#endif
 
 	// outline
 	int cx = 0;
@@ -152,6 +183,18 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		glyph_bitmap  = (FT_BitmapGlyph)glyphDescStroke;
 		bitmap_stroke = &glyph_bitmap->bitmap;
 
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+		// render glyph on texture
+		for (int x = 0; x < bitmap_stroke->width; x++)
+		for (int y = 0; y < bitmap_stroke->rows ; y++) {
+			int ry = bitmap_stroke->rows-1 -y;
+			int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%10)*FONT_GLYPH_SIZE*4 +((glyph_id/10)*o->texture.width*4*FONT_GLYPH_SIZE);
+			o->texture.pixelsb[index+0] = 0;
+			o->texture.pixelsb[index+1] = 0;
+			o->texture.pixelsb[index+2] = 0;
+			o->texture.pixelsb[index+3] = dd_math_min(bitmap_stroke->buffer[y*bitmap_stroke->width +x] *255, 255);
+		}
+		#else
 		// render glyph on texture
 		for (int x = 0; x < bitmap_stroke->width; x++)
 		for (int y = 0; y < bitmap_stroke->rows ; y++) {
@@ -162,6 +205,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 			o->texture.pixels[index+2] = 0.0;
 			o->texture.pixels[index+3] = bitmap_stroke->buffer[y*bitmap_stroke->width +x];
 		}
+		#endif
 		cx = bitmap_stroke->width;
 		cy = bitmap_stroke->rows;
 	}
@@ -217,10 +261,17 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		o->texture.pixels[index+2] = 1.0;
 		o->texture.pixels[index+3] = alpha;
 		*/
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+		o->texture.pixelsb[index+0] = dd_math_min(255, o->texture.pixelsb[index+0] +255 *alpha);
+		o->texture.pixelsb[index+1] = dd_math_min(255, o->texture.pixelsb[index+1] +255 *alpha);
+		o->texture.pixelsb[index+2] = dd_math_min(255, o->texture.pixelsb[index+2] +255 *alpha);
+		o->texture.pixelsb[index+3] = dd_math_max(o->texture.pixelsb[index+3], dd_math_min(alpha *255, 255));
+		#else
 		o->texture.pixels[index+0] += 1.0 *alpha;
 		o->texture.pixels[index+1] += 1.0 *alpha;
 		o->texture.pixels[index+2] += 1.0 *alpha;
 		o->texture.pixels[index+3] = dd_math_max(o->texture.pixels[index+3], alpha);
+		#endif
 	}
 
 	o->glyphs[glyph_id].id = unicode_hex;
@@ -312,7 +363,43 @@ float avdl_font_getGlyphTop(struct avdl_font *o, int glyph_id) {
 	return o->glyphs[glyph_id].top;
 }
 
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+#include <pthread.h>
+extern pthread_mutex_t updateDrawMutex;
+extern pthread_mutex_t jniMutex;
+extern AAssetManager *aassetManager;
+extern JNIEnv *jniEnv;
+extern JavaVM* jvm;
+extern jclass *clazz;
+
 void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outline_thickness) {
+
+	o->fontData = 0;
+
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	AAsset* fontFile = AAssetManager_open(aassetManager, name, AASSET_MODE_UNKNOWN);
+	if (!fontFile) {
+		dd_log("unable to open font file");
+		return;
+	}
+	off_t fontDataSize = AAsset_getLength(fontFile);
+
+	o->fontData = malloc(sizeof(FT_Byte) *fontDataSize);
+	if (!o->fontData) {
+		dd_log("error during malloc");
+		return;
+	}
+	AAsset_read(fontFile, o->fontData, fontDataSize);
+	AAsset_close(fontFile);
+
+	if (FT_New_Memory_Face(library, o->fontData, fontDataSize, 0, &o->face)) {
+		dd_log("Load memory failed");
+		o->face = 0;
+	}
+	#else
+
+	// native
 
 	int error = FT_New_Face(library,
 		name,
@@ -329,6 +416,7 @@ void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outl
 		o->face = 0;
 		return;
 	}
+	#endif
 
 	o->outline_thickness = outline_thickness;
 
