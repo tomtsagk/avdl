@@ -20,7 +20,8 @@ LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/../../../../OpenXr/Include \
 	$(LOCAL_PATH)/../../../../3rdParty/khronos/openxr/OpenXR-SDK/include/ \
 	$(LOCAL_PATH)/../../../../3rdParty/khronos/openxr/OpenXR-SDK/src/common/ \
-	$(LOCAL_PATH)/../../../../platform_sdk/Include/
+	$(LOCAL_PATH)/../../../../platform_sdk/Include/ \
+	$(LOCAL_PATH)/../../../freetype/include/
 
 LOCAL_SRC_FILES	:= %AVDL_ENGINE_FILES% %AVDL_GAME_FILES%
 
@@ -28,10 +29,14 @@ LOCAL_LDLIBS := -lEGL -lGLESv3 -landroid -llog
 
 LOCAL_LDFLAGS := -u ANativeActivity_onCreate
 
-LOCAL_STATIC_LIBRARIES := android_native_app_glue
+LOCAL_STATIC_LIBRARIES := android_native_app_glue freetype
 LOCAL_SHARED_LIBRARIES := openxr_loader ovrplatformloader
 
 include $(BUILD_SHARED_LIBRARY)
+
+# freetype
+SUPPORT_HARFBUZZ ?= false
+$(call import-module,AvdlProject/freetype/)
 
 $(call import-module,OpenXR/Projects/AndroidPrebuilt/jni)
 $(call import-module,android/native_app_glue)

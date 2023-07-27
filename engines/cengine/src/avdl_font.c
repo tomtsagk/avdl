@@ -363,6 +363,7 @@ float avdl_font_getGlyphTop(struct avdl_font *o, int glyph_id) {
 	return o->glyphs[glyph_id].top;
 }
 
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 #include <pthread.h>
@@ -372,6 +373,7 @@ extern AAssetManager *aassetManager;
 extern JNIEnv *jniEnv;
 extern JavaVM* jvm;
 extern jclass *clazz;
+#endif
 
 void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outline_thickness) {
 

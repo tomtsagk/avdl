@@ -115,7 +115,8 @@ static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 		strcpy(buffer, ast_getLex(assetName));
 
 		if (strcmp(buffer +strlen(buffer) -4, ".ply") == 0
-		||  strcmp(buffer +strlen(buffer) -5, ".json") == 0) {
+		||  strcmp(buffer +strlen(buffer) -5, ".json") == 0
+		||  strcmp(buffer +strlen(buffer) -4, ".ttf") == 0) {
 			char *lastSlash = buffer;
 			char *p = buffer;
 			while (p[0] != '\0') {

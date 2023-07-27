@@ -9,6 +9,21 @@ on:
         default: avdl_project
         required: true
         type: string
+      # Special variables to compile a specific github project instead
+      github_project:
+        required: false
+        type: string
+      github_branch:
+        default: master
+        required: false
+        type: string
+      # Special variables for a custom avdl version
+      avdl_linux_artifact:
+        required: false
+        type: string
+      avdl_windows_artifact:
+        required: false
+        type: string
       build_android:
         default: false
         required: false
@@ -55,6 +70,10 @@ on:
       # if true, upload unsigned builds
       include_unsigned:
         default: false
+        required: false
+        type: boolean
+      include_signed:
+        default: true
         required: false
         type: boolean
     secrets:
@@ -114,7 +133,13 @@ jobs:
             build_android_googleplay_admob: false
     steps:
     - name: init_project
+      if: ${{ inputs.github_project == '' }}
       uses: actions/checkout@v3
+    - name: init_project custom
+      if: ${{ inputs.github_project != '' }}
+      run: |
+        git clone https://github.com/${{ inputs.github_project }} .
+        git checkout ${{ inputs.github_branch }}
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
@@ -123,12 +148,22 @@ jobs:
       run: |
          sudo apt update && sudo apt install -y zipalign apksigner
     - name: get_avdl
+      if: ${{ inputs.avdl_linux_artifact == '' }}
       run: |
         mkdir avdl_linux
         wget $AVDL_BUILD_URL_LINUX -O avdl_linux/avdl_linux.zip
         cd avdl_linux
         unzip avdl_linux.zip
         cd ..
+        chmod +x avdl_linux/bin/avdl
+    - uses: actions/download-artifact@v3
+      if: ${{ inputs.avdl_linux_artifact != '' }}
+      with:
+        name: ${{ inputs.avdl_linux_artifact }}
+        path: avdl_linux
+    - name: get_avdl_custom
+      if: ${{ inputs.avdl_linux_artifact != '' }}
+      run: |
         chmod +x avdl_linux/bin/avdl
     - name: generate_android_project
       if: ${{ matrix.build_type == 'android' }}
@@ -145,6 +180,7 @@ jobs:
     - name: compile
       run: |
         cd avdl_build_android
+        git clone https://gitlab.freedesktop.org/freetype/freetype app/src/main/cpp/freetype
         chmod +x gradlew
         ./gradlew build
     - name: package_builds
@@ -156,6 +192,9 @@ jobs:
         mv avdl_build_android/app/build/outputs/apk/debug/app-universal-debug.apk "game_output_debug/game_android_debug.apk"
         cp avdl_build_android/app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip "game_output/native-debug-symbols.zip"
         cp avdl_build_android/app/build/outputs/mapping/release/mapping.txt "game_output/mapping.txt"
+    - name: sign_builds
+      if: ${{ inputs.include_signed }}
+      run: |
         echo '${{ secrets.ANDROID_KEYSTORE }}' | base64 -d > keystore
         zipalign -v 4 "game_output_unsigned/game_android.apk" "game_output/game_android.apk"
         apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' "game_output/game_android.apk"
@@ -167,6 +206,7 @@ jobs:
         name: "${{ inputs.project_name }}_${{ matrix.build_type }}_unsigned"
         path: game_output_unsigned/game_android.apk
     - name: upload_artifact
+      if: ${{ inputs.include_signed }}
       uses: actions/upload-artifact@v3
       with:
         name: "${{ inputs.project_name }}_${{ matrix.build_type }}"
@@ -195,17 +235,34 @@ jobs:
             build_quest2_oculus: false
     steps:
     - name: init_project
+      if: ${{ inputs.github_project == '' }}
       uses: actions/checkout@v3
+    - name: init_project custom
+      if: ${{ inputs.github_project != '' }}
+      run: |
+        git clone https://github.com/${{ inputs.github_project }} .
+        git checkout ${{ inputs.github_branch }}
     - name: apt packages
       run: |
          sudo apt update && sudo apt install -y zipalign apksigner
     - name: get_avdl
+      if: ${{ inputs.avdl_linux_artifact == '' }}
       run: |
         mkdir avdl_linux
         wget $AVDL_BUILD_URL_LINUX -O avdl_linux/avdl_linux.zip
         cd avdl_linux
         unzip avdl_linux.zip
-        chmod +x bin/avdl
+        cd ..
+        chmod +x avdl_linux/bin/avdl
+    - uses: actions/download-artifact@v3
+      if: ${{ inputs.avdl_linux_artifact != '' }}
+      with:
+        name: ${{ inputs.avdl_linux_artifact }}
+        path: avdl_linux
+    - name: get_avdl_custom
+      if: ${{ inputs.avdl_linux_artifact != '' }}
+      run: |
+        chmod +x avdl_linux/bin/avdl
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
@@ -226,6 +283,9 @@ jobs:
         cd avdl_oculus_build
         unzip oculus_mobile_sdk.zip
         cp ../avdl_build_quest2/ -r avdl_vr_bk/AvdlProject
+        git clone https://github.com/libsdl-org/freetype.git avdl_vr_bk/AvdlProject/freetype
+        cd avdl_vr_bk/AvdlProject/freetype
+        git checkout fd08bbe13c52e305f037448e805e7e3c6ea1b1e4
     - name: compile
       run: |
         cd avdl_oculus_build/avdl_vr_bk/AvdlProject/Projects/Android
@@ -234,6 +294,9 @@ jobs:
         ../../../gradlew assembleRelease
         mv build/outputs/apk/debug/Android-debug.apk ../../../../../game_quest2_debug.apk
         mv build/outputs/apk/release/Android-release.apk ../../../../../game_quest2_unsigned.apk
+    - name: sign_builds
+      if: ${{ inputs.include_signed }}
+      run: |
         echo '${{ secrets.ANDROID_KEYSTORE }}' | base64 -d > keystore
         zipalign -v 4 ../../../../../game_quest2_unsigned.apk ../../../../../game_quest2.apk
         apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' ../../../../../game_quest2.apk
@@ -243,13 +306,14 @@ jobs:
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}_debug
         path: game_quest2_debug.apk
-    - name: upload_artifact
+    - name: upload_artifact_unsigned
       if: ${{ inputs.include_unsigned }}
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}_unsigned
         path: game_quest2_unsigned.apk
     - name: upload_artifact
+      if: ${{ inputs.include_signed }}
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}
@@ -276,17 +340,34 @@ jobs:
       run: |
          sudo apt update && sudo apt install -y gcc libgl1-mesa-dev
     - name: init_project
+      if: ${{ inputs.github_project == '' }}
       uses: actions/checkout@v3
+    - name: init_project custom
+      if: ${{ inputs.github_project != '' }}
+      run: |
+        git clone https://github.com/${{ inputs.github_project }} .
+        git checkout ${{ inputs.github_branch }}
     - name: get_avdl
+      if: ${{ inputs.avdl_linux_artifact == '' }}
       run: |
         mkdir avdl_linux
         wget $AVDL_BUILD_URL_LINUX -O avdl_linux/avdl_linux.zip
         cd avdl_linux
         unzip avdl_linux.zip
+        cd ..
+        chmod +x avdl_linux/bin/avdl
+    - uses: actions/download-artifact@v3
+      if: ${{ inputs.avdl_linux_artifact != '' }}
+      with:
+        name: ${{ inputs.avdl_linux_artifact }}
+        path: avdl_linux
+    - name: get_avdl_custom
+      if: ${{ inputs.avdl_linux_artifact != '' }}
+      run: |
+        chmod +x avdl_linux/bin/avdl
     - name: compile_project
       if: ${{ matrix.build_type == 'linux-x86_64' }}
       run: |
-        chmod +x avdl_linux/bin/avdl
         ./avdl_linux/bin/avdl -i ./avdl_linux/dependencies/linux/include -L ./avdl_linux/dependencies/linux/lib --standalone
         mkdir avdl_build/dependencies
         cp ./avdl_linux/dependencies/linux/lib/*.so* avdl_build/dependencies
@@ -329,15 +410,23 @@ jobs:
             build_windows_steam: false
     steps:
     - name: init_project
+      if: ${{ inputs.github_project == '' }}
       uses: actions/checkout@v3
+    - name: init_project custom
+      if: ${{ inputs.github_project != '' }}
+      run: |
+        git clone https://github.com/${{ inputs.github_project }} .
+        git checkout ${{ inputs.github_branch }}
     - name: prepare_libraries
       shell: bash
       run: |
         mkdir libraries
     - name: get_avdl
+      if: ${{ inputs.avdl_windows_artifact == '' }}
       run: |
         C:\msys64\usr\bin\wget.exe -q $Env:AVDL_BUILD_URL_WINDOWS -O avdl_windows.zip
     - name: unpack_avdl
+      if: ${{ inputs.avdl_windows_artifact == '' }}
       shell: bash
       run: |
         mkdir avdl_windows
@@ -349,6 +438,18 @@ jobs:
         mv avdl_windows AVDL_BUILD
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
+    - uses: actions/download-artifact@v3
+      if: ${{ inputs.avdl_windows_artifact != '' }}
+      with:
+        name: ${{ inputs.avdl_windows_artifact }}
+        path: avdl_windows
+    - name: unpack_avdl
+      if: ${{ inputs.avdl_windows_artifact != '' }}
+      shell: bash
+      run: |
+        mv avdl_windows AVDL_BUILD
+        cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
+        cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
     - name: zlib
       shell: bash
       run: |
@@ -357,6 +458,10 @@ jobs:
       shell: bash
       run: |
         cp -r AVDL_BUILD/dependencies/windows/libpng "C:/Program Files (x86)/libpng"
+    - name: freetype
+      shell: bash
+      run: |
+        cp -r AVDL_BUILD/dependencies/windows/freetype "C:/Program Files (x86)/freetype"
     - name: get_libraries
       run: |
         C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
@@ -491,7 +596,13 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: init_project
+      if: ${{ inputs.github_project == '' }}
       uses: actions/checkout@v3
+    - name: init_project custom
+      if: ${{ inputs.github_project != '' }}
+      run: |
+        git clone https://github.com/${{ inputs.github_project }} .
+        git checkout ${{ inputs.github_branch }}
     - name: Create release
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -550,7 +661,13 @@ jobs:
     steps:
     # possibly needs this ?
     - name: init_project
+      if: ${{ inputs.github_project == '' }}
       uses: actions/checkout@v3
+    - name: init_project custom
+      if: ${{ inputs.github_project != '' }}
+      run: |
+        git clone https://github.com/${{ inputs.github_project }} .
+        git checkout ${{ inputs.github_branch }}
     # get build
     - uses: actions/download-artifact@v3
       with:

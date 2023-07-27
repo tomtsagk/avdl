@@ -384,7 +384,7 @@ const char *avdl_shaderDefault_fragment_q2 =
 "out lowp vec4 outColor;\n"
 "uniform sampler2D image;\n"
 "void main() {\n"
-"	vec4 finalCol = outColour +avdl_texture(image, outTexCoord);\n"
+"	vec4 finalCol = fragmentColor +avdl_texture(image, outTexCoord);\n"
 "	if (finalCol.a < 0.02) {\n"
 "		discard;\n"
 "	}\n"
