@@ -1,3 +1,6 @@
+#ifndef AVDL_CENGINE_H
+#define AVDL_CENGINE_H
+
 #ifndef AVDL_GAME_VERSION
 #define AVDL_GAME_VERSION "0.0.0"
 #endif
@@ -52,4 +55,6 @@ int dd_main(int argc, char *argv[]);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif
