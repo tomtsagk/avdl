@@ -85,8 +85,24 @@ void avdl_font_create(struct avdl_font *o) {
 
 }
 
+static void CleanFontData(struct avdl_font *o) {
+	if (o->fontData) {
+		free(o->fontData);
+	}
+}
+
+static void CleanFontFace(struct avdl_font *o) {
+	if (o->face) {
+		FT_Done_Face(o->face);
+		o->face = 0;
+	}
+}
+
 void avdl_font_clean(struct avdl_font *o) {
 	dd_image_clean(&o->texture);
+
+	CleanFontData(o);
+	CleanFontFace(o);
 }
 
 int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
@@ -112,17 +128,17 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		}
 	}
 	if (glyph_id == -1) {
-		dd_log("cannot make more glyphs for this font");
+		dd_log("avdl error: cannot make more glyphs for this font");
 		return -1;
 	}
 
 	FT_Error error = FT_Set_Pixel_Sizes(
-		o->face,   /* handle to face object */
-		0,      /* pixel_width           */
-		FONT_GLYPH_SIZE      /* pixel_height          */
+		o->face,
+		0,
+		FONT_GLYPH_SIZE
 	);
 	if (error) {
-		dd_log("error set pixel sizes");
+		dd_log("avdl error: could not set pixel size for font");
 	}
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
@@ -208,6 +224,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		#endif
 		cx = bitmap_stroke->width;
 		cy = bitmap_stroke->rows;
+		FT_Stroker_Done(stroker);
 	}
 
 	error = FT_Load_Char( o->face, unicode_hex, FT_LOAD_RENDER );
@@ -215,6 +232,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		dd_log("avdl: error loading char glyph: %d", unicode_hex);
 	}
 
+	/*
 	if (o->face->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
 		//dd_log("TTF: BGRA");
 	}
@@ -237,11 +255,12 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 	else {
 		//dd_log("TTF: other");
 	}
+	*/
 
 	int cx_fill  = o->face->glyph->bitmap.width;
 	int cy_fill  = o->face->glyph->bitmap.rows;
-	int offset_x = (cx - cx_fill) / 2; // offset because the bitmap my be smaller, 
-	int offset_y = (cy - cy_fill) / 2; // then the former
+	int offset_x = (cx - cx_fill) / 2;
+	int offset_y = (cy - cy_fill) / 2;
 
 	// render glyph on texture
 	for (int x = 0; x < o->face->glyph->bitmap.width; x++)
@@ -255,12 +274,6 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 			index += offset_x *4;
 		}
 		float alpha = o->face->glyph->bitmap.buffer[y*o->face->glyph->bitmap.width +x];
-		/*
-		o->texture.pixels[index+0] = 1.0;
-		o->texture.pixels[index+1] = 1.0;
-		o->texture.pixels[index+2] = 1.0;
-		o->texture.pixels[index+3] = alpha;
-		*/
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		o->texture.pixelsb[index+0] = dd_math_min(255, o->texture.pixelsb[index+0] +255 *alpha);
 		o->texture.pixelsb[index+1] = dd_math_min(255, o->texture.pixelsb[index+1] +255 *alpha);
@@ -309,20 +322,36 @@ int avdl_font_releaseGlyph(struct avdl_font *o, int glyph_id) {
 	if (glyph_id < 0 || glyph_id >= 100) {
 		return -1;
 	}
-	o->glyphs[glyph_id].uses--;
+
+	o->glyphs[glyph_id].uses = dd_math_max(o->glyphs[glyph_id].uses -1, 0);
 	return 0;
 }
 
 float avdl_font_getTexCoordX(struct avdl_font *o, int glyph_id) {
+	if (glyph_id < 0 || glyph_id >= 100) {
+		return 0;
+	}
+	if (o->glyphs[glyph_id].uses == 0) {
+		return 0;
+	}
 	return ((glyph_id%10)*FONT_GLYPH_SIZE) /(float) FONT_ATLAS_WIDTH;
 }
 
 float avdl_font_getTexCoordY(struct avdl_font *o, int glyph_id) {
+	if (glyph_id < 0 || glyph_id >= 100) {
+		return 0;
+	}
+	if (o->glyphs[glyph_id].uses == 0) {
+		return 0;
+	}
 	return ((glyph_id/10)*FONT_GLYPH_SIZE) /(float) FONT_ATLAS_HEIGHT;
 }
 
 float avdl_font_getTexCoordW(struct avdl_font *o, int glyph_id) {
 	if (glyph_id < 0 || glyph_id >= 100) {
+		return 0;
+	}
+	if (o->glyphs[glyph_id].uses == 0) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].texcoordW;
@@ -332,11 +361,17 @@ float avdl_font_getTexCoordH(struct avdl_font *o, int glyph_id) {
 	if (glyph_id < 0 || glyph_id >= 100) {
 		return 0;
 	}
+	if (o->glyphs[glyph_id].uses == 0) {
+		return 0;
+	}
 	return o->glyphs[glyph_id].texcoordH;
 }
 
 float avdl_font_getGlyphWidth(struct avdl_font *o, int glyph_id) {
 	if (glyph_id < 0 || glyph_id >= 100) {
+		return 0;
+	}
+	if (o->glyphs[glyph_id].uses == 0) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].width;
@@ -346,6 +381,9 @@ float avdl_font_getGlyphHeight(struct avdl_font *o, int glyph_id) {
 	if (glyph_id < 0 || glyph_id >= 100) {
 		return 0;
 	}
+	if (o->glyphs[glyph_id].uses == 0) {
+		return 0;
+	}
 	return o->glyphs[glyph_id].height;
 }
 
@@ -353,11 +391,17 @@ float avdl_font_getGlyphLeft(struct avdl_font *o, int glyph_id) {
 	if (glyph_id < 0 || glyph_id >= 100) {
 		return 0;
 	}
+	if (o->glyphs[glyph_id].uses == 0) {
+		return 0;
+	}
 	return o->glyphs[glyph_id].left;
 }
 
 float avdl_font_getGlyphTop(struct avdl_font *o, int glyph_id) {
 	if (glyph_id < 0 || glyph_id >= 100) {
+		return 0;
+	}
+	if (o->glyphs[glyph_id].uses == 0) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].top;
@@ -377,26 +421,27 @@ extern jclass *clazz;
 
 void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outline_thickness) {
 
-	o->fontData = 0;
+	CleanFontData(o);
+	CleanFontFace(o);
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	AAsset* fontFile = AAssetManager_open(aassetManager, name, AASSET_MODE_UNKNOWN);
 	if (!fontFile) {
-		dd_log("unable to open font file");
+		dd_log("avdl error: unable to open font file: %s", name);
 		return;
 	}
 	off_t fontDataSize = AAsset_getLength(fontFile);
 
 	o->fontData = malloc(sizeof(FT_Byte) *fontDataSize);
 	if (!o->fontData) {
-		dd_log("error during malloc");
+		dd_log("avdl error: malloc failed when creating font");
 		return;
 	}
 	AAsset_read(fontFile, o->fontData, fontDataSize);
 	AAsset_close(fontFile);
 
 	if (FT_New_Memory_Face(library, o->fontData, fontDataSize, 0, &o->face)) {
-		dd_log("Load memory failed");
+		dd_log("avdl error: load font from memory failed");
 		o->face = 0;
 	}
 	#else
