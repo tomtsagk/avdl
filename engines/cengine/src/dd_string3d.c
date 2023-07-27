@@ -233,6 +233,7 @@ void dd_string3d_clean(struct dd_string3d *o) {
 		}
 	}
 	dd_da_empty(&o->textMeshes);
+	dd_da_free(&o->textMeshes);
 }
 
 // dirty hack to look at the atlas

@@ -58,6 +58,7 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 	}
 
 	//avdl_localisation_print(o);
+	dd_json_deinit(&obj);
 
 	#endif
 }

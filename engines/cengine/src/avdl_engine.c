@@ -243,6 +243,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	#endif
 
 	struct dd_image img;
+	dd_image_create(&img);
 	dd_image_load_png(&img, filename);
 	if (img.pixels && img.pixelFormat == GL_RGBA) {
 		SDL_Surface *surface;
@@ -266,7 +267,9 @@ int avdl_engine_init(struct avdl_engine *o) {
 			0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000 // color masks
 		);
 		SDL_SetWindowIcon(o->window, surface);
+		SDL_FreeSurface(surface);
 		free(pixels);
+		dd_image_clean(&img);
 	}
 	#endif
 
