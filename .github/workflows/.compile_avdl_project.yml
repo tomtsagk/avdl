@@ -587,7 +587,7 @@ jobs:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
         VERSION=${{ github.ref_name }}
-        mv ${{ inputs.project_name }}_${{ matrix.build_type }}/game_${{ matrix.build_type }}.apk ${{ inputs.project_name }}_${{ inputs.build_type }}.apk
+        mv ${{ inputs.project_name }}_${{ matrix.build_type }}/game_${{ matrix.build_type }}.apk ${{ inputs.project_name }}_${{ matrix.build_type }}.apk
         ./butler push ${{ inputs.project_name }}_${{ matrix.build_type }}.apk ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:${{ matrix.build_type }} --userversion ${VERSION:1}
 
   # Github release
