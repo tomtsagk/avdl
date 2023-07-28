@@ -582,7 +582,6 @@ jobs:
         ./butler push ${{ inputs.project_name }}_${{ matrix.build_type }}.zip ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:${{ matrix.build_type }} --userversion ${VERSION:1}
     # publish single .apk (android & quest 2)
     - name: prepare and upload android
-      if: ${{ (inputs.build_android) || (inputs.build_quest2) }}
       if: ${{ (matrix.build_type == 'android') || (matrix.build_type == 'quest2') }}
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
