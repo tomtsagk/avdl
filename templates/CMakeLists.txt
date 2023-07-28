@@ -10,6 +10,9 @@ add_compile_definitions(
 	DD_PLATFORM_NATIVE
 	AVDL_DYNAMIC_PKG_LOCATION
 	AVDL_OS_WINDOWS
+)
+
+add_definitions(
 	"-DAVDL_GAME_VERSION=\"${AVDL_VERSION_NAME}\""
 )
 
