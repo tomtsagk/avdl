@@ -297,6 +297,7 @@ jobs:
     - name: sign_builds
       if: ${{ inputs.include_signed }}
       run: |
+        cd avdl_oculus_build/avdl_vr_bk/AvdlProject/Projects/Android
         echo '${{ secrets.ANDROID_KEYSTORE }}' | base64 -d > keystore
         zipalign -v 4 ../../../../../game_quest2_unsigned.apk ../../../../../game_quest2.apk
         apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' ../../../../../game_quest2.apk
