@@ -573,7 +573,7 @@ jobs:
         ./butler -V
     # publish whole directory (linux & windows)
     - name: prepare and upload
-      if: ${{ (inputs.build_linux) || (inputs.build_windows) }}
+      if: ${{ (matrix.build_type == 'linux-x86_64') || (matrix.build_type == 'windows-x86_64') }}
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
@@ -583,6 +583,7 @@ jobs:
     # publish single .apk (android & quest 2)
     - name: prepare and upload android
       if: ${{ (inputs.build_android) || (inputs.build_quest2) }}
+      if: ${{ (matrix.build_type == 'android') || (matrix.build_type == 'quest2') }}
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
