@@ -1,1 +1,1 @@
-* Add steamworks automated builds
+* Temporarily allow up to 400 characters for localisation values
