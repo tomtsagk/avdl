@@ -1,1 +1,1 @@
-* Add localisation support, including Unicode characters through UTF-8
+* Add steamworks automated builds
