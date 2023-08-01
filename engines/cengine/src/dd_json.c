@@ -183,7 +183,7 @@ void dd_json_next(struct dd_json_object *o) {
 			case '"':
 
 				// scan key-string
-				fscanf(o->file, "%200[^\"]", o->buffer);
+				fscanf(o->file, "%400[^\"]", o->buffer);
 				fscanf(o->file, "%*c");
 
 				// ignore whitespace
@@ -201,7 +201,7 @@ void dd_json_next(struct dd_json_object *o) {
 				break;
 			// number or unknown
 			default:
-				dd_log("number or unknown");
+				dd_log("number or unknown: %c %d %s", nextChar, nextChar, o->buffer);
 				/*
 				// number
 				if (nextChar >= '0' && nextChar <= '9') {

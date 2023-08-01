@@ -17,7 +17,7 @@ enum avdl_locale {
 };
 
 #define LOC_MAX_KEYS 50
-#define LOC_MAX_CHARACTERS 200
+#define LOC_MAX_CHARACTERS 400
 
 struct avdl_localisation {
 	char keys[LOC_MAX_KEYS][LOC_MAX_CHARACTERS];
