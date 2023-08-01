@@ -1152,6 +1152,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	char test_buffer2[1024];
 	strcpy(test_buffer2, "LD_LIBRARY_PATH=./dependencies/ ./bin/");
 	strcat(test_buffer2, avdl_settings->project_name_code);
+	strcat(test_buffer2, " $@");
 
 	create_executable_file(test_buffer, test_buffer2);
 	/*
