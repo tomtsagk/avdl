@@ -1,1 +1,1 @@
-* Improve auto building and publishing future versions
+* Add localisation support, including Unicode characters through UTF-8
