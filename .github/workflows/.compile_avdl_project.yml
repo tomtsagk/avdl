@@ -117,6 +117,10 @@ on:
         required: false
       STEAMWORKS_DEPOTID_WINDOWS:
         required: false
+      STEAMWORKS_USERNAME:
+        required: false
+      STEAMWORKS_TOKEN:
+        required: false
 
 env:
   AVDL_BUILD_URL_LINUX: https://github.com/tomtsagk/avdl/releases/download/v0.15.0/avdl_v0.15.0_linux.zip
@@ -608,9 +612,9 @@ jobs:
 
   # Steamworks release
   release_steamworks:
-    if: ${{ always() && !cancelled() && inputs.build_steam && inputs.build_linux && inputs.build_windows }}
+    if: ${{ always() && !cancelled() && inputs.build_steam && inputs.build_linux && inputs.build_windows && inputs.steamworks_branch && github.ref_type == 'tag'}}
     runs-on: ubuntu-20.04
-    needs: [linux_steam-x86_64, windows_steam-x86_64]
+    needs: [linux-x86_64, windows-x86_64]
     steps:
     # get build linux
     - uses: actions/download-artifact@v3
@@ -626,16 +630,12 @@ jobs:
     - name: prepare zipping
       run: |
         sudo apt update && sudo apt install -y zip
-        #sudo add-apt-repository multiverse
-        #sudo apt install software-properties-common
-        #sudo dpkg --add-architecture i386
-        #sudo apt update && sudo apt install -y steamcmd
-        mkdir -p ./steam/steam/config/config.vdf
-        echo '${{ secrets.STEAMWORKS_TOKEN }}' | base64 -d > ./steam/steam/config/config.vdf
+        mkdir -p ~/.steam/steam/config/
+        echo '${{ secrets.STEAMWORKS_TOKEN }}' | base64 -d > ~/.steam/steam/config/config.vdf
     # Steamworks
     - name: get steamworks
       run: |
-        curl https://www.dropbox.com/s/khi7egkib9we32v/steamworks_sdk.zip
+        wget https://www.dropbox.com/s/khi7egkib9we32v/steamworks_sdk.zip
         unzip steamworks_sdk.zip
     # prepare linux and windows
     - name: prepare linux and windows
@@ -650,8 +650,8 @@ jobs:
         echo "\"AppBuild\" {" > sdk/tools/ContentBuilder/scripts/avdl_app_build.vdf
         echo "\"AppID\" \""${{ secrets.STEAMWORKS_APPID }}"\"" >> sdk/tools/ContentBuilder/scripts/avdl_app_build.vdf
         echo "\"Desc\" \""${{ inputs.project_name }}" - "${{ github.ref_name }}"\"" >> sdk/tools/ContentBuilder/scripts/avdl_app_build.vdf
-        echo "\"ContentRoot\" \"../content/\"" >> sdk/tools/ContentBuilder/scripts/avdl_app_build.vdf
-        echo "\"BuildOutput\" \"../output/\"" >> sdk/tools/ContentBuilder/scripts/avdl_app_build.vdf
+        echo "\"ContentRoot\" \"..\\content\\\"" >> sdk/tools/ContentBuilder/scripts/avdl_app_build.vdf
+        echo "\"BuildOutput\" \"..\\output\\\"" >> sdk/tools/ContentBuilder/scripts/avdl_app_build.vdf
         echo "\"SetLive\" \""${{ inputs.steamworks_branch }}"\"" >> sdk/tools/ContentBuilder/scripts/avdl_app_build.vdf
         echo "\"Depots\" {" >> sdk/tools/ContentBuilder/scripts/avdl_app_build.vdf
         # windows
@@ -675,7 +675,8 @@ jobs:
     # publish builds (linux & windows)
     - name: upload
       run: |
-        sdk/tools/ContentBuilder/builder_linux/steamcmd.sh +run_app_build ../scripts/avdl_app_build.vdf +quit
+        chmod +x sdk/tools/ContentBuilder/builder_linux/steamcmd.sh sdk/tools/ContentBuilder/builder_linux/linux32/steamcmd
+        sdk/tools/ContentBuilder/builder_linux/steamcmd.sh +login ${{ secrets.STEAMWORKS_USERNAME }} +run_app_build ../scripts/avdl_app_build.vdf +quit
 
   # Github release
   release_github:
