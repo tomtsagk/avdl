@@ -637,7 +637,7 @@ jobs:
         build_android: true
         build_android_googleplay: false
         build_ads: false
-        build_steam: false
+        build_steam: true
         build_linux: true
         build_windows: true
         build_quest2: true
