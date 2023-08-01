@@ -4,7 +4,7 @@ install(FILES
 	engines/cengine/src/avdl_assetManager.c
 	engines/cengine/src/avdl_data.c
 	engines/cengine/src/avdl_localisation.c
-	engines/cengine/src/avdl_localisation_cpp.c
+	engines/cengine/src/avdl_localisation_cpp.cpp
 	engines/cengine/src/avdl_multiplayer.c
 	engines/cengine/src/avdl_multiplayer_steam.cpp
 	engines/cengine/src/avdl_particle_system.c
