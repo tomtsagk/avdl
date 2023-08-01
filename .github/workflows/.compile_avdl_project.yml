@@ -676,7 +676,12 @@ jobs:
         path: ${{ inputs.project_name }}_${{ matrix.build_type }}
     # prepare for publishing
     - name: prepare zipping
-      run: sudo apt update && sudo apt install -y zip
+      if: ${{ matrix.build_type == 'linux-x86_64' }}
+      run: chmod +x ${{ inputs.project_name }}_${{ matrix.build_type }}/${{ inputs.project_name }}.sh ${{ inputs.project_name }}_${{ matrix.build_type }}/bin/${{ inputs.project_name }}
+    # linux permissions ?
+    - name: permissions
+      run: |
+        cd ${{ inputs.project_name }}_${{ matrix.build_type }} && zip ../${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.zip * -r && cd ..
     # publish whole directory
     - name: prepare and upload
       run: |
