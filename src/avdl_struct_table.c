@@ -81,6 +81,7 @@ void struct_table_init() {
 	struct_table_push_member("drawLimit", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setFont", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("isOnce", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_program", 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setVertexShader", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -106,6 +107,7 @@ void struct_table_init() {
 	struct_table_push("avdl_localisation", 0);
 	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getValue", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("getValueUnicode", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_multiplayer_identity", 0);
 	struct_table_push("avdl_physics", 0);
 	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -138,6 +140,7 @@ void struct_table_init() {
 	struct_table_push_member("hasJustCollided", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_font", 0);
 	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("addCustomIcon", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

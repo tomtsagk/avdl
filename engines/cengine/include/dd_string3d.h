@@ -24,8 +24,10 @@ enum dd_string3d_align_vertical {
 struct dd_word_mesh {
 	struct dd_meshTexture m;
 	int glyph_ids[100];
-	int width;
+	int length;
 	float widthf;
+	int is_newline;
+	float space_size;
 };
 
 struct dd_string3d {
@@ -45,10 +47,12 @@ struct dd_string3d {
 
 	struct avdl_font *font;
 
+	int isOnce;
 	int is_int;
 
+	int openglContextId;
+
 	void (*setText)(struct dd_string3d *, const char *text);
-	void (*setTextUnicode)(struct dd_string3d *, const char *text);
 	void (*setTextInt)(struct dd_string3d *);
 
 	void (*setAlign)(struct dd_string3d *, enum dd_string3d_align);
@@ -73,7 +77,6 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit);
 void dd_string3d_clean(struct dd_string3d *o);
 
 void dd_string3d_setText(struct dd_string3d *o, const char *text);
-void dd_string3d_setTextUnicode(struct dd_string3d *o, const wchar_t *text);
 void dd_string3d_setTextInt(struct dd_string3d *o);
 
 void dd_string3d_setFont(struct dd_string3d *, struct avdl_font *);

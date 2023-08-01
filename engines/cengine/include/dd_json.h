@@ -6,6 +6,12 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <stddef.h>
+
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+#endif
 
 // Tokens
 enum DD_JSON_TOKEN {
@@ -33,9 +39,6 @@ struct dd_json_object {
 	/*
 	 * string parsing
 	 */
-	#if defined(WIN32) || defined(_WIN32)
-	wchar_t bufferW[DD_JSON_BUFFER_SIZE];
-	#endif
 	char buffer[DD_JSON_BUFFER_SIZE];
 	char *str;
 	int size;
@@ -47,6 +50,11 @@ struct dd_json_object {
 	 * file parsing
 	 */
 	FILE *file;
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	AAsset *file2;
+	char *str2;
+	char *current;
+	#endif
 
 	/*
 	 * current token

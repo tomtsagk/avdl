@@ -242,8 +242,47 @@ void dd_image_bind(struct dd_image *o) {
 
 	#ifdef AVDL_DIRECT3D11
 	#else
+	// manually made texture
+	if (o->openglContextId != avdl_graphics_getContextId() && !o->assetName) {
+
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+		o->pixelsb = malloc(sizeof(GLubyte) *4 *o->width *o->height);
+
+		// clean the texture
+		for (int x = 0; x < o->width ; x++)
+		for (int y = 0; y < o->height; y++) {
+			o->pixelsb[(y*o->width*4) +x*4+0] = 0;
+			o->pixelsb[(y*o->width*4) +x*4+1] = 0;
+			o->pixelsb[(y*o->width*4) +x*4+2] = 0;
+			o->pixelsb[(y*o->width*4) +x*4+3] = 0;
+		}
+
+		#else
+		o->pixels = malloc(sizeof(float) *4 *o->width *o->height);
+
+		// clean the texture
+		for (int x = 0; x < o->width ; x++)
+		for (int y = 0; y < o->height; y++) {
+			o->pixels[(y*o->width*4) +x*4+0] = 1;
+			o->pixels[(y*o->width*4) +x*4+1] = 1;
+			o->pixels[(y*o->width*4) +x*4+2] = 1;
+			o->pixels[(y*o->width*4) +x*4+3] = 0;
+		}
+
+		#endif
+		o->openglContextId = avdl_graphics_getContextId();
+	}
+
 	if (o->pixels || o->pixelsb) {
-		avdl_graphics_ImageToGpu(o);
+		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+		o->tex = avdl_graphics_ImageToGpu(o->pixels, o->pixelFormat, o->width, o->height);
+		free(o->pixels);
+		o->pixels = 0;
+		#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+		o->tex = avdl_graphics_ImageToGpu(o->pixelsb, GL_RGBA, o->width, o->height);
+		free(o->pixelsb);
+		o->pixelsb = 0;
+		#endif
 	}
 
 	// texture is valid in this opengl context, bind it
@@ -251,10 +290,14 @@ void dd_image_bind(struct dd_image *o) {
 		avdl_graphics_BindTexture(o->tex);
 	}
 	// texture was in a previous opengl context, reload it
-	else
-	if (o->assetName) {
+	else {
 		o->tex = 0;
-		o->set(o, o->assetName, o->assetType);
+		if (o->assetName) {
+			o->set(o, o->assetName, o->assetType);
+		}
+		else {
+			//dd_log("error state?");
+		}
 	}
 	#endif
 }

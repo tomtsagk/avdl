@@ -9,6 +9,8 @@ import android.view.MotionEvent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
+import android.os.Build;
+import android.annotation.TargetApi;
 
 import java.io.InputStream;
 import android.content.res.Resources;
@@ -47,6 +49,42 @@ public class AvdlActivity extends android.app.NativeActivity {
 		AvdlActivity.context = getApplicationContext();
 		assetManager = getResources().getAssets();
 		nativeSetAssetManager(assetManager);
+
+		// starting locale
+		String s;
+		if (Build.VERSION.SDK_INT < 24) {
+			s = getLocaleLanguageLegacy();
+		}
+		else {
+			s = getLocaleLanguage();
+		}
+		int locale = 0;
+		if (s.equals("en")) {
+			locale = 0;
+		}
+		else
+		if (s.equals("de")) {
+			locale = 1;
+		}
+		else
+		if (s.equals("ja")) {
+			locale = 2;
+		}
+		else
+		if (s.equals("el")) {
+			locale = 3;
+		}
+		nativeSetLocale(locale);
+	}
+
+	@TargetApi(24)
+	String getLocaleLanguage() {
+		return getResources().getConfiguration().getLocales().get(0).getLanguage();
+	}
+
+	@SuppressWarnings("deprecation")
+	String getLocaleLanguageLegacy() {
+		return getResources().getConfiguration().locale.getLanguage();
 	}
 
 	static Object[] ReadBitmap(String bitmapName) {
@@ -141,5 +179,6 @@ public class AvdlActivity extends android.app.NativeActivity {
 	}
 
 	private static native void nativeSetAssetManager(AssetManager assetManager);
+	private static native void nativeSetLocale(int locale);
 
 }

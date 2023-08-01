@@ -2,12 +2,15 @@
 #include <time.h>
 #include <complex.h>
 #include <string.h>
+#include "avdl_localisation.h"
 
 // world interface and starting world
 #include "avdl_cengine.h"
 
+extern enum avdl_locale AVDL_LOCALE_CURRENT;
+
 #ifdef AVDL_DIRECT3D11
-#elif defined(AVDL_OS_WINDOWS)
+#elif defined(AVDL_WINDOWS)
 HANDLE updateDrawMutex;
 #else
 
@@ -100,6 +103,16 @@ int dd_main(int argc, char *argv[]) {
 			strcpy(avdl_data_saveDirectory, argv[i]);
 		}
 		else
+		// set locale
+		if (strcmp(argv[i], "--locale") == 0) {
+			i++;
+			if (i >= argc) {
+				dd_log("avdl: please provide a language, for example 'en'");
+				return -1;
+			}
+			avdl_locale_set(argv[i]);
+		}
+		else
 		// verify game, for testing reasons
 		if (strcmp(argv[i], "--verify") == 0) {
 			engine.verify = 1;
@@ -123,7 +136,7 @@ int dd_main(int argc, char *argv[]) {
 	#endif
 
 	#ifdef AVDL_DIRECT3D11
-	#elif defined(AVDL_OS_WINDOWS)
+	#elif defined(AVDL_WINDOWS)
 	updateDrawMutex = CreateMutex(NULL, FALSE, NULL);
 	#else
 	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
@@ -191,7 +204,7 @@ void onResume() {
 	if (!avdl_state_initialised) return;
 
 	#ifdef AVDL_DIRECT3D11
-	#elif defined(AVDL_OS_WINDOWS)
+	#elif defined(AVDL_WINDOWS)
 	WaitForSingleObject(updateDrawMutex, INFINITE);
 	#else
 	pthread_mutex_lock(&updateDrawMutex);
@@ -199,7 +212,7 @@ void onResume() {
 	dd_flag_exit = 0;
 	dd_flag_focused = 1;
 	#ifdef AVDL_DIRECT3D11
-	#elif defined(AVDL_OS_WINDOWS)
+	#elif defined(AVDL_WINDOWS)
 	ReleaseMutex(updateDrawMutex);
 	#else
 	pthread_mutex_unlock(&updateDrawMutex);
@@ -235,7 +248,7 @@ void onPause() {
 		#endif
 	}
 	#ifdef AVDL_DIRECT3D11
-	#elif defined(AVDL_OS_WINDOWS)
+	#elif defined(AVDL_WINDOWS)
 	WaitForSingleObject(updateDrawMutex, INFINITE);
 	#else
 	pthread_mutex_lock(&updateDrawMutex);
@@ -243,7 +256,7 @@ void onPause() {
 	dd_flag_focused = 0;
 	//dd_flag_initialised = 0;
 	#ifdef AVDL_DIRECT3D11
-	#elif defined(AVDL_OS_WINDOWS)
+	#elif defined(AVDL_WINDOWS)
 	ReleaseMutex(updateDrawMutex);
 	#else
 	pthread_mutex_unlock(&updateDrawMutex);
@@ -427,6 +440,17 @@ void Java_org_darkdimension_avdl_AvdlActivity_nativeSetAssetManager(JNIEnv* env,
 	aassetManager = AAssetManager_fromJava(env, assetManager);
 }
 
+void Java_org_darkdimension_avdl_AvdlActivity_nativeSetLocale(JNIEnv* env, jobject thiz, jint locale) {
+	int loc = locale;
+	// for now, check languages manually
+	switch (loc) {
+		case 0: avdl_locale_set("en"); break;
+		case 1: avdl_locale_set("de"); break;
+		case 2: avdl_locale_set("ja"); break;
+		case 3: avdl_locale_set("el"); break;
+	}
+}
+
 #if defined(AVDL_QUEST2)
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 	//dd_log("JNI_OnLoad");
@@ -464,6 +488,17 @@ void set_android_save_dir(jobject activity) {
 
 void Java_dev_afloof_avdl_AvdlActivity_nativeSetAssetManager(JNIEnv* env, jobject thiz, jobject assetManager) {
 	aassetManager = AAssetManager_fromJava(env, assetManager);
+}
+
+void Java_dev_afloof_avdl_AvdlActivity_nativeSetLocale(JNIEnv* env, jobject thiz, jint locale) {
+	int loc = locale;
+	// for now, check languages manually
+	switch (loc) {
+		case 0: avdl_locale_set("en"); break;
+		case 1: avdl_locale_set("de"); break;
+		case 2: avdl_locale_set("ja"); break;
+		case 3: avdl_locale_set("el"); break;
+	}
 }
 
 #endif

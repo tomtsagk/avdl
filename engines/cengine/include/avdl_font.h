@@ -34,8 +34,16 @@ struct avdl_font {
 
 	struct avdl_glyph glyphs[100];
 
+	int openglContextId;
+
+	// custom icons for drawing special icons in the middle of the font
+	struct dd_image *customIcon[10];
+	const char *customIconKeyword[10];
+	int customIconCount;
+
 	void (*clean)(struct avdl_font *);
 	void (*set)(struct avdl_font *, const char *name, int filetype, int outline_thickness);
+	void (*addCustomIcon)(struct avdl_font *, const char *keyword, struct dd_image *);
 };
 
 int avdl_font_init();
@@ -48,6 +56,7 @@ void avdl_font_set(struct avdl_font *, const char *name, int filetype, int outli
 
 int avdl_font_registerGlyph(struct avdl_font *, int);
 int avdl_font_releaseGlyph(struct avdl_font *, int);
+int avdl_font_releaseAllGlyphs(struct avdl_font *);
 
 float avdl_font_getTexCoordX(struct avdl_font *, int);
 float avdl_font_getTexCoordY(struct avdl_font *, int);
@@ -60,6 +69,10 @@ float avdl_font_getGlyphLeft(struct avdl_font *, int);
 float avdl_font_getGlyphTop(struct avdl_font *, int);
 
 float avdl_font_getGlyphAdvance(struct avdl_font *, int);
+
+int avdl_font_needsRefresh(struct avdl_font *);
+
+void avdl_font_addCustomIcon(struct avdl_font *, const char *keyword, struct dd_image *);
 
 #ifdef __cplusplus
 }

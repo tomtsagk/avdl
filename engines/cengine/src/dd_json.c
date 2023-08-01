@@ -4,6 +4,10 @@
 #include <errno.h>
 #include "dd_log.h"
 
+#include <stdlib.h>
+#include <wchar.h>
+#include <stddef.h>
+
 void dd_json_init(struct dd_json_object *o, char *json_string, int size) {
 	o->str = json_string;
 	o->size = size;
@@ -19,22 +23,123 @@ void dd_json_init(struct dd_json_object *o, char *json_string, int size) {
 	o->hasKey = 0;
 }
 
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+extern AAssetManager *aassetManager;
+#endif
+
 void dd_json_initFile(struct dd_json_object *o, char *filename) {
 	#ifdef AVDL_DIRECT3D11
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	o->file2 = AAssetManager_open(aassetManager, filename, AASSET_MODE_UNKNOWN);
+	if (!o->file2)
+	{
+		dd_log("load_ply: error opening file: %s: %s", filename, "unknown error");
+		return;
+	}
+	o->str2 = AAsset_getBuffer(o->file2);
+	o->current = o->str2;
 	#else
 	o->file = fopen(filename, "r");
 	if (!o->file) {
-		dd_log("avdl: error opening file '%s': %s",
+		dd_log("avdl: error opening json file '%s': %s",
 			filename, strerror(errno)
 		);
 	}
-	o->hasKey = 0;
 	#endif
+	o->hasKey = 0;
 }
 
 void dd_json_next(struct dd_json_object *o) {
 
 	#ifdef AVDL_DIRECT3D11
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	if (o->file2) {
+
+		// ignore whitespace
+		while (o->current[0] == ' ' || o->current[0] == '\t' || o->current[0] == '\r' || o->current[0] == '\n') {
+			o->current++;
+		}
+
+		// grab first character
+		char nextChar = o->current[0];
+		o->current++;
+
+		char *st;
+		switch (nextChar) {
+			// skip commas
+			case ',':
+				dd_json_next(o);
+				break;
+			case ':':
+				o->hasKey = 1;
+				dd_json_next(o);
+				break;
+			// start of array
+			case '[':
+				o->token = DD_JSON_ARRAY_START;
+				o->length = 1;
+				break;
+			// end of array
+			case ']':
+				o->token = DD_JSON_ARRAY_END;
+				o->length = 1;
+				break;
+			// start of object
+			case '{':
+				o->token = DD_JSON_OBJECT_START;
+				o->length = 1;
+				break;
+			// end of object
+			case '}':
+				o->token = DD_JSON_OBJECT_END;
+				o->length = 1;
+				break;
+			// key or string
+			case '"':
+				st = o->current;
+				while (st[0] != '"') {
+					st++;
+				}
+				strncpy(o->buffer, o->current, st -o->current);
+				o->buffer[st -o->current] = '\0';
+				o->current = st +1;
+
+				// ignore whitespace
+				while (o->current[0] == ' ' || o->current[0] == '\t' || o->current[0] == '\r' || o->current[0] == '\n') {
+					o->current++;
+				}
+
+				// key
+				if (!o->hasKey) {
+					o->token = DD_JSON_KEY;
+				}
+				// string
+				else {
+					o->token = DD_JSON_STRING;
+					o->hasKey = 0;
+				}
+				break;
+			// number or unknown
+			default:
+				dd_log("number or unknown: %c %d %s", nextChar, nextChar, o->current);
+				/*
+				// number
+				if (nextChar >= '0' && nextChar <= '9') {
+					int num;
+					fscanf(o->file, "%d", &num);
+					o->token = DD_JSON_INT;
+					dd_log("not parsing numbers for now");
+				}
+				// unknown
+				else {
+					printf("unable to parse\n");
+					goto end_of_buffer;
+				}
+				*/
+				break;
+		}
+
+	}
 	#else
 	if (o->file) {
 
@@ -96,128 +201,26 @@ void dd_json_next(struct dd_json_object *o) {
 				break;
 			// number or unknown
 			default:
+				dd_log("number or unknown");
+				/*
 				// number
 				if (nextChar >= '0' && nextChar <= '9') {
 					int num;
 					fscanf(o->file, "%d", &num);
 					o->token = DD_JSON_INT;
 					dd_log("not parsing numbers for now");
-					goto end_of_buffer;
 				}
 				// unknown
 				else {
 					printf("unable to parse\n");
 					goto end_of_buffer;
 				}
+				*/
 				break;
 		}
 
-		return;
 	}
 
-	// check for end of buffer
-	if (o->end >= o->str +o->size) {
-		end_of_buffer:
-		printf("end of buffer\n");
-		o->start = o->str;
-		o->end = o->start;
-		o->length = 0;
-		o->token = DD_JSON_EOB;
-		return;
-	}
-
-	o->start = o->end;
-
-	switch (o->start[0]) {
-		// skip commas
-		case ',':
-			o->end++;
-			dd_json_next(o);
-			break;
-		// start of array
-		case '[':
-			//printf("found start of array\n");
-			o->end = o->start +1;
-			o->token = DD_JSON_ARRAY_START;
-			o->length = 1;
-			break;
-		// end of array
-		case ']':
-			//printf("found end of array\n");
-			o->end = o->start +1;
-			o->token = DD_JSON_ARRAY_END;
-			o->length = 1;
-			break;
-		// start of object
-		case '{':
-			//printf("found object\n");
-			o->end = o->start +1;
-			o->token = DD_JSON_OBJECT_START;
-			o->length = 1;
-			break;
-		// end of object
-		case '}':
-			//printf("found object end\n");
-			o->end = o->start +1;
-			o->token = DD_JSON_OBJECT_END;
-			o->length = 1;
-			break;
-		// key or string
-		case '"':
-			o->start++;
-			o->end = o->start;
-			while (o->end[0] != '"') {
-				o->end++;
-				if (o->end >= o->str +o->size) {
-					goto end_of_buffer;
-				}
-			}
-			o->length = o->end -o->start;
-			if (o->length >= DD_JSON_BUFFER_SIZE) {
-				goto end_of_buffer;
-			}
-			strncpy(o->buffer, o->start, o->length);
-			o->buffer[o->length] = '\0';
-			o->end++;
-
-			// key
-			if (o->end < o->str +o->size && o->end[0] == ':') {
-				//printf("found key\n");
-				o->end++;
-				o->token = DD_JSON_KEY;
-			}
-			// string
-			else {
-				//printf("found string\n");
-				o->token = DD_JSON_STRING;
-			}
-			break;
-		// number or unknown
-		default:
-			// number
-			if (o->start[0] >= '0' && o->start[0] <= '9') {
-				while (o->end[0] >= '0' && o->end[0] <= '9') {
-					o->end++;
-					if (o->end >= o->str +o->size) {
-						goto end_of_buffer;
-					}
-				}
-				o->length = o->end -o->start;
-				if (o->length >= DD_JSON_BUFFER_SIZE) {
-					goto end_of_buffer;
-				}
-				strncpy(o->buffer, o->start, o->length);
-				o->buffer[o->length] = '\0';
-				//printf("found int\n");
-				o->token = DD_JSON_INT;
-			}
-			// unknown
-			else {
-				//printf("unable to parse\n");
-				goto end_of_buffer;
-			}
-			break;
-	}
 	#endif
 }
 
@@ -235,11 +238,17 @@ int dd_json_getTokenSize(struct dd_json_object *o) {
 
 void dd_json_deinit(struct dd_json_object *o) {
 	#ifdef AVDL_DIRECT3D11
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	if (o->file2) {
+		AAsset_close(o->file2);
+		o->file2 = 0;
+	}
 	#else
 	if (o->file) {
 		fclose(o->file);
 		o->file = 0;
 	}
+	#endif
 
 	o->str = 0;
 	o->size = 0;
@@ -249,5 +258,4 @@ void dd_json_deinit(struct dd_json_object *o) {
 	o->length = 0;
 
 	o->buffer[0] = '\0';
-	#endif
 }

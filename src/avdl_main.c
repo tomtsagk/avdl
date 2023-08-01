@@ -779,9 +779,9 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		avdl_string_clean(&cEngFile);
 
 		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
-		strcat(compile_command, " -DAVDL_OS_WINDOWS ");
+		strcat(compile_command, " -DAVDL_WINDOWS ");
 		#elif AVDL_IS_OS(AVDL_OS_LINUX)
-		strcat(compile_command, " -DAVDL_OS_LINUX ");
+		strcat(compile_command, " -DAVDL_LINUX ");
 		#endif
 
 		// include the source file

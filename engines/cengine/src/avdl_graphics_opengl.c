@@ -76,10 +76,11 @@ int avdl_graphics_GetUniformLocation(int program, const char *uniform) {
 	return glGetUniformLocation(program, uniform);
 }
 
-void avdl_graphics_ImageToGpu(struct dd_image *o) {
+int avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height) {
 
-	glGenTextures(1, &o->tex);
-	glBindTexture(GL_TEXTURE_2D, o->tex);
+	GLuint tex;
+	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_2D, tex);
 	/*
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -92,22 +93,16 @@ void avdl_graphics_ImageToGpu(struct dd_image *o) {
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	#if DD_PLATFORM_NATIVE
-	glTexImage2D(GL_TEXTURE_2D, 0, o->pixelFormat, o->width, o->height, 0, o->pixelFormat, GL_FLOAT, o->pixels);
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_FLOAT, pixels);
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, o->width, o->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, o->pixelsb);
+	glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_UNSIGNED_BYTE, pixels);
 	#endif
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	#if DD_PLATFORM_NATIVE
-	free(o->pixels);
-	o->pixels = 0;
-	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	free(o->pixelsb);
-	o->pixelsb = 0;
-	#endif
+	return tex;
 
 }
 

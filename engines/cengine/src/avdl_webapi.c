@@ -14,7 +14,7 @@ extern jclass *clazz;
 extern jmethodID BitmapMethodId;
 #endif
 
-#if defined(AVDL_OS_WINDOWS)
+#if defined(AVDL_WINDOWS)
 #include <windows.h>
 #include <shellapi.h>
 #endif
@@ -22,16 +22,16 @@ extern jmethodID BitmapMethodId;
 #if !defined(AVDL_STEAM)
 void avdl_webapi_openurl(const char *url) {
 
-	#if defined(AVDL_OS_LINUX) || defined(AVDL_OS_WINDOWS)
+	#if defined(AVDL_LINUX) || defined(AVDL_WINDOWS)
 
-	#if defined(AVDL_OS_LINUX)
+	#if defined(AVDL_LINUX)
 	const char *opener = "xdg-open ";
 	char *final_cmd = malloc(strlen(opener) +strlen(url) +1);
 	strcpy(final_cmd, opener);
 	strcat(final_cmd, url);
 	system(final_cmd);
 	free(final_cmd);
-	#elif defined(AVDL_OS_WINDOWS)
+	#elif defined(AVDL_WINDOWS)
 	//const char *opener = "start ";
 	ShellExecuteA(NULL, "open", url, NULL, NULL, SW_SHOW);
 	#endif

@@ -95,6 +95,8 @@ extern GLuint currentProgram;
 
 #ifndef AVDL_DIRECT3D11
 
+#include <stdio.h>
+
 int avdl_engine_init(struct avdl_engine *o) {
 
 	o->isPaused = 1;
@@ -587,7 +589,7 @@ int avdl_engine_update(struct avdl_engine *o, float dt) {
 
 	#if DD_PLATFORM_NATIVE
 	if (avdl_engine_isPaused(o)) {
-		return;
+		return 0;
 	}
 	#endif
 

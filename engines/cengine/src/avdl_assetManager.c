@@ -12,7 +12,7 @@ void avdl_assetManager_loadAssets();
 
 #ifdef AVDL_DIRECT3D11
 #include <windows.h>
-#elif defined(AVDL_OS_WINDOWS)
+#elif defined(AVDL_WINDOWS)
 #include <windows.h>
 extern HANDLE updateDrawMutex;
 #else
@@ -36,14 +36,14 @@ extern AAssetManager *aassetManager;
 /*
  * load assets async
  */
-#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 static pthread_t loadAssetsThread = 0;
 
 void *load_assets_thread_function(void *data) {
 	avdl_assetManager_loadAssets();
 	pthread_exit(NULL);
 }
-#elif defined( AVDL_OS_WINDOWS )
+#elif defined( AVDL_WINDOWS )
 #include <windows.h>
 
 HANDLE thread;
@@ -291,9 +291,9 @@ void avdl_assetManager_loadAssets() {
 		#endif
 
 		#ifdef AVDL_DIRECT3D11
-		#elif defined( AVDL_OS_WINDOWS )
+		#elif defined( AVDL_WINDOWS )
 		WaitForSingleObject(updateDrawMutex, INFINITE);
-		#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
+		#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 		pthread_mutex_lock(&updateDrawMutex);
 		#endif
 
@@ -301,9 +301,9 @@ void avdl_assetManager_loadAssets() {
 		if (interruptLoading) break;
 		//dd_log("assets loaded: %d / %d", totalAssetsLoaded, totalAssets);
 		#ifdef AVDL_DIRECT3D11
-		#elif defined( AVDL_OS_WINDOWS )
+		#elif defined( AVDL_WINDOWS )
 		ReleaseMutex(updateDrawMutex);
-		#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
+		#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 		pthread_mutex_unlock(&updateDrawMutex);
 		#endif
 
@@ -313,17 +313,17 @@ void avdl_assetManager_loadAssets() {
 	//dd_log("finished all loading");
 
 	#ifdef AVDL_DIRECT3D11
-	#elif defined( AVDL_OS_WINDOWS )
+	#elif defined( AVDL_WINDOWS )
 	WaitForSingleObject(updateDrawMutex, INFINITE);
-	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 	pthread_mutex_lock(&updateDrawMutex);
 	#endif
 	assetManagerLoading = 0;
 	#ifdef AVDL_DIRECT3D11
-	#elif defined( AVDL_OS_WINDOWS )
+	#elif defined( AVDL_WINDOWS )
 	ReleaseMutex(updateDrawMutex);
 	CloseHandle(thread);
-	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 	pthread_mutex_unlock(&updateDrawMutex);
 	#endif
 
@@ -345,10 +345,10 @@ void avdl_assetManager_loadAll() {
 		loadAssetsThread = 0;
 	}
 	*/
-	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_OS_LINUX )
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 	pthread_create(&loadAssetsThread, NULL, load_assets_thread_function, 0);
 	pthread_detach(loadAssetsThread); // do not wait for thread result code
-	#elif defined( AVDL_OS_WINDOWS )
+	#elif defined( AVDL_WINDOWS )
 	HANDLE thread = CreateThread(NULL, 0, ThreadFunc, NULL, 0, NULL);
 	#else
 	avdl_assetManager_loadAssets();

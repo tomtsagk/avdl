@@ -13,7 +13,6 @@ FT_Library library;
 #define FONT_ATLAS_WIDTH 1024
 #define FONT_ATLAS_HEIGHT 1024
 
-//#define FONT_GLYPH_SIZE 100
 #define FONT_GLYPH_SIZE 90
 
 int avdl_font_init() {
@@ -42,6 +41,9 @@ void avdl_font_create(struct avdl_font *o) {
 
 	// functions
 	o->set = avdl_font_set;
+	o->addCustomIcon = avdl_font_addCustomIcon;
+
+	o->customIconCount = 0;
 
 	for (int i = 0; i < 100; i++) {
 		o->glyphs[i].uses = 0;
@@ -54,6 +56,8 @@ void avdl_font_create(struct avdl_font *o) {
 	o->texture.openglContextId = avdl_graphics_getContextId();
 	o->outline_thickness = 0;
 	o->fontData = 0;
+
+	o->openglContextId = o->texture.openglContextId;
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	o->texture.pixelsb = malloc(sizeof(GLubyte) *4 *o->texture.width *o->texture.height);
@@ -135,33 +139,23 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 	FT_Error error = FT_Set_Pixel_Sizes(
 		o->face,
 		0,
-		FONT_GLYPH_SIZE
+		FONT_GLYPH_SIZE -20
 	);
 	if (error) {
 		dd_log("avdl error: could not set pixel size for font");
 	}
 
+	int pixels_size = FONT_GLYPH_SIZE *FONT_GLYPH_SIZE *4;
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	// clear cell
-	for (int x = 0; x < FONT_GLYPH_SIZE; x++)
-	for (int y = 0; y < FONT_GLYPH_SIZE; y++) {
-		int ry = FONT_GLYPH_SIZE-1 -y;
-		int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%10)*FONT_GLYPH_SIZE*4 +((glyph_id/10)*o->texture.width*4*FONT_GLYPH_SIZE);
-		o->texture.pixelsb[index+0] = 255;
-		o->texture.pixelsb[index+1] = 255;
-		o->texture.pixelsb[index+2] = 255;
-		o->texture.pixelsb[index+3] = 0;
+	GLubyte pixels[pixels_size];
+	for (int i = 0; i < pixels_size; i++) {
+		pixels[i] = 0;
 	}
 	#else
-	// clear cell
-	for (int x = 0; x < FONT_GLYPH_SIZE; x++)
-	for (int y = 0; y < FONT_GLYPH_SIZE; y++) {
-		int ry = FONT_GLYPH_SIZE-1 -y;
-		int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%10)*FONT_GLYPH_SIZE*4 +((glyph_id/10)*o->texture.width*4*FONT_GLYPH_SIZE);
-		o->texture.pixels[index+0] = 1.0;
-		o->texture.pixels[index+1] = 1.0;
-		o->texture.pixels[index+2] = 1.0;
-		o->texture.pixels[index+3] = 0.0;
+	//float pixels[pixels_size];
+	float *pixels = malloc(sizeof(float) *pixels_size);
+	for (int i = 0; i < pixels_size; i++) {
+		pixels[i] = 0.0;
 	}
 	#endif
 
@@ -199,27 +193,52 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		glyph_bitmap  = (FT_BitmapGlyph)glyphDescStroke;
 		bitmap_stroke = &glyph_bitmap->bitmap;
 
+		/*
+		if (bitmap_stroke->width > FONT_GLYPH_SIZE) {
+			dd_log("glyph is too wide: %d / %d", bitmap_stroke->width, FONT_GLYPH_SIZE);
+		}
+		if (bitmap_stroke->rows > FONT_GLYPH_SIZE) {
+			dd_log("glyph is too tall: %d / %d", bitmap_stroke->rows, FONT_GLYPH_SIZE);
+		}
+		*/
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		// render glyph on texture
 		for (int x = 0; x < bitmap_stroke->width; x++)
 		for (int y = 0; y < bitmap_stroke->rows ; y++) {
+			if (x >= FONT_GLYPH_SIZE) continue;
+			if (y >= FONT_GLYPH_SIZE) continue;
 			int ry = bitmap_stroke->rows-1 -y;
-			int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%10)*FONT_GLYPH_SIZE*4 +((glyph_id/10)*o->texture.width*4*FONT_GLYPH_SIZE);
-			o->texture.pixelsb[index+0] = 0;
-			o->texture.pixelsb[index+1] = 0;
-			o->texture.pixelsb[index+2] = 0;
-			o->texture.pixelsb[index+3] = dd_math_min(bitmap_stroke->buffer[y*bitmap_stroke->width +x] *255, 255);
+			int index = ry *FONT_GLYPH_SIZE *4 +x*4;
+			/*
+			if (index >= pixels_size) {
+				dd_log("temp: %d %d %d - %d %d", y, FONT_GLYPH_SIZE, x, FONT_GLYPH_SIZE *4, x*4);
+				dd_log("too much index: %d / %d, %dx%d", index, pixels_size, bitmap_stroke->width, bitmap_stroke->rows);
+				continue;
+			}
+			*/
+			pixels[index +0] = 0;
+			pixels[index +1] = 0;
+			pixels[index +2] = 0;
+			pixels[index +3] = dd_math_min(bitmap_stroke->buffer[y*bitmap_stroke->width +x] *255, 255);
 		}
 		#else
-		// render glyph on texture
 		for (int x = 0; x < bitmap_stroke->width; x++)
 		for (int y = 0; y < bitmap_stroke->rows ; y++) {
+			if (x >= FONT_GLYPH_SIZE) continue;
+			if (y >= FONT_GLYPH_SIZE) continue;
 			int ry = bitmap_stroke->rows-1 -y;
-			int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%10)*FONT_GLYPH_SIZE*4 +((glyph_id/10)*o->texture.width*4*FONT_GLYPH_SIZE);
-			o->texture.pixels[index+0] = 0.0;
-			o->texture.pixels[index+1] = 0.0;
-			o->texture.pixels[index+2] = 0.0;
-			o->texture.pixels[index+3] = bitmap_stroke->buffer[y*bitmap_stroke->width +x];
+			int index = ry *FONT_GLYPH_SIZE *4 +x*4;
+			/*
+			if (index >= pixels_size) {
+				dd_log("temp: %d %d %d - %d %d", y, FONT_GLYPH_SIZE, x, FONT_GLYPH_SIZE *4, x*4);
+				dd_log("too much index: %d / %d, %dx%d", index, pixels_size, bitmap_stroke->width, bitmap_stroke->rows);
+				continue;
+			}
+			*/
+			pixels[index +0] = 0;
+			pixels[index +1] = 0;
+			pixels[index +2] = 0;
+			pixels[index +3] = bitmap_stroke->buffer[y*bitmap_stroke->width +x];
 		}
 		#endif
 		cx = bitmap_stroke->width;
@@ -265,26 +284,87 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 	// render glyph on texture
 	for (int x = 0; x < o->face->glyph->bitmap.width; x++)
 	for (int y = 0; y < o->face->glyph->bitmap.rows ; y++) {
-		int ry = o->face->glyph->bitmap.rows-1 -y;
+		if (x >= FONT_GLYPH_SIZE) continue;
+		if (y >= FONT_GLYPH_SIZE) continue;
+		int ry2 = o->face->glyph->bitmap.rows-1 -y;
 		if (o->outline_thickness > 0) {
-			ry += offset_y;
+			ry2 += offset_y;
 		}
-		int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%10)*FONT_GLYPH_SIZE*4 +((glyph_id/10)*o->texture.width*4*FONT_GLYPH_SIZE);
+		int index2 = (ry2*FONT_GLYPH_SIZE*4) +x*4;
 		if (o->outline_thickness > 0) {
-			index += offset_x *4;
+			index2 += offset_x *4;
 		}
+
+		/*
+		if (index2 >= pixels_size) {
+			dd_log("temp2: %d %d %d", y, FONT_GLYPH_SIZE, x);
+			dd_log("too much index2: %d / %d, %dx%d", index2, pixels_size, o->face->glyph->bitmap.width, o->face->glyph->bitmap.rows);
+			continue;
+		}
+		*/
 		float alpha = o->face->glyph->bitmap.buffer[y*o->face->glyph->bitmap.width +x];
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-		o->texture.pixelsb[index+0] = dd_math_min(255, o->texture.pixelsb[index+0] +255 *alpha);
-		o->texture.pixelsb[index+1] = dd_math_min(255, o->texture.pixelsb[index+1] +255 *alpha);
-		o->texture.pixelsb[index+2] = dd_math_min(255, o->texture.pixelsb[index+2] +255 *alpha);
-		o->texture.pixelsb[index+3] = dd_math_max(o->texture.pixelsb[index+3], dd_math_min(alpha *255, 255));
+		pixels[index2+0] = dd_math_min(255, pixels[index2+0] +255 *alpha);
+		pixels[index2+1] = dd_math_min(255, pixels[index2+1] +255 *alpha);
+		pixels[index2+2] = dd_math_min(255, pixels[index2+2] +255 *alpha);
+		pixels[index2+3] = dd_math_max(pixels[index2+3], dd_math_min(alpha *255, 255));
 		#else
-		o->texture.pixels[index+0] += 1.0 *alpha;
-		o->texture.pixels[index+1] += 1.0 *alpha;
-		o->texture.pixels[index+2] += 1.0 *alpha;
-		o->texture.pixels[index+3] = dd_math_max(o->texture.pixels[index+3], alpha);
+		pixels[index2+0] = 1.0 *alpha;
+		pixels[index2+1] = 1.0 *alpha;
+		pixels[index2+2] = 1.0 *alpha;
+		pixels[index2+3] = dd_math_max(pixels[index2+3], alpha);
 		#endif
+	}
+
+	if (o->texture.pixelsb || o->texture.pixels) {
+		for (int x = 0; x < FONT_GLYPH_SIZE; x++)
+		for (int y = 0; y < FONT_GLYPH_SIZE; y++) {
+			int ry = y;
+			int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%10)*FONT_GLYPH_SIZE*4 +((glyph_id/10)*o->texture.width*4*FONT_GLYPH_SIZE);
+			int indexPixel = y *FONT_GLYPH_SIZE *4 +x*4;
+			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+			o->texture.pixelsb[index+0] = pixels[indexPixel +0];
+			o->texture.pixelsb[index+1] = pixels[indexPixel +1];
+			o->texture.pixelsb[index+2] = pixels[indexPixel +2];
+			o->texture.pixelsb[index+3] = pixels[indexPixel +3];
+			#else
+			o->texture.pixels[index+0] = pixels[indexPixel +0];
+			o->texture.pixels[index+1] = pixels[indexPixel +1];
+			o->texture.pixels[index+2] = pixels[indexPixel +2];
+			o->texture.pixels[index+3] = pixels[indexPixel +3];
+			#endif
+		}
+	}
+	else
+	if (o->texture.tex) {
+		glBindTexture(GL_TEXTURE_2D, o->texture.tex);
+
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+		glTexSubImage2D(GL_TEXTURE_2D, 0,
+			(glyph_id%10) *FONT_GLYPH_SIZE,
+			((glyph_id/10) *FONT_GLYPH_SIZE),
+			FONT_GLYPH_SIZE,
+			FONT_GLYPH_SIZE,
+			o->texture.pixelFormat,
+			GL_UNSIGNED_BYTE,
+			pixels
+		);
+		#else
+		glTexSubImage2D(GL_TEXTURE_2D, 0,
+			(glyph_id%10) *FONT_GLYPH_SIZE,
+			((glyph_id/10) *FONT_GLYPH_SIZE),
+			FONT_GLYPH_SIZE,
+			FONT_GLYPH_SIZE,
+			o->texture.pixelFormat,
+			GL_FLOAT,
+			pixels
+		);
+		#endif
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	else {
+		//dd_log("dd_image has error state ?");
 	}
 
 	o->glyphs[glyph_id].id = unicode_hex;
@@ -315,6 +395,11 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		FT_Done_Glyph( glyphDescStroke );
 	}
 
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	#else
+	free(pixels);
+	#endif
+
 	return glyph_id;
 }
 
@@ -324,6 +409,14 @@ int avdl_font_releaseGlyph(struct avdl_font *o, int glyph_id) {
 	}
 
 	o->glyphs[glyph_id].uses = dd_math_max(o->glyphs[glyph_id].uses -1, 0);
+	return 0;
+}
+
+int avdl_font_releaseAllGlyphs(struct avdl_font *o) {
+	for (int i = 0; i < 100; i++) {
+		o->glyphs[i].uses = 0;
+	}
+
 	return 0;
 }
 
@@ -474,4 +567,27 @@ float avdl_font_getGlyphAdvance(struct avdl_font *o, int glyph_id) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].advance;
+}
+
+int avdl_font_needsRefresh(struct avdl_font *o) {
+
+	// font needs to refresh
+	if (o->openglContextId != o->texture.openglContextId) {
+		//dd_log("font needs refresh");
+		o->openglContextId = o->texture.openglContextId;
+		avdl_font_releaseAllGlyphs(o);
+		return 1;
+	}
+
+	return 0;
+}
+
+void avdl_font_addCustomIcon(struct avdl_font *o, const char *keyword, struct dd_image *image) {
+	if (o->customIconCount >= 10) {
+		dd_log("avdl error: too many custom icons in font");
+		return;
+	}
+	o->customIcon[o->customIconCount] = image;
+	o->customIconKeyword[o->customIconCount] = keyword;
+	o->customIconCount++;
 }
