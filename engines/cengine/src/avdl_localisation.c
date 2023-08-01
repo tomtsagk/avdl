@@ -128,7 +128,7 @@ void avdl_locale_set(const char *locale_code) {
 }
 
 #if !defined( AVDL_STEAM )
-const char *avdl_locale_getSystemLocale(const char *locale_code) {
+const char *avdl_locale_getSystemLocale() {
 	return "en";
 }
 #endif

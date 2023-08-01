@@ -37,7 +37,7 @@ void avdl_localisation_print(struct avdl_localisation *o);
 
 void avdl_locale_set(const char *locale_code);
 
-const char *avdl_locale_getSystemLocale(const char *locale_code);
+const char *avdl_locale_getSystemLocale();
 
 #ifdef __cplusplus
 }
