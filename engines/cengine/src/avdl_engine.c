@@ -97,6 +97,8 @@ extern GLuint currentProgram;
 
 #include <stdio.h>
 
+extern int avdl_use_default_locale;
+
 int avdl_engine_init(struct avdl_engine *o) {
 
 	o->isPaused = 1;
@@ -123,6 +125,9 @@ int avdl_engine_init(struct avdl_engine *o) {
 		if (!avdl_steam_init()) {
 			dd_log("avdl: error initialising steam");
 			return -1;
+		}
+		if (avdl_use_default_locale) {
+			avdl_locale_set(avdl_locale_getSystemLocale());
 		}
 	}
 	#endif

@@ -126,3 +126,9 @@ void avdl_locale_set(const char *locale_code) {
 		AVDL_LOCALE_CURRENT = AVDL_LOCALE_GREEK;
 	}
 }
+
+#if !defined( AVDL_STEAM )
+const char *avdl_locale_getSystemLocale(const char *locale_code) {
+	return "en";
+}
+#endif

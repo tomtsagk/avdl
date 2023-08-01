@@ -81,6 +81,7 @@ void onPause();
 #endif
 
 int avdl_state_initialised = 0;
+int avdl_use_default_locale = 1;
 
 struct avdl_engine engine;
 
@@ -111,6 +112,7 @@ int dd_main(int argc, char *argv[]) {
 				return -1;
 			}
 			avdl_locale_set(argv[i]);
+			avdl_use_default_locale = 0;
 		}
 		else
 		// verify game, for testing reasons

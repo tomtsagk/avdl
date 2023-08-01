@@ -51,6 +51,7 @@ char *cengine_files[] = {
 	"avdl_assetManager.c",
 	"avdl_data.c",
 	"avdl_localisation.c",
+	"avdl_localisation_cpp.cpp",
 	"avdl_particle_system.c",
 	"avdl_shaders.c",
 	"dd_dynamic_array.c",
