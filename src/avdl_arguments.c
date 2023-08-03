@@ -210,6 +210,10 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 					avdl_settings->standalone = 1;
 				}
 				else
+				if (strcmp(argv[i], "--no-cache") == 0) {
+					avdl_settings->use_cache = 0;
+				}
+				else
 				if (strcmp(argv[i], "--asset-loc") == 0) {
 					if (argc > i+1) {
 						if (strlen(argv[i+1]) > 1023) {

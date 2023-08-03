@@ -534,7 +534,8 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 
 	// skip files already compiled (check last modified)
 	// but compile everything if a header file has changed
-	if ( !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
+	if ( avdl_settings_ptr->use_cache
+	&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
 	&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
 		//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", buffer, buffer2);
 		avdl_string_clean(&srcFilePath);
@@ -665,7 +666,8 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 
 	// skip files already compiled (check last modified)
 	// but if any header in `include/` has changed, compile everything
-	if ( !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
+	if ( avdl_settings_ptr->use_cache
+	&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
 	&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
 		avdl_string_clean(&srcFilePath);
 		avdl_string_clean(&dstFilePath);
@@ -838,7 +840,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		}
 
 		// skip files already compiled
-		if ( Avdl_FileOp_DoesFileExist(avdl_string_toCharPtr(&cenginePathOut)) ) {
+		if ( avdl_settings_ptr->use_cache && Avdl_FileOp_DoesFileExist(avdl_string_toCharPtr(&cenginePathOut)) ) {
 			//printf("skipping: %s\n", buffer);
 			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/cengine_files_total *100));
 			fflush(stdout);
@@ -966,32 +968,28 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		dir_create(outdir);
 	}
 
-	/*
-	struct avdl_string linkCommand;
-	avdl_string_create(&linkCommand, 1024);
-	*/
-
 	// prepare link command
+	struct avdl_string link_cmd;
+	avdl_string_create(&link_cmd, 4096);
 	if (avdl_settings->cpp_mode) {
-		strcpy(buffer, "g++ -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+		avdl_string_cat(&link_cmd, "g++ -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
 	}
 	else {
-		strcpy(buffer, "gcc -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+		avdl_string_cat(&link_cmd, "gcc -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
 	}
 
 	// add game files to link
-////			for (int i = 0; i < input_file_total; i++) {
-////				strcat(buffer, filename[i]);
-////				strcat(buffer, " ");
-////			}
+	buffer[0] = '\0';
 	Avdl_FileOp_ForFileInDirectory(avdl_settings->src_dir, add_object_file);
+	avdl_string_cat(&link_cmd, buffer);
 
 	// add cengine files to link
 	char tempDir[DD_BUFFER_SIZE];
 	strcpy(tempDir, ".avdl_cache/cengine/");
 	for (int i = 0; i < cengine_files_total; i++) {
-		strcat(buffer, tempDir);
-		strcat(buffer, "/");
+		avdl_string_cat(&link_cmd, tempDir);
+		avdl_string_cat(&link_cmd, "/");
+
 		struct avdl_string tempfile;
 		avdl_string_create(&tempfile, 1024);
 		avdl_string_cat(&tempfile, cengine_files[i]);
@@ -1002,47 +1000,45 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		if (avdl_string_endsIn(&tempfile, ".c")) {
 			avdl_string_replaceEnding(&tempfile, ".c", ".o");
 		}
-		strcat(buffer, avdl_string_toCharPtr(&tempfile));
+		avdl_string_cat(&link_cmd, avdl_string_toCharPtr(&tempfile));
 		avdl_string_clean(&tempfile);
-		strcat(buffer, " ");
+		avdl_string_cat(&link_cmd, " ");
 	}
 
 	// output file
-	strcat(buffer, "-o ");
-	strcat(buffer, outdir);
-	strcat(buffer, "/");
-	//strcat(buffer, gameName);
-	//strcat(buffer, "avdl_game");
-	strcat(buffer, avdl_settings->project_name_code);
+	avdl_string_cat(&link_cmd, "-o ");
+	avdl_string_cat(&link_cmd, outdir);
+	avdl_string_cat(&link_cmd, "/");
+	avdl_string_cat(&link_cmd, avdl_settings->project_name_code);
 
 	// link custom dependencies
 	for (int i = 0; i < avdl_settings->total_lib_directories; i++) {
-		strcat(buffer, " -L ");
-		strcat(buffer, avdl_settings->additional_lib_directory[i]);
+		avdl_string_cat(&link_cmd, " -L ");
+		avdl_string_cat(&link_cmd, avdl_settings->additional_lib_directory[i]);
 	}
 
 	if (avdl_settings->standalone) {
-		strcat(buffer, " -O3 -lm -l:libogg.so.0 -l:libpng16.so.16 -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2 -l:libfreetype.so.6");
+		avdl_string_cat(&link_cmd, " -O3 -lm -l:libogg.so.0 -l:libpng16.so.16 -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2 -l:libfreetype.so.6");
 	}
 	else {
-		strcat(buffer, " -O3 -lm -logg -lpng -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lfreetype");
+		avdl_string_cat(&link_cmd, " -O3 -lm -logg -lpng -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lfreetype");
 	}
 
 	if (avdl_settings->steam_mode) {
-		strcat(buffer, " -lsteam_api ");
+		avdl_string_cat(&link_cmd, " -lsteam_api ");
 	}
 	//printf("link command: %s\n", buffer);
-	/*
-	if ( !avdl_string_isValid(&linkCommand) ) {
-		avdl_log_error("cannot construct link command: %s", avdl_string_getError(&linkCommand));
-		avdl_string_clean(&linkCommand);
+	if ( !avdl_string_isValid(&link_cmd) ) {
+		avdl_log_error("failed to construct link command");
+		avdl_string_clean(&link_cmd);
 		return -1;
 	}
-	*/
-	if (system(buffer)) {
+	if (system(avdl_string_toCharPtr(&link_cmd))) {
 		avdl_log_error("failed to create executable");
+		avdl_string_clean(&link_cmd);
 		return -1;
 	}
+	avdl_string_clean(&link_cmd);
 			/*
 	// on android put all object files in an android project
 	if (avdl_platform_get() == AVDL_PLATFORM_ANDROID) {
@@ -1353,7 +1349,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 
 	// skip files already compiled (check last modified)
 	// but if any header in `include/` has changed, compile everything
-	if ( !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath)) ) {
+	if ( avdl_settings_ptr->use_cache && !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath)) ) {
 		//printf("avdl asset file not modified, skipping handling of '%s'\n", dir->d_name);
 		avdl_string_clean(&srcFilePath);
 		avdl_string_clean(&dstFilePath);

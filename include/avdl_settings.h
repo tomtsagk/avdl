@@ -143,8 +143,11 @@ struct AvdlSettings {
 	int admob_ads_fullscreen;
 	char admob_ads_fullscreen_id[100];
 
+	// oculus build
 	int oculus_mode;
 	char oculus_project_id[100];
+
+	int use_cache;
 
 };
 
