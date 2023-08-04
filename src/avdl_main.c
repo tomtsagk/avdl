@@ -679,11 +679,16 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	// command string
 	struct avdl_string commandString;
 	avdl_string_create(&commandString, 1024);
-	avdl_string_cat(&commandString, "gcc -O3 -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
+	avdl_string_cat(&commandString, "gcc -O3 -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
 	avdl_string_cat(&commandString, avdl_settings_ptr->version_name);
 	avdl_string_cat(&commandString, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
 	avdl_string_cat(&commandString, "0");
 	avdl_string_cat(&commandString, "\\\"\" -c -w ");
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	avdl_string_cat(&commandString, " -DAVDL_WINDOWS ");
+	#elif AVDL_IS_OS(AVDL_OS_LINUX)
+	avdl_string_cat(&commandString, " -DAVDL_LINUX ");
+	#endif
 	// cengine headers
 	avdl_string_cat(&commandString, " -I ");
 	avdl_string_cat(&commandString, avdl_project_path);
@@ -770,14 +775,10 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		avdl_string_create(&cEngFile, 1024);
 		avdl_string_cat(&cEngFile, cengine_files[i]);
 		if (avdl_string_endsIn(&cEngFile, ".cpp")) {
-			//printf("cengine steam file: %s\n", cengine_files[i].steam);
-			//strcpy(compile_command, "g++ -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
-			strcpy(compile_command, "g++ -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+			strcpy(compile_command, "g++ -w -c -DGLEW_NO_GLU ");
 		}
 		else {
-			//printf("cengine file: %s\n", cengine_files[i].main);
-			//strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU -DPKG_LOCATION=\\\"");
-			strcpy(compile_command, "gcc -w -c -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+			strcpy(compile_command, "gcc -w -c -DGLEW_NO_GLU ");
 		}
 		avdl_string_clean(&cEngFile);
 
@@ -972,11 +973,18 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	struct avdl_string link_cmd;
 	avdl_string_create(&link_cmd, 4096);
 	if (avdl_settings->cpp_mode) {
-		avdl_string_cat(&link_cmd, "g++ -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+		avdl_string_cat(&link_cmd, "g++ -DGLEW_NO_GLU ");
 	}
 	else {
-		avdl_string_cat(&link_cmd, "gcc -DDD_PLATFORM_NATIVE -DGLEW_NO_GLU ");
+		avdl_string_cat(&link_cmd, "gcc -DGLEW_NO_GLU ");
 	}
+
+	// possibly not needed when linking
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	avdl_string_cat(&link_cmd, " -DAVDL_WINDOWS ");
+	#elif AVDL_IS_OS(AVDL_OS_LINUX)
+	avdl_string_cat(&link_cmd, " -DAVDL_LINUX ");
+	#endif
 
 	// add game files to link
 	buffer[0] = '\0';

@@ -43,7 +43,7 @@ struct avdl_engine {
 	HWND hwnd;
 	*/
 	#else
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	SDL_Window *window;
 	SDL_GLContext glContext;
 	#endif

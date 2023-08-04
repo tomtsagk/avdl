@@ -7,7 +7,6 @@ project("${AVDL_PROJECT_NAME_CODE}" VERSION ${AVDL_VERSION_NAME})
 
 # compile for windows, with dynamic location
 add_compile_definitions(
-	DD_PLATFORM_NATIVE
 	AVDL_DYNAMIC_PKG_LOCATION
 	AVDL_WINDOWS
 )

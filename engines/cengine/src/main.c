@@ -60,7 +60,7 @@ pthread_mutex_t updateDrawMutex;
 /*
  * cengine includes
  */
-#elif DD_PLATFORM_NATIVE
+#elif defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 
 	// curl
 	//#include <curl/curl.h>
@@ -75,7 +75,7 @@ pthread_mutex_t updateDrawMutex;
 void onResume();
 void onPause();
 
-#if DD_PLATFORM_NATIVE
+#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 // threads
 //pthread_mutex_t asyncCallMutex;
 #endif
@@ -157,7 +157,7 @@ int dd_main(int argc, char *argv[]) {
 
 	// on windows and linux this is the game loop
 	// android handles the loop differently
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 
 	// keeps running until game exits
 	avdl_engine_loop(&engine);
@@ -171,7 +171,7 @@ int dd_main(int argc, char *argv[]) {
 	pthread_mutex_destroy(&updateDrawMutex);
 	#endif
 
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	//curl_global_cleanup();
 	#endif
 
@@ -192,7 +192,7 @@ int main(int argc, char *argv[]) {
 #endif
 #endif
 
-#if DD_PLATFORM_NATIVE
+#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 struct dd_async_call dd_asyncCall = {0};
 int dd_isAsyncCallActive = 0;
 #endif
@@ -224,7 +224,7 @@ void onResume() {
 		avdl_engine_setPaused(&engine, 0);
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		pthread_create(&updatePthread, NULL, &updateThread, NULL);
-		#elif DD_PLATFORM_NATIVE
+		#elif defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 		// resume update with sdl?
 		#endif
 	}
@@ -309,7 +309,7 @@ void updateThread() {
 			#endif
 		}
 		pthread_mutex_unlock(&updateDrawMutex);
-		usleep(33333);
+		usleep(engine.avdl_fps_delay *1000);
 	}
 }
 

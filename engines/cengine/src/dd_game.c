@@ -36,7 +36,7 @@ void dd_gameInitDefault() {
 	dd_gameInitWindowHeight = 480;
 }
 
-#if DD_PLATFORM_NATIVE || defined(AVDL_DIRECT3D11)
+#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS ) || defined( AVDL_DIRECT3D11 )
 int dd_window_width() {
 	#ifdef AVDL_DIRECT3D11
 	return 100;
@@ -96,7 +96,7 @@ float dd_screen_distance_geth(float height) {
 }
 
 void dd_fullscreenToggle() {
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	Uint32 FullscreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
 	int isFullscreen = SDL_GetWindowFlags(engine.window) & FullscreenFlag;
 	SDL_SetWindowFullscreen(engine.window, isFullscreen ? 0 : FullscreenFlag);

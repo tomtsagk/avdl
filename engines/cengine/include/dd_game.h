@@ -1,7 +1,7 @@
 #ifndef DD_GAME_H
 #define DD_GAME_H
 
-#if DD_PLATFORM_NATIVE
+#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 #include "avdl_graphics.h"
 
 #ifndef PKG_LOCATION

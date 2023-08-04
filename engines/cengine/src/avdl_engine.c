@@ -157,7 +157,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	o->achievements = avdl_achievements_create();
 	avdl_assetManager_init();
 
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	/*
 	// initialise curl
 	curl_global_init(CURL_GLOBAL_ALL);
@@ -175,7 +175,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	dd_gameInit();
 
 	// audio
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 
 	if (o->verify) {
 		dd_hasAudio = 0;
@@ -217,7 +217,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	#endif
 
 	// window
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 
 	srand(time(NULL));
 
@@ -285,7 +285,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	}
 	#endif
 
-	#if defined(DD_PLATFORM_NATIVE) || defined(AVDL_QUEST2)
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS ) || defined(AVDL_QUEST2)
 	avdl_engine_resize(o, dd_window_width(), dd_window_height());
 	#endif
 
@@ -418,7 +418,7 @@ int avdl_engine_clean(struct avdl_engine *o) {
 
 	avdl_font_deinit();
 
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	// destroy window
 	SDL_GL_DeleteContext(o->glContext);
 	SDL_DestroyWindow(o->window);
@@ -532,7 +532,7 @@ int avdl_engine_draw(struct avdl_engine *o) {
 		o->cworld->draw(o->cworld);
 	}
 
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	// show result
 	SDL_GL_SwapWindow(o->window);
 	#endif
@@ -597,14 +597,14 @@ int avdl_engine_update(struct avdl_engine *o, float dt) {
 	avdl_time_end(&o->end_of_update_time);
 	float dt2 = avdl_time_getTimeDouble(&o->end_of_update_time);
 
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	if (avdl_engine_isPaused(o)) {
 		return 0;
 	}
 	#endif
 
 	/*
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	// handle asynchronous calls
 	if (dd_isAsyncCallActive) {
 		pthread_mutex_lock(&asyncCallMutex);
@@ -815,7 +815,7 @@ static void handleMousePress(struct avdl_engine *o, int button, int state, int x
 }
 
 int avdl_engine_loop(struct avdl_engine *o) {
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 
 	if (o->verify) {
 		avdl_engine_verify(o);
@@ -897,7 +897,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 		avdl_engine_update(o, 1);
 
 		// prepare next frame
-		#if DD_PLATFORM_NATIVE
+		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 		avdl_engine_draw(o);
 		//draw();
 		#endif

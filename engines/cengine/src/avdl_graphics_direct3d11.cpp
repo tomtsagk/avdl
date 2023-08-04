@@ -66,7 +66,7 @@ GLuint currentProgram;
 int avdl_graphics_Init() {
 
 	/*
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	// init glew
 	GLenum glewError = glewInit();
 	if (glewError != GLEW_OK) {
@@ -128,7 +128,7 @@ void avdl_graphics_ImageToGpu(struct dd_image *o) {
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	glTexImage2D(GL_TEXTURE_2D, 0, o->pixelFormat, o->width, o->height, 0, o->pixelFormat, GL_FLOAT, o->pixels);
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -137,7 +137,7 @@ void avdl_graphics_ImageToGpu(struct dd_image *o) {
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	free(o->pixels);
 	o->pixels = 0;
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )

@@ -456,7 +456,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 
 		//update();
 
-		#if DD_PLATFORM_NATIVE
+		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 		if (avdl_engine_isPaused(o)) {
 			return 0;
 		}
@@ -464,7 +464,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 		avdl_engine_update(o);
 
 		// prepare next frame
-		#if DD_PLATFORM_NATIVE
+		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 		//draw();
 		#endif
 
@@ -474,7 +474,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 		}
 		#endif
 
-		#if DD_PLATFORM_NATIVE
+		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 		avdl_engine_draw(o);
 		#endif
 

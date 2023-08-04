@@ -31,7 +31,7 @@
 */
 
 // import opengl on native
-#elif DD_PLATFORM_NATIVE
+#elif defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 #include <GL/glew.h>
 
 #if defined(_WIN32) || defined(WIN32)

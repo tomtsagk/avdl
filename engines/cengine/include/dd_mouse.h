@@ -34,7 +34,7 @@ float dd_mouse_yProportion();
 #define DD_MOUSE_SHAPE_NONE 0
 #define dd_mouse_shape(shape)
 #define dd_mouse_position(x, y)
-#elif DD_PLATFORM_NATIVE
+#elif defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 #define DD_MOUSE_SHAPE_INHERIT GLUT_CURSOR_INHERIT
 #define DD_MOUSE_SHAPE_NONE GLUT_CURSOR_NONE
 // temporarily disable

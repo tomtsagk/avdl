@@ -36,7 +36,7 @@ GLuint currentProgram;
 
 int avdl_graphics_Init() {
 
-	#if DD_PLATFORM_NATIVE
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	// init glew
 	GLenum glewError = glewInit();
 	if (glewError != GLEW_OK) {
