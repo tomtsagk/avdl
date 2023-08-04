@@ -9,6 +9,7 @@
 #include <math.h>
 #include <string.h>
 
+
 #if defined(AVDL_QUEST2)
 // EXT_texture_border_clamp
 #ifndef GL_CLAMP_TO_BORDER
@@ -98,8 +99,12 @@ extern GLuint currentProgram;
 #include <stdio.h>
 
 extern int avdl_use_default_locale;
+struct avdl_engine engine;
 
 int avdl_engine_init(struct avdl_engine *o) {
+
+	// default at 30 FPS
+	avdl_engine_setFPS(30);
 
 	o->isPaused = 1;
 	o->cworld = 0;
@@ -897,7 +902,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 		//draw();
 		#endif
 
-		SDL_Delay(33.333);
+		SDL_Delay(o->avdl_fps_delay);
 	}
 	#endif
 	return 0;
@@ -929,4 +934,9 @@ void avdl_engine_verify(struct avdl_engine *o) {
 
 	cworld->update(cworld);
 	*/
+}
+
+void avdl_engine_setFPS(int fps) {
+	engine.avdl_fps = fps;
+	engine.avdl_fps_delay = 1000/engine.avdl_fps;
 }

@@ -83,7 +83,7 @@ void onPause();
 int avdl_state_initialised = 0;
 int avdl_use_default_locale = 1;
 
-struct avdl_engine engine;
+extern struct avdl_engine engine;
 
 int dd_main(int argc, char *argv[]) {
 

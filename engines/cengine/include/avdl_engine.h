@@ -70,6 +70,10 @@ struct avdl_engine {
 
 	struct avdl_time end_of_update_time;
 
+	// fps
+	int avdl_fps;
+	float avdl_fps_delay;
+
 	#if defined(AVDL_QUEST2)
 
 	// projection and view matrices for each eye
@@ -125,6 +129,8 @@ void avdl_engine_setPaused(struct avdl_engine *o, int state);
 int avdl_engine_isPaused(struct avdl_engine *o);
 
 void avdl_engine_verify(struct avdl_engine *o);
+
+void avdl_engine_setFPS(int fps);
 
 #ifdef __cplusplus
 }
