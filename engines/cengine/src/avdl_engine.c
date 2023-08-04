@@ -937,6 +937,9 @@ void avdl_engine_verify(struct avdl_engine *o) {
 }
 
 void avdl_engine_setFPS(int fps) {
+	if (fps < 1) {
+		fps = 1;
+	}
 	engine.avdl_fps = fps;
 	engine.avdl_fps_delay = 1000/engine.avdl_fps;
 }
