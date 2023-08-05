@@ -4,6 +4,7 @@
 void avdl_rigidbody_create(struct avdl_rigidbody *o) {
 	o->collider = 0;
 	o->has_just_collided = 0;
+	o->has_just_collided_old = 0;
 
 	o->matrixMultiply = avdl_rigidbody_matrixMultiply;
 	o->setPositionf = avdl_rigidbody_setPositionf;

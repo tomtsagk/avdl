@@ -27,6 +27,7 @@ struct avdl_rigidbody {
 	float restitution;
 
 	int has_just_collided;
+	int has_just_collided_old;
 
 	void (*matrixMultiply)(struct avdl_rigidbody *);
 	void (*setPositionf)(struct avdl_rigidbody *, float, float, float);

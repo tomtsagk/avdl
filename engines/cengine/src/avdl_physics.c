@@ -197,6 +197,7 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 	}
 
 	for (int i = 0; i < o->object_count; i++) {
+		o->object[i]->has_just_collided_old = o->object[i]->has_just_collided;
 		o->object[i]->has_just_collided = 0;
 	}
 
@@ -335,42 +336,38 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 
 				// sliding
 				//if (wasCollidingj) {
+				if (o->object[j]->has_just_collided_old) {
 					avdl_rigidbody_setAngularVelocityf(o->object[j],
 						o->object[j]->velocity.z *angularImpact2,
 						o->object[j]->velocity.y *angularImpact2,
 						-o->object[j]->velocity.x *angularImpact2
 					);
-					/*
 				}
 				// not sliding
 				else {
-					dd_log("not sliding j");
 					avdl_rigidbody_addAngularVelocityf(o->object[j],
 						(o->object[j]->velocity.x - o->object[j]->mass_inv *impulse.x) *0.9,
 						(o->object[j]->velocity.y - o->object[j]->mass_inv *impulse.y) *0.9,
 						(o->object[j]->velocity.z - o->object[j]->mass_inv *impulse.z) *0.9
 					);
 				}
-				*/
 
 				//if (wasCollidingi) {
+				if (o->object[i]->has_just_collided_old) {
 					avdl_rigidbody_setAngularVelocityf(o->object[i],
 						o->object[i]->velocity.z *angularImpact2,
 						o->object[i]->velocity.y *angularImpact2,
 						-o->object[i]->velocity.x *angularImpact2
 					);
-					/*
 				}
 				// not sliding
 				else {
-					dd_log("not sliding i");
 					avdl_rigidbody_addAngularVelocityf(o->object[i],
 						(o->object[i]->velocity.x - o->object[i]->mass_inv *impulse.x) *0.9,
 						(o->object[i]->velocity.y - o->object[i]->mass_inv *impulse.y) *0.9,
 						(o->object[i]->velocity.z - o->object[i]->mass_inv *impulse.z) *0.9
 					);
 				}
-				*/
 
 				o->object[i]->has_just_collided = 1;
 				o->object[j]->has_just_collided = 1;
