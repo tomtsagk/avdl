@@ -77,6 +77,19 @@ void avdl_rigidbody_addAngularVelocityf(struct avdl_rigidbody *o, float x, float
 	dd_vec3_addf(&o->angularVelocityVec3, x, y, z);
 }
 
+void avdl_rigidbody_setAngularVelocityf(struct avdl_rigidbody *o, float x, float y, float z) {
+	struct dd_matrix m;
+	dd_matrix_identity(&m);
+	dd_matrix_rotate(&m, x, 1, 0, 0);
+	dd_matrix_rotate(&m, y, 0, 1, 0);
+	dd_matrix_rotate(&m, z, 0, 0, 1);
+	dd_matrix_identity(&o->angularVelocity);
+	dd_matrix_mult(&m, &o->angularVelocity);
+	dd_matrix_copy(&o->angularVelocity, &m);
+
+	dd_vec3_setf(&o->angularVelocityVec3, x, y, z);
+}
+
 float avdl_rigidbody_getPositionX(struct avdl_rigidbody *o) {
 	return o->position.x;
 }

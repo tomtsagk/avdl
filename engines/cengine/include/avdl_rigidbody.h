@@ -57,6 +57,7 @@ void avdl_rigidbody_matrixMultiply(struct avdl_rigidbody *);
 
 void avdl_rigidbody_addVelocityf(struct avdl_rigidbody *, float, float, float);
 void avdl_rigidbody_addAngularVelocityf(struct avdl_rigidbody *, float, float, float);
+void avdl_rigidbody_setAngularVelocityf(struct avdl_rigidbody *, float, float, float);
 int avdl_rigidbody_hasJustCollided(struct avdl_rigidbody *);
 
 float avdl_rigidbody_getPositionX(struct avdl_rigidbody *);

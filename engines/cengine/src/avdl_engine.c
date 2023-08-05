@@ -289,7 +289,10 @@ int avdl_engine_init(struct avdl_engine *o) {
 	avdl_engine_resize(o, dd_window_width(), dd_window_height());
 	#endif
 
-	avdl_graphics_Init();
+	if (avdl_graphics_Init()) {
+		dd_log("avdl: error initialising engine graphics");
+		return -1;
+	}
 
 	/*
 	 * string3d initialisation for displaying text

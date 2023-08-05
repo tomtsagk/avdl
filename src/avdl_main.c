@@ -24,7 +24,7 @@
 #include <unistd.h>
 #endif
 
-char big_buffer[2048];
+char big_buffer[6000];
 
 extern enum AVDL_PLATFORM avdl_platform_temp;
 
@@ -36,7 +36,7 @@ char included_files[10][100];
 int included_files_num = 0;
 
 // buffer for general use
-#define DD_BUFFER_SIZE 2048
+#define DD_BUFFER_SIZE 6000
 char buffer[DD_BUFFER_SIZE];
 
 // game node, parent of all nodes

@@ -253,9 +253,6 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 
 			// radius smaller than distance - no collision
 			if (m.collide) {
-				//dd_log("Collision!");
-				o->object[i]->has_just_collided = 1;
-				o->object[j]->has_just_collided = 1;
 
 				// total mass
 				float mass_total = o->object[i]->mass +o->object[j]->mass;
@@ -275,58 +272,43 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				float z = -(1 +e) *velAlongNormal;
 				z /= o->object[i]->mass_inv +o->object[j]->mass_inv;
 
+				float angularImpact = 0.004;
+				float angularImpact2 = 80;
+
 				// calculate impulse
 				struct dd_vec3 impulse;
 				dd_vec3_setf(&impulse,
-					m.normal.x *z -(o->object[j]->angularVelocityVec3.z -o->object[i]->angularVelocityVec3.z) *0.005,
-					m.normal.y *z +(o->object[j]->angularVelocityVec3.y -o->object[i]->angularVelocityVec3.y) *0.005,
-					m.normal.z *z +(o->object[j]->angularVelocityVec3.x -o->object[i]->angularVelocityVec3.x) *0.005
+					m.normal.x *z -(o->object[j]->angularVelocityVec3.z -o->object[i]->angularVelocityVec3.z) *angularImpact,
+					m.normal.y *z +(o->object[j]->angularVelocityVec3.y -o->object[i]->angularVelocityVec3.y) *angularImpact,
+					m.normal.z *z +(o->object[j]->angularVelocityVec3.x -o->object[i]->angularVelocityVec3.x) *angularImpact
 				);
-				float jrotx = o->object[j]->angularVelocityVec3.x * 0.1;
-				float jroty = o->object[j]->angularVelocityVec3.y * 0.1;
-				float jrotz = o->object[j]->angularVelocityVec3.z * 0.1;
-				struct dd_matrix rotm;
-				dd_matrix_identity(&rotm);
-				dd_matrix_rotate(&rotm, -jrotx, 1, 0, 0);
-				dd_matrix_rotate(&rotm, -jroty, 0, 1, 0);
-				dd_matrix_rotate(&rotm, -jrotz, 0, 0, 1);
-				dd_matrix_mult(&rotm, &o->object[j]->angularVelocity);
-				dd_matrix_copy(&o->object[j]->angularVelocity, &rotm);
-				dd_vec3_setf(&o->object[j]->angularVelocityVec3, 0, 0, 0);
 
-				float irotx = o->object[i]->angularVelocityVec3.x * 0.1;
-				float iroty = o->object[i]->angularVelocityVec3.y * 0.1;
-				float irotz = o->object[i]->angularVelocityVec3.z * 0.1;
-				struct dd_matrix irotm;
-				dd_matrix_identity(&irotm);
-				dd_matrix_rotate(&irotm, -irotx, 1, 0, 0);
-				dd_matrix_rotate(&irotm, -iroty, 0, 1, 0);
-				dd_matrix_rotate(&irotm, -irotz, 0, 0, 1);
-				dd_matrix_mult(&irotm, &o->object[i]->angularVelocity);
-				dd_matrix_copy(&o->object[i]->angularVelocity, &irotm);
-				dd_vec3_setf(&o->object[i]->angularVelocityVec3, 0, 0, 0);
-				//dd_vec3_addf(&o->object[i]->angularVelocityVec3, -irotx, -iroty, -irotz);
-				/*
-				o->object[j]->angularVelocityVec3.x *= 0.90;
-				o->object[j]->angularVelocityVec3.y *= 0.90;
-				o->object[j]->angularVelocityVec3.z *= 0.90;
-				o->object[i]->angularVelocityVec3.x *= 0.90;
-				o->object[i]->angularVelocityVec3.y *= 0.90;
-				o->object[i]->angularVelocityVec3.z *= 0.90;
-				*/
 				//dd_log("impulse: %f - %f - %f", impulse.x, impulse.y, impulse.z);
 
 				// apply impulse
 				dd_vec3_setf(&o->object[i]->velocity,
-					o->object[i]->velocity.x - o->object[i]->mass_inv *impulse.x,
-					o->object[i]->velocity.y - o->object[i]->mass_inv *impulse.y,
-					o->object[i]->velocity.z - o->object[i]->mass_inv *impulse.z
+					(o->object[i]->velocity.x - o->object[i]->mass_inv *impulse.x) *0.99,
+					(o->object[i]->velocity.y - o->object[i]->mass_inv *impulse.y) *0.99,
+					(o->object[i]->velocity.z - o->object[i]->mass_inv *impulse.z) *0.99
 				);
 
 				dd_vec3_setf(&o->object[j]->velocity,
-					o->object[j]->velocity.x + o->object[j]->mass_inv *impulse.x,
-					o->object[j]->velocity.y + o->object[j]->mass_inv *impulse.y,
-					o->object[j]->velocity.z + o->object[j]->mass_inv *impulse.z
+					(o->object[j]->velocity.x + o->object[j]->mass_inv *impulse.x) *0.99,
+					(o->object[j]->velocity.y + o->object[j]->mass_inv *impulse.y) *0.99,
+					(o->object[j]->velocity.z + o->object[j]->mass_inv *impulse.z) *0.99
+				);
+
+				// apply friction impulse
+				dd_vec3_addf(&o->object[i]->velocity,
+					((o->object[i]->velocity.x - o->object[i]->mass_inv *impulse.x) *0.99) *-0.2,
+					((o->object[i]->velocity.y - o->object[i]->mass_inv *impulse.y) *0.99) *-0.2,
+					((o->object[i]->velocity.z - o->object[i]->mass_inv *impulse.z) *0.99) *-0.2
+				);
+
+				dd_vec3_addf(&o->object[j]->velocity,
+					((o->object[j]->velocity.x + o->object[j]->mass_inv *impulse.x) *0.99) *-0.2,
+					((o->object[j]->velocity.y + o->object[j]->mass_inv *impulse.y) *0.99) *-0.2,
+					((o->object[j]->velocity.z + o->object[j]->mass_inv *impulse.z) *0.99) *-0.2
 				);
 
 				// correct position so objects don't collide
@@ -349,28 +331,60 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 					o->object[j]->position.z - o->object[j]->mass_inv *correction.z
 				);
 
-				/*
-				// friction emulation
-				dd_vec3_setf(&o->object[j]->velocity,
-					o->object[j]->velocity.x *0.99,
-					o->object[j]->velocity.y *0.99,
-					o->object[j]->velocity.z *0.99
-				);
-				if (dd_vec3_magnitude(&o->object[j]->velocity) < 0.005) {
-					dd_vec3_setf(&o->object[j]->velocity, 0, 0, 0);
+				// rotations
+
+				// sliding
+				//if (wasCollidingj) {
+					avdl_rigidbody_setAngularVelocityf(o->object[j],
+						o->object[j]->velocity.z *angularImpact2,
+						o->object[j]->velocity.y *angularImpact2,
+						-o->object[j]->velocity.x *angularImpact2
+					);
+					/*
+				}
+				// not sliding
+				else {
+					dd_log("not sliding j");
+					avdl_rigidbody_addAngularVelocityf(o->object[j],
+						(o->object[j]->velocity.x - o->object[j]->mass_inv *impulse.x) *0.9,
+						(o->object[j]->velocity.y - o->object[j]->mass_inv *impulse.y) *0.9,
+						(o->object[j]->velocity.z - o->object[j]->mass_inv *impulse.z) *0.9
+					);
 				}
 				*/
 
+				//if (wasCollidingi) {
+					avdl_rigidbody_setAngularVelocityf(o->object[i],
+						o->object[i]->velocity.z *angularImpact2,
+						o->object[i]->velocity.y *angularImpact2,
+						-o->object[i]->velocity.x *angularImpact2
+					);
+					/*
+				}
+				// not sliding
+				else {
+					dd_log("not sliding i");
+					avdl_rigidbody_addAngularVelocityf(o->object[i],
+						(o->object[i]->velocity.x - o->object[i]->mass_inv *impulse.x) *0.9,
+						(o->object[i]->velocity.y - o->object[i]->mass_inv *impulse.y) *0.9,
+						(o->object[i]->velocity.z - o->object[i]->mass_inv *impulse.z) *0.9
+					);
+				}
+				*/
+
+				o->object[i]->has_just_collided = 1;
+				o->object[j]->has_just_collided = 1;
 			}
 		}
 	}
+
 }
 
 void avdl_physics_clean(struct avdl_physics *o) {
 }
 
 void avdl_physics_addObject(struct avdl_physics *o, struct avdl_rigidbody *obj) {
-	if (o->object_count == 10) {
+	if (o->object_count >= 10) {
 		dd_log("avdl error: physics engine: can't add more than 10 objects");
 		return;
 	}
