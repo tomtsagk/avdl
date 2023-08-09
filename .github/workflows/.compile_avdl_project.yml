@@ -595,9 +595,17 @@ jobs:
         unzip butler.zip
         chmod +x butler
         ./butler -V
-    # publish whole directory (linux & windows)
-    - name: prepare and upload
-      if: ${{ (matrix.build_type == 'linux-x86_64') || (matrix.build_type == 'windows-x86_64') }}
+    # publish tar archive (linux)
+    - name: prepare and upload - linux
+      if: ${{ (matrix.build_type == 'linux-x86_64')
+      env:
+        BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+      run: |
+        VERSION=${{ github.ref_name }}
+        ./butler push ${{ inputs.project_name }}_${{ matrix.build_type }}.tar.gz ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:${{ matrix.build_type }} --userversion ${VERSION:1}
+    # publish zip archive (windows)
+    - name: prepare and upload - windows
+      if: ${{ (matrix.build_type == 'windows-x86_64') }}
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
@@ -605,7 +613,7 @@ jobs:
         cd ${{ inputs.project_name }}_${{ matrix.build_type }} && zip ../${{ inputs.project_name }}_${{ matrix.build_type }}.zip * -r && cd ..
         ./butler push ${{ inputs.project_name }}_${{ matrix.build_type }}.zip ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:${{ matrix.build_type }} --userversion ${VERSION:1}
     # publish single .apk (android & quest 2)
-    - name: prepare and upload android
+    - name: prepare and upload - android/quest2
       if: ${{ (matrix.build_type == 'android') || (matrix.build_type == 'quest2') }}
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
@@ -636,6 +644,8 @@ jobs:
         sudo apt update && sudo apt install -y zip
         mkdir -p ~/.steam/steam/config/
         echo '${{ secrets.STEAMWORKS_TOKEN }}' | base64 -d > ~/.steam/steam/config/config.vdf
+        mkdir ${{ inputs.project_name }}_linux_steam-x86_64
+        tar -C ${{ inputs.project_name }}_linux_steam-x86_64 xzf ${{ inputs.project_name }}_linux_steam-x86_64.tar.gz
     # Steamworks
     - name: get steamworks
       run: |
@@ -769,14 +779,24 @@ jobs:
     # prepare for publishing
     - name: prepare zipping
       run: sudo apt update && sudo apt install -y zip
-    # publish whole directory
-    - name: prepare and upload
+    # create archive
+    - name: Create zip archive
+      if: ${{ (matrix.build_type != 'linux-x86_64') && (matrix.build_type != 'linux_steam-x86_64') }}
       run: |
-        cd ${{ inputs.project_name }}_${{ matrix.build_type }} && zip ../${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.zip * -r && cd ..
-    # upload to release
+        cd ${{ inputs.project_name }}_${{ matrix.build_type }} && zip ../${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.zip * -r
+    # upload to release - zip
     - name: Upload to release
+      if: ${{ (matrix.build_type != 'linux-x86_64') && (matrix.build_type != 'linux_steam-x86_64') }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
         tag: ${{ github.ref_name }}
       run: |
         gh release upload "$tag" ${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.zip
+    # upload to release - tar
+    - name: Upload to release
+      if: ${{ (matrix.build_type == 'linux-x86_64') || (matrix.build_type == 'linux_steam-x86_64') }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        tag: ${{ github.ref_name }}
+      run: |
+        gh release upload "$tag" ${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.tar.gz
