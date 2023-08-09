@@ -205,37 +205,37 @@ jobs:
         ./gradlew build
     - name: package_builds
       run: |
-        mkdir "game_output_unsigned"
-        mkdir "game_output_debug"
-        mkdir "game_output"
-        mv avdl_build_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk "game_output_unsigned/game_android.apk"
-        mv avdl_build_android/app/build/outputs/apk/debug/app-universal-debug.apk "game_output_debug/game_android_debug.apk"
-        cp avdl_build_android/app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip "game_output/native-debug-symbols.zip"
-        cp avdl_build_android/app/build/outputs/mapping/release/mapping.txt "game_output/mapping.txt"
+        mkdir "${{ inputs.project_name }}_output_unsigned"
+        mkdir "${{ inputs.project_name }}_output_debug"
+        mkdir "${{ inputs.project_name }}_output"
+        mv avdl_build_android/app/build/outputs/apk/release/app-universal-release-unsigned.apk "${{ inputs.project_name }}_output_unsigned/${{ inputs.project_name }}_android.apk"
+        mv avdl_build_android/app/build/outputs/apk/debug/app-universal-debug.apk "${{ inputs.project_name }}_output_debug/${{ inputs.project_name }}_android_debug.apk"
+        cp avdl_build_android/app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip "${{ inputs.project_name }}_output/native-debug-symbols.zip"
+        cp avdl_build_android/app/build/outputs/mapping/release/mapping.txt "${{ inputs.project_name }}_output/mapping.txt"
     - name: sign_builds
       if: ${{ inputs.include_signed }}
       run: |
         echo '${{ secrets.ANDROID_KEYSTORE }}' | base64 -d > keystore
-        zipalign -v 4 "game_output_unsigned/game_android.apk" "game_output/game_android.apk"
-        apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' "game_output/game_android.apk"
+        zipalign -v 4 "${{ inputs.project_name }}_output_unsigned/${{ inputs.project_name }}_android.apk" "${{ inputs.project_name }}_output/${{ inputs.project_name }}_android.apk"
+        apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' "${{ inputs.project_name }}_output/${{ inputs.project_name }}_android.apk"
         rm keystore
     - name: upload_artifact_unsigned
       uses: actions/upload-artifact@v3
       if: ${{ inputs.include_unsigned }}
       with:
         name: "${{ inputs.project_name }}_${{ matrix.build_type }}_unsigned"
-        path: game_output_unsigned/game_android.apk
+        path: ${{ inputs.project_name }}_output_unsigned/${{ inputs.project_name }}_android.apk
     - name: upload_artifact
       if: ${{ inputs.include_signed }}
       uses: actions/upload-artifact@v3
       with:
         name: "${{ inputs.project_name }}_${{ matrix.build_type }}"
-        path: game_output
+        path: ${{ inputs.project_name }}_output
     - name: upload_artifact_debug
       uses: actions/upload-artifact@v3
       with:
         name: "${{ inputs.project_name }}_${{ matrix.build_type }}_debug"
-        path: game_output_debug/game_android_debug.apk
+        path: ${{ inputs.project_name }}_output_debug/${{ inputs.project_name }}_android_debug.apk
 
   # Quest 2
   quest2:
@@ -312,33 +312,33 @@ jobs:
         chmod +x ../../../gradlew
         ../../../gradlew assembleDebug
         ../../../gradlew assembleRelease
-        mv build/outputs/apk/debug/Android-debug.apk ../../../../../game_quest2_debug.apk
-        mv build/outputs/apk/release/Android-release.apk ../../../../../game_quest2_unsigned.apk
+        mv build/outputs/apk/debug/Android-debug.apk ../../../../../${{ inputs.project_name }}_quest2_debug.apk
+        mv build/outputs/apk/release/Android-release.apk ../../../../../${{ inputs.project_name }}_quest2_unsigned.apk
     - name: sign_builds
       if: ${{ inputs.include_signed }}
       run: |
         cd avdl_oculus_build/avdl_vr_bk/AvdlProject/Projects/Android
         echo '${{ secrets.ANDROID_KEYSTORE }}' | base64 -d > keystore
-        zipalign -v 4 ../../../../../game_quest2_unsigned.apk ../../../../../game_quest2.apk
-        apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' ../../../../../game_quest2.apk
+        zipalign -v 4 ../../../../../${{ inputs.project_name }}_quest2_unsigned.apk ../../../../../${{ inputs.project_name }}_quest2.apk
+        apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' ../../../../../${{ inputs.project_name }}_quest2.apk
         rm keystore
     - name: upload_artifact_debug
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}_debug
-        path: game_quest2_debug.apk
+        path: ${{ inputs.project_name }}_quest2_debug.apk
     - name: upload_artifact_unsigned
       if: ${{ inputs.include_unsigned }}
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}_unsigned
-        path: game_quest2_unsigned.apk
+        path: ${{ inputs.project_name }}_quest2_unsigned.apk
     - name: upload_artifact
       if: ${{ inputs.include_signed }}
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}
-        path: game_quest2.apk
+        path: ${{ inputs.project_name }}_quest2.apk
 
   # Linux
   linux-x86_64:
@@ -607,7 +607,7 @@ jobs:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
         VERSION=${{ github.ref_name }}
-        mv ${{ inputs.project_name }}_${{ matrix.build_type }}/game_${{ matrix.build_type }}.apk ${{ inputs.project_name }}_${{ matrix.build_type }}.apk
+        mv ${{ inputs.project_name }}_${{ matrix.build_type }}/${{ inputs.project_name }}_${{ matrix.build_type }}.apk ${{ inputs.project_name }}_${{ matrix.build_type }}.apk
         ./butler push ${{ inputs.project_name }}_${{ matrix.build_type }}.apk ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:${{ matrix.build_type }} --userversion ${VERSION:1}
 
   # Steamworks release
