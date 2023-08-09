@@ -597,7 +597,7 @@ jobs:
         ./butler -V
     # publish tar archive (linux)
     - name: prepare and upload - linux
-      if: ${{ (matrix.build_type == 'linux-x86_64')
+      if: ${{ (matrix.build_type == 'linux-x86_64') }}
       env:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
