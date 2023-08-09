@@ -407,11 +407,15 @@ jobs:
         chmod +x bin/${{ inputs.project_name }}
         LD_LIBRARY_PATH=./dependencies/ ./bin/${{ inputs.project_name }} --verify
         cd ../
+    - name: create_tar_archive
+      run: |
+        cd avdl_build
+        tar czf ../${{ inputs.project_name }}_${{ matrix.build_type }}.tar.gz *
     - name: upload_artifact
       uses: actions/upload-artifact@v3
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}
-        path: avdl_build
+        path: ${{ inputs.project_name }}_${{ matrix.build_type }}.tar.gz
 
   # Windows
   windows-x86_64:
