@@ -273,8 +273,11 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				float z = -(1 +e) *velAlongNormal;
 				z /= o->object[i]->mass_inv +o->object[j]->mass_inv;
 
-				float angularImpact = 0.004;
-				float angularImpact2 = 80;
+				// how much distance to travel, based on roll
+				float angularImpact = 0.001;
+
+				// how much roll should increase per distance travelled
+				float angularImpact2 = 130;
 
 				// calculate impulse
 				struct dd_vec3 impulse;
@@ -301,15 +304,15 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 
 				// apply friction impulse
 				dd_vec3_addf(&o->object[i]->velocity,
-					((o->object[i]->velocity.x - o->object[i]->mass_inv *impulse.x) *0.99) *-0.2,
-					((o->object[i]->velocity.y - o->object[i]->mass_inv *impulse.y) *0.99) *-0.2,
-					((o->object[i]->velocity.z - o->object[i]->mass_inv *impulse.z) *0.99) *-0.2
+					((o->object[i]->velocity.x - o->object[i]->mass_inv *impulse.x) *0.99) *-0.1,
+					((o->object[i]->velocity.y - o->object[i]->mass_inv *impulse.y) *0.99) *-0.1,
+					((o->object[i]->velocity.z - o->object[i]->mass_inv *impulse.z) *0.99) *-0.1
 				);
 
 				dd_vec3_addf(&o->object[j]->velocity,
-					((o->object[j]->velocity.x + o->object[j]->mass_inv *impulse.x) *0.99) *-0.2,
-					((o->object[j]->velocity.y + o->object[j]->mass_inv *impulse.y) *0.99) *-0.2,
-					((o->object[j]->velocity.z + o->object[j]->mass_inv *impulse.z) *0.99) *-0.2
+					((o->object[j]->velocity.x + o->object[j]->mass_inv *impulse.x) *0.99) *-0.1,
+					((o->object[j]->velocity.y + o->object[j]->mass_inv *impulse.y) *0.99) *-0.1,
+					((o->object[j]->velocity.z + o->object[j]->mass_inv *impulse.z) *0.99) *-0.1
 				);
 
 				// correct position so objects don't collide
