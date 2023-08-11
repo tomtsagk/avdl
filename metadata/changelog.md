@@ -1,1 +1,1 @@
-* Add sliding in physics
+* Improve angular collisions in physics
