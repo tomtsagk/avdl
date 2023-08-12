@@ -635,7 +635,7 @@ jobs:
 
   # Oculus release
   release_oculus:
-    if: ${{ always() && !cancelled() && inputs.build_quest2_oculus && githu.ref_type == 'tag' }}
+    if: ${{ always() && !cancelled() && inputs.build_quest2_oculus && github.ref_type == 'tag' }}
     runs-on: windows-latest
     needs: [quest2]
     steps:
