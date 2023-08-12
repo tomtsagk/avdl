@@ -85,6 +85,10 @@ on:
         default: develop
         required: false
         type: string
+      oculus_channel:
+        default: store
+        required: false
+        type: string
     secrets:
       # required for android builds
       ANDROID_KEYSTORE:
@@ -120,6 +124,13 @@ on:
       STEAMWORKS_USERNAME:
         required: false
       STEAMWORKS_TOKEN:
+        required: false
+      # oculus release
+      OCULUS_APPID:
+        required: false
+      OCULUS_APPSECRET:
+        required: false
+      OCULUS_CLI_URL:
         required: false
 
 env:
@@ -621,6 +632,27 @@ jobs:
         VERSION=${{ github.ref_name }}
         mv ${{ inputs.project_name }}_${{ matrix.build_type }}/${{ inputs.project_name }}_${{ matrix.build_type }}.apk ${{ inputs.project_name }}_${{ matrix.build_type }}.apk
         ./butler push ${{ inputs.project_name }}_${{ matrix.build_type }}.apk ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:${{ matrix.build_type }} --userversion ${VERSION:1}
+
+  # Oculus release
+  release_oculus:
+    if: ${{ always() && !cancelled() && inputs.build_quest2_oculus && githu.ref_type == 'tag' }}
+    runs-on: windows-latest
+    needs: [quest2]
+    steps:
+    # get build
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.project_name }}_quest2_oculus
+        path: ${{ inputs.project_name }}_quest2_oculus
+    - name: get oculus cli
+      run: |
+        C:\msys64\usr\bin\wget.exe -q ${{ secrets.OCULUS_CLI_URL }} -O ovr-platform-util.exe
+    # publish apk
+    - name: prepare and upload
+      shell: bash
+      run: |
+        mv ${{ inputs.project_name }}_quest2_oculus/${{ inputs.project_name }}_quest2.apk ${{ inputs.project_name }}_quest2.apk
+        ./ovr-platform-util.exe upload-quest-build --app_id ${{ secrets.OCULUS_APPID }} --app_secret ${{ secrets.OCULUS_APPSECRET }} --apk ${{ inputs.project_name }}_quest2.apk --channel ${{ inputs.oculus_channel }}
 
   # Steamworks release
   release_steamworks:
