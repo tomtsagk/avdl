@@ -1,1 +1,1 @@
-* Add Oculus CD/CI for automated VR builds
+* Slightly increase limits of glyphs in fonts
