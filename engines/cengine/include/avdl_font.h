@@ -10,6 +10,10 @@ extern "C" {
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+#define FONT_MAX_GLYPHS_ROWS 22
+#define FONT_MAX_GLYPHS_COLUMNS 22
+#define FONT_MAX_GLYPHS 484
+
 struct avdl_glyph {
 	int uses;
 	int id;
@@ -32,7 +36,7 @@ struct avdl_font {
 
 	FT_Byte *fontData;
 
-	struct avdl_glyph glyphs[100];
+	struct avdl_glyph glyphs[FONT_MAX_GLYPHS];
 
 	int openglContextId;
 

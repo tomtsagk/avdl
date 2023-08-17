@@ -10,8 +10,8 @@
 
 FT_Library library;
 
-#define FONT_ATLAS_WIDTH 1024
-#define FONT_ATLAS_HEIGHT 1024
+#define FONT_ATLAS_WIDTH 2048
+#define FONT_ATLAS_HEIGHT 2048
 
 #define FONT_GLYPH_SIZE 90
 
@@ -45,7 +45,7 @@ void avdl_font_create(struct avdl_font *o) {
 
 	o->customIconCount = 0;
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < FONT_MAX_GLYPHS; i++) {
 		o->glyphs[i].uses = 0;
 	}
 
@@ -116,7 +116,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 	}
 
 	// check if glyph exists
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < FONT_MAX_GLYPHS; i++) {
 		if (o->glyphs[i].uses > 0 && unicode_hex == o->glyphs[i].id) {
 			o->glyphs[i].uses++;
 			return i;
@@ -125,7 +125,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 
 	// find a free slot
 	int glyph_id = -1;
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < FONT_MAX_GLYPHS; i++) {
 		if (o->glyphs[i].uses <= 0) {
 			glyph_id = i;
 			break;
@@ -320,7 +320,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		for (int x = 0; x < FONT_GLYPH_SIZE; x++)
 		for (int y = 0; y < FONT_GLYPH_SIZE; y++) {
 			int ry = y;
-			int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%10)*FONT_GLYPH_SIZE*4 +((glyph_id/10)*o->texture.width*4*FONT_GLYPH_SIZE);
+			int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%FONT_MAX_GLYPHS_COLUMNS)*FONT_GLYPH_SIZE*4 +((glyph_id/FONT_MAX_GLYPHS_ROWS)*o->texture.width*4*FONT_GLYPH_SIZE);
 			int indexPixel = y *FONT_GLYPH_SIZE *4 +x*4;
 			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 			o->texture.pixelsb[index+0] = pixels[indexPixel +0];
@@ -341,8 +341,8 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		glTexSubImage2D(GL_TEXTURE_2D, 0,
-			(glyph_id%10) *FONT_GLYPH_SIZE,
-			((glyph_id/10) *FONT_GLYPH_SIZE),
+			(glyph_id%FONT_MAX_GLYPHS_COLUMNS) *FONT_GLYPH_SIZE,
+			((glyph_id/FONT_MAX_GLYPHS_ROWS) *FONT_GLYPH_SIZE),
 			FONT_GLYPH_SIZE,
 			FONT_GLYPH_SIZE,
 			o->texture.pixelFormat,
@@ -351,8 +351,8 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		);
 		#else
 		glTexSubImage2D(GL_TEXTURE_2D, 0,
-			(glyph_id%10) *FONT_GLYPH_SIZE,
-			((glyph_id/10) *FONT_GLYPH_SIZE),
+			(glyph_id%FONT_MAX_GLYPHS_COLUMNS) *FONT_GLYPH_SIZE,
+			((glyph_id/FONT_MAX_GLYPHS_ROWS) *FONT_GLYPH_SIZE),
 			FONT_GLYPH_SIZE,
 			FONT_GLYPH_SIZE,
 			o->texture.pixelFormat,
@@ -404,7 +404,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 }
 
 int avdl_font_releaseGlyph(struct avdl_font *o, int glyph_id) {
-	if (glyph_id < 0 || glyph_id >= 100) {
+	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return -1;
 	}
 
@@ -413,7 +413,7 @@ int avdl_font_releaseGlyph(struct avdl_font *o, int glyph_id) {
 }
 
 int avdl_font_releaseAllGlyphs(struct avdl_font *o) {
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < FONT_MAX_GLYPHS; i++) {
 		o->glyphs[i].uses = 0;
 	}
 
@@ -421,27 +421,27 @@ int avdl_font_releaseAllGlyphs(struct avdl_font *o) {
 }
 
 float avdl_font_getTexCoordX(struct avdl_font *o, int glyph_id) {
-	if (glyph_id < 0 || glyph_id >= 100) {
+	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
 	if (o->glyphs[glyph_id].uses == 0) {
 		return 0;
 	}
-	return ((glyph_id%10)*FONT_GLYPH_SIZE) /(float) FONT_ATLAS_WIDTH;
+	return ((glyph_id%FONT_MAX_GLYPHS_COLUMNS)*FONT_GLYPH_SIZE) /(float) FONT_ATLAS_WIDTH;
 }
 
 float avdl_font_getTexCoordY(struct avdl_font *o, int glyph_id) {
-	if (glyph_id < 0 || glyph_id >= 100) {
+	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
 	if (o->glyphs[glyph_id].uses == 0) {
 		return 0;
 	}
-	return ((glyph_id/10)*FONT_GLYPH_SIZE) /(float) FONT_ATLAS_HEIGHT;
+	return ((glyph_id/FONT_MAX_GLYPHS_ROWS)*FONT_GLYPH_SIZE) /(float) FONT_ATLAS_HEIGHT;
 }
 
 float avdl_font_getTexCoordW(struct avdl_font *o, int glyph_id) {
-	if (glyph_id < 0 || glyph_id >= 100) {
+	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
 	if (o->glyphs[glyph_id].uses == 0) {
@@ -451,7 +451,7 @@ float avdl_font_getTexCoordW(struct avdl_font *o, int glyph_id) {
 }
 
 float avdl_font_getTexCoordH(struct avdl_font *o, int glyph_id) {
-	if (glyph_id < 0 || glyph_id >= 100) {
+	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
 	if (o->glyphs[glyph_id].uses == 0) {
@@ -461,7 +461,7 @@ float avdl_font_getTexCoordH(struct avdl_font *o, int glyph_id) {
 }
 
 float avdl_font_getGlyphWidth(struct avdl_font *o, int glyph_id) {
-	if (glyph_id < 0 || glyph_id >= 100) {
+	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
 	if (o->glyphs[glyph_id].uses == 0) {
@@ -471,7 +471,7 @@ float avdl_font_getGlyphWidth(struct avdl_font *o, int glyph_id) {
 }
 
 float avdl_font_getGlyphHeight(struct avdl_font *o, int glyph_id) {
-	if (glyph_id < 0 || glyph_id >= 100) {
+	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
 	if (o->glyphs[glyph_id].uses == 0) {
@@ -481,7 +481,7 @@ float avdl_font_getGlyphHeight(struct avdl_font *o, int glyph_id) {
 }
 
 float avdl_font_getGlyphLeft(struct avdl_font *o, int glyph_id) {
-	if (glyph_id < 0 || glyph_id >= 100) {
+	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
 	if (o->glyphs[glyph_id].uses == 0) {
@@ -491,7 +491,7 @@ float avdl_font_getGlyphLeft(struct avdl_font *o, int glyph_id) {
 }
 
 float avdl_font_getGlyphTop(struct avdl_font *o, int glyph_id) {
-	if (glyph_id < 0 || glyph_id >= 100) {
+	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
 	if (o->glyphs[glyph_id].uses == 0) {
@@ -563,7 +563,7 @@ void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outl
 }
 
 float avdl_font_getGlyphAdvance(struct avdl_font *o, int glyph_id) {
-	if (glyph_id < 0 || glyph_id >= 100) {
+	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].advance;
