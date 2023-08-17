@@ -613,7 +613,7 @@ jobs:
         BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
       run: |
         VERSION=${{ github.ref_name }}
-        ./butler push ${{ inputs.project_name }}_${{ matrix.build_type }}.tar.gz ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:${{ matrix.build_type }} --userversion ${VERSION:1}
+        ./butler push ${{ inputs.project_name }}_${{ matrix.build_type }}/${{ inputs.project_name }}_${{ matrix.build_type }}.tar.gz ${{ inputs.itchio_user }}/${{ inputs.itchio_project }}:${{ matrix.build_type }} --userversion ${VERSION:1}
     # publish zip archive (windows)
     - name: prepare and upload - windows
       if: ${{ (matrix.build_type == 'windows-x86_64') }}
@@ -677,7 +677,7 @@ jobs:
         mkdir -p ~/.steam/steam/config/
         echo '${{ secrets.STEAMWORKS_TOKEN }}' | base64 -d > ~/.steam/steam/config/config.vdf
         mkdir ${{ inputs.project_name }}_linux_steam-x86_64
-        tar -C ${{ inputs.project_name }}_linux_steam-x86_64 xzf ${{ inputs.project_name }}_linux_steam-x86_64.tar.gz
+        tar -C ${{ inputs.project_name }}_linux_steam-x86_64 xzf ${{ inputs.project_name }}_linux_steam-x86_64/${{ inputs.project_name }}_linux_steam-x86_64.tar.gz
     # Steamworks
     - name: get steamworks
       run: |
@@ -831,4 +831,4 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         tag: ${{ github.ref_name }}
       run: |
-        gh release upload "$tag" ${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.tar.gz
+        gh release upload "$tag" ${{ inputs.project_name }}_${{ matrix.build_type }}/${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.tar.gz
