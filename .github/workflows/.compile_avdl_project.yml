@@ -676,7 +676,6 @@ jobs:
         sudo apt update && sudo apt install -y zip
         mkdir -p ~/.steam/steam/config/
         echo '${{ secrets.STEAMWORKS_TOKEN }}' | base64 -d > ~/.steam/steam/config/config.vdf
-        mkdir ${{ inputs.project_name }}_linux_steam-x86_64
         tar -C ${{ inputs.project_name }}_linux_steam-x86_64 xzf ${{ inputs.project_name }}_linux_steam-x86_64/${{ inputs.project_name }}_linux_steam-x86_64.tar.gz
     # Steamworks
     - name: get steamworks
