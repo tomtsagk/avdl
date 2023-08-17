@@ -830,4 +830,5 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
         tag: ${{ github.ref_name }}
       run: |
+        mv ${{ inputs.project_name }}_${{ matrix.build_type }}/${{ inputs.project_name }}_${{ matrix.build_type }}.tar.gz ${{ inputs.project_name }}_${{ matrix.build_type }}/${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.tar.gz
         gh release upload "$tag" ${{ inputs.project_name }}_${{ matrix.build_type }}/${{ inputs.project_name }}_${{ github.ref_name }}_${{ matrix.build_type }}.tar.gz
