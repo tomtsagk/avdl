@@ -1,3 +1,14 @@
+avdl (0.16.6-1) focal; urgency=low
+
+  * Add freetype and ability to render fonts on multiple languages
+  * Better Quest 2 support
+  * Add first complete implementation of physics
+  * Add ability for custom fps
+  * Include the `--no-cache` command for complete compilations
+  * Add command line arguments on games to run on different languages
+
+ -- Tom Tsagkatos <tomtsagkatos@afloof.dev>  Fri, 18 Aug 2023 13:00:00 +0100
+
 avdl (0.9.13-1) focal; urgency=low
 
   * Fix automation of cmake builds

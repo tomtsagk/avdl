@@ -1,10 +1,10 @@
 Name:           avdl
-Version:        0.9.13
+Version:        0.16.6
 Release:        1%{?dist}
 Summary:        Abstract video-game development language compiler
 
 License:        GPLv3
-URL:            https://afloofdev.com/avdl
+URL:            https://afloof.dev/avdl
 Source0:        https://github.com/tomtsagk/%{name}/archive/refs/tags/v%{version}.tar.gz
 
 BuildRequires:  make, gcc, glew-devel, SDL2-devel, SDL2_mixer-devel
@@ -40,6 +40,14 @@ make %{?_smp_mflags} prefix=/usr DESTDIR=%{buildroot} install
 %doc /usr/share/man/man1/avdl.1.gz
 
 %changelog
+* Fri Aug 18 2023 Tom Tsagkatos <tomtsagkatos@afloof.dev>
+- Add freetype and ability to render fonts on multiple languages
+- Better Quest 2 support
+- Add first complete implementation of physics
+- Add ability for custom fps
+- Include the `--no-cache` command for complete compilations
+- Add command line arguments on games to run on different languages
+
 * Thu May 25 2023 Tom Tsagkatos <tomtsagkatos@afloof.dev>
 - Fix performance issue on Quest 2
 - Add ability for non oculus quest 2 builds
