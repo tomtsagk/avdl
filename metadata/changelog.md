@@ -1,1 +1,1 @@
-* Slightly increase limits of glyphs in fonts
+* Temporarily increase amount of physics objects
