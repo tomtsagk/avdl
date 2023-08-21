@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 struct avdl_physics {
-	struct avdl_rigidbody *object[15];
+	struct avdl_rigidbody *object[110];
 	int object_count;
 	struct dd_vec3 constant_force;
 
