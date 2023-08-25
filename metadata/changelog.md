@@ -1,1 +1,1 @@
-* Fix detecting german and japanese for Steam
+* Configure the particle system to use delta time
