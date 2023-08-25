@@ -110,6 +110,12 @@ void avdl_localisation_print(struct avdl_localisation *o) {
 }
 
 void avdl_locale_set(const char *locale_code) {
+
+	// no locale given - go to system default
+	if (!locale_code) {
+		locale_code = avdl_locale_getSystemLocale();
+	}
+
 	if (strcmp(locale_code, "en") == 0) {
 		AVDL_LOCALE_CURRENT = AVDL_LOCALE_ENGLISH;
 	}

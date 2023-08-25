@@ -7,6 +7,18 @@ const char * avdl_locale_getSystemLocale() {
 	if (strcmp(SteamApps()->GetCurrentGameLanguage(), "greek") == 0) {
 		return "el";
 	}
+	else
+	if (strcmp(SteamApps()->GetCurrentGameLanguage(), "english") == 0) {
+		return "en";
+	}
+	else
+	if (strcmp(SteamApps()->GetCurrentGameLanguage(), "japanese") == 0) {
+		return "de";
+	}
+	else
+	if (strcmp(SteamApps()->GetCurrentGameLanguage(), "german") == 0) {
+		return "ja";
+	}
 	return "en";
 }
 #endif
