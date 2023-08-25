@@ -1,1 +1,1 @@
-* Configure the particle system to use delta time
+* Fix minor issue detecting languages on steam
