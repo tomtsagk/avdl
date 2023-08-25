@@ -1,1 +1,1 @@
-* Temporarily increase amount of physics objects
+* Fix detecting german and japanese for Steam
