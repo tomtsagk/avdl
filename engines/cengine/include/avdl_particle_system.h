@@ -80,7 +80,7 @@ struct avdl_particle_system {
 	 * basic functions
 	 */
 	void (*clean)(struct avdl_particle_system *);
-	void (*update)(struct avdl_particle_system *);
+	void (*update)(struct avdl_particle_system *, float dt);
 	void (*draw)(struct avdl_particle_system *);
 
 	/*
@@ -109,7 +109,7 @@ void avdl_particle_system_create(struct avdl_particle_system *);
 void avdl_particle_system_clean(struct avdl_particle_system *);
 
 void avdl_particle_system_assignAsset(struct avdl_particle_system *, struct dd_mesh *);
-void avdl_particle_system_update(struct avdl_particle_system *);
+void avdl_particle_system_update(struct avdl_particle_system *, float dt);
 void avdl_particle_system_draw(struct avdl_particle_system *);
 
 void avdl_particle_system_setDelay(struct avdl_particle_system *, float newDelay);

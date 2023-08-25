@@ -66,14 +66,14 @@ void avdl_particle_system_assignAsset(struct avdl_particle_system *o, struct dd_
 	o->particleMesh = mesh;
 }
 
-void avdl_particle_system_update(struct avdl_particle_system *o) {
+void avdl_particle_system_update(struct avdl_particle_system *o, float dt) {
 
 	// update each particle
 	for (int i = 0; i < o->particlesCount; i++) {
 		int index = (o->particlesStart +i) %PARTICLES_TOTAL;
 
 		// update remaining life
-		o->particles[index].life -= 1;
+		o->particles[index].life -= dt;
 		if (o->particles[index].life <= 0) {
 			o->particlesStart = (o->particlesStart +1) %PARTICLES_TOTAL;
 			o->particlesCount--;
@@ -81,7 +81,7 @@ void avdl_particle_system_update(struct avdl_particle_system *o) {
 	}
 
 	// decide if a new particle needs to appear
-	o->delayCurrent -= 1;
+	o->delayCurrent -= dt;
 	if (o->delayCurrent <= 0 && o->particlesCount < o->particlesTotal) {
 		int index = (o->particlesStart +o->particlesCount) %PARTICLES_TOTAL;
 		o->delayCurrent = o->delayMax;
