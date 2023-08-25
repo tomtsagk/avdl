@@ -13,11 +13,11 @@ const char * avdl_locale_getSystemLocale() {
 	}
 	else
 	if (strcmp(SteamApps()->GetCurrentGameLanguage(), "japanese") == 0) {
-		return "de";
+		return "ja";
 	}
 	else
 	if (strcmp(SteamApps()->GetCurrentGameLanguage(), "german") == 0) {
-		return "ja";
+		return "de";
 	}
 	return "en";
 }
