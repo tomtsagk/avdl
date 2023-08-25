@@ -106,6 +106,36 @@ int avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int heig
 
 }
 
+void avdl_graphics_ImageToGpuUpdate(int texture_id, void *pixels, int pixel_format, int x, int y, int width, int height) {
+
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	glTexSubImage2D(GL_TEXTURE_2D, 0,
+		x,
+		y,
+		width,
+		height,
+		pixel_format,
+		GL_FLOAT,
+		pixels
+	);
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	glTexSubImage2D(GL_TEXTURE_2D, 0,
+		x,
+		y,
+		width,
+		height,
+		pixel_format,
+		GL_UNSIGNED_BYTE,
+		pixels
+	);
+	#endif
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+}
+
 void avdl_graphics_DeleteTexture(unsigned int tex) {
 	glDeleteTextures(1, &tex);
 }

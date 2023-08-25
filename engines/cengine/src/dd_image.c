@@ -11,6 +11,18 @@
 #include <png.h>
 #endif
 
+struct Subpixel {
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	GLubyte *pixels;
+	#else
+	float *pixels;
+	#endif
+	int offset_x;
+	int offset_y;
+	int width;
+	int height;
+};
+
 void dd_image_create(struct dd_image *o) {
 	o->tex = 0;
 	o->width = 0;
@@ -26,6 +38,8 @@ void dd_image_create(struct dd_image *o) {
 	o->unbind = dd_image_unbind;
 	o->clean = dd_image_clean;
 	o->set = dd_image_set;
+
+	dd_da_init(&o->subpixels, sizeof(struct Subpixel));
 }
 
 void dd_image_load_png(struct dd_image *img, const char *filename) {
@@ -235,6 +249,12 @@ void dd_image_clean(struct dd_image *o) {
 	if (o->tex) {
 		avdl_graphics_DeleteTexture(o->tex);
 	}
+
+	for (int i = 0; i < o->subpixels.elements; i++) {
+		struct Subpixel *subpixel = dd_da_get(&o->subpixels, i);
+		free(subpixel->pixels);
+	}
+	dd_da_free(&o->subpixels);
 	#endif
 }
 
@@ -251,9 +271,9 @@ void dd_image_bind(struct dd_image *o) {
 		// clean the texture
 		for (int x = 0; x < o->width ; x++)
 		for (int y = 0; y < o->height; y++) {
-			o->pixelsb[(y*o->width*4) +x*4+0] = 0;
-			o->pixelsb[(y*o->width*4) +x*4+1] = 0;
-			o->pixelsb[(y*o->width*4) +x*4+2] = 0;
+			o->pixelsb[(y*o->width*4) +x*4+0] = 255;
+			o->pixelsb[(y*o->width*4) +x*4+1] = 255;
+			o->pixelsb[(y*o->width*4) +x*4+2] = 255;
 			o->pixelsb[(y*o->width*4) +x*4+3] = 0;
 		}
 
@@ -274,6 +294,8 @@ void dd_image_bind(struct dd_image *o) {
 	}
 
 	if (o->pixels || o->pixelsb) {
+
+		// check tex ?
 		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 		o->tex = avdl_graphics_ImageToGpu(o->pixels, o->pixelFormat, o->width, o->height);
 		free(o->pixels);
@@ -283,6 +305,25 @@ void dd_image_bind(struct dd_image *o) {
 		free(o->pixelsb);
 		o->pixelsb = 0;
 		#endif
+	}
+
+	// update texture
+	if (o->subpixels.elements > 0 && o->tex) {
+
+		for (int i = 0; i < o->subpixels.elements; i++) {
+			struct Subpixel *subpixel = dd_da_get(&o->subpixels, i);
+			avdl_graphics_ImageToGpuUpdate(
+				o->tex,
+				subpixel->pixels,
+				GL_RGBA,
+				subpixel->offset_x,
+				subpixel->offset_y,
+				subpixel->width,
+				subpixel->height
+			);
+			free(subpixel->pixels);
+		}
+		dd_da_empty(&o->subpixels);
 	}
 
 	// texture is valid in this opengl context, bind it
@@ -319,4 +360,35 @@ void dd_image_set(struct dd_image *o, const char *filename, int type) {
 	o->assetType = type;
 	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
 	#endif
+}
+
+void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, int x, int y, int w, int h) {
+
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	GLubyte *pixelsf = pixels;
+	#else
+	float *pixelsf = pixels;
+	#endif
+
+	struct Subpixel subpixel;
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	subpixel.pixels = malloc(sizeof(GLubyte) *4 *w *h);
+	#else
+	subpixel.pixels = malloc(sizeof(float) *4 *w *h);
+	#endif
+	for (int i = 0; i < w; i++)
+	for (int j = 0; j < h; j++) {
+		int index = j *w *4 +i *4;
+		subpixel.pixels[index +0] = pixelsf[index +0];
+		subpixel.pixels[index +1] = pixelsf[index +1];
+		subpixel.pixels[index +2] = pixelsf[index +2];
+		subpixel.pixels[index +3] = pixelsf[index +3];
+	}
+	subpixel.offset_x = x;
+	subpixel.offset_y = y;
+	subpixel.width = w;
+	subpixel.height = h;
+
+	dd_da_add(&o->subpixels, &subpixel);
+
 }

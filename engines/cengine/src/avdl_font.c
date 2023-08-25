@@ -304,9 +304,9 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		*/
 		float alpha = o->face->glyph->bitmap.buffer[y*o->face->glyph->bitmap.width +x];
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-		pixels[index2+0] = dd_math_min(255, pixels[index2+0] +255 *alpha);
-		pixels[index2+1] = dd_math_min(255, pixels[index2+1] +255 *alpha);
-		pixels[index2+2] = dd_math_min(255, pixels[index2+2] +255 *alpha);
+		pixels[index2+0] = dd_math_min(255, 255 *alpha);
+		pixels[index2+1] = dd_math_min(255, 255 *alpha);
+		pixels[index2+2] = dd_math_min(255, 255 *alpha);
 		pixels[index2+3] = dd_math_max(pixels[index2+3], dd_math_min(alpha *255, 255));
 		#else
 		pixels[index2+0] = 1.0 *alpha;
@@ -316,6 +316,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		#endif
 	}
 
+	// pixels available, draw directly on them
 	if (o->texture.pixelsb || o->texture.pixels) {
 		for (int x = 0; x < FONT_GLYPH_SIZE; x++)
 		for (int y = 0; y < FONT_GLYPH_SIZE; y++) {
@@ -336,28 +337,23 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		}
 	}
 	else
+	// texture already made, pass sub texture to draw
 	if (o->texture.tex) {
 		glBindTexture(GL_TEXTURE_2D, o->texture.tex);
 
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-		glTexSubImage2D(GL_TEXTURE_2D, 0,
+		dd_image_addSubpixels(&o->texture, pixels, GL_RGBA,
 			(glyph_id%FONT_MAX_GLYPHS_COLUMNS) *FONT_GLYPH_SIZE,
 			((glyph_id/FONT_MAX_GLYPHS_ROWS) *FONT_GLYPH_SIZE),
 			FONT_GLYPH_SIZE,
-			FONT_GLYPH_SIZE,
-			o->texture.pixelFormat,
-			GL_UNSIGNED_BYTE,
-			pixels
+			FONT_GLYPH_SIZE
 		);
 		#else
-		glTexSubImage2D(GL_TEXTURE_2D, 0,
+		dd_image_addSubpixels(&o->texture, pixels, GL_FLOAT,
 			(glyph_id%FONT_MAX_GLYPHS_COLUMNS) *FONT_GLYPH_SIZE,
 			((glyph_id/FONT_MAX_GLYPHS_ROWS) *FONT_GLYPH_SIZE),
 			FONT_GLYPH_SIZE,
-			FONT_GLYPH_SIZE,
-			o->texture.pixelFormat,
-			GL_FLOAT,
-			pixels
+			FONT_GLYPH_SIZE
 		);
 		#endif
 
@@ -409,6 +405,7 @@ int avdl_font_releaseGlyph(struct avdl_font *o, int glyph_id) {
 	}
 
 	o->glyphs[glyph_id].uses = dd_math_max(o->glyphs[glyph_id].uses -1, 0);
+
 	return 0;
 }
 

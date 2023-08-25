@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "avdl_graphics.h"
+#include "dd_dynamic_array.h"
 
 enum AVDL_IMAGETYPE {
 	AVDL_IMAGETYPE_PNG,
@@ -19,6 +20,7 @@ struct dd_image {
 	#else
 	GLuint tex;
 	GLubyte *pixelsb;
+	struct dd_dynamic_array subpixels;
 	#endif
 	int width, height;
 	float *pixels;
@@ -32,6 +34,8 @@ struct dd_image {
 	void (*unbind)(struct dd_image *o);
 	void (*clean)(struct dd_image *o);
 	void (*set)(struct dd_image *o, const char *filename, int type);
+
+	void (*addSubpixels)(struct dd_image *o, void *pixels, int pixel_format, int x, int y, int w, int h);
 };
 
 void dd_image_create(struct dd_image *o);
@@ -50,6 +54,8 @@ void dd_image_unbind(struct dd_image *o);
 void dd_image_set(struct dd_image *o, const char *filename, int type);
 
 void dd_image_clean(struct dd_image *o);
+
+void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, int x, int y, int w, int h);
 
 #ifdef __cplusplus
 }

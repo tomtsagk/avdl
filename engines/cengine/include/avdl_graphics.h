@@ -97,6 +97,7 @@ void avdl_graphics_VertexAttribPointer(int p, int size, int format, int, int, vo
 void avdl_graphics_DrawArrays(int vcount);
 
 int avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height);
+void avdl_graphics_ImageToGpuUpdate(int texture_id, void *pixels, int pixel_format, int x, int y, int width, int height);
 
 #ifdef __cplusplus
 }
