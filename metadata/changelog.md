@@ -1,1 +1,1 @@
-* Fix minor issue detecting languages on steam
+* Fix bug to render glyphs dynamically on android and quest 2
