@@ -45,6 +45,9 @@ pthread_mutex_t updateDrawMutex;
 	jmethodID loadFullscreenAdMethodId;
 	jmethodID showFullscreenAdMethodId;
 
+	jmethodID loadRewardedAdMethodId;
+	jmethodID showRewardedAdMethodId;
+
 	// Reconstruct engine to use one JNIEnv per world
 	JNIEnv *jniEnv;
 	JavaVM* jvm = 0;
@@ -344,6 +347,9 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 	loadFullscreenAdMethodId = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "loadFullscreenAd", "(I)V");
 	showFullscreenAdMethodId = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "showFullscreenAd", "(I)V");
 
+	loadRewardedAdMethodId = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "loadRewardedAd", "(I)V");
+	showRewardedAdMethodId = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "showRewardedAd", "(I)V");
+
 	// grab internal save path, for save/load functionality
 	jmethodID getFilesDir = (*(*jniEnv)->GetMethodID)(jniEnv, clazz, "getFilesDir", "()Ljava/io/File;");
 	jobject dirobj = (*(*jniEnv)->CallObjectMethod)(jniEnv, mainActivity,getFilesDir);
@@ -453,6 +459,12 @@ void Java_org_darkdimension_avdl_AvdlActivity_nativeSetLocale(JNIEnv* env, jobje
 		case 2: avdl_locale_set("ja"); break;
 		case 3: avdl_locale_set("el"); break;
 	}
+}
+
+void Java_org_darkdimension_avdl_AvdlActivity_nativeOnRewardedAd(JNIEnv* env, jobject thiz, int reward_amount, jstring reward_type) {
+	const char *nativeString = (*env)->GetStringUTFChars(env, reward_type, 0);
+	avdl_ads_onRewardedAd(reward_amount, nativeString);
+	(*env)->ReleaseStringUTFChars(env, reward_type, nativeString);
 }
 
 #if defined(AVDL_QUEST2)

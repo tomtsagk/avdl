@@ -104,7 +104,9 @@ int AvdlSettings_Create(struct AvdlSettings *o) {
 	o->admob_ads = 0;
 	o->admob_ads_id[0] = '\0';
 	o->admob_ads_fullscreen = 0;
+	o->admob_ads_rewarded = 0;
 	o->admob_ads_fullscreen_id[0] = '\0';
+	o->admob_ads_rewarded_id[0] = '\0';
 
 	// oculus
 	o->oculus_mode = 0;

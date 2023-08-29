@@ -131,6 +131,24 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 					}
 				}
 				else
+				// admob ads - rewarded
+				if (strcmp(argv[i], "--admob-ads-rewarded") == 0) {
+					if (argc > i+1) {
+						if (strlen(argv[i+1]) > 99) {
+							avdl_log_error("admob ads rewarded id too long");
+							return -1;
+						}
+						avdl_settings->admob_ads_rewarded = 1;
+						strcpy(avdl_settings->admob_ads_rewarded_id, argv[i+1]);
+						avdl_settings->admob_ads_rewarded_id[99] = '\0';
+						i++;
+					}
+					else {
+						avdl_log_error(BLU "%s" RESET " expects an admob ads rewarded id", argv[i]);
+						return -1;
+					}
+				}
+				else
 				// compiling for quest 2
 				if (strcmp(argv[i], "--quest2") == 0) {
 					avdl_settings->target_platform = AVDL_PLATFORM_QUEST2;

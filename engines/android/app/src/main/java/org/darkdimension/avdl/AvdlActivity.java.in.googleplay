@@ -327,6 +327,7 @@ public class AvdlActivity extends Activity {
 
 	%AVDL_ADS_FUNCTIONS%
 
+	private static native void nativeOnRewardedAd(int reward_amount, String reward_type);
 	private static native void nativeSetAssetManager(AssetManager assetManager);
 	private static native void nativeSetLocale(int locale);
 	private static native void nativeKeyDown(int key);
@@ -353,6 +354,7 @@ class AvdlGLSurfaceView extends GLSurfaceView {
 
 		// Create an OpenGL ES 2.0 context
 		setEGLContextClientVersion(2);
+		setPreserveEGLContextOnPause(true);
 
 		renderer = new AvdlRenderer();
 		this.setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_LOG_GL_CALLS);

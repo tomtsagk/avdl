@@ -1638,6 +1638,13 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 			avdl_string_cat(&values_file, avdl_settings->admob_ads_fullscreen_id);
 			avdl_string_cat(&values_file, "</string>\n");
 		}
+
+		// rewards ad id
+		if (avdl_settings->admob_ads_rewarded) {
+			avdl_string_cat(&values_file, "	<string translatable=\"false\" name=\"game_services_rewarded_ad_id\">");
+			avdl_string_cat(&values_file, avdl_settings->admob_ads_rewarded_id);
+			avdl_string_cat(&values_file, "</string>\n");
+		}
 	}
 
 	avdl_string_cat(&values_file, "</resources>\n");
@@ -1667,7 +1674,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	avdl_string_create(&ads_init, 1024);
 
 	struct avdl_string ads_functions;
-	avdl_string_create(&ads_functions, 2048);
+	avdl_string_create(&ads_functions, 2048 *2);
 
 	// modify Android Manifest based on google play mode or not
 	if (avdl_settings->googleplay_mode) {
@@ -1704,10 +1711,11 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 			"import com.google.android.gms.ads.LoadAdError;\n"
 			"import com.google.android.gms.ads.FullScreenContentCallback;\n"
 			"import com.google.android.gms.ads.AdError;\n"
-		);
 
-		avdl_string_cat(&ads_declarations,
-			"\n\tpublic static InterstitialAd mInterstitialAd;\n"
+			"import com.google.android.gms.ads.rewarded.RewardedAd;\n"
+			"import com.google.android.gms.ads.rewarded.RewardItem;\n"
+			"import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;\n"
+			"import com.google.android.gms.ads.OnUserEarnedRewardListener;\n"
 		);
 
 		avdl_string_cat(&ads_init,
@@ -1718,72 +1726,173 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 			"\t\t});\n"
 		);
 
-		avdl_string_cat(&ads_functions,
-			"public void loadFullscreenAd(int X) {\n"
-			"	// ad already loaded - skip\n"
-			"	if ( mInterstitialAd != null ) {\n"
-			"		return;\n"
-			"	}\n"
-			"	runOnUiThread(() -> {\n"
-			"		AdRequest adRequest = new AdRequest.Builder().build();\n"
-			"		InterstitialAd.load(AvdlActivity.activity, getString(R.string.game_services_fullscreen_ad_id), adRequest,\n"
-			"			new InterstitialAdLoadCallback() {\n"
-			"				@Override\n"
-			"				public void onAdLoaded(InterstitialAd interstitialAd) {\n"
-			"					AvdlActivity.mInterstitialAd = interstitialAd;\n"
-			"				}\n"
-			"				@Override\n"
-			"				public void onAdFailedToLoad(LoadAdError loadAdError) {\n"
-			"					AvdlActivity.mInterstitialAd = null;\n"
-			"				}\n"
-			"			}\n"
-			"		);\n"
-			"	});\n"
-			"}\n"
-			"public void showFullscreenAd(int X) {\n"
-			"	// no ad loaded to show\n"
-			"	if (AvdlActivity.mInterstitialAd == null) {\n"
-			"		return;\n"
-			"	}\n"
-			"	runOnUiThread(() -> {\n"
-			"		if (AvdlActivity.mInterstitialAd != null) {\n"
-			"			AvdlActivity.mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {\n"
-			"				// ad clicked\n"
-			"				@Override\n"
-			"				public void onAdClicked() {\n"
-			"				}\n"
-			"				// ad dismissed\n"
-			"				@Override\n"
-			"				public void onAdDismissedFullScreenContent() {\n"
-			"					AvdlActivity.mInterstitialAd = null;\n"
-			"				}\n"
-			"				// failed\n"
-			"				@Override\n"
-			"				public void onAdFailedToShowFullScreenContent(AdError adError) {\n"
-			"					AvdlActivity.mInterstitialAd = null;\n"
-			"				}\n"
-			"				// impression\n"
-			"				@Override\n"
-			"				public void onAdImpression() {\n"
-			"				}\n"
-			"				// success\n"
-			"				@Override\n"
-			"				public void onAdShowedFullScreenContent() {\n"
-			"				}\n"
-			"			});\n"
-			"			AvdlActivity.mInterstitialAd.show(AvdlActivity.activity);\n"
-			"		} else {\n"
-			"			// ad is not loaded\n"
-			"		}\n"
-			"	});\n"
-			"}\n"
-		);
+		// fullscreen ads
+		if (avdl_settings->admob_ads_fullscreen) {
+			avdl_string_cat(&ads_declarations,
+				"\n\tpublic static InterstitialAd mInterstitialAd;\n"
+			);
+			avdl_string_cat(&ads_functions,
+				"public void loadFullscreenAd(int X) {\n"
+				"	// ad already loaded - skip\n"
+				"	if ( mInterstitialAd != null ) {\n"
+				"		return;\n"
+				"	}\n"
+				"	runOnUiThread(() -> {\n"
+				"		AdRequest adRequest = new AdRequest.Builder().build();\n"
+				"		InterstitialAd.load(AvdlActivity.activity, getString(R.string.game_services_fullscreen_ad_id), adRequest,\n"
+				"			new InterstitialAdLoadCallback() {\n"
+				"				@Override\n"
+				"				public void onAdLoaded(InterstitialAd interstitialAd) {\n"
+				"					AvdlActivity.mInterstitialAd = interstitialAd;\n"
+				"				}\n"
+				"				@Override\n"
+				"				public void onAdFailedToLoad(LoadAdError loadAdError) {\n"
+				"					AvdlActivity.mInterstitialAd = null;\n"
+				"				}\n"
+				"			}\n"
+				"		);\n"
+				"	});\n"
+				"}\n"
+				"public void showFullscreenAd(int X) {\n"
+				"	// no ad loaded to show\n"
+				"	if (AvdlActivity.mInterstitialAd == null) {\n"
+				"		return;\n"
+				"	}\n"
+				"	runOnUiThread(() -> {\n"
+				"		if (AvdlActivity.mInterstitialAd != null) {\n"
+				"			AvdlActivity.mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {\n"
+				"				// ad clicked\n"
+				"				@Override\n"
+				"				public void onAdClicked() {\n"
+				"				}\n"
+				"				// ad dismissed\n"
+				"				@Override\n"
+				"				public void onAdDismissedFullScreenContent() {\n"
+				"					AvdlActivity.mInterstitialAd = null;\n"
+				"				}\n"
+				"				// failed\n"
+				"				@Override\n"
+				"				public void onAdFailedToShowFullScreenContent(AdError adError) {\n"
+				"					AvdlActivity.mInterstitialAd = null;\n"
+				"				}\n"
+				"				// impression\n"
+				"				@Override\n"
+				"				public void onAdImpression() {\n"
+				"				}\n"
+				"				// success\n"
+				"				@Override\n"
+				"				public void onAdShowedFullScreenContent() {\n"
+				"				}\n"
+				"			});\n"
+				"			AvdlActivity.mInterstitialAd.show(AvdlActivity.activity);\n"
+				"		} else {\n"
+				"			// ad is not loaded\n"
+				"		}\n"
+				"	});\n"
+				"}\n"
+			);
+		}
+		else {
+			avdl_string_cat(&ads_functions,
+				"public void loadFullscreenAd(int X) {\n"
+				"}\n"
+				"public void showFullscreenAd(int X) {\n"
+				"}\n"
+			);
+		}
+
+		// rewarded ads
+		if (avdl_settings->admob_ads_rewarded) {
+			avdl_string_cat(&ads_declarations,
+				"\n\tpublic static RewardedAd mRewardedAd;\n"
+			);
+			avdl_string_cat(&ads_functions,
+				"public void loadRewardedAd(int X) {\n"
+				"	// ad already loaded - skip\n"
+				"	if ( mRewardedAd != null ) {\n"
+				"		return;\n"
+				"	}\n"
+				"	runOnUiThread(() -> {\n"
+				"		AdRequest adRequest = new AdRequest.Builder().build();\n"
+				"		RewardedAd.load(AvdlActivity.activity, getString(R.string.game_services_rewarded_ad_id), adRequest,\n"
+				"			new RewardedAdLoadCallback() {\n"
+				"				@Override\n"
+				"				public void onAdLoaded(RewardedAd ad) {\n"
+				"					AvdlActivity.mRewardedAd = ad;\n"
+				"				}\n"
+				"				@Override\n"
+				"				public void onAdFailedToLoad(LoadAdError loadAdError) {\n"
+				"					AvdlActivity.mRewardedAd = null;\n"
+				"				}\n"
+				"			}\n"
+				"		);\n"
+				"	});\n"
+				"}\n"
+				"public void showRewardedAd(int X) {\n"
+				"	// no ad loaded to show\n"
+				"	if (AvdlActivity.mRewardedAd == null) {\n"
+				"		return;\n"
+				"	}\n"
+				"	runOnUiThread(() -> {\n"
+				"		if (AvdlActivity.mRewardedAd != null) {\n"
+				"			AvdlActivity.mRewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {\n"
+				"				// ad clicked\n"
+				"				@Override\n"
+				"				public void onAdClicked() {\n"
+				"				}\n"
+				"				// ad dismissed\n"
+				"				@Override\n"
+				"				public void onAdDismissedFullScreenContent() {\n"
+				"					AvdlActivity.mRewardedAd = null;\n"
+				"				}\n"
+				"				// failed\n"
+				"				@Override\n"
+				"				public void onAdFailedToShowFullScreenContent(AdError adError) {\n"
+				"					AvdlActivity.mRewardedAd = null;\n"
+				"				}\n"
+				"				// impression\n"
+				"				@Override\n"
+				"				public void onAdImpression() {\n"
+				"				}\n"
+				"				// success\n"
+				"				@Override\n"
+				"				public void onAdShowedFullScreenContent() {\n"
+				"				}\n"
+				"			});\n"
+				"			AvdlActivity.mRewardedAd.show(AvdlActivity.activity, new OnUserEarnedRewardListener() {\n"
+				"				@Override\n"
+				"				public void onUserEarnedReward(RewardItem rewardItem) {\n"
+				"					int rewardAmount = rewardItem.getAmount();\n"
+				"					String rewardType = rewardItem.getType();\n"
+				"					nativeOnRewardedAd(rewardAmount, rewardType);\n"
+				"				}\n"
+				"			});\n"
+				"		} else {\n"
+				"			// ad is not loaded\n"
+				"		}\n"
+				"	});\n"
+				"}\n"
+			);
+		}
+		else {
+			avdl_string_cat(&ads_functions,
+				"public void loadRewardedAd(int X) {\n"
+				"}\n"
+				"public void showRewardedAd(int X) {\n"
+				"}\n"
+			);
+		}
+
 	}
 	else {
 		avdl_string_cat(&ads_functions,
 			"public void loadFullscreenAd(int X) {\n"
 			"}\n"
 			"public void showFullscreenAd(int X) {\n"
+			"}\n"
+			"public void loadRewardedAd(int X) {\n"
+			"}\n"
+			"public void showRewardedAd(int X) {\n"
 			"}\n"
 		);
 	}
