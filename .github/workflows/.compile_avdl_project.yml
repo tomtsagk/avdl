@@ -100,8 +100,10 @@ on:
         required: false
       ADMOB_INTERSTITIAL_AD_ID:
         required: false
+        default: 0
       ADMOB_REWARDED_AD_ID:
         required: false
+        default: 0
       # required for quest 2
       OCULUS_API_LINK:
         required: false
@@ -201,15 +203,9 @@ jobs:
     - name: generate_android_project
       if: ${{ matrix.build_type == 'android' }}
       run: ./avdl_linux/bin/avdl --android
-    - name: generate_android_project admob - interstitial - rewarded
-      if: ${{ matrix.build_type == 'android_admob' && secrets.ADMOB_INTERSTITIAL_AD_ID != '' && secrets.ADMOB_REWARDED_AD_ID != '' }}
+    - name: generate_android_project admob
+      if: ${{ matrix.build_type == 'android_admob' }}
       run: ./avdl_linux/bin/avdl --android --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }} --admob-ads-rewarded ${{ secrets.ADMOB_REWARDED_AD_ID }}
-    - name: generate_android_project admob - interstitial
-      if: ${{ matrix.build_type == 'android_admob' && secrets.ADMOB_INTERSTITIAL_AD_ID != '' }}
-      run: ./avdl_linux/bin/avdl --android --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }}
-    - name: generate_android_project admob - rewarded
-      if: ${{ matrix.build_type == 'android_admob' && secrets.ADMOB_REWARDED_AD_ID != '' }}
-      run: ./avdl_linux/bin/avdl --android --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-rewarded ${{ secrets.ADMOB_REWARDED_AD_ID }}
     - name: generate_android_project googleplay
       if: ${{ matrix.build_type == 'android_googleplay' }}
       run: ./avdl_linux/bin/avdl --android-google-play ${{ secrets.GOOGLE_PLAY_ID }} ${{ secrets.AVDL_GOOGLE_PLAY_ACHIEVEMENTS }}
