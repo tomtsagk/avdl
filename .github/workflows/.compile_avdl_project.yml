@@ -100,6 +100,8 @@ on:
         required: false
       ADMOB_INTERSTITIAL_AD_ID:
         required: false
+      ADMOB_REWARDED_AD_ID:
+        required: false
       # required for quest 2
       OCULUS_API_LINK:
         required: false
@@ -134,8 +136,8 @@ on:
         required: false
 
 env:
-  AVDL_BUILD_URL_LINUX: https://github.com/tomtsagk/avdl/releases/download/v0.17.1/avdl_v0.17.1_linux.zip
-  AVDL_BUILD_URL_WINDOWS: https://github.com/tomtsagk/avdl/releases/download/v0.17.1/avdl_v0.17.1_windows.zip
+  AVDL_BUILD_URL_LINUX: https://github.com/tomtsagk/avdl/releases/download/v0.17.2/avdl_v0.17.2_linux.zip
+  AVDL_BUILD_URL_WINDOWS: https://github.com/tomtsagk/avdl/releases/download/v0.17.2/avdl_v0.17.2_windows.zip
 
 jobs:
   # Android
@@ -199,9 +201,15 @@ jobs:
     - name: generate_android_project
       if: ${{ matrix.build_type == 'android' }}
       run: ./avdl_linux/bin/avdl --android
-    - name: generate_android_project admob
-      if: ${{ matrix.build_type == 'android_admob' }}
+    - name: generate_android_project admob - interstitial - rewarded
+      if: ${{ matrix.build_type == 'android_admob' && secrets.ADMOB_INTERSTITIAL_AD_ID != '' && secrets.ADMOB_REWARDED_AD_ID != '' }}
+      run: ./avdl_linux/bin/avdl --android --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }} --admob-ads-rewarded ${{ secrets.ADMOB_REWARDED_AD_ID }}
+    - name: generate_android_project admob - interstitial
+      if: ${{ matrix.build_type == 'android_admob' && secrets.ADMOB_INTERSTITIAL_AD_ID != '' }}
       run: ./avdl_linux/bin/avdl --android --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }}
+    - name: generate_android_project admob - rewarded
+      if: ${{ matrix.build_type == 'android_admob' && secrets.ADMOB_REWARDED_AD_ID != '' }}
+      run: ./avdl_linux/bin/avdl --android --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-rewarded ${{ secrets.ADMOB_REWARDED_AD_ID }}
     - name: generate_android_project googleplay
       if: ${{ matrix.build_type == 'android_googleplay' }}
       run: ./avdl_linux/bin/avdl --android-google-play ${{ secrets.GOOGLE_PLAY_ID }} ${{ secrets.AVDL_GOOGLE_PLAY_ACHIEVEMENTS }}
