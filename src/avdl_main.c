@@ -1649,7 +1649,8 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	avdl_string_cat(&values_file, "</resources>\n");
 	if (!avdl_string_isValid(&values_file)) {
-		avdl_log_error("could not construct `strings.xml`");
+		avdl_log_error("could not construct `strings.xml`: %s", avdl_string_getError(&values_file));
+		avdl_log_error("was trying for %d", values_file->errorCharacters);
 		return -1;
 	}
 	if (!is_dir("avdl_build_android/app/src/main/res/values/")) {

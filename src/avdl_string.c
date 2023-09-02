@@ -12,12 +12,15 @@ void avdl_string_create(struct avdl_string *o, int maxCharacters) {
 	maxCharacters = maxCharacters > 3 ? maxCharacters : 3;
 
 	o->errorCode = 0;
+	o->errorCharacters = 0;
 	o->maxCharacters = maxCharacters;
 	dd_da_init(&o->string, sizeof(char));
 	dd_da_push(&o->string, "\0");
 }
 
 void avdl_string_cat(struct avdl_string *o, const char *stringToCatenate) {
+
+	o->errorCharacters += strlen(stringToCatenate);
 
 	// string is in error mode - do nothing
 	if (o->errorCode) {
