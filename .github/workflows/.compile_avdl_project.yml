@@ -209,7 +209,7 @@ jobs:
       run: ./avdl_linux/bin/avdl --android-google-play ${{ secrets.GOOGLE_PLAY_ID }} ${{ secrets.AVDL_GOOGLE_PLAY_ACHIEVEMENTS }}
     - name: generate_android_project googleplay admob
       if: ${{ matrix.build_type == 'android_googleplay_admob' }}
-      run: ./avdl_linux/bin/avdl --android-google-play ${{ secrets.GOOGLE_PLAY_ID }} ${{ secrets.AVDL_GOOGLE_PLAY_ACHIEVEMENTS }} --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }}
+      run: ./avdl_linux/bin/avdl --android-google-play ${{ secrets.GOOGLE_PLAY_ID }} ${{ secrets.AVDL_GOOGLE_PLAY_ACHIEVEMENTS }} --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }} --admob-ads-rewarded ${{ secrets.ADMOB_REWARDED_AD_ID }}
     - name: compile
       run: |
         cd avdl_build_android
