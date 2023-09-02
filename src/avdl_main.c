@@ -1605,7 +1605,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	// strings
 	struct avdl_string values_file;
-	avdl_string_create(&values_file, 2048 *4);
+	avdl_string_create(&values_file, 2048 *2);
 	avdl_string_cat(&values_file, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 	avdl_string_cat(&values_file, "<resources>\n");
 	avdl_string_cat(&values_file, "	<string name=\"app_name\">");
