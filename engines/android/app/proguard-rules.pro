@@ -7,4 +7,6 @@
 	static void CloseApplication();
 	public void loadFullscreenAd(int);
 	public void showFullscreenAd(int);
+	public void loadRewardedAd(int);
+	public void showRewardedAd(int);
 }
