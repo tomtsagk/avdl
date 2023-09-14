@@ -740,15 +740,22 @@ int avdl_engine_update(struct avdl_engine *o, float dt) {
 
 void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio,
 	float znear, float zfar, int ypriority) {
-	#ifndef AVDL_DIRECT3D11
 
 	float ymax, xmax;
 	if (ypriority) {
+		#ifdef AVDL_DIRECT3D11
+		ymax = znear * tanf(fovyDegrees * 3.14 / 360.0);
+		#else
 		ymax = znear * tanf(fovyDegrees * M_PI / 360.0);
+		#endif
 		xmax = ymax * aspectRatio;
 	}
 	else {
+		#ifdef AVDL_DIRECT3D11
+		xmax = znear * tanf(fovyDegrees * 3.14 / 360.0);
+		#else
 		xmax = znear * tanf(fovyDegrees * M_PI / 360.0);
+		#endif
 		ymax = xmax * aspectRatio;
 	}
 
@@ -762,6 +769,24 @@ void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio,
 	temp2 = right - left;
 	temp3 = top - bottom;
 	temp4 = zfar - znear;
+	#ifdef AVDL_DIRECT3D11
+	matrix[ 0] = temp / temp2;
+	matrix[ 4] = 0.0;
+	matrix[ 8] = 0.0;
+	matrix[12] = 0.0;
+	matrix[ 1] = 0.0;
+	matrix[ 5] = temp / temp3;
+	matrix[ 9] = 0.0;
+	matrix[13] = 0.0;
+	matrix[ 2] = (right + left) / temp2;
+	matrix[ 6] = (top + bottom) / temp3;
+	matrix[10] = (-zfar - znear) / temp4;
+	matrix[14] = -1.0;
+	matrix[ 3] = 0.0;
+	matrix[ 7] = 0.0;
+	matrix[11] = (-temp * zfar) / temp4;
+	matrix[15] = 0.0;
+	#else
 	matrix[0] = temp / temp2;
 	matrix[1] = 0.0;
 	matrix[2] = 0.0;

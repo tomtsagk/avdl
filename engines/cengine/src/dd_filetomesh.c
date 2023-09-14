@@ -868,20 +868,31 @@ int my_min(num1, num2) {
 }
 #endif
 
+#if defined( AVDL_DIRECT3D11 )
+extern FILE *avdl_filetomesh_openFile(char *filename);
+#endif
+
 /* Parse PLY - STILL WORKING ON IT */
 /*
  */
 int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
-	#if defined(AVDL_DIRECT3D11)
-	return -1;
-	#elif defined(_WIN32) || defined(WIN32)
+	#if defined( AVDL_DIRECT3D11 ) || defined( AVDL_WINDOWS )
 
 	//Open file and check error
+	#if defined( AVDL_DIRECT3D11 )
+	FILE *f;
+	f = avdl_filetomesh_openFile(path);
+	#else
 	FILE *f = fopen(path, "r");
+	#endif
 	if (!f)
 	{
+		#if defined( AVDL_DIRECT3D11 )
+		dd_log("load_ply: error opening file: %s", path);
+		#else
 		dd_log("load_ply: error opening file: %s: %s", path, strerror(errno));
+		#endif
 		return -1;
 	}
 

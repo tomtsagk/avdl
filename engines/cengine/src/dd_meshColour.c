@@ -12,6 +12,8 @@
 #ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;
 extern GLuint currentProgram;
+#else
+extern void avdl_graphics_direct3d11_drawMesh(struct dd_meshColor *m, struct dd_matrix *);
 #endif
 
 // constructor
@@ -28,6 +30,8 @@ void dd_meshColour_create(struct dd_meshColour *m) {
 	m->set_colour = (void (*)(struct dd_mesh *, float r, float g, float b)) dd_meshColour_set_colour;
 	m->parent.copy = (void (*)(struct dd_mesh *, struct dd_mesh *)) dd_meshColour_copy;
 	m->parent.combine = (void (*)(struct dd_mesh *, struct dd_mesh *, float x, float y, float z)) dd_meshColour_combine;
+
+	m->vertexBuffer = 0;
 }
 
 void dd_meshColour_set_primitive(struct dd_meshColour *m, enum dd_primitives shape) {
@@ -82,7 +86,12 @@ void dd_meshColour_clean(struct dd_meshColour *m) {
 /* draw the mesh itself */
 void dd_meshColour_draw(struct dd_meshColour *m) {
 
-	#ifndef AVDL_DIRECT3D11
+	#ifdef AVDL_DIRECT3D11
+	if (!m->vertexBuffer && m->c) {
+		avdl_graphics_direct3d11_setVertexBuffer(m);
+	}
+	avdl_graphics_direct3d11_drawMesh(m, dd_matrix_globalGet());
+	#else
 
 	if (m->parent.array == 0 || m->parent.openglContextId != avdl_graphics_getContextId()) {
 

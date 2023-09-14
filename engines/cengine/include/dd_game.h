@@ -31,7 +31,7 @@ extern int dd_gameInitWindowWidth, dd_gameInitWindowHeight;
 #define dd_setInitWindowSize(w, h) dd_gameInitWindowWidth = w; dd_gameInitWindowHeight = h;
 
 // return screen limits on given `z`
-#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
 extern int dd_width;
 extern int dd_height;
 #define dd_window_width() dd_width

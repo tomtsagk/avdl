@@ -50,6 +50,9 @@ void avdl_graphics_ClearDepth();
 void avdl_graphics_ClearToColour();
 void avdl_graphics_ClearColourAndDepth();
 
+// abstract mesh
+typedef void avdl_graphics_mesh;
+
 // opengl id, used in case the context is lost and re-gained
 void avdl_graphics_generateContextId();
 int  avdl_graphics_getContextId();
@@ -98,6 +101,10 @@ void avdl_graphics_DrawArrays(int vcount);
 
 int avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height);
 void avdl_graphics_ImageToGpuUpdate(int texture_id, void *pixels, int pixel_format, int x, int y, int width, int height);
+
+#if AVDL_DIRECT3D11
+void avdl_graphics_d3d11_SetWindow();
+#endif
 
 #ifdef __cplusplus
 }
