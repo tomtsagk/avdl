@@ -572,8 +572,6 @@ struct dd_matrix matPerspective;
 
 int avdl_engine_resize(struct avdl_engine *o, int w, int h) {
 
-	#ifdef AVDL_DIRECT3D11
-	#else
 	avdl_graphics_Viewport(0, 0, w, h);
 
 	int ypriority;
@@ -592,7 +590,7 @@ int avdl_engine_resize(struct avdl_engine *o, int w, int h) {
 	if (o->cworld && o->cworld->resize) {
 		o->cworld->resize(o->cworld);
 	}
-	#endif
+
 	return 0;
 }
 
