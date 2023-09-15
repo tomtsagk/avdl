@@ -2,6 +2,7 @@
 #include "dd_math.h"
 #include "dd_log.h"
 
+#if !defined( AVDL_DIRECT3D11 )
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_GLYPH_H
@@ -9,6 +10,7 @@
 #include FT_STROKER_H
 
 FT_Library library;
+#endif
 
 #define FONT_ATLAS_WIDTH 2048
 #define FONT_ATLAS_HEIGHT 2048
@@ -31,9 +33,11 @@ int avdl_font_init() {
 
 int avdl_font_deinit() {
 
+	#if !defined( AVDL_DIRECT3D11 )
 	if (library) {
 		FT_Done_FreeType( library );
 	}
+	#endif
 	return 0;
 }
 
@@ -43,6 +47,7 @@ void avdl_font_create(struct avdl_font *o) {
 	o->set = avdl_font_set;
 	o->addCustomIcon = avdl_font_addCustomIcon;
 
+	#ifndef AVDL_DIRECT3D11
 	o->customIconCount = 0;
 
 	for (int i = 0; i < FONT_MAX_GLYPHS; i++) {
@@ -58,6 +63,7 @@ void avdl_font_create(struct avdl_font *o) {
 	o->fontData = 0;
 
 	o->openglContextId = o->texture.openglContextId;
+	#endif
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	o->texture.pixelsb = malloc(sizeof(GLubyte) *4 *o->texture.width *o->texture.height);
@@ -72,6 +78,8 @@ void avdl_font_create(struct avdl_font *o) {
 	}
 
 	#else
+
+	#ifndef AVDL_DIRECT3D11
 	o->texture.pixels = malloc(sizeof(float) *4 *o->texture.width *o->texture.height);
 
 	// clean the texture
@@ -82,34 +90,47 @@ void avdl_font_create(struct avdl_font *o) {
 		o->texture.pixels[(y*o->texture.width*4) +x*4+2] = 1;
 		o->texture.pixels[(y*o->texture.width*4) +x*4+3] = 0;
 	}
+	#endif
 
 	#endif
 
+	#if !defined( AVDL_DIRECT3D11 )
 	o->face = 0;
+	#endif
 
 }
 
 static void CleanFontData(struct avdl_font *o) {
+	#ifndef AVDL_DIRECT3D11
 	if (o->fontData) {
 		free(o->fontData);
 	}
+	#endif
 }
 
 static void CleanFontFace(struct avdl_font *o) {
+	#if !defined( AVDL_DIRECT3D11 )
 	if (o->face) {
 		FT_Done_Face(o->face);
 		o->face = 0;
 	}
+	#endif
 }
 
 void avdl_font_clean(struct avdl_font *o) {
+	#if !defined( AVDL_DIRECT3D11 )
 	dd_image_clean(&o->texture);
 
 	CleanFontData(o);
 	CleanFontFace(o);
+	#endif
 }
 
 int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
+
+	#if defined( AVDL_DIRECT3D11 )
+	return -1;
+	#else
 
 	if (!o->face) {
 		return -1;
@@ -397,27 +418,36 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 	#endif
 
 	return glyph_id;
+
+	#endif
 }
 
 int avdl_font_releaseGlyph(struct avdl_font *o, int glyph_id) {
+	#if !defined( AVDL_DIRECT3D11 )
 	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return -1;
 	}
 
 	o->glyphs[glyph_id].uses = dd_math_max(o->glyphs[glyph_id].uses -1, 0);
+	#endif
 
 	return 0;
 }
 
 int avdl_font_releaseAllGlyphs(struct avdl_font *o) {
+	#if !defined( AVDL_DIRECT3D11 )
 	for (int i = 0; i < FONT_MAX_GLYPHS; i++) {
 		o->glyphs[i].uses = 0;
 	}
+	#endif
 
 	return 0;
 }
 
 float avdl_font_getTexCoordX(struct avdl_font *o, int glyph_id) {
+	#if defined( AVDL_DIRECT3D11 )
+	return 0;
+	#else
 	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
@@ -425,9 +455,13 @@ float avdl_font_getTexCoordX(struct avdl_font *o, int glyph_id) {
 		return 0;
 	}
 	return ((glyph_id%FONT_MAX_GLYPHS_COLUMNS)*FONT_GLYPH_SIZE) /(float) FONT_ATLAS_WIDTH;
+	#endif
 }
 
 float avdl_font_getTexCoordY(struct avdl_font *o, int glyph_id) {
+	#if defined( AVDL_DIRECT3D11 )
+	return 0;
+	#else
 	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
@@ -435,9 +469,13 @@ float avdl_font_getTexCoordY(struct avdl_font *o, int glyph_id) {
 		return 0;
 	}
 	return ((glyph_id/FONT_MAX_GLYPHS_ROWS)*FONT_GLYPH_SIZE) /(float) FONT_ATLAS_HEIGHT;
+	#endif
 }
 
 float avdl_font_getTexCoordW(struct avdl_font *o, int glyph_id) {
+	#if defined( AVDL_DIRECT3D11 )
+	return 0;
+	#else
 	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
@@ -445,9 +483,13 @@ float avdl_font_getTexCoordW(struct avdl_font *o, int glyph_id) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].texcoordW;
+	#endif
 }
 
 float avdl_font_getTexCoordH(struct avdl_font *o, int glyph_id) {
+	#if defined( AVDL_DIRECT3D11 )
+	return 0;
+	#else
 	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
@@ -455,9 +497,13 @@ float avdl_font_getTexCoordH(struct avdl_font *o, int glyph_id) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].texcoordH;
+	#endif
 }
 
 float avdl_font_getGlyphWidth(struct avdl_font *o, int glyph_id) {
+	#if defined( AVDL_DIRECT3D11 )
+	return 0;
+	#else
 	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
@@ -465,9 +511,13 @@ float avdl_font_getGlyphWidth(struct avdl_font *o, int glyph_id) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].width;
+	#endif
 }
 
 float avdl_font_getGlyphHeight(struct avdl_font *o, int glyph_id) {
+	#if defined( AVDL_DIRECT3D11 )
+	return 0;
+	#else
 	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
@@ -475,9 +525,13 @@ float avdl_font_getGlyphHeight(struct avdl_font *o, int glyph_id) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].height;
+	#endif
 }
 
 float avdl_font_getGlyphLeft(struct avdl_font *o, int glyph_id) {
+	#if defined( AVDL_DIRECT3D11 )
+	return 0;
+	#else
 	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
@@ -485,9 +539,13 @@ float avdl_font_getGlyphLeft(struct avdl_font *o, int glyph_id) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].left;
+	#endif
 }
 
 float avdl_font_getGlyphTop(struct avdl_font *o, int glyph_id) {
+	#if defined( AVDL_DIRECT3D11 )
+	return 0;
+	#else
 	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
@@ -495,6 +553,7 @@ float avdl_font_getGlyphTop(struct avdl_font *o, int glyph_id) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].top;
+	#endif
 }
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
@@ -511,6 +570,7 @@ extern jclass *clazz;
 
 void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outline_thickness) {
 
+	#if !defined( AVDL_DIRECT3D11 )
 	CleanFontData(o);
 	CleanFontFace(o);
 
@@ -557,17 +617,22 @@ void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outl
 
 	o->outline_thickness = outline_thickness;
 
+	#endif
+
 }
 
 float avdl_font_getGlyphAdvance(struct avdl_font *o, int glyph_id) {
+	#if !defined( AVDL_DIRECT3D11 )
 	if (glyph_id < 0 || glyph_id >= FONT_MAX_GLYPHS) {
 		return 0;
 	}
 	return o->glyphs[glyph_id].advance;
+	#endif
 }
 
 int avdl_font_needsRefresh(struct avdl_font *o) {
 
+	#if !defined( AVDL_DIRECT3D11 )
 	// font needs to refresh
 	if (o->openglContextId != o->texture.openglContextId) {
 		//dd_log("font needs refresh");
@@ -575,11 +640,13 @@ int avdl_font_needsRefresh(struct avdl_font *o) {
 		avdl_font_releaseAllGlyphs(o);
 		return 1;
 	}
+	#endif
 
 	return 0;
 }
 
 void avdl_font_addCustomIcon(struct avdl_font *o, const char *keyword, struct dd_image *image) {
+	#if !defined( AVDL_DIRECT3D11 )
 	if (o->customIconCount >= 10) {
 		dd_log("avdl error: too many custom icons in font");
 		return;
@@ -587,4 +654,5 @@ void avdl_font_addCustomIcon(struct avdl_font *o, const char *keyword, struct dd
 	o->customIcon[o->customIconCount] = image;
 	o->customIconKeyword[o->customIconCount] = keyword;
 	o->customIconCount++;
+	#endif
 }

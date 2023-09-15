@@ -65,18 +65,6 @@ public:
 	virtual Windows::ApplicationModel::Core::IFrameworkView^ CreateView();
 };
 
-struct VertexPositionColor
-{
-	DirectX::XMFLOAT3 pos;
-	DirectX::XMFLOAT3 color;
-};
-
-struct ModelViewProjectionConstantBuffer
-{
-	DirectX::XMFLOAT4X4 model;
-	DirectX::XMFLOAT4X4 view;
-	DirectX::XMFLOAT4X4 projection;
-};
 /*
 #include <d3d11.h>
 #include <dxgi.h>
@@ -90,6 +78,13 @@ struct ModelViewProjectionConstantBuffer
 
 #include <Windows.h>
 */
+
+// Constant buffer used to send MVP matrices to the vertex shader.
+struct ModelViewProjectionConstantBuffer
+{
+	DirectX::XMFLOAT4X4 model;
+};
+
 // temp cube
 extern ComPtr<ID3D11Buffer> avdl_constantBuffer;
 extern ModelViewProjectionConstantBuffer avdl_constantBufferData;
@@ -97,6 +92,8 @@ extern ComPtr<ID3D11VertexShader> avdl_vertexShader;
 extern ComPtr<ID3D11PixelShader> avdl_pixelShader;
 extern ComPtr<ID3D11InputLayout> avdl_inputLayout;
 extern ComPtr<ID3D11Buffer> avdl_vertexBuffer;
+
+extern "C" struct dd_matrix matPerspective;
 
 #ifdef __cplusplus
 extern "C" {
@@ -119,7 +116,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	o->nworld_size = 0;
 	o->nworld_constructor = 0;
 
-	o->input_key = 0;
+	o->input.input_key = 0;
 
 	/*
 	#ifdef AVDL_STEAM
@@ -176,20 +173,10 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	avdl_graphics_Init();
 
-	/*
-	 * string3d initialisation for displaying text
-	 */
-	if (dd_string3d_isActive()) {
-		dd_string3d_init();
-	}
-
 	dd_clearColour(0.6f, 0.9f, 0.2f);
 
 	return 0;
 }
-
-extern "C" struct dd_matrix matPerspective;
-extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_matrix *matrix);
 
 int avdl_engine_draw(struct avdl_engine *o) {
 
@@ -356,12 +343,6 @@ int avdl_engine_loop(struct avdl_engine *o) {
 
 extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struct dd_matrix *matrix);
 
-// Constant buffer used to send MVP matrices to the vertex shader.
-struct ModelViewProjectionConstantBuffer
-{
-	DirectX::XMFLOAT4X4 model;
-};
-
 // Used to send per-vertex data to the vertex shader.
 struct VertexPositionColor
 {
@@ -391,6 +372,7 @@ extern "C" struct avdl_engine engine;
 
 void avdl_log2(const char *msg, ...) {
 
+	/*
 	va_list args;
 	va_start(args, msg);
 
@@ -413,6 +395,7 @@ void avdl_log2(const char *msg, ...) {
 	dialog->ShowAsync();
 
 	va_end(args);
+	*/
 }
 
 
@@ -603,7 +586,7 @@ void D3D11AvdlApplication::Run()
 		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 
 		// avdl update
-		avdl_engine_update(&engine);
+		avdl_engine_update(&engine, 0.5);
 
 		// avdl render
 		avdl_engine_draw(&engine);
@@ -662,7 +645,7 @@ void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
 	)
 	{
 		// move left
-		engine.input_key = 97;
+		engine.input.input_key = 97;
 	}
 	else
 	if (args->VirtualKey == VirtualKey::W
@@ -671,7 +654,7 @@ void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
 	)
 	{
 		// move up
-		engine.input_key = 119;
+		engine.input.input_key = 119;
 	}
 	else
 	if (args->VirtualKey == VirtualKey::D
@@ -680,7 +663,7 @@ void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
 	)
 	{
 		// move right
-		engine.input_key = 100;
+		engine.input.input_key = 100;
 	}
 	else
 	if (args->VirtualKey == VirtualKey::S
@@ -689,7 +672,7 @@ void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
 	)
 	{
 		// move down
-		engine.input_key = 115;
+		engine.input.input_key = 115;
 	}
 	else
 	if (args->VirtualKey == VirtualKey::Enter
@@ -697,7 +680,7 @@ void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
 	)
 	{
 		// confirm
-		engine.input_key = 13;
+		engine.input.input_key = 13;
 	}
 	else
 	if (args->VirtualKey == VirtualKey::Escape
@@ -705,7 +688,7 @@ void D3D11AvdlApplication::OnKeyDown(CoreWindow^ window, KeyEventArgs^ args) {
 	)
 	{
 		// confirm
-		engine.input_key = 13;
+		engine.input.input_key = 13;
 	}
 }
 

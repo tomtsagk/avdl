@@ -91,15 +91,16 @@ static void avdl_perspective(float *matrix, float fovyDegrees, float aspectRatio
 
 extern int dd_flag_exit;
 
-extern GLuint defaultProgram;
-extern GLuint currentProgram;
+struct avdl_engine engine;
 
 #ifndef AVDL_DIRECT3D11
+
+extern GLuint defaultProgram;
+extern GLuint currentProgram;
 
 #include <stdio.h>
 
 extern int avdl_use_default_locale;
-struct avdl_engine engine;
 
 int avdl_engine_init(struct avdl_engine *o) {
 

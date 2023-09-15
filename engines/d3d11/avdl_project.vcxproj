@@ -253,52 +253,53 @@
     <!-- <Image Include="Assets\AVDL_ASSET.png" /> -->
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.h" />
-    <ClInclude Include="pch.h" />
-    <ClInclude Include="avdl_achievements.h" />
-    <ClInclude Include="avdl_assetManager.h" />
-    <ClInclude Include="avdl_cengine.h" />
-    <ClInclude Include="avdl_collider_aabb.h" />
-    <ClInclude Include="avdl_collider.h" />
-    <ClInclude Include="avdl_collider_sphere.h" />
-    <ClInclude Include="avdl_data.h" />
-    <ClInclude Include="avdl_engine.h" />
-    <ClInclude Include="avdl_graphics.h" />
-    <ClInclude Include="avdl_input.h" />
-    <ClInclude Include="avdl_localisation.h" />
-    <ClInclude Include="avdl_multiplayer.h" />
-    <ClInclude Include="avdl_particle_system.h" />
-    <ClInclude Include="avdl_physics.h" />
-    <ClInclude Include="avdl_rigidbody.h" />
-    <ClInclude Include="avdl_shaders.h" />
-    <ClInclude Include="avdl_steam.h" />
-    <ClInclude Include="dd_async_call.h" />
-    <ClInclude Include="dd_dynamic_array.h" />
-    <ClInclude Include="dd_filetomesh.h" />
-    <ClInclude Include="dd_fov.h" />
-    <ClInclude Include="dd_game.h" />
-    <ClInclude Include="dd_gamejolt.h" />
-    <ClInclude Include="dd_image.h" />
-    <ClInclude Include="dd_json.h" />
-    <ClInclude Include="dd_log.h" />
-    <ClInclude Include="dd_math.h" />
-    <ClInclude Include="dd_matrix.h" />
-    <ClInclude Include="dd_meshColour.h" />
-    <ClInclude Include="dd_mesh.h" />
-    <ClInclude Include="dd_meshTexture.h" />
-    <ClInclude Include="dd_mouse.h" />
-    <ClInclude Include="dd_music.h" />
-    <ClInclude Include="dd_sound.h" />
-    <ClInclude Include="dd_string3d.h" />
-    <ClInclude Include="dd_vec2.h" />
-    <ClInclude Include="dd_vec3.h" />
-    <ClInclude Include="dd_vec4.h" />
-    <ClInclude Include="dd_world.h" />
-    <ClInclude Include="whereami.h" />
+    <ClInclude Include="avdl_src/pch.h" />
+    <ClInclude Include="avdl_src/avdl_achievements.h" />
+    <ClInclude Include="avdl_src/avdl_assetManager.h" />
+    <ClInclude Include="avdl_src/avdl_cengine.h" />
+    <ClInclude Include="avdl_src/avdl_collider_aabb.h" />
+    <ClInclude Include="avdl_src/avdl_collider.h" />
+    <ClInclude Include="avdl_src/avdl_collider_sphere.h" />
+    <ClInclude Include="avdl_src/avdl_data.h" />
+    <ClInclude Include="avdl_src/avdl_engine.h" />
+    <ClInclude Include="avdl_src/avdl_graphics.h" />
+    <ClInclude Include="avdl_src/avdl_input.h" />
+    <ClInclude Include="avdl_src/avdl_localisation.h" />
+    <ClInclude Include="avdl_src/avdl_multiplayer.h" />
+    <ClInclude Include="avdl_src/avdl_particle_system.h" />
+    <ClInclude Include="avdl_src/avdl_physics.h" />
+    <ClInclude Include="avdl_src/avdl_rigidbody.h" />
+    <ClInclude Include="avdl_src/avdl_shaders.h" />
+    <ClInclude Include="avdl_src/avdl_steam.h" />
+    <ClInclude Include="avdl_src/dd_async_call.h" />
+    <ClInclude Include="avdl_src/dd_dynamic_array.h" />
+    <ClInclude Include="avdl_src/dd_filetomesh.h" />
+    <ClInclude Include="avdl_src/dd_fov.h" />
+    <ClInclude Include="avdl_src/dd_game.h" />
+    <ClInclude Include="avdl_src/dd_gamejolt.h" />
+    <ClInclude Include="avdl_src/dd_image.h" />
+    <ClInclude Include="avdl_src/dd_json.h" />
+    <ClInclude Include="avdl_src/dd_log.h" />
+    <ClInclude Include="avdl_src/dd_math.h" />
+    <ClInclude Include="avdl_src/dd_matrix.h" />
+    <ClInclude Include="avdl_src/dd_meshColour.h" />
+    <ClInclude Include="avdl_src/dd_mesh.h" />
+    <ClInclude Include="avdl_src/dd_meshTexture.h" />
+    <ClInclude Include="avdl_src/dd_mouse.h" />
+    <ClInclude Include="avdl_src/dd_sound.h" />
+    <ClInclude Include="avdl_src/dd_string3d.h" />
+    <ClInclude Include="avdl_src/dd_vec2.h" />
+    <ClInclude Include="avdl_src/dd_vec3.h" />
+    <ClInclude Include="avdl_src/dd_vec4.h" />
+    <ClInclude Include="avdl_src/dd_world.h" />
+    <ClInclude Include="avdl_src/avdl_font.h" />
+    <ClInclude Include="avdl_src/avdl_whereami.h" />
+    <ClInclude Include="avdl_src/avdl_ads.h" />
+    <ClInclude Include="avdl_src/avdl_time.h" />
+    <ClInclude Include="avdl_src/avdl_webapi.h" />
     <!-- <ClInclude Include="AVDL_INCLUDE.h" /> -->
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="App.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -309,228 +310,240 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_achievements.c" >
+    <ClCompile Include="avdl_src/avdl_achievements.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_achievements_steam.cpp" >
+    <ClCompile Include="avdl_src/avdl_achievements_steam.cpp" >
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_assetManager.c" >
+    <ClCompile Include="avdl_src/avdl_assetManager.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_collider_aabb.c" >
+    <ClCompile Include="avdl_src/avdl_collider_aabb.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_collider.c" >
+    <ClCompile Include="avdl_src/avdl_collider.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_collider_sphere.c" >
+    <ClCompile Include="avdl_src/avdl_collider_sphere.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_data.c" >
+    <ClCompile Include="avdl_src/avdl_data.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_engine.c" >
+    <ClCompile Include="avdl_src/avdl_engine.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_engine_cpp.cpp" >
+    <ClCompile Include="avdl_src/avdl_engine_cpp.cpp" >
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_graphics_direct3d11.cpp" >
+    <ClCompile Include="avdl_src/avdl_graphics_direct3d11.cpp" >
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_graphics_opengl.c" >
+    <ClCompile Include="avdl_src/avdl_graphics_opengl.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_input.c" >
+    <ClCompile Include="avdl_src/avdl_input.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_localisation.c" >
+    <ClCompile Include="avdl_src/avdl_localisation.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_multiplayer.c" >
+    <ClCompile Include="avdl_src/avdl_multiplayer.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_multiplayer_steam.cpp" >
+    <ClCompile Include="avdl_src/avdl_multiplayer_steam.cpp" >
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_particle_system.c" >
+    <ClCompile Include="avdl_src/avdl_particle_system.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_physics.c" >
+    <ClCompile Include="avdl_src/avdl_physics.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_rigidbody.c" >
+    <ClCompile Include="avdl_src/avdl_rigidbody.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_shaders.c" >
+    <ClCompile Include="avdl_src/avdl_shaders.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_steam.c" >
+    <ClCompile Include="avdl_src/avdl_steam.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="avdl_steam_cpp.cpp" >
+    <ClCompile Include="avdl_src/avdl_steam_cpp.cpp" >
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_dynamic_array.c" >
+    <ClCompile Include="avdl_src/dd_dynamic_array.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_filetomesh.c" >
+    <ClCompile Include="avdl_src/dd_filetomesh.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_fov.c" >
+    <ClCompile Include="avdl_src/dd_fov.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_game.c" >
+    <ClCompile Include="avdl_src/dd_game.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_gamejolt.c" >
+    <ClCompile Include="avdl_src/dd_gamejolt.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_image.c" >
+    <ClCompile Include="avdl_src/dd_image.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_json.c" >
+    <ClCompile Include="avdl_src/dd_json.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_log.c" >
+    <ClCompile Include="avdl_src/dd_log.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_log_cpp.cpp" >
+    <ClCompile Include="avdl_src/dd_log_cpp.cpp" >
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_math.c" >
+    <ClCompile Include="avdl_src/dd_math.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_matrix.c" >
+    <ClCompile Include="avdl_src/dd_matrix.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_mesh.c" >
+    <ClCompile Include="avdl_src/dd_mesh.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_meshColour.c" >
+    <ClCompile Include="avdl_src/dd_meshColour.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_meshTexture.c" >
+    <ClCompile Include="avdl_src/dd_meshTexture.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_mouse.c" >
+    <ClCompile Include="avdl_src/dd_mouse.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_music.c" >
+    <ClCompile Include="avdl_src/dd_sound.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_sound.c" >
+    <ClCompile Include="avdl_src/dd_string3d.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_string3d.c" >
+    <ClCompile Include="avdl_src/dd_vec3.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_vec3.c" >
+    <ClCompile Include="avdl_src/dd_vec4.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_vec4.c" >
+    <ClCompile Include="avdl_src/dd_world.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="dd_world.c" >
+    <ClCompile Include="avdl_src/main.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="main.c" >
+    <ClCompile Include="avdl_src/avdl_font.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="main_cpp.cpp" >
+    <ClCompile Include="avdl_src/main_cpp.cpp" >
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="whereami.c" >
+    <ClCompile Include="avdl_src/avdl_whereami.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="button.dd.c" >
+    <ClCompile Include="avdl_src/avdl_ads.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="card.dd.c" >
+    <ClCompile Include="avdl_src/avdl_time.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="credits.dd.c" >
+    <ClCompile Include="avdl_src/avdl_webapi.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="game.dd.c" >
+    <ClCompile Include="src/button.dd.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="intro.dd.c" >
+    <ClCompile Include="src/card.dd.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="main_game.dd.c" >
+    <ClCompile Include="src/credits.dd.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="menu.dd.c" >
+    <ClCompile Include="src/game.dd.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="menu_home.dd.c" >
+    <ClCompile Include="src/intro.dd.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="menu_multiplayer.dd.c" >
+    <ClCompile Include="src/main_game.dd.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="options.dd.c" >
+    <ClCompile Include="src/menu.dd.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="overlayButtons.dd.c" >
+    <ClCompile Include="src/menu_home.dd.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="player.dd.c" >
+    <ClCompile Include="src/menu_multiplayer.dd.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="saveload.dd.c" >
+    <ClCompile Include="src/options.dd.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src/overlayButtons.dd.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src/player.dd.c" >
+      <CompileAsWinRT>false</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src/saveload.dd.c" >
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -542,16 +555,10 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Content\SamplePixelShader.hlsl">
+    <FxCompile Include="SamplePixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="Content\SampleVertexShader.hlsl">
-      <ShaderType>Vertex</ShaderType>
-    </FxCompile>
-    <FxCompile Include="PixelShader.hlsl">
-      <ShaderType>Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="VertexShader.hlsl">
+    <FxCompile Include="SampleVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
     </FxCompile>
     <!-- <ClCompile Include="avdl_shaders" /> -->

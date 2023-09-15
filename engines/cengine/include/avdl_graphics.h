@@ -59,6 +59,26 @@ int  avdl_graphics_getContextId();
 
 int avdl_graphics_generateContext();
 
+#if defined( AVDL_DIRECT3D11 )
+#define avdl_graphics_SetUniformMatrix4f(uniform, matrix)
+
+#define avdl_graphics_SetUniform1f(uniform, f1)             
+#define avdl_graphics_SetUniform2f(uniform, f1, f2)         
+#define avdl_graphics_SetUniform3f(uniform, f1, f2, f3)     
+#define avdl_graphics_SetUniform4f(uniform, f1, f2, f3, f4) 
+
+#define avdl_graphics_SetUniform1i(uniform, i1)             
+#define avdl_graphics_SetUniform2i(uniform, i1, i2)         
+#define avdl_graphics_SetUniform3i(uniform, i1, i2, i3)     
+#define avdl_graphics_SetUniform4i(uniform, i1, i2, i3, i4) 
+
+#define avdl_graphics_SetUniform1ui(uniform, ui1)                
+#define avdl_graphics_SetUniform2ui(uniform, ui1, ui2)           
+#define avdl_graphics_SetUniform3ui(uniform, ui1, ui2, ui3)      
+#define avdl_graphics_SetUniform4ui(uniform, ui1, ui2, ui3, ui4) 
+
+#else
+
 #define avdl_graphics_SetUniformMatrix4f(uniform, matrix) glUniformMatrix4fv(uniform, 1, GL_FALSE, matrix)
 
 #define avdl_graphics_SetUniform1f(uniform, f1)             glUniform1f(uniform, f1)
@@ -75,6 +95,8 @@ int avdl_graphics_generateContext();
 #define avdl_graphics_SetUniform2ui(uniform, ui1, ui2)           glUniform2ui(uniform, ui1, ui2)
 #define avdl_graphics_SetUniform3ui(uniform, ui1, ui2, ui3)      glUniform3ui(uniform, ui1, ui2, ui3)
 #define avdl_graphics_SetUniform4ui(uniform, ui1, ui2, ui3, ui4) glUniform4ui(uniform, ui1, ui2, ui3, ui4)
+
+#endif
 
 int avdl_graphics_Init();
 

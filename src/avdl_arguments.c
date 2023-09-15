@@ -34,6 +34,11 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 					avdl_settings->target_platform = AVDL_PLATFORM_WINDOWS;
 				}
 				else
+				// d3d11 generation
+				if (strcmp(argv[i], "--d3d11") == 0) {
+					avdl_settings->target_platform = AVDL_PLATFORM_D3D11;
+				}
+				else
 				// compiling for linux
 				if (strcmp(argv[i], "--linux") == 0) {
 					avdl_settings->target_platform = AVDL_PLATFORM_LINUX;

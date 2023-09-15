@@ -39,7 +39,9 @@ void dd_image_create(struct dd_image *o) {
 	o->clean = dd_image_clean;
 	o->set = dd_image_set;
 
+	#if !defined( AVDL_DIRECT3D11 )
 	dd_da_init(&o->subpixels, sizeof(struct Subpixel));
+	#endif
 }
 
 void dd_image_load_png(struct dd_image *img, const char *filename) {
@@ -250,11 +252,14 @@ void dd_image_clean(struct dd_image *o) {
 		avdl_graphics_DeleteTexture(o->tex);
 	}
 
+	#if !defined( AVDL_DIRECT3D11 )
 	for (int i = 0; i < o->subpixels.elements; i++) {
 		struct Subpixel *subpixel = dd_da_get(&o->subpixels, i);
 		free(subpixel->pixels);
 	}
 	dd_da_free(&o->subpixels);
+	#endif
+
 	#endif
 }
 
@@ -307,6 +312,7 @@ void dd_image_bind(struct dd_image *o) {
 		#endif
 	}
 
+	#if !defined( AVDL_DIRECT3D11 )
 	// update texture
 	if (o->subpixels.elements > 0 && o->tex) {
 
@@ -325,6 +331,7 @@ void dd_image_bind(struct dd_image *o) {
 		}
 		dd_da_empty(&o->subpixels);
 	}
+	#endif
 
 	// texture is valid in this opengl context, bind it
 	if (o->openglContextId == avdl_graphics_getContextId()) {
@@ -364,6 +371,10 @@ void dd_image_set(struct dd_image *o, const char *filename, int type) {
 
 void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, int x, int y, int w, int h) {
 
+	#if defined( AVDL_DIRECT3D11 )
+	return;
+	#else
+
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	GLubyte *pixelsf = pixels;
 	#else
@@ -390,5 +401,7 @@ void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, i
 	subpixel.height = h;
 
 	dd_da_add(&o->subpixels, &subpixel);
+
+	#endif
 
 }

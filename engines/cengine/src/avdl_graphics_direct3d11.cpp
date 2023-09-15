@@ -146,8 +146,9 @@ int avdl_graphics_GetUniformLocation(int program, const char *uniform) {
 	return 0;
 }
 
-void avdl_graphics_ImageToGpu(struct dd_image *o) {
+extern "C" int avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height) {
 
+	return 0;
 	/*
 	glGenTextures(1, &o->tex);
 	glBindTexture(GL_TEXTURE_2D, o->tex);
