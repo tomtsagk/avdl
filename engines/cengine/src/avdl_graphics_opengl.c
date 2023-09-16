@@ -76,7 +76,7 @@ int avdl_graphics_GetUniformLocation(int program, const char *uniform) {
 	return glGetUniformLocation(program, uniform);
 }
 
-int avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height) {
+avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height) {
 
 	GLuint tex;
 	glGenTextures(1, &tex);
@@ -106,7 +106,7 @@ int avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int heig
 
 }
 
-void avdl_graphics_ImageToGpuUpdate(int texture_id, void *pixels, int pixel_format, int x, int y, int width, int height) {
+void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, int pixel_format, int x, int y, int width, int height) {
 
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 
@@ -136,11 +136,11 @@ void avdl_graphics_ImageToGpuUpdate(int texture_id, void *pixels, int pixel_form
 
 }
 
-void avdl_graphics_DeleteTexture(unsigned int tex) {
+void avdl_graphics_DeleteTexture(avdl_texture_id tex) {
 	glDeleteTextures(1, &tex);
 }
 
-void avdl_graphics_BindTexture(unsigned int tex) {
+void avdl_graphics_BindTexture(avdl_texture_id tex) {
 	glBindTexture(GL_TEXTURE_2D, tex);
 }
 

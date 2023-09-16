@@ -146,8 +146,70 @@ int avdl_graphics_GetUniformLocation(int program, const char *uniform) {
 	return 0;
 }
 
-extern "C" int avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height) {
+extern "C" avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height) {
 
+	D3D11_TEXTURE2D_DESC desc;
+	desc.Width = width;
+	desc.Height = height;
+	desc.MipLevels = desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	//desc.Usage = D3D11_USAGE_DYNAMIC;
+	desc.Usage = D3D11_USAGE_IMMUTABLE;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	desc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA ImageSubresourceData = {};
+	ImageSubresourceData.pSysMem = pixels;
+	ImageSubresourceData.SysMemPitch = width *4;
+
+	ID3D11Texture2D *pTexture = NULL;
+	avdl_d3dDevice->CreateTexture2D( &desc, &ImageSubresourceData, &pTexture );
+
+	// shader resource view
+	ID3D11ShaderResourceView *ImageShaderResourceView;
+	Result = avdl_d3dDevice->CreateShaderResourceView(pTexture,
+		nullptr,
+		&ImageShaderResourceView
+	);
+
+	// before drawing - bind ?
+	avdl_d3dContext->PSSetShaderResources(0, 1, &ImageShaderResourceView);
+
+	/* Vertex Shader for textures
+	 *
+	 * struct VS_Input
+	 * {
+	 * 	float3 position: POSITION;
+	 * 	float2 uv: UV;
+	 * };
+	 *
+	 * struct VS_Output
+	 * {
+	 * 	float4 position: SV_POSITION;
+	 * 	float2 uv: UV;
+	 * };
+	 *
+	 * VS_Output vs_main(VS_Input input)
+	 * {
+	 * 	VS_Output output;
+	 * 	output.position = float4(input.position, 1.0f);
+	 * 	output.uv = input.uv;
+	 * 	return output;
+	 * };
+	 *
+	 * Pixel Shader for textures
+	 *
+	 * Texture2D my_texture;
+	 * SamplerState my_sampler;
+	 *
+	 * float4 ps_main(VS_Output input): SV_TARGET
+	 * {	
+	 * 	return my_texture.Sample(my_sampler, input.uv);
+	 * };
+	 *
+	 */
 	return 0;
 	/*
 	glGenTextures(1, &o->tex);
@@ -182,11 +244,11 @@ extern "C" int avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int widt
 
 }
 
-void avdl_graphics_DeleteTexture(unsigned int tex) {
+void avdl_graphics_DeleteTexture(avdl_texture_id tex) {
 	//glDeleteTextures(1, &tex);
 }
 
-void avdl_graphics_BindTexture(unsigned int tex) {
+void avdl_graphics_BindTexture(avdl_texture_id tex) {
 	//glBindTexture(GL_TEXTURE_2D, tex);
 }
 

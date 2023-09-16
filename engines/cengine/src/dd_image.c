@@ -5,8 +5,7 @@
 #include "avdl_assetManager.h"
 #include <errno.h>
 
-#ifdef AVDL_DIRECT3D11
-#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #else
 #include <png.h>
 #endif
@@ -45,9 +44,6 @@ void dd_image_create(struct dd_image *o) {
 }
 
 void dd_image_load_png(struct dd_image *img, const char *filename) {
-
-	#ifdef AVDL_DIRECT3D11
-	#else
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#else
@@ -104,13 +100,21 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 
 	//dd_log("%dx%d %d %d | %d %d %d", width, height, bit_depth, color_type, interlace_type, compression_type, filter_method);
 
+	#if defined( AVDL_DIRECT3D11)
+	img->pixelFormat = 0;
+	#else
 	img->pixelFormat = GL_RGB;
+	#endif
 	img->width = width;
 	img->height = height;
 	png_bytep *row_pointers = png_get_rows(png_ptr, info_ptr);
 	// grayscale images
 	if (color_type == PNG_COLOR_TYPE_GRAY) {
+		#if defined( AVDL_DIRECT3D11)
+		img->pixelFormat = 0;
+		#else
 		img->pixelFormat = GL_RGB;
+		#endif
 		img->pixels = malloc(sizeof(float) *img->width *img->height *3);
 		for (int x = 0; x < img->width ; x++)
 		for (int y = 0; y < img->height; y++) {
@@ -123,7 +127,11 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	else
 	// RGB images
 	if (color_type == PNG_COLOR_TYPE_RGB) {
+		#if defined( AVDL_DIRECT3D11)
+		img->pixelFormat = 0;
+		#else
 		img->pixelFormat = GL_RGB;
+		#endif
 		img->pixels = malloc(sizeof(float) *img->width *img->height *3);
 		for (int x = 0; x < img->width ; x++)
 		for (int y = 0; y < img->height; y++) {
@@ -136,7 +144,11 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	else
 	// RGBA images
 	if (color_type == PNG_COLOR_TYPE_RGBA) {
+		#if defined( AVDL_DIRECT3D11)
+		img->pixelFormat = 0;
+		#else
 		img->pixelFormat = GL_RGBA;
+		#endif
 		img->pixels = malloc(sizeof(float) *img->width *img->height *4);
 		for (int x = 0; x < img->width ; x++)
 		for (int y = 0; y < img->height; y++) {
@@ -160,8 +172,6 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
 
 	#endif
-
-	#endif // direct3d 11
 
 }
 
@@ -236,8 +246,6 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 }
 
 void dd_image_clean(struct dd_image *o) {
-	#ifdef AVDL_DIRECT3D11
-	#else
 	if (o->pixels) {
 		free(o->pixels);
 		o->pixels = 0;
@@ -259,13 +267,22 @@ void dd_image_clean(struct dd_image *o) {
 	}
 	dd_da_free(&o->subpixels);
 	#endif
-
-	#endif
 }
 
 void dd_image_bind(struct dd_image *o) {
 
 	#ifdef AVDL_DIRECT3D11
+	// send texture to GPU if needed
+	if (o->pixels) {
+		o->tex = avdl_graphics_ImageToGpu(o->pixels, o->pixelFormat, o->width, o->height);
+		free(o->pixels);
+		o->pixels = 0;
+	}
+
+	// bind texture
+	//if (o->openglContextId == avdl_graphics_getContextId()) {
+		avdl_graphics_BindTexture(o->tex);
+	//}
 	#else
 	// manually made texture
 	if (o->openglContextId != avdl_graphics_getContextId() && !o->assetName) {

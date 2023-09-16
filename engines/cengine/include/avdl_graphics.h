@@ -108,10 +108,6 @@ void avdl_graphics_UseProgram(int program);
 
 int avdl_graphics_GetUniformLocation(int program, const char *uniform);
 
-void avdl_graphics_DeleteTexture(unsigned int tex);
-
-void avdl_graphics_BindTexture(unsigned int tex);
-
 void avdl_graphics_EnableBlend();
 void avdl_graphics_DisableBlend();
 
@@ -121,8 +117,18 @@ void avdl_graphics_VertexAttribPointer(int p, int size, int format, int, int, vo
 
 void avdl_graphics_DrawArrays(int vcount);
 
-int avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height);
-void avdl_graphics_ImageToGpuUpdate(int texture_id, void *pixels, int pixel_format, int x, int y, int width, int height);
+// Textures
+#if defined( AVDL_DIRECT3D11 )
+typedef void* avdl_texture_id;
+#else
+typedef int avdl_texture_id;
+#endif
+
+void avdl_graphics_DeleteTexture(avdl_texture_id tex);
+void avdl_graphics_BindTexture(avdl_texture_id tex);
+
+avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height);
+void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, int pixel_format, int x, int y, int width, int height);
 
 #if AVDL_DIRECT3D11
 void avdl_graphics_d3d11_SetWindow();
