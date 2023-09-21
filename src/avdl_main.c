@@ -560,7 +560,15 @@ int create_d3d11_directory(const char *dirName) {
 		avdl_string_cat(&avdlSrc, "    <ClCompile Include=\"avdl_src/");
 		avdl_string_cat(&avdlSrc, cengine_files[i]);
 		avdl_string_cat(&avdlSrc, "\">\n");
-		avdl_string_cat(&avdlSrc, "      <CompileAsWinRT>false</CompileAsWinRT>\n");
+		if (strcmp(cengine_files[i], "avdl_engine_cpp.cpp") == 0
+		||  strcmp(cengine_files[i], "avdl_graphics_direct3d11.cpp") == 0
+		||  strcmp(cengine_files[i], "dd_log.c") == 0
+		) {
+			avdl_string_cat(&avdlSrc, "      <CompileAsWinRT>true</CompileAsWinRT>\n");
+		}
+		else {
+			avdl_string_cat(&avdlSrc, "      <CompileAsWinRT>false</CompileAsWinRT>\n");
+		}
 		avdl_string_cat(&avdlSrc, "      <PrecompiledHeader>NotUsing</PrecompiledHeader>\n");
 		avdl_string_cat(&avdlSrc, "    </ClCompile>\n");
 	}
