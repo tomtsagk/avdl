@@ -23,7 +23,6 @@ struct dd_meshColour {
 	struct dd_vertex_col *verticesCol;
 	int dirtyColourArrayObject;
 	void (*set_colour)(struct dd_mesh *m, float r, float g, float b);
-	avdl_graphics_mesh *vertexBuffer;
 };
 
 // constructor

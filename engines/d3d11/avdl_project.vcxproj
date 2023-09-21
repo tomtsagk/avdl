@@ -297,6 +297,7 @@
     <ClInclude Include="avdl_src/avdl_ads.h" />
     <ClInclude Include="avdl_src/avdl_time.h" />
     <ClInclude Include="avdl_src/avdl_webapi.h" />
+    <ClInclude Include="DDSTextureLoader.h" />
     <!-- <ClInclude Include="AVDL_INCLUDE.h" /> -->
   </ItemGroup>
   <ItemGroup>
@@ -495,7 +496,11 @@
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src/button.dd.c" >
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src/button.dd.c">
       <CompileAsWinRT>false</CompileAsWinRT>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -672,18 +677,217 @@
     </CopyFileToFolders>
     <!-- <ClCompile Include="Assets/avdl_asset.ply" /> -->
   </ItemGroup>
-  <!-- libpng dll -->
+  <!-- Images PNG to DDS -->
+  <ItemGroup>
+    <ImageContentTask Include="Assets\afloofdev_logo_texture.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\logo_rue_texture.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\rue_logo.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\bg_exit_menu.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_01_single_step.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_02_triple_step.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_03_trade.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_04_one_step_cond.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_05_replace.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_06_grab.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_07_grab_gen.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_08_approach.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_09_win.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_10_always_one.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_11_next_hand.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_12_ignore_move.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_13_steal.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_14_empty.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_border_texture.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_corner_frown.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_corner_heart.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_corner_tear.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_corner_thunder.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\card_tutorial.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\character_1.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\icon_64x64.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\rose.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <ImageContentTask Include="Assets\table_rose.png">
+      <FileType>Image</FileType>
+      <DestinationFolders>$(OutDir)/assets</DestinationFolders>
+      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>
+    </ImageContentTask>
+  </ItemGroup>
+  <!-- libpng dll
   <ItemGroup>
     <CopyFileToFolders Include="dependencies\libpng16.dll">
       <FileType>Document</FileType>
     </CopyFileToFolders>
   </ItemGroup>
-  <!-- zlip dll -->
+  -->
+  <!-- zlip dll
   <ItemGroup>
     <CopyFileToFolders Include="dependencies\zlib.dll">
       <FileType>Document</FileType>
     </CopyFileToFolders>
   </ItemGroup>
+  -->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VSINSTALLDIR)\Common7\IDE\Extensions\Microsoft\VsGraphics\ImageContentTask.targets" />

@@ -43,15 +43,43 @@ void dd_image_create(struct dd_image *o) {
 	#endif
 }
 
+#if defined( AVDL_DIRECT3D11 )
+extern avdl_texture_id avdl_graphics_loadDDS(char *filename);
+extern FILE* avdl_filetomesh_openFile(char* filename);
+#endif
+
 void dd_image_load_png(struct dd_image *img, const char *filename) {
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#else
 
+	img->tex = avdl_graphics_loadDDS(filename);
+	/*
+	img->width = 10;
+	img->height = 10;
+	img->pixelFormat = 0;
+	img->pixels = malloc(sizeof(float) * img->width * img->height * 3);
+	for (int x = 0; x < img->width; x++)
+		for (int y = 0; y < img->height; y++) {
+			int index = (y * img->width * 3) + x * 3;
+			//img->pixels[(y * img->width * 3) + x * 3 + 0] = x * 0.1;
+			img->pixels[index + 0] = x * 0.1;
+			img->pixels[index + 1] = 0;
+			//img->pixels[(y * img->width * 3) + x * 3 + 2] = y * 0.1;
+			img->pixels[index + 2] = y * 0.1;
+		}
+		*/
+	return;
+
 	// check signature
-	FILE *fp = fopen(filename, "rb");
+	#if defined( AVDL_DIRECT3D11 )
+	FILE* fp = avdl_filetomesh_openFile(filename);
+	//FILE* fp = avdl_filetomesh_openFile("assets/button.ply");
+	#else
+	FILE* fp = fopen(filename, "rb");
+	#endif;
 	if (!fp) {
-		dd_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
+		//dd_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
 		return;
 	}
 	char header[9];
@@ -88,14 +116,15 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	png_init_io(png_ptr, fp);
 	png_set_sig_bytes(png_ptr, 8);
 	png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, 0);
+	//png_read_info(png_ptr, info_ptr);
 
-	png_uint_32 width;
-	png_uint_32 height;
-	int bit_depth;
-	int color_type;
-	int interlace_type;
-	int compression_type;
-	int filter_method;
+	png_uint_32 width = 0;
+	png_uint_32 height = 0;
+	int bit_depth = 0;
+	int color_type = 0;
+	int interlace_type = 0;
+	int compression_type = 0;
+	int filter_method = 0;
 	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method);
 
 	//dd_log("%dx%d %d %d | %d %d %d", width, height, bit_depth, color_type, interlace_type, compression_type, filter_method);
@@ -378,6 +407,9 @@ void dd_image_unbind(struct dd_image *o) {
 
 void dd_image_set(struct dd_image *o, const char *filename, int type) {
 	#ifdef AVDL_DIRECT3D11
+	o->assetName = filename;
+	o->assetType = type;
+	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
 	#else
 	o->openglContextId = avdl_graphics_getContextId();
 	o->assetName = filename;

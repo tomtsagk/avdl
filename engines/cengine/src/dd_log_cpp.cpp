@@ -21,6 +21,7 @@ void dd_log(const char *msg, ...) {
 	//const wchar_t* w_char = wid_str.c_str();
 	//Platform::String^ p_string = ref new Platform::String(w_char);
 
+	/*
 	MessageDialog^ dialog = ref new MessageDialog("Test dialog");
 	UICommand^ continueCommand = ref new UICommand("Ok");
 	UICommand^ upgradeCommand = ref new UICommand("Cancel");
@@ -30,6 +31,7 @@ void dd_log(const char *msg, ...) {
 	dialog->Commands->Append(continueCommand);
 	dialog->Commands->Append(upgradeCommand);
 	dialog->ShowAsync();
+	*/
 
 	va_end(args);
 }

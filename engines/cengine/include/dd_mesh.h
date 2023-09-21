@@ -45,6 +45,8 @@ struct dd_mesh {
 
 	void (*translatef)(struct dd_mesh *, float x, float y, float z);
 	void (*scalef)(struct dd_mesh *, float x, float y, float z);
+
+	avdl_graphics_mesh* vertexBuffer;
 };
 
 // constructor

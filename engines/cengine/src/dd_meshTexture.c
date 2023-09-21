@@ -90,7 +90,12 @@ void dd_meshTexture_set_primitive_texcoords(struct dd_meshTexture *m, float offs
 
 void dd_meshTexture_draw(struct dd_meshTexture *m) {
 
-	#ifndef AVDL_DIRECT3D11
+	#ifdef AVDL_DIRECT3D11
+	if (!m->parent.parent.vertexBuffer && m->t) {
+		avdl_graphics_direct3d11_setVertexBufferTexture(m);
+	}
+	avdl_graphics_direct3d11_drawMeshTexture(m, dd_matrix_globalGet());
+	#else
 
 	if (m->parent.parent.array == 0 || m->parent.parent.openglContextId != avdl_graphics_getContextId()) {
 

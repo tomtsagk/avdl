@@ -119,6 +119,7 @@ void avdl_graphics_DrawArrays(int vcount);
 
 // Textures
 #if defined( AVDL_DIRECT3D11 )
+//typedef ID3D11ShaderResourceView avdl_texture_id;
 typedef void* avdl_texture_id;
 #else
 typedef int avdl_texture_id;

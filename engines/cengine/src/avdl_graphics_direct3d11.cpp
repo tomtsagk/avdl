@@ -75,6 +75,9 @@ ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
 ComPtr<IDXGISwapChain3> avdl_swapChain;
 ComPtr<ID3D11RenderTargetView1>	avdl_d3dRenderTargetView;
 Size avdl_d3dRenderTargetSize;
+ID3D11RasterizerState1* rast;
+
+ID3D11SamplerState* ImageSamplerState;
 
 int avdl_graphics_Init() {
 
@@ -85,6 +88,8 @@ int avdl_graphics_Init() {
 	// This flag adds support for surfaces with a different color channel ordering
 	// than the API default. It is required for compatibility with Direct2D.
 	UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+
+	creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
 
 	// Create the Direct3D 11 API device object and a corresponding context.
 	ComPtr<ID3D11Device> device;
@@ -107,6 +112,29 @@ int avdl_graphics_Init() {
 	// Store pointers to the Direct3D 11.3 API device and immediate context.
 	device.As(&avdl_d3dDevice);
 	context.As(&avdl_d3dContext);
+
+	D3D11_RASTERIZER_DESC1 rasteriser = {};
+	rasteriser.FillMode = D3D11_FILL_SOLID;
+	rasteriser.CullMode = D3D11_CULL_FRONT;
+	avdl_d3dDevice->CreateRasterizerState1(&rasteriser, &rast);
+	avdl_d3dContext->RSSetState(rast);
+
+	D3D11_SAMPLER_DESC ImageSamplerDesc = {};
+	ImageSamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	ImageSamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ImageSamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ImageSamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+	ImageSamplerDesc.MipLODBias = 0.0f;
+	ImageSamplerDesc.MaxAnisotropy = 1;
+	ImageSamplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	ImageSamplerDesc.BorderColor[0] = 1.0f;
+	ImageSamplerDesc.BorderColor[1] = 1.0f;
+	ImageSamplerDesc.BorderColor[2] = 1.0f;
+	ImageSamplerDesc.BorderColor[3] = 1.0f;
+	ImageSamplerDesc.MinLOD = -FLT_MAX;
+	ImageSamplerDesc.MaxLOD = FLT_MAX;
+
+	avdl_d3dDevice->CreateSamplerState(&ImageSamplerDesc, &ImageSamplerState);
 
 	/*
 	avdl_graphics_generateContext();
@@ -148,34 +176,35 @@ int avdl_graphics_GetUniformLocation(int program, const char *uniform) {
 
 extern "C" avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height) {
 
-	D3D11_TEXTURE2D_DESC desc;
+	D3D11_TEXTURE2D_DESC desc = {};
 	desc.Width = width;
 	desc.Height = height;
 	desc.MipLevels = desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
 	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
 	//desc.Usage = D3D11_USAGE_DYNAMIC;
 	desc.Usage = D3D11_USAGE_IMMUTABLE;
 	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 	desc.MiscFlags = 0;
 
 	D3D11_SUBRESOURCE_DATA ImageSubresourceData = {};
 	ImageSubresourceData.pSysMem = pixels;
-	ImageSubresourceData.SysMemPitch = width *4;
+	ImageSubresourceData.SysMemPitch = width *3 *sizeof(float);
 
+	HRESULT hr;
 	ID3D11Texture2D *pTexture = NULL;
-	avdl_d3dDevice->CreateTexture2D( &desc, &ImageSubresourceData, &pTexture );
+	hr = avdl_d3dDevice->CreateTexture2D( &desc, &ImageSubresourceData, &pTexture );
 
 	// shader resource view
 	ID3D11ShaderResourceView *ImageShaderResourceView;
-	Result = avdl_d3dDevice->CreateShaderResourceView(pTexture,
+	avdl_d3dDevice->CreateShaderResourceView(pTexture,
 		nullptr,
 		&ImageShaderResourceView
 	);
 
-	// before drawing - bind ?
-	avdl_d3dContext->PSSetShaderResources(0, 1, &ImageShaderResourceView);
+	return ImageShaderResourceView;
 
 	/* Vertex Shader for textures
 	 *
@@ -249,7 +278,7 @@ void avdl_graphics_DeleteTexture(avdl_texture_id tex) {
 }
 
 void avdl_graphics_BindTexture(avdl_texture_id tex) {
-	//glBindTexture(GL_TEXTURE_2D, tex);
+	avdl_d3dContext->PSSetShaderResources(0, 1, ((ID3D11ShaderResourceView **) &tex));
 }
 
 void avdl_graphics_EnableBlend() {
@@ -400,6 +429,33 @@ void avdl_graphics_d3d11_SetWindow() {
 		);
 
 	avdl_d3dContext->RSSetViewports(1, &avdl_screenViewport);
+}
+
+#if defined( AVDL_DIRECT3D11 )
+extern FILE* avdl_filetomesh_openFile(char* filename);
+#endif
+
+#include "DDSTextureLoader.h"
+avdl_texture_id avdl_graphics_loadDDS(char *filename) {
+
+	ComPtr<ID3D11Device> device;
+	avdl_d3dDevice.As(&device);
+	FILE* fp = avdl_filetomesh_openFile(filename);
+	if (!fp) {
+		return 0;
+	}
+	byte* buffer = (byte *)malloc(sizeof(byte) * 100000000);
+	if (!buffer) {
+		return 0;
+	}
+	int len = fread(buffer, sizeof(byte), 100000000, fp);
+	ID3D11Resource* texture;
+	ID3D11ShaderResourceView* resView;
+	CreateDDSTextureFromMemory(device, buffer, sizeof(byte) *len, &texture, &resView, 100000000);
+
+	free(buffer);
+
+	return resView;
 }
 
 #ifdef __cplusplus
