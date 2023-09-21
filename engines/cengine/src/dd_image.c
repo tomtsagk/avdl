@@ -5,7 +5,7 @@
 #include "avdl_assetManager.h"
 #include <errno.h>
 
-#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
 #else
 #include <png.h>
 #endif
@@ -51,8 +51,7 @@ extern FILE* avdl_filetomesh_openFile(char* filename);
 void dd_image_load_png(struct dd_image *img, const char *filename) {
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	#else
-
+	#elif defined( AVDL_DIRECT3D11 )
 	img->tex = avdl_graphics_loadDDS(filename);
 	/*
 	img->width = 10;
@@ -69,7 +68,7 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 			img->pixels[index + 2] = y * 0.1;
 		}
 		*/
-	return;
+	#else
 
 	// check signature
 	#if defined( AVDL_DIRECT3D11 )

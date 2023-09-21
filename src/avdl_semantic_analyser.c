@@ -14,6 +14,7 @@
 
 // TODO: Possibly remove this
 enum AVDL_PLATFORM avdl_platform_temp;
+extern struct AvdlSettings *avdl_settings_ptr;
 
 extern const char *avdl_project_path;
 
@@ -150,6 +151,19 @@ static struct ast_node *expect_command_asset(struct avdl_lexer *l) {
 			lastDot[0] = '\0';
 
 			ast_setLex(assetName, lastSlash);
+		}
+	}
+	else
+	if ( avdl_platform_temp == AVDL_PLATFORM_D3D11) {
+		char buffer[500];
+		strcpy(buffer, ast_getLex(assetName));
+
+		int len = strlen(buffer);
+		if (strcmp(buffer +len -4, ".png") == 0) {
+			buffer[len -3] = 'd';
+			buffer[len -2] = 'd';
+			buffer[len -1] = 's';
+			ast_setLex(assetName, buffer);
 		}
 	}
 	else

@@ -24,7 +24,7 @@
 #include <unistd.h>
 #endif
 
-char big_buffer[6000];
+char big_buffer[100000];
 
 extern enum AVDL_PLATFORM avdl_platform_temp;
 
@@ -515,6 +515,66 @@ int create_d3d11_directory(const char *dirName) {
 		avdl_log_error("file '%s' not a directory", dirName);
 		return -1;
 	}
+
+	// avdl_project.vcxproj file path src
+	struct avdl_string vcPath;
+	avdl_string_create(&vcPath, 1024);
+	avdl_string_cat(&vcPath, dirName);
+	avdl_string_cat(&vcPath, "/");
+	//avdl_string_cat(&vcPath, "/avdl_project.vcxproj.in");
+	if ( !avdl_string_isValid(&vcPath) ) {
+		avdl_log_error("cannot construct path for `avdl_project.vcxproj`: %s", avdl_string_getError(&vcPath));
+		avdl_string_clean(&vcPath);
+		return -1;
+	}
+
+	int outDir = open(avdl_string_toCharPtr(&vcPath), O_DIRECTORY);
+	if (!outDir) {
+		printf("avdl: can't open %s: %s\n", avdl_string_toCharPtr(&vcPath), strerror(errno));
+		return -1;
+	}
+
+	// collect headers
+	struct avdl_string avdlHeaders;
+	avdl_string_create(&avdlHeaders, 4000);
+	for (int i = 0; i < cengine_headers_total; i++) {
+		avdl_string_cat(&avdlHeaders, "    <ClInclude Include=\"avdl_src/");
+		avdl_string_cat(&avdlHeaders, cengine_headers[i]);
+		avdl_string_cat(&avdlHeaders, "\"/>\n");
+	}
+	if ( !avdl_string_isValid(&avdlHeaders) ) {
+		avdl_log_error("cannot construct path for d3d11 avdl headers: %s", avdl_string_getError(&avdlHeaders));
+		avdl_log_error("chars in string: %d/%d", avdlHeaders.errorCharacters, avdlHeaders.maxCharacters);
+		avdl_string_clean(&avdlHeaders);
+		return -1;
+	}
+	file_replace(outDir, "avdl_project.vcxproj.in",
+		outDir, "avdl_project.vcxproj.in2",
+		"%AVDL_HEADERS%", avdl_string_toCharPtr(&avdlHeaders)
+	);
+
+	// collect src
+	struct avdl_string avdlSrc;
+	avdl_string_create(&avdlSrc, 10000);
+	for (int i = 0; i < cengine_files_total; i++) {
+		avdl_string_cat(&avdlSrc, "    <ClCompile Include=\"avdl_src/");
+		avdl_string_cat(&avdlSrc, cengine_files[i]);
+		avdl_string_cat(&avdlSrc, "\">\n");
+		avdl_string_cat(&avdlSrc, "      <CompileAsWinRT>false</CompileAsWinRT>\n");
+		avdl_string_cat(&avdlSrc, "      <PrecompiledHeader>NotUsing</PrecompiledHeader>\n");
+		avdl_string_cat(&avdlSrc, "    </ClCompile>\n");
+	}
+	if ( !avdl_string_isValid(&avdlSrc) ) {
+		avdl_log_error("cannot construct path for d3d11 avdl src: %s", avdl_string_getError(&avdlSrc));
+		avdl_log_error("chars in string: %d/%d", avdlSrc.errorCharacters, avdlHeaders.maxCharacters);
+		avdl_string_clean(&avdlSrc);
+		return -1;
+	}
+	file_replace(outDir, "avdl_project.vcxproj.in2",
+		outDir, "avdl_project.vcxproj.in3",
+		"%AVDL_SRC%", avdl_string_toCharPtr(&avdlSrc)
+	);
+
 	#endif
 
 	return 0;
@@ -1385,6 +1445,29 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 		avdl_string_clean(&d3d11FilePath);
 
 		avdl_string_clean(&srcFilePath);
+
+		if (strcmp(filename +strlen(filename) -4, ".png") == 0) {
+			strcat(big_buffer, "  <ItemGroup>\n");
+			strcat(big_buffer, "    <ImageContentTask Include=\"Assets/");
+			strcat(big_buffer, filename);
+			strcat(big_buffer, "\">\n");
+			strcat(big_buffer, "      <FileType>Image</FileType>\n");
+			strcat(big_buffer, "      <DestinationFolders>$(OutDir)/assets</DestinationFolders>\n");
+			strcat(big_buffer, "      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>\n");
+			strcat(big_buffer, "    </ImageContentTask>\n");
+			strcat(big_buffer, "  </ItemGroup>\n");
+		}
+		else
+		if (strcmp(filename +strlen(filename) -4, ".ply") == 0) {
+			strcat(big_buffer, "  <ItemGroup>\n");
+			strcat(big_buffer, "    <CopyFileToFolders Include=\"Assets/");
+			strcat(big_buffer, filename);
+			strcat(big_buffer, "\">\n");
+			strcat(big_buffer, "      <FileType>Document</FileType>\n");
+			strcat(big_buffer, "      <DestinationFolders>$(OutDir)/assets</DestinationFolders>\n");
+			strcat(big_buffer, "    </CopyFileToFolders>\n");
+			strcat(big_buffer, "  </ItemGroup>\n");
+		}
 		return 0;
 	}
 
@@ -1469,9 +1552,21 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	printf("avdl: assets - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
+	big_buffer[0] = '\0';
 	if (Avdl_FileOp_ForFileInDirectory(avdl_settings->asset_dir, asset_file) != 0) {
 		return -1;
 	}
+
+	int outDir = open("avdl_build_d3d11/", O_DIRECTORY);
+	if (!outDir) {
+		printf("avdl: can't open %s: %s\n", "avdl_build_d3d11/", strerror(errno));
+		return -1;
+	}
+
+	file_replace(outDir, "avdl_project.vcxproj.in4",
+		outDir, "avdl_project.vcxproj.in5",
+		"%AVDL_PROJECT_ASSETS%", big_buffer
+	);
 
 	printf("avdl: assets - " GRN "100%%" RESET "\n");
 	fflush(stdout);
@@ -1602,9 +1697,12 @@ int d3d11_object_file(const char *dirname, const char *filename, int fileIndex, 
 		return -1;
 	}
 
-	strcat(big_buffer, "src/");
+	strcat(big_buffer, "    <ClCompile Include=\"src/");
 	strcat(big_buffer, filename);
-	strcat(big_buffer, " ");
+	strcat(big_buffer, "\">\n");
+	strcat(big_buffer, "      <CompileAsWinRT>false</CompileAsWinRT>\n");
+	strcat(big_buffer, "      <PrecompiledHeader>NotUsing</PrecompiledHeader>\n");
+	strcat(big_buffer, "    </ClCompile>\n");
 
 	// dst file full path
 	struct avdl_string dstFilePath;
@@ -2239,6 +2337,16 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	big_buffer[0] = '\0';
 	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", d3d11_object_file);
 
+	int outDir = open("avdl_build_d3d11/", O_DIRECTORY);
+	if (!outDir) {
+		printf("avdl: can't open %s: %s\n", "avdl_build_d3d11/", strerror(errno));
+		return -1;
+	}
+
+	file_replace(outDir, "avdl_project.vcxproj.in3",
+		outDir, "avdl_project.vcxproj.in4",
+		"%AVDL_PROJECT_SRC%", big_buffer
+	);
 	/*
 	// Android.mk directory
 	struct avdl_string cppFilePath;
