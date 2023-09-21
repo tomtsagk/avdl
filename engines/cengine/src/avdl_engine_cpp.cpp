@@ -103,6 +103,8 @@ extern ComPtr<IDXGISwapChain3> avdl_swapChain;
 extern ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
 extern ComPtr<ID3D11RenderTargetView1> avdl_d3dRenderTargetView;
 
+extern ComPtr<ID3D11DepthStencilView> avdl_depthBuffer;
+
 extern int dd_flag_exit;
 
 int avdl_engine_init(struct avdl_engine *o) {
@@ -191,7 +193,7 @@ int avdl_engine_draw(struct avdl_engine *o) {
 
 	// Reset render targets to the screen.
 	ID3D11RenderTargetView *const targets[1] = { avdl_d3dRenderTargetView.Get() };
-	avdl_d3dContext->OMSetRenderTargets(1, targets, 0);
+	avdl_d3dContext->OMSetRenderTargets(1, targets, avdl_depthBuffer.Get());
 
 	// draw world
 	if (o->cworld && o->cworld->draw) {
@@ -261,6 +263,8 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	// frames that will never be displayed to the screen.
 	DXGI_PRESENT_PARAMETERS parameters = { 0 };
 	HRESULT hr = avdl_swapChain->Present1(1, 0, &parameters);
+
+	avdl_d3dContext->ClearDepthStencilView(avdl_depthBuffer.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
 	// Discard the contents of the render target.
 	// This is a valid operation only when the existing contents will be entirely

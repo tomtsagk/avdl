@@ -74,6 +74,7 @@ ComPtr<ID3D11Device3> avdl_d3dDevice;
 ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
 ComPtr<IDXGISwapChain3> avdl_swapChain;
 ComPtr<ID3D11RenderTargetView1>	avdl_d3dRenderTargetView;
+ComPtr<ID3D11DepthStencilView> avdl_depthBuffer;
 Size avdl_d3dRenderTargetSize;
 ID3D11RasterizerState1* rast;
 
@@ -135,6 +136,8 @@ int avdl_graphics_Init() {
 	ImageSamplerDesc.MaxLOD = FLT_MAX;
 
 	avdl_d3dDevice->CreateSamplerState(&ImageSamplerDesc, &ImageSamplerState);
+
+
 
 	/*
 	avdl_graphics_generateContext();
@@ -429,6 +432,27 @@ void avdl_graphics_d3d11_SetWindow() {
 		);
 
 	avdl_d3dContext->RSSetViewports(1, &avdl_screenViewport);
+
+	// depth buffer
+	D3D11_TEXTURE2D_DESC depthTextureDesc = { 0 };
+	depthTextureDesc.Width = Window->Bounds.Width;
+	depthTextureDesc.Height = Window->Bounds.Height;
+	depthTextureDesc.MipLevels = 1;
+	depthTextureDesc.ArraySize = 1;
+	depthTextureDesc.SampleDesc.Count = 1;
+	depthTextureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthTextureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+	ID3D11Texture2D* depthTexture;
+	avdl_d3dDevice->CreateTexture2D(&depthTextureDesc, 0, &depthTexture);
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = depthTextureDesc.Format;
+	dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+
+	avdl_d3dDevice->CreateDepthStencilView(depthTexture, &dsvDesc, &avdl_depthBuffer);
+	depthTexture->Release();
+
 }
 
 #if defined( AVDL_DIRECT3D11 )
