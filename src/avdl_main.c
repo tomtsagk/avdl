@@ -562,7 +562,7 @@ int create_d3d11_directory(const char *dirName) {
 		avdl_string_cat(&avdlSrc, "\">\n");
 		if (strcmp(cengine_files[i], "avdl_engine_cpp.cpp") == 0
 		||  strcmp(cengine_files[i], "avdl_graphics_direct3d11.cpp") == 0
-		||  strcmp(cengine_files[i], "dd_log.c") == 0
+		||  strcmp(cengine_files[i], "dd_log_cpp.cpp") == 0
 		) {
 			avdl_string_cat(&avdlSrc, "      <CompileAsWinRT>true</CompileAsWinRT>\n");
 		}
