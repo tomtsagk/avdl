@@ -90,6 +90,7 @@ extern ComPtr<ID3D11Buffer> avdl_constantBuffer;
 extern ModelViewProjectionConstantBuffer avdl_constantBufferData;
 extern ComPtr<ID3D11VertexShader> avdl_vertexShader;
 extern ComPtr<ID3D11PixelShader> avdl_pixelShader;
+extern ComPtr<ID3D11PixelShader> avdl_pixelShader2;
 extern ComPtr<ID3D11InputLayout> avdl_inputLayout;
 extern ComPtr<ID3D11Buffer> avdl_vertexBuffer;
 
@@ -174,6 +175,8 @@ int avdl_engine_init(struct avdl_engine *o) {
 	#endif
 
 	avdl_graphics_Init();
+
+	avdl_font_init();
 
 	dd_clearColour(0.6f, 0.9f, 0.2f);
 
@@ -375,6 +378,7 @@ ComPtr<ID3D11Buffer> avdl_vertexBuffer;
 // shaders
 ComPtr<ID3D11VertexShader> avdl_vertexShader;
 ComPtr<ID3D11PixelShader> avdl_pixelShader;
+ComPtr<ID3D11PixelShader> avdl_pixelShader2;
 ComPtr<ID3D11InputLayout> avdl_inputLayout;
 
 double totalRotation = 0.0;
@@ -511,6 +515,7 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 {
 	Array<byte>^ VSFile = LoadShaderFile("SampleVertexShader.cso");
 	Array<byte>^ PSFile = LoadShaderFile("SamplePixelShader.cso");
+	Array<byte>^ PSFile2 = LoadShaderFile("SamplePixelShader2.cso");
 	avdl_d3dDevice->CreateVertexShader(
 		VSFile->Data,
 		VSFile->Length,
@@ -522,6 +527,13 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 		PSFile->Length,
 		nullptr,
 		&avdl_pixelShader
+	);
+
+	avdl_d3dDevice->CreatePixelShader(
+		PSFile2->Data,
+		PSFile2->Length,
+		nullptr,
+		&avdl_pixelShader2
 	);
 
 	static const D3D11_INPUT_ELEMENT_DESC vertexDesc [] =
@@ -819,7 +831,7 @@ extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struc
 
 	// Attach our pixel shader.
 	avdl_d3dContext->PSSetShader(
-		avdl_pixelShader.Get(),
+		avdl_pixelShader2.Get(),
 		nullptr,
 		0
 		);
@@ -889,7 +901,7 @@ extern "C" void avdl_graphics_direct3d11_drawMeshMesh(struct dd_mesh* m, struct 
 
 	// Attach our pixel shader.
 	avdl_d3dContext->PSSetShader(
-		avdl_pixelShader.Get(),
+		avdl_pixelShader2.Get(),
 		nullptr,
 		0
 	);
@@ -959,17 +971,25 @@ extern "C" void avdl_graphics_direct3d11_drawMeshTexture(struct dd_meshTexture* 
 		nullptr
 	);
 
-	// Attach our pixel shader.
-	avdl_d3dContext->PSSetShader(
-		avdl_pixelShader.Get(),
-		nullptr,
-		0
-	);
-
 	if (m->img) {
+		// Attach our pixel shader.
+		avdl_d3dContext->PSSetShader(
+			avdl_pixelShader.Get(),
+			nullptr,
+			0
+		);
 		m->img->bind(m->img);
+
+		avdl_d3dContext->PSSetSamplers(0, 1, &ImageSamplerState);
 	}
-	avdl_d3dContext->PSSetSamplers(0, 1, &ImageSamplerState);
+	else {
+		// Attach our pixel shader.
+		avdl_d3dContext->PSSetShader(
+			avdl_pixelShader2.Get(),
+			nullptr,
+			0
+		);
+	}
 
 	// Draw cube
 	avdl_d3dContext->Draw(

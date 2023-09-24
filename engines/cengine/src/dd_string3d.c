@@ -135,7 +135,6 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 }
 
 void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
-	#ifndef AVDL_DIRECT3D11
 
 	if (o->is_int) {
 		dd_log("string3d configured as int, but trying to draw text");
@@ -249,15 +248,19 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 				break;
 			}
 
+			#if !defined( AVDL_DIRECT3D11 )
 			int previousProgram;
 			previousProgram = avdl_graphics_GetCurrentProgram();
 			avdl_graphics_UseProgram(defaultProgram);
 			GLint MatrixID = avdl_graphics_GetUniformLocation(defaultProgram, "matrix");
 			avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
+			#endif
 
 			dd_meshTexture_draw(&m->m);
 
+			#if !defined( AVDL_DIRECT3D11 )
 			avdl_graphics_UseProgram(previousProgram);
+			#endif
 
 			dd_translatef(m->widthf +m->space_size, 0, 0);
 		}
@@ -268,7 +271,6 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 
 	dd_matrix_pop();
 
-	#endif
 }
 
 void dd_string3d_clean(struct dd_string3d *o) {
@@ -306,7 +308,6 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 		return;
 	}
 
-	#ifndef AVDL_DIRECT3D11
 	clean_words(o);
 	o->openglContextId = o->font->openglContextId;
 
@@ -417,9 +418,17 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 			else {
 				dd_meshTexture_set_primitive_texcoords(&m2,
 					avdl_font_getTexCoordX(o->font, glyph_id),
+					#if defined( AVDL_DIRECT3D11 )
+					1 - avdl_font_getTexCoordY(o->font, glyph_id),
+					#else
 					avdl_font_getTexCoordY(o->font, glyph_id),
+					#endif
 					avdl_font_getTexCoordW(o->font, glyph_id),
+					#if defined( AVDL_DIRECT3D11 )
+					-avdl_font_getTexCoordH(o->font, glyph_id)
+					#else
 					avdl_font_getTexCoordH(o->font, glyph_id)
+					#endif
 				);
 			}
 
@@ -451,7 +460,6 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 
 	} while (t[0] != '\0');
 
-	#endif
 }
 
 void dd_string3d_setTextInt(struct dd_string3d *o) {

@@ -184,7 +184,8 @@ extern "C" avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_form
 	desc.Height = height;
 	desc.MipLevels = desc.ArraySize = 1;
 	//desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	//desc.Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 	//desc.Usage = D3D11_USAGE_DYNAMIC;
@@ -194,7 +195,7 @@ extern "C" avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_form
 
 	D3D11_SUBRESOURCE_DATA ImageSubresourceData = {};
 	ImageSubresourceData.pSysMem = pixels;
-	ImageSubresourceData.SysMemPitch = width *3 *sizeof(float);
+	ImageSubresourceData.SysMemPitch = width *4 *sizeof(float);
 
 	HRESULT hr;
 	ID3D11Texture2D *pTexture = NULL;

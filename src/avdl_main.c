@@ -1454,6 +1454,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 
 		avdl_string_clean(&srcFilePath);
 
+		// images (textures)
 		if (strcmp(filename +strlen(filename) -4, ".png") == 0) {
 			strcat(big_buffer, "  <ItemGroup>\n");
 			strcat(big_buffer, "    <ImageContentTask Include=\"Assets/");
@@ -1466,9 +1467,14 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 			strcat(big_buffer, "  </ItemGroup>\n");
 		}
 		else
-		if (strcmp(filename +strlen(filename) -4, ".ply") == 0) {
+		// json (localisation)
+		// ply (3d meshes)
+		// ttf (fonts)
+		if (strcmp(filename +strlen(filename) -5, ".json") == 0
+		||  strcmp(filename +strlen(filename) -4, ".ply" ) == 0
+		||  strcmp(filename +strlen(filename) -4, ".ttf" ) == 0) {
 			strcat(big_buffer, "  <ItemGroup>\n");
-			strcat(big_buffer, "    <CopyFileToFolders Include=\"Assets/");
+			strcat(big_buffer, "    <CopyFileToFolders Include=\"assets/");
 			strcat(big_buffer, filename);
 			strcat(big_buffer, "\">\n");
 			strcat(big_buffer, "      <FileType>Document</FileType>\n");
@@ -1476,6 +1482,10 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 			strcat(big_buffer, "    </CopyFileToFolders>\n");
 			strcat(big_buffer, "  </ItemGroup>\n");
 		}
+		// asset unsupported for d3d11
+		else {
+		}
+
 		return 0;
 	}
 

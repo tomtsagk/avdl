@@ -28,8 +28,7 @@ extern AAssetManager *aassetManager;
 #endif
 
 void dd_json_initFile(struct dd_json_object *o, char *filename) {
-	#ifdef AVDL_DIRECT3D11
-	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	o->file2 = AAssetManager_open(aassetManager, filename, AASSET_MODE_UNKNOWN);
 	if (!o->file2)
 	{
@@ -39,10 +38,19 @@ void dd_json_initFile(struct dd_json_object *o, char *filename) {
 	o->str2 = AAsset_getBuffer(o->file2);
 	o->current = o->str2;
 	#else
+
+	#if defined( AVDL_DIRECT3D11 )
+	fopen_s(&o->file, filename, "r");
+	#else
 	o->file = fopen(filename, "r");
+	#endif
 	if (!o->file) {
-		dd_log("avdl: error opening json file '%s': %s",
-			filename, strerror(errno)
+		dd_log("avdl: error opening json file '%s': %s", filename,
+			#if defined( AVDL_DIRECT3D11 )
+			"error"
+			#else
+			strerror(errno)
+			#endif
 		);
 	}
 	#endif
@@ -51,8 +59,7 @@ void dd_json_initFile(struct dd_json_object *o, char *filename) {
 
 void dd_json_next(struct dd_json_object *o) {
 
-	#ifdef AVDL_DIRECT3D11
-	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	if (o->file2) {
 
 		// ignore whitespace
@@ -144,11 +151,19 @@ void dd_json_next(struct dd_json_object *o) {
 	if (o->file) {
 
 		// ignore whitespace
+		#if defined( AVDL_DIRECT3D11 )
+		fscanf_s(o->file, "%200[ \t\n\r]", o->buffer, 200);
+		#else
 		fscanf(o->file, "%200[ \t\n\r]", o->buffer);
+		#endif
 
 		// grab first character
 		char nextChar;
+		#if defined( AVDL_DIRECT3D11 )
+		fscanf_s(o->file, "%c", &nextChar, 1);
+		#else
 		fscanf(o->file, "%c", &nextChar);
+		#endif
 
 		switch (nextChar) {
 			// skip commas
@@ -182,12 +197,21 @@ void dd_json_next(struct dd_json_object *o) {
 			// key or string
 			case '"':
 
+				#if defined( AVDL_DIRECT3D11 )
+				// scan key-string
+				fscanf_s(o->file, "%400[^\"]", o->buffer, 400);
+				fscanf_s(o->file, "%*c");
+
+				// ignore whitespace
+				fscanf_s(o->file, "%*[ \t\n\r]");
+				#else
 				// scan key-string
 				fscanf(o->file, "%400[^\"]", o->buffer);
 				fscanf(o->file, "%*c");
 
 				// ignore whitespace
 				fscanf(o->file, "%*[ \t\n\r]");
+				#endif
 
 				// key
 				if (!o->hasKey) {

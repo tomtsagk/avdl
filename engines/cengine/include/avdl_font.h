@@ -7,9 +7,15 @@ extern "C" {
 
 #include "dd_image.h"
 
-#if !defined( AVDL_DIRECT3D11 )
+#if defined( AVDL_DIRECT3D11 )
+#define generic GenericFromFreeType
+#endif
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
+
+#if defined( AVDL_DIRECT3D11 )
+#undef generic
 #endif
 
 #define FONT_MAX_GLYPHS_ROWS 22
@@ -35,10 +41,8 @@ struct avdl_font {
 	struct dd_image texture;
 	int outline_thickness;
 
-	#if !defined( AVDL_DIRECT3D11 )
 	FT_Face face;
 	FT_Byte *fontData;
-	#endif
 
 	struct avdl_glyph glyphs[FONT_MAX_GLYPHS];
 
