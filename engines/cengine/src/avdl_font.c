@@ -165,7 +165,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 	// outline
 	int cx = 0;
 	int cy = 0;
-	FT_Glyph glyphDescStroke = {};
+	FT_Glyph glyphDescStroke = {0};
 	if (o->outline_thickness > 0) {
 		FT_Stroker stroker;
 		FT_Stroker_New(library, &stroker);

@@ -467,6 +467,9 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	}
 	#endif
 
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
 	#if defined(AVDL_QUEST2)
 
 	glUnmapBuffer(GL_UNIFORM_BUFFER);
