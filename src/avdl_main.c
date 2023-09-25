@@ -394,7 +394,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 			return -1;
 		}
 
-		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for d3d11 at " BLU "./avdl_build_quest2/" RESET, avdl_settings.project_name);
+		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for d3d11 at " BLU "./avdl_build_d3d11/" RESET, avdl_settings.project_name);
 
 		return 0;
 	}
@@ -1582,7 +1582,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	}
 
 	file_replace(outDir, "avdl_project.vcxproj.in4",
-		outDir, "avdl_project.vcxproj.in5",
+		outDir, "avdl_project.vcxproj.in",
 		"%AVDL_PROJECT_ASSETS%", big_buffer
 	);
 
