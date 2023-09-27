@@ -155,6 +155,7 @@ int avdl_compile(struct AvdlSettings *);
 int avdl_compile_cengine(struct AvdlSettings *);
 int avdl_link(struct AvdlSettings *);
 int avdl_assets(struct AvdlSettings *);
+int avdl_metadata(struct AvdlSettings *);
 int avdl_android_object(struct AvdlSettings *);
 int avdl_quest2_object(struct AvdlSettings *);
 int avdl_d3d11_object(struct AvdlSettings *);
@@ -391,6 +392,12 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		// handle assets
 		if ( avdl_assets(&avdl_settings) != 0) {
 			avdl_log_error("could not handle project assets for d3d11\n");
+			return -1;
+		}
+
+		// metadata
+		if ( avdl_metadata(&avdl_settings) != 0) {
+			avdl_log_error("could not create metadata for d3d11\n");
 			return -1;
 		}
 
@@ -1432,7 +1439,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	else
 	// on d3d11, put assets in a specific directory
 	if (avdl_target_platform == AVDL_PLATFORM_D3D11) {
-		char *assetDir = "Assets";
+		char *assetDir = "assets";
 
 		// d3d11 file full path
 		struct avdl_string d3d11FilePath;
@@ -1457,12 +1464,12 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 		// images (textures)
 		if (strcmp(filename +strlen(filename) -4, ".png") == 0) {
 			strcat(big_buffer, "  <ItemGroup>\n");
-			strcat(big_buffer, "    <ImageContentTask Include=\"Assets/");
+			strcat(big_buffer, "    <ImageContentTask Include=\"assets/");
 			strcat(big_buffer, filename);
 			strcat(big_buffer, "\">\n");
 			strcat(big_buffer, "      <FileType>Image</FileType>\n");
 			strcat(big_buffer, "      <DestinationFolders>$(OutDir)/assets</DestinationFolders>\n");
-			strcat(big_buffer, "      <ContentOutput >$(OutDir)/Assets/%(Filename).dds</ContentOutput>\n");
+			strcat(big_buffer, "      <ContentOutput >$(OutDir)/assets/%(Filename).dds</ContentOutput>\n");
 			strcat(big_buffer, "    </ImageContentTask>\n");
 			strcat(big_buffer, "  </ItemGroup>\n");
 		}
@@ -1582,7 +1589,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	}
 
 	file_replace(outDir, "avdl_project.vcxproj.in4",
-		outDir, "avdl_project.vcxproj.in",
+		outDir, "avdl_project.vcxproj",
 		"%AVDL_PROJECT_ASSETS%", big_buffer
 	);
 
@@ -1590,6 +1597,95 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	fflush(stdout);
 
 	return 0;
+}
+
+int avdl_metadata(struct AvdlSettings *avdl_settings) {
+
+	// Direct3D11
+	if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
+
+		#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
+
+		printf("avdl: metadata - " RED "%d%%" RESET "\r", 0);
+		fflush(stdout);
+
+		// check imagemagick is present
+		if (system("convert --version > /dev/null")) {
+			avdl_log_error("could not use imagemagick's `convert`");
+			return -1;
+		}
+
+		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (1)/8 *100));
+		fflush(stdout);
+
+		// create metadata directory
+		if (!is_dir("avdl_build_d3d11/metadata")) {
+			dir_create("avdl_build_d3d11/metadata");
+		}
+
+		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (2)/8 *100));
+		fflush(stdout);
+
+		// create store logo
+		if (system("convert xc:red -resize 200x200 avdl_build_d3d11/metadata/avdl_logo_store.scale-400.png")) {
+			avdl_log_error("could not create store logo");
+			return -1;
+		}
+
+		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (3)/8 *100));
+		fflush(stdout);
+
+		// logo square 150x150
+		if (system("convert xc:red -resize 600x600 avdl_build_d3d11/metadata/avdl_logo_square_150x150.scale-400.png")) {
+			avdl_log_error("could not create square logo 150x150");
+			return -1;
+		}
+
+		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (4)/8 *100));
+		fflush(stdout);
+
+		// logo square 44x44
+		if (system("convert xc:red -resize 256x256 avdl_build_d3d11/metadata/avdl_logo_square_44x44.scale-400.png")) {
+			avdl_log_error("could not create square logo 150x150");
+			return -1;
+		}
+
+		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (5)/8 *100));
+		fflush(stdout);
+
+		// logo wide 310x150
+		if (system("convert xc:red -resize 1240x600 avdl_build_d3d11/metadata/avdl_logo_wide_310x150.scale-400.png")) {
+			avdl_log_error("could not create wide logo 310x150");
+			return -1;
+		}
+
+		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (6)/8 *100));
+		fflush(stdout);
+
+		// splash screen
+		if (system("convert xc:red -resize 2480x1200 avdl_build_d3d11/metadata/avdl_splash_screen.scale-400.png")) {
+			avdl_log_error("could not create splash screen");
+			return -1;
+		}
+
+		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (7)/8 *100));
+		fflush(stdout);
+
+		// splash screen
+		if (system("convert xc:red -resize 96x96 avdl_build_d3d11/metadata/avdl_logo_lockscreen.scale-400.png")) {
+			avdl_log_error("could not create lockscreen logo");
+			return -1;
+		}
+
+		#endif
+	}
+
+	printf("avdl: metadata - " GRN "100%%" RESET "\n");
+	fflush(stdout);
+
+	// all good
+	return 0;
+
 }
 
 int android_object_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
@@ -2429,8 +2525,8 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	close(outDir);
 	*/
 
-	if (!is_dir("avdl_build_d3d11/Assets/")) {
-		dir_create("avdl_build_d3d11/Assets/");
+	if (!is_dir("avdl_build_d3d11/assets/")) {
+		dir_create("avdl_build_d3d11/assets/");
 	}
 
 	/*

@@ -15,7 +15,7 @@
   <Properties>
     <DisplayName>AVDL_PROJECT_NAME</DisplayName>
     <PublisherDisplayName>AVDL_PUBLISHER_NAME</PublisherDisplayName>
-    <Logo>AVDL_LOGO</Logo>
+    <Logo>metadata/avdl_logo_store.png</Logo>
   </Properties>
 
   <Dependencies>
@@ -32,12 +32,12 @@
       EntryPoint="D3D11AvdlApplication">
       <uap:VisualElements
         DisplayName="AVDL_PROJECT_NAME"
-        Square150x150Logo="Assets\Square150x150Logo.png"
-        Square44x44Logo="Assets\Square44x44Logo.png"
+        Square150x150Logo="metadata\avdl_logo_square_150x150.png"
+        Square44x44Logo="metadata\avdl_logo_square_44x44.png"
         Description="AVDL_PROJECT_DESCRIPTION"
         BackgroundColor="transparent">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"/>
-        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+        <uap:DefaultTile Wide310x150Logo="metadata\avdl_logo_wide_310x150.png"/>
+	<uap:SplashScreen Image="metadata/avdl_splash_screen.png" />
       </uap:VisualElements>
     </Application>
   </Applications>
