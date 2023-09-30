@@ -1597,9 +1597,11 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	avdl_log("asset parsing begin");
 
 	big_buffer[0] = '\0';
+	/*
 	if (Avdl_FileOp_ForFileInDirectory(avdl_settings->asset_dir, asset_file) != 0) {
 		return -1;
 	}
+	*/
 
 	avdl_log("modifying avdl_project");
 
