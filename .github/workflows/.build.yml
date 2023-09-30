@@ -374,10 +374,53 @@ jobs:
         name: avdl_windows
         path: build/AVDL_BUILD
 
+  # Windows d3d11 - preparation
+  rue_build_windows_d3d11_prepare:
+    runs-on: ubuntu-20.04
+    needs: [build_linux]
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: avdl_linux
+        path: avdl_linux
+    - name: get_rue
+      shell: bash
+      run: |
+        git clone https://github.com/tomtsagk/rue rue
+        cd rue
+        git checkout develop
+        cd ..
+    - name: prepare_freetype
+      shell: bash
+      run: |
+        mkdir dependencies
+        cd dependencies
+        git clone https://github.com/ubawurinna/freetype-windows-binaries freetype
+        cp -r freetype/include/* .
+        cp -r freetype/release\ dll/* .
+        rm -rf freetype
+    - name: unpack_avdl
+      shell: bash
+      run: |
+        mv avdl_linux AVDL_BUILD
+    - name: compile_rue
+      shell: bash
+      run: |
+        cd rue
+        ../AVDL_BUILD/bin/avdl.exe --d3d11
+        mv avdl_build_d3d11/* ../
+        cd ..
+        ls -R
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: rue-d3d11_prepare
+        path: .
   # Windows d3d11
   rue_build_windows_d3d11:
     runs-on: windows-latest
     needs: [build_windows]
+    if: ${{ false }}
     steps:
     - uses: actions/download-artifact@v3
       with:
