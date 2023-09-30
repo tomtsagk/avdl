@@ -1448,6 +1448,8 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	if (avdl_target_platform == AVDL_PLATFORM_D3D11) {
 		char *assetDir = "assets";
 
+		avdl_log("d3d11 asset: %s - %s", assetDir, filename);
+
 		// d3d11 file full path
 		struct avdl_string d3d11FilePath;
 		avdl_string_create(&d3d11FilePath, 1024);
@@ -1588,6 +1590,8 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	if (Avdl_FileOp_ForFileInDirectory(avdl_settings->asset_dir, asset_file) != 0) {
 		return -1;
 	}
+
+	avdl_log("modifying avdl_project");
 
 	/*
 	int outDir = open("avdl_build_d3d11/", O_DIRECTORY);
