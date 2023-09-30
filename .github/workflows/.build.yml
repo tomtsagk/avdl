@@ -396,8 +396,8 @@ jobs:
         mkdir dependencies
         cd dependencies
         git clone https://github.com/ubawurinna/freetype-windows-binaries freetype
-        cp freetype/include/* .
-        cp freetype/static\ dll/* .
+        cp -r freetype/include/* .
+        cp -r freetype/static\ dll/* .
         rm -rf freetype
     - name: unpack_avdl
       shell: bash
