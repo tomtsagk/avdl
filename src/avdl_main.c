@@ -1729,7 +1729,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 		*/
-		if (system("convert xc:red -resize 310x150 avdl_build_d3d11/metadata/avdl_logo_wide_310x150.png")) {
+		if (system("convert xc:red -resize 310x150! avdl_build_d3d11/metadata/avdl_logo_wide_310x150.png")) {
 			avdl_log_error("could not create wide logo 310x150");
 			return -1;
 		}
@@ -1738,7 +1738,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		fflush(stdout);
 
 		// splash screen
-		if (system("convert xc:red -resize 620x300 avdl_build_d3d11/metadata/avdl_splash_screen.png")) {
+		if (system("convert xc:red -resize 620x300! avdl_build_d3d11/metadata/avdl_splash_screen.png")) {
 			avdl_log_error("could not create splash screen");
 			return -1;
 		}
