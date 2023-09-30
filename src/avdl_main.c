@@ -1693,25 +1693,43 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		fflush(stdout);
 
 		// logo square 150x150
+		if (system("convert xc:red -resize 150x150 avdl_build_d3d11/metadata/avdl_logo_square_150x150.png")) {
+			avdl_log_error("could not create square logo 150x150");
+			return -1;
+		}
+		/*
 		if (system("convert xc:red -resize 600x600 avdl_build_d3d11/metadata/avdl_logo_square_150x150.scale-400.png")) {
 			avdl_log_error("could not create square logo 150x150");
 			return -1;
 		}
+		*/
 
 		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (4)/8 *100));
 		fflush(stdout);
 
 		// logo square 44x44
+		if (system("convert xc:red -resize 44x44 avdl_build_d3d11/metadata/avdl_logo_square_44x44.png")) {
+			avdl_log_error("could not create square logo 150x150");
+			return -1;
+		}
+		/*
 		if (system("convert xc:red -resize 256x256 avdl_build_d3d11/metadata/avdl_logo_square_44x44.scale-400.png")) {
 			avdl_log_error("could not create square logo 150x150");
 			return -1;
 		}
+		*/
 
 		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (5)/8 *100));
 		fflush(stdout);
 
 		// logo wide 310x150
+		/*
 		if (system("convert xc:red -resize 1240x600 avdl_build_d3d11/metadata/avdl_logo_wide_310x150.scale-400.png")) {
+			avdl_log_error("could not create wide logo 310x150");
+			return -1;
+		}
+		*/
+		if (system("convert xc:red -resize 310x150 avdl_build_d3d11/metadata/avdl_logo_wide_310x150.png")) {
 			avdl_log_error("could not create wide logo 310x150");
 			return -1;
 		}
@@ -1720,19 +1738,31 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		fflush(stdout);
 
 		// splash screen
+		if (system("convert xc:red -resize 620x300 avdl_build_d3d11/metadata/avdl_splash_screen.png")) {
+			avdl_log_error("could not create splash screen");
+			return -1;
+		}
+		/*
 		if (system("convert xc:red -resize 2480x1200 avdl_build_d3d11/metadata/avdl_splash_screen.scale-400.png")) {
 			avdl_log_error("could not create splash screen");
 			return -1;
 		}
+		*/
 
 		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (7)/8 *100));
 		fflush(stdout);
 
-		// splash screen
+		// lock screen logo
+		if (system("convert xc:red -resize 24x24 avdl_build_d3d11/metadata/avdl_logo_lockscreen.png")) {
+			avdl_log_error("could not create lockscreen logo");
+			return -1;
+		}
+		/*
 		if (system("convert xc:red -resize 96x96 avdl_build_d3d11/metadata/avdl_logo_lockscreen.scale-400.png")) {
 			avdl_log_error("could not create lockscreen logo");
 			return -1;
 		}
+		*/
 
 		#endif
 	}
