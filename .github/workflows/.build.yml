@@ -431,6 +431,9 @@ jobs:
         Appx_Package_Build_Mode: SideloadOnly
         Appx_Package_Dir: Packages\
         Configuration: Release
+    - name: test
+      shell: bash
+      run: ls -R rue-d3d11_prepare
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
