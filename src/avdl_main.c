@@ -1359,7 +1359,6 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	}
 
 	avdl_log("asset parsing start 2");
-	return 0;
 
 	// src file full path
 	struct avdl_string srcFilePath;
@@ -1455,6 +1454,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	else
 	// on d3d11, put assets in a specific directory
 	if (avdl_target_platform == AVDL_PLATFORM_D3D11) {
+		return 0;
 		char *assetDir = "assets";
 
 		avdl_log("d3d11 asset: %s - %s", assetDir, filename);
