@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - master
+      - feature/d3d11
     tags:
       "v[0-9]+.[0-9]+.[0-9]+"
   pull_request:
@@ -376,7 +377,6 @@ jobs:
   # Windows d3d11
   rue_build_windows_d3d11:
     runs-on: windows-latest
-    if: ${{ false }}
     needs: [build_windows]
     steps:
     - uses: actions/download-artifact@v3
@@ -388,109 +388,41 @@ jobs:
       run: |
         git clone https://github.com/tomtsagk/rue rue
         cd rue
-        git checkout develop
+        git checkout feature/d3d11
         cd ..
-    - name: prepare_libraries
+    - name: prepare_freetype
       shell: bash
       run: |
-        mkdir libraries
+        mkdir dependencies
+        cd dependencies
+        git clone https://github.com/ubawurinna/freetype-windows-binaries freetype
+        cp freetype/include/* dependencies
+        cp freetype/static\ dll/* dependencies
+        rm -rf freetype
     - name: unpack_avdl
       shell: bash
       run: |
-        mkdir AVDL_BUILD
-        mv avdl_windows/* AVDL_BUILD
-        rmdir avdl_windows
-        cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
-        cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
-    - name: zlib
-      shell: bash
-      run: |
-        cp -r AVDL_BUILD/dependencies/windows/zlib "C:/Program Files (x86)/zlib"
-    - name: libpng
-      shell: bash
-      run: |
-        cp -r AVDL_BUILD/dependencies/windows/libpng "C:/Program Files (x86)/libpng"
-    - name: get_libraries
-      run: |
-        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
-        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
-        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
-    - name: glew
-      shell: bash
-      run: |
-        mv glew-2.2.0-win32.zip libraries
-        cd libraries
-        unzip glew-2.2.0-win32.zip
-        cd ..
-    - name: sdl
-      shell: bash
-      run: |
-        mv SDL2-devel-2.0.22-VC.zip libraries
-        cd libraries
-        unzip SDL2-devel-2.0.22-VC.zip
-        cd ..
-    - name: sdl_mixer
-      shell: bash
-      run: |
-        mv SDL2_mixer-devel-2.6.0-VC.zip libraries
-        cd libraries
-        unzip SDL2_mixer-devel-2.6.0-VC.zip
-        cd ..
-    - name: compile_rue
-      shell: bash
-      if: ${{ false }}
-      run: |
-        cd rue
-        mv ../libraries .
-        mkdir cengine
-        cp -r ../AVDL_BUILD/share/avdl/cengine/*.c ../AVDL_BUILD/share/avdl/cengine/*.cpp ../AVDL_BUILD/include/*.h cengine
-        mkdir build
-        ../AVDL_BUILD/bin/avdl.exe -t
-        cp .avdl_cache/*.c src/
-        for i in src/*.c; do mv $i ${i/.dd.c/.c}; done
-        cd build
-        cmake ../ . -DCMAKE_INSTALL_PREFIX="RUE_BUILD" -DAVDL_DIRECT3D11=1
-        cmake --build . --config Release
-        cmake --install .
-        cpack
-        cd ..
+        mv avdl_windows AVDL_BUILD
     - name: compile_rue
       shell: bash
       run: |
-        cd rue
-        mv ../libraries .
-        mkdir cengine
-        cp -r ../AVDL_BUILD/share/avdl/cengine/*.c ../AVDL_BUILD/share/avdl/cengine/*.cpp ../AVDL_BUILD/include/*.h cengine
-        mkdir build
-        ../AVDL_BUILD/bin/avdl.exe -t
-        cp .avdl_cache/*.c src/
-        for i in src/*.c; do mv $i ${i/.dd.c/.c}; done
-    - name: upload_artifact_vs
-      uses: actions/upload-artifact@v3
+        mv rue/* .
+        ./AVDL_BUILD/bin/avdl.exe --d3d11
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - name: Build app for release
+      run: msbuild "avdl_project.vcxproj" /p:AppxBundlePlatforms="x64" /p:Configuration=Release /p:AppxBundle=Always /p:GenerateAppxPackageOnBuild=true
+      env:
+        Appx_Bundle: Never
+        Appx_Bundle_Platforms: x64
+        Appx_Package_Build_Mode: SideloadOnly
+        Appx_Package_Dir: Packages\
+        Configuration: Release
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
       with:
-        name: rue_vs_windows
-        path: rue/
-    - name: compile_rue2
-      shell: bash
-      run: |
-        cd rue
-        cd build
-        cmake ../ . -DCMAKE_INSTALL_PREFIX="RUE_BUILD" -DAVDL_DIRECT3D11=1
-        cmake --build . --config Release
-        cmake --install .
-        cpack
-    - name: upload_artifact
-      uses: actions/upload-artifact@v3
-      if: ${{ false }}
-      with:
-        name: rue_build_windows_d3d11
-        path: rue/build/RUE_BUILD
-    - name: upload_artifact_installer
-      if: ${{ false }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: rue_installer_windows_d3d11
-        path: rue/build/rue-1.0.1-win64.exe
+        name: rue-d3d11
+        path: AppPackages/avdl_project/${{ env.project_name }}_1.0.0.0_Test
   # Windows d3d11 steam
   rue_build_windows_steam_d3d11:
     runs-on: windows-latest
