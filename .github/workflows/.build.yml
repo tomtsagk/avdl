@@ -395,10 +395,10 @@ jobs:
       run: |
         mkdir dependencies
         cd dependencies
-        git clone https://github.com/ubawurinna/freetype-windows-binaries freetype
-        cp -r freetype/include/* .
-        cp -r freetype/release\ dll/* .
-        rm -rf freetype
+        git clone https://github.com/ubawurinna/freetype-windows-binaries freetype_repository
+        cp -r freetype_repository/include/* .
+        cp -r freetype_repository/release\ dll/* .
+        rm -rf freetype_repository
     - name: unpack_avdl
       shell: bash
       run: |
@@ -411,8 +411,8 @@ jobs:
         ../AVDL_BUILD/bin/avdl --d3d11
         mv avdl_build_d3d11/* ../
         cd ..
-        ls -R
-    - name: Upload build artifacts
+        rm -rf AVDL_BUILD
+    - name: Upload prepare artifacts
       uses: actions/upload-artifact@v2
       with:
         name: rue-d3d11_prepare
@@ -420,45 +420,16 @@ jobs:
   # Windows d3d11
   rue_build_windows_d3d11:
     runs-on: windows-latest
-    needs: [build_windows]
-    if: ${{ false }}
+    needs: [rue_build_windows_d3d11_prepare]
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: avdl_windows
-        path: avdl_windows
-    - name: get_rue
-      shell: bash
-      run: |
-        git clone https://github.com/tomtsagk/rue rue
-        cd rue
-        git checkout develop
-        cd ..
-    - name: prepare_freetype
-      shell: bash
-      run: |
-        mkdir dependencies
-        cd dependencies
-        git clone https://github.com/ubawurinna/freetype-windows-binaries freetype
-        cp -r freetype/include/* .
-        cp -r freetype/release\ dll/* .
-        rm -rf freetype
-    - name: unpack_avdl
-      shell: bash
-      run: |
-        mv avdl_windows AVDL_BUILD
-    - name: compile_rue
-      shell: bash
-      run: |
-        mv rue/* .
-        ./AVDL_BUILD/bin/avdl.exe --d3d11
-        mkdir -p avdl_build_d3d11/assets
-        cp assets/* avdl_build_d3d11/assets
-        ls -R
+        name: rue-d3d11_prepare
+        path: rue-d3d11_prepare
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Build app for release
-      run: msbuild "avdl_build_d3d11/avdl_project.vcxproj" /p:AppxBundlePlatforms="x64" /p:Configuration=Release /p:AppxBundle=Always /p:GenerateAppxPackageOnBuild=true
+      run: msbuild "rue-d3d11_prepare/avdl_project.vcxproj" /p:AppxBundlePlatforms="x64" /p:Configuration=Release /p:AppxBundle=Always /p:GenerateAppxPackageOnBuild=true
       env:
         Appx_Bundle: Never
         Appx_Bundle_Platforms: x64
@@ -469,7 +440,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: rue-d3d11
-        path: avdl_build_d3d11/AppPackages/avdl_project/${{ env.project_name }}_1.0.0.0_Test
+        path: rue-d3d11_prepare/AppPackages/avdl_project/${{ env.project_name }}_1.0.0.0_Test
   # Windows d3d11 steam
   rue_build_windows_steam_d3d11:
     runs-on: windows-latest
