@@ -408,6 +408,7 @@ jobs:
       run: |
         mv rue/* .
         ./AVDL_BUILD/bin/avdl.exe --d3d11
+        mkdir avdl_build_d3d11/assets
         cp assets/* avdl_build_d3d11/assets
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
