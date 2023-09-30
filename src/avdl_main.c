@@ -401,6 +401,13 @@ int AVDL_MAIN(int argc, char *argv[]) {
 			return -1;
 		}
 
+		/*
+		 * instructions after build is complete:
+		 * * git clone https://github.com/ubawurinna/freetype-windows-binaries
+		 * * cp include/* avdl_build_d3d11/dependencies
+		 * * cp "release dll"/* avdl_build_d3d11/dependencies
+		 */
+
 		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for d3d11 at " BLU "./avdl_build_d3d11/" RESET, avdl_settings.project_name);
 
 		return 0;
@@ -1593,6 +1600,44 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		"%AVDL_PROJECT_ASSETS%", big_buffer
 	);
 
+	// package file
+	file_replace(outDir, "Package.appxmanifest.in",
+		outDir, "Package.appxmanifest.in2",
+		"%AVDL_WINDOWS_ID%",
+		"8047DarkDimension.Rue-CardGame"
+	);
+	file_replace(outDir, "Package.appxmanifest.in2",
+		outDir, "Package.appxmanifest.in3",
+		"%AVDL_VERSION%",
+		"1.0.0.0"
+	);
+	file_replace(outDir, "Package.appxmanifest.in3",
+		outDir, "Package.appxmanifest.in4",
+		"%AVDL_WINDOWS_PUBLISHER%",
+		"CN=F02BE368-CAA8-48A5-ACFD-482F4512EC85"
+	);
+
+	file_replace(outDir, "Package.appxmanifest.in4",
+		outDir, "Package.appxmanifest.in5",
+		"%AVDL_PROJECT_NAME%",
+		"Rue - Card Game"
+	);
+	file_replace(outDir, "Package.appxmanifest.in5",
+		outDir, "Package.appxmanifest.in6",
+		"%AVDL_PUBLISHER_NAME%",
+		"Afloofdev"
+	);
+	file_replace(outDir, "Package.appxmanifest.in6",
+		outDir, "Package.appxmanifest.in7",
+		"%AVDL_PROJECT_NAME2%",
+		"Rue - Card Game 2"
+	);
+	file_replace(outDir, "Package.appxmanifest.in7",
+		outDir, "Package.appxmanifest",
+		"%AVDL_PROJECT_DESCRIPTION%",
+		"Avdl Description"
+	);
+
 	printf("avdl: assets - " GRN "100%%" RESET "\n");
 	fflush(stdout);
 
@@ -1627,7 +1672,13 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		fflush(stdout);
 
 		// create store logo
-		if (system("convert xc:red -resize 200x200 avdl_build_d3d11/metadata/avdl_logo_store.scale-400.png")) {
+		/*
+		if (system("convert xc:red -resize 200x200 avdl_build_d3d11/assets/avdl_logo_store.scale-400.png")) {
+			avdl_log_error("could not create store logo");
+			return -1;
+		}
+		*/
+		if (system("convert xc:red -resize 50x50 avdl_build_d3d11/metadata/avdl_logo_store.png")) {
 			avdl_log_error("could not create store logo");
 			return -1;
 		}

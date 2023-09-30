@@ -6,15 +6,15 @@
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   IgnorableNamespaces="uap mp">
 
-  <Identity Name="AVDL_WINDOWS_ID"
-    Version="AVDL_VERSION"
-    Publisher="AVDL_WINDOWS_PUBLISHER" />
+  <Identity Name="%AVDL_WINDOWS_ID%"
+    Version="%AVDL_VERSION%"
+    Publisher="%AVDL_WINDOWS_PUBLISHER%" />
 
-  <mp:PhoneIdentity PhoneProductId="AVDL_PHONE_PRODUCTID_TEMP" PhonePublisherId="AVDL_PHONE_PUBLISHERIID_TEMP"/>
+  <mp:PhoneIdentity PhoneProductId="f1391462-33ec-45f3-ac63-b979dba44431" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
-    <DisplayName>AVDL_PROJECT_NAME</DisplayName>
-    <PublisherDisplayName>AVDL_PUBLISHER_NAME</PublisherDisplayName>
+    <DisplayName>%AVDL_PROJECT_NAME%</DisplayName>
+    <PublisherDisplayName>%AVDL_PUBLISHER_NAME%</PublisherDisplayName>
     <Logo>metadata/avdl_logo_store.png</Logo>
   </Properties>
 
@@ -31,10 +31,10 @@
       Executable="$targetnametoken$.exe"
       EntryPoint="D3D11AvdlApplication">
       <uap:VisualElements
-        DisplayName="AVDL_PROJECT_NAME"
+        DisplayName="%AVDL_PROJECT_NAME2%"
         Square150x150Logo="metadata\avdl_logo_square_150x150.png"
         Square44x44Logo="metadata\avdl_logo_square_44x44.png"
-        Description="AVDL_PROJECT_DESCRIPTION"
+        Description="%AVDL_PROJECT_DESCRIPTION%"
         BackgroundColor="transparent">
         <uap:DefaultTile Wide310x150Logo="metadata\avdl_logo_wide_310x150.png"/>
 	<uap:SplashScreen Image="metadata/avdl_splash_screen.png" />
