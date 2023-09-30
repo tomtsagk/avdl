@@ -1359,6 +1359,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	}
 
 	avdl_log("asset parsing start 2");
+	return 0;
 
 	// src file full path
 	struct avdl_string srcFilePath;
@@ -1597,11 +1598,9 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	avdl_log("asset parsing begin");
 
 	big_buffer[0] = '\0';
-	/*
 	if (Avdl_FileOp_ForFileInDirectory(avdl_settings->asset_dir, asset_file) != 0) {
 		return -1;
 	}
-	*/
 
 	avdl_log("modifying avdl_project");
 
