@@ -407,13 +407,10 @@ jobs:
       shell: bash
       run: |
         mv rue/* .
-        ls
         ./AVDL_BUILD/bin/avdl.exe --d3d11
-        ls
         mkdir -p avdl_build_d3d11/assets
-        ls
         cp assets/* avdl_build_d3d11/assets
-        ls
+        ls -R
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Build app for release
