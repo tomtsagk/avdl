@@ -707,7 +707,7 @@ int transpile_file(const char *dirname, const char *filename, int fileIndex, int
 int avdl_transpile(struct AvdlSettings *avdl_settings) {
 
 	printf("avdl: transpiling - " RED "0%%" RESET "\r");
-//	fflush(stdout);
+	fflush(stdout);
 
 	if ( Avdl_FileOp_ForFileInDirectory(avdl_settings->src_dir, transpile_file) != 0 ) {
 		avdl_log_error("one or more files failed to transpile");
@@ -715,7 +715,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 	}
 
 	printf("avdl: transpiling - " GRN "100%%" RESET "\n");
-//	fflush(stdout);
+	fflush(stdout);
 
 	return 0;
 }
@@ -852,7 +852,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 	}
 
 	printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
-//	fflush(stdout);
+	fflush(stdout);
 
 	avdl_string_clean(&srcFilePath);
 	avdl_string_clean(&dstFilePath);
@@ -863,7 +863,7 @@ int compile_file(const char *dirname, const char *filename, int fileIndex, int f
 int avdl_compile(struct AvdlSettings *avdl_settings) {
 
 	printf("avdl: compiling - " RED "0%%" RESET "\r");
-//	fflush(stdout);
+	fflush(stdout);
 
 	if ( Avdl_FileOp_ForFileInDirectory(cache_dir, compile_file) != 0) {
 		avdl_log_error("one or more files failed to compile");
@@ -871,7 +871,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 	}
 
 	printf("avdl: compiling - " GRN "100%%" RESET "\n");
-//	fflush(stdout);
+	fflush(stdout);
 
 	return 0;
 }
@@ -898,7 +898,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 	}
 
 	printf("avdl: compiling cengine - " RED "0%%" RESET "\r");
-//	fflush(stdout);
+	fflush(stdout);
 	char compile_command[DD_BUFFER_SIZE];
 	for (int i = 0; i < cengine_files_total; i++) {
 
@@ -975,7 +975,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		if ( avdl_settings_ptr->use_cache && Avdl_FileOp_DoesFileExist(avdl_string_toCharPtr(&cenginePathOut)) ) {
 			//printf("skipping: %s\n", buffer);
 			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/cengine_files_total *100));
-//			fflush(stdout);
+			fflush(stdout);
 			continue;
 		}
 
@@ -987,7 +987,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		}
 ////		if (!avdlQuietMode) {
 			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/cengine_files_total *100));
-//			fflush(stdout);
+			fflush(stdout);
 ////		}
 	}
 ////	if (!avdlQuietMode) {
@@ -1473,7 +1473,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 		dir_create(avdl_string_toCharPtr(&d3d11FilePath));
 		avdl_string_cat(&d3d11FilePath, filename);
 
-		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&d3d11FilePath), 0);
+		//file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&d3d11FilePath), 0);
 		avdl_string_clean(&d3d11FilePath);
 
 		avdl_string_clean(&srcFilePath);
@@ -1574,7 +1574,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
 
 	printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
-//	fflush(stdout);
+	fflush(stdout);
 	avdl_string_clean(&srcFilePath);
 	avdl_string_clean(&dstFilePath);
 	return 0;
@@ -1592,7 +1592,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	}
 
 	printf("avdl: assets - " RED "0%%" RESET "\r");
-//	fflush(stdout);
+	fflush(stdout);
 
 	avdl_log("asset parsing begin");
 
@@ -1655,7 +1655,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	);
 
 	printf("avdl: assets - " GRN "100%%" RESET "\n");
-//	fflush(stdout);
+	fflush(stdout);
 
 	return 0;
 }
@@ -1668,7 +1668,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 
 		printf("avdl: metadata - " RED "%d%%" RESET "\r", 0);
-//		fflush(stdout);
+		fflush(stdout);
 
 		// check imagemagick is present
 		if (system("convert --version > /dev/null")) {
@@ -1677,7 +1677,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		}
 
 		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (1)/8 *100));
-//		fflush(stdout);
+		fflush(stdout);
 
 		// create metadata directory
 		if (!is_dir("avdl_build_d3d11/metadata")) {
@@ -1685,7 +1685,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		}
 
 		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (2)/8 *100));
-//		fflush(stdout);
+		fflush(stdout);
 
 		// create store logo
 		/*
@@ -1700,7 +1700,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		}
 
 		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (3)/8 *100));
-//		fflush(stdout);
+		fflush(stdout);
 
 		// logo square 150x150
 		if (system("convert xc:red -resize 600x600 avdl_build_d3d11/metadata/avdl_logo_square_150x150.scale-400.png")) {
@@ -1709,7 +1709,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		}
 
 		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (4)/8 *100));
-//		fflush(stdout);
+		fflush(stdout);
 
 		// logo square 44x44
 		if (system("convert xc:red -resize 256x256 avdl_build_d3d11/metadata/avdl_logo_square_44x44.scale-400.png")) {
@@ -1718,7 +1718,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		}
 
 		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (5)/8 *100));
-//		fflush(stdout);
+		fflush(stdout);
 
 		// logo wide 310x150
 		if (system("convert xc:red -resize 1240x600 avdl_build_d3d11/metadata/avdl_logo_wide_310x150.scale-400.png")) {
@@ -1727,7 +1727,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		}
 
 		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (6)/8 *100));
-//		fflush(stdout);
+		fflush(stdout);
 
 		// splash screen
 		if (system("convert xc:red -resize 2480x1200 avdl_build_d3d11/metadata/avdl_splash_screen.scale-400.png")) {
@@ -1736,7 +1736,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		}
 
 		printf("avdl: metadata - " YEL "%d%%" RESET "\r", (int)((float) (7)/8 *100));
-//		fflush(stdout);
+		fflush(stdout);
 
 		// splash screen
 		if (system("convert xc:red -resize 96x96 avdl_build_d3d11/metadata/avdl_logo_lockscreen.scale-400.png")) {
@@ -1748,7 +1748,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 	}
 
 	printf("avdl: metadata - " GRN "100%%" RESET "\n");
-//	fflush(stdout);
+	fflush(stdout);
 
 	// all good
 	return 0;
