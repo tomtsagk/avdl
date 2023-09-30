@@ -424,10 +424,10 @@ jobs:
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Build app for release
-      run: msbuild "rue-d3d11_prepare/avdl_project.vcxproj" /p:AppxBundlePlatforms="x64" /p:Configuration=Release /p:AppxBundle=Always /p:GenerateAppxPackageOnBuild=true
+      run: msbuild "rue-d3d11_prepare/avdl_project.vcxproj" /p:AppxBundlePlatforms="x86|x64" /p:Configuration=Release /p:AppxBundle=Always /p:GenerateAppxPackageOnBuild=true
       env:
         Appx_Bundle: Never
-        Appx_Bundle_Platforms: x64
+        Appx_Bundle_Platforms: x86|x64
         Appx_Package_Build_Mode: SideloadOnly
         Appx_Package_Dir: Packages\
         Configuration: Release
