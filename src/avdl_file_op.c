@@ -41,6 +41,8 @@ int file_copy(const char *src, const char *dest, int append) {
 		return -1;
 	}
 
+	return 0;
+
 	char buffer[1024];
 
 	int i = 0;
