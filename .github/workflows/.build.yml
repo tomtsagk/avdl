@@ -383,40 +383,35 @@ jobs:
       with:
         name: avdl_linux
         path: avdl_linux
+    - name: unpack_avdl
+      shell: bash
+      run: mv avdl_linux AVDL_BUILD
     - name: get_rue
       shell: bash
       run: |
         git clone https://github.com/tomtsagk/rue rue
         cd rue
         git checkout develop
-        cd ..
-    - name: prepare_freetype
-      shell: bash
-      run: |
-        mkdir dependencies
-        cd dependencies
-        git clone https://github.com/ubawurinna/freetype-windows-binaries freetype_repository
-        cp -r freetype_repository/include/* .
-        cp -r freetype_repository/release\ dll/* .
-        rm -rf freetype_repository
-    - name: unpack_avdl
-      shell: bash
-      run: |
-        mv avdl_linux AVDL_BUILD
     - name: compile_rue
       shell: bash
       run: |
         cd rue
         chmod +x ../AVDL_BUILD/bin/avdl
         ../AVDL_BUILD/bin/avdl --d3d11
-        mv avdl_build_d3d11/* ../
-        cd ..
-        rm -rf AVDL_BUILD
+    - name: prepare_freetype
+      shell: bash
+      run: |
+        mkdir rue/avdl_build_d3d11/dependencies
+        cd rue/avdl_build_d3d11/dependencies
+        git clone https://github.com/ubawurinna/freetype-windows-binaries freetype_repository
+        cp -r freetype_repository/include/* .
+        cp -r freetype_repository/release\ dll/* .
+        rm -rf freetype_repository
     - name: Upload prepare artifacts
       uses: actions/upload-artifact@v2
       with:
         name: rue-d3d11_prepare
-        path: .
+        path: rue/avdl_build_d3d11
   # Windows d3d11
   rue_build_windows_d3d11:
     runs-on: windows-latest
