@@ -1454,7 +1454,6 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 	else
 	// on d3d11, put assets in a specific directory
 	if (avdl_target_platform == AVDL_PLATFORM_D3D11) {
-		return 0;
 		char *assetDir = "assets";
 
 		avdl_log("d3d11 asset: %s - %s", assetDir, filename);
@@ -1473,6 +1472,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 		}
 		dir_create(avdl_string_toCharPtr(&d3d11FilePath));
 		avdl_string_cat(&d3d11FilePath, filename);
+		return 0;
 
 		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&d3d11FilePath), 0);
 		avdl_string_clean(&d3d11FilePath);
