@@ -397,7 +397,7 @@ jobs:
         cd dependencies
         git clone https://github.com/ubawurinna/freetype-windows-binaries freetype
         cp -r freetype/include/* .
-        cp -r freetype/static\ dll/* .
+        cp -r freetype/release\ dll/* .
         rm -rf freetype
     - name: unpack_avdl
       shell: bash
