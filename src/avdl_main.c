@@ -1340,11 +1340,15 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 
 int asset_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
 
+	avdl_log("asset parsing start");
+
 	// ignore `.` and `..`
 	if (strcmp(filename, ".") == 0
 	||  strcmp(filename, "..") == 0) {
 		return 0;
 	}
+
+	avdl_log("asset parsing start 1");
 
 	// sanity check
 	for (const char *p = filename; p[0] != '\0'; p++) {
@@ -1353,6 +1357,8 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 			return -1;
 		}
 	}
+
+	avdl_log("asset parsing start 2");
 
 	// src file full path
 	struct avdl_string srcFilePath;
@@ -1364,6 +1370,8 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 		avdl_string_clean(&srcFilePath);
 		return -1;
 	}
+
+	avdl_log("asset parsing start 3");
 
 	// on android, put assets in a specific directory
 	if (avdl_target_platform == AVDL_PLATFORM_ANDROID) {
@@ -1585,6 +1593,8 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 	printf("avdl: assets - " RED "0%%" RESET "\r");
 	fflush(stdout);
+
+	avdl_log("asset parsing begin");
 
 	big_buffer[0] = '\0';
 	if (Avdl_FileOp_ForFileInDirectory(avdl_settings->asset_dir, asset_file) != 0) {
