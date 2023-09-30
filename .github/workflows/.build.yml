@@ -388,7 +388,7 @@ jobs:
       run: |
         git clone https://github.com/tomtsagk/rue rue
         cd rue
-        git checkout feature/d3d11
+        git checkout develop
         cd ..
     - name: prepare_freetype
       shell: bash
