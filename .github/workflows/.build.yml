@@ -431,14 +431,11 @@ jobs:
         Appx_Package_Build_Mode: SideloadOnly
         Appx_Package_Dir: Packages\
         Configuration: Release
-    - name: test
-      shell: bash
-      run: ls -R rue-d3d11_prepare
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
         name: rue-d3d11
-        path: rue-d3d11_prepare/AppPackages/avdl_project/${{ env.project_name }}_1.0.0.0_Test
+        path: rue-d3d11_prepare/AppPackages/avdl_project/avdl_project_1.0.0.0_Test
   # Windows d3d11 steam
   rue_build_windows_steam_d3d11:
     runs-on: windows-latest
