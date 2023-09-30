@@ -408,10 +408,11 @@ jobs:
       run: |
         mv rue/* .
         ./AVDL_BUILD/bin/avdl.exe --d3d11
+        cp assets/* avdl_build_d3d11/assets
     - name: Add msbuild to PATH
       uses: microsoft/setup-msbuild@v1.1
     - name: Build app for release
-      run: msbuild "avdl_project.vcxproj" /p:AppxBundlePlatforms="x64" /p:Configuration=Release /p:AppxBundle=Always /p:GenerateAppxPackageOnBuild=true
+      run: msbuild "avdl_build_d3d11/avdl_project.vcxproj" /p:AppxBundlePlatforms="x64" /p:Configuration=Release /p:AppxBundle=Always /p:GenerateAppxPackageOnBuild=true
       env:
         Appx_Bundle: Never
         Appx_Bundle_Platforms: x64
@@ -422,7 +423,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: rue-d3d11
-        path: AppPackages/avdl_project/${{ env.project_name }}_1.0.0.0_Test
+        path: avdl_build_d3d11/AppPackages/avdl_project/${{ env.project_name }}_1.0.0.0_Test
   # Windows d3d11 steam
   rue_build_windows_steam_d3d11:
     runs-on: windows-latest
