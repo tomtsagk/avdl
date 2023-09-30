@@ -1472,13 +1472,13 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 		}
 		dir_create(avdl_string_toCharPtr(&d3d11FilePath));
 		avdl_string_cat(&d3d11FilePath, filename);
-		return 0;
 
 		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&d3d11FilePath), 0);
 		avdl_string_clean(&d3d11FilePath);
 
 		avdl_string_clean(&srcFilePath);
 
+		return 0;
 		// images (textures)
 		if (strcmp(filename +strlen(filename) -4, ".png") == 0) {
 			strcat(big_buffer, "  <ItemGroup>\n");
