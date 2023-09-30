@@ -1589,51 +1589,53 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		return -1;
 	}
 
+	/*
 	int outDir = open("avdl_build_d3d11/", O_DIRECTORY);
 	if (!outDir) {
 		printf("avdl: can't open %s: %s\n", "avdl_build_d3d11/", strerror(errno));
 		return -1;
 	}
+	*/
 
-	file_replace(outDir, "avdl_project.vcxproj.in4",
-		outDir, "avdl_project.vcxproj",
+	file_replace(0, "avdl_build_d3d11/avdl_project.vcxproj.in4",
+		0, "avdl_build_d3d11/avdl_project.vcxproj",
 		"%AVDL_PROJECT_ASSETS%", big_buffer
 	);
 
 	// package file
-	file_replace(outDir, "Package.appxmanifest.in",
-		outDir, "Package.appxmanifest.in2",
+	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in",
+		0, "avdl_build_d3d11/Package.appxmanifest.in2",
 		"%AVDL_WINDOWS_ID%",
 		"8047DarkDimension.Rue-CardGame"
 	);
-	file_replace(outDir, "Package.appxmanifest.in2",
-		outDir, "Package.appxmanifest.in3",
+	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in2",
+		0, "avdl_build_d3d11/Package.appxmanifest.in3",
 		"%AVDL_VERSION%",
 		"1.0.0.0"
 	);
-	file_replace(outDir, "Package.appxmanifest.in3",
-		outDir, "Package.appxmanifest.in4",
+	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in3",
+		0, "avdl_build_d3d11/Package.appxmanifest.in4",
 		"%AVDL_WINDOWS_PUBLISHER%",
 		"CN=F02BE368-CAA8-48A5-ACFD-482F4512EC85"
 	);
 
-	file_replace(outDir, "Package.appxmanifest.in4",
-		outDir, "Package.appxmanifest.in5",
+	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in4",
+		0, "avdl_build_d3d11/Package.appxmanifest.in5",
 		"%AVDL_PROJECT_NAME%",
 		"Rue - Card Game"
 	);
-	file_replace(outDir, "Package.appxmanifest.in5",
-		outDir, "Package.appxmanifest.in6",
+	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in5",
+		0, "avdl_build_d3d11/Package.appxmanifest.in6",
 		"%AVDL_PUBLISHER_NAME%",
 		"Afloofdev"
 	);
-	file_replace(outDir, "Package.appxmanifest.in6",
-		outDir, "Package.appxmanifest.in7",
+	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in6",
+		0, "avdl_build_d3d11/Package.appxmanifest.in7",
 		"%AVDL_PROJECT_NAME2%",
 		"Rue - Card Game 2"
 	);
-	file_replace(outDir, "Package.appxmanifest.in7",
-		outDir, "Package.appxmanifest",
+	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in7",
+		0, "avdl_build_d3d11/Package.appxmanifest",
 		"%AVDL_PROJECT_DESCRIPTION%",
 		"Avdl Description"
 	);
