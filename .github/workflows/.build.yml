@@ -407,6 +407,7 @@ jobs:
       shell: bash
       run: |
         cd rue
+        chmod +x ../AVDL_BUILD/bin/avdl
         ../AVDL_BUILD/bin/avdl --d3d11
         mv avdl_build_d3d11/* ../
         cd ..
