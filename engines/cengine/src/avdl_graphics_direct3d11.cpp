@@ -37,6 +37,18 @@ using namespace DirectX;
 extern "C" {
 #endif
 
+int avdl_graphics_CreateWindow(struct avdl_graphics *) {
+	return 0;
+}
+
+int avdl_graphics_DestroyWindow(struct avdl_graphics *) {
+	return 0;
+}
+
+int avdl_graphics_SwapFramebuffer(struct avdl_graphics *) {
+	return 0;
+}
+
 extern ComPtr<ID3D11Device3> avdl_d3dDevice;
 extern ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
 extern ComPtr<ID3D11RenderTargetView1> avdl_d3dRenderTargetView;

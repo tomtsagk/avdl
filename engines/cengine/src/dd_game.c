@@ -39,13 +39,13 @@ void dd_gameInitDefault() {
 #if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 int dd_window_width() {
 	int w, h;
-	SDL_GetWindowSize(engine.window, &w, &h);
+	SDL_GetWindowSize(engine.graphics.sdl_window, &w, &h);
 	return w;
 }
 
 int dd_window_height() {
 	int w, h;
-	SDL_GetWindowSize(engine.window, &w, &h);
+	SDL_GetWindowSize(engine.graphics.sdl_window, &w, &h);
 	return h;
 }
 #endif
@@ -85,22 +85,6 @@ float dd_screen_distance_geth(float height) {
 	else {
 		return dd_screen_distance_getw(height /dd_fovaspect_get());
 	}
-}
-
-void dd_fullscreenToggle() {
-	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-	Uint32 FullscreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
-	int isFullscreen = SDL_GetWindowFlags(engine.window) & FullscreenFlag;
-	SDL_SetWindowFullscreen(engine.window, isFullscreen ? 0 : FullscreenFlag);
-	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	#endif
-}
-
-int dd_canFullscreenToggle() {
-#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	return 0;
-#endif
-	return 1;
 }
 
 #if defined(_WIN32) || defined(WIN32)

@@ -47,10 +47,6 @@ float dd_screen_height_get(float z);
 float dd_screen_distance_getw(float width);
 float dd_screen_distance_geth(float height);
 
-// full screen
-void dd_fullscreenToggle();
-int dd_canFullscreenToggle();
-
 extern int dd_flag_initialised;
 extern int dd_flag_focused;
 extern int dd_flag_updateThread;

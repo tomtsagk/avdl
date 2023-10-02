@@ -222,68 +222,10 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	srand(time(NULL));
 
-	// Initialise SDL window
-	int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-	if (sdlError < 0) {
-		dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
-		return -1;
-	}
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+	avdl_graphics_CreateWindow(&o->graphics);
 
-	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP;
-	int width = dd_gameInitWindowWidth;
-	int height = dd_gameInitWindowHeight;
-	o->window = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED, width, height, flags);
-	if (o->window == NULL) {
-		dd_log("avdl: failed to create SDL2 window: %s\n", SDL_GetError());
-		return -1;
-	}
-	o->glContext = SDL_GL_CreateContext(o->window);
-	if (o->glContext == NULL) {
-		dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
-	}
 	//handleResize(dd_window_width(), dd_window_height());
 
-	// window icon
-	char filename[400];
-	#if defined(_WIN32) || defined(WIN32)
-	strcpy(filename, "assets/icon_64x64.png");
-	#else
-	strcpy(filename, avdl_getProjectLocation());
-	strcat(filename, GAME_ASSET_PREFIX);
-	strcat(filename, "assets/icon_64x64.png");
-	#endif
-
-	struct dd_image img;
-	dd_image_create(&img);
-	dd_image_load_png(&img, filename);
-	if (img.pixels && img.pixelFormat == GL_RGBA) {
-		SDL_Surface *surface;
-		int size = sizeof(GLubyte) *img.width *img.height *4;
-		GLubyte *pixels = malloc(size);
-		for (int h = 0; h < img.height; h++) {
-		for (int w = 0; w < img.width ; w++) {
-			int iterator = (img.width *h *4) +(w *4);
-			int iterator2 = (img.width *(img.height -1 -h) *4) +(w *4);
-			pixels[iterator +0] = img.pixels[iterator2 +0] *255.0;
-			pixels[iterator +1] = img.pixels[iterator2 +1] *255.0;
-			pixels[iterator +2] = img.pixels[iterator2 +2] *255.0;
-			pixels[iterator +3] = img.pixels[iterator2 +3] *255.0;
-		}
-		}
-		surface = SDL_CreateRGBSurfaceFrom(
-			pixels, // pixels
-			img.width, img.height, // width height
-			32, // depth
-			img.width *(sizeof(GLubyte) * 4), // pitch
-			0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000 // color masks
-		);
-		SDL_SetWindowIcon(o->window, surface);
-		SDL_FreeSurface(surface);
-		free(pixels);
-		dd_image_clean(&img);
-	}
 	#endif
 
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS ) || defined(AVDL_QUEST2)
@@ -422,11 +364,10 @@ int avdl_engine_clean(struct avdl_engine *o) {
 
 	avdl_font_deinit();
 
-	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	// destroy window
-	SDL_GL_DeleteContext(o->glContext);
-	SDL_DestroyWindow(o->window);
+	avdl_graphics_DestroyWindow(&o->graphics);
 
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	Mix_Quit();
 	SDL_Quit();
 	#endif
@@ -539,10 +480,7 @@ int avdl_engine_draw(struct avdl_engine *o) {
 		o->cworld->draw(o->cworld);
 	}
 
-	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-	// show result
-	SDL_GL_SwapWindow(o->window);
-	#endif
+	avdl_graphics_SwapFramebuffer(&o->graphics);
 
 	#if defined(AVDL_QUEST2)
 	glUseProgram(0);

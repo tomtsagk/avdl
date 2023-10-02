@@ -1,6 +1,14 @@
 #ifndef AVDL_GRAPHICS_H
 #define AVDL_GRAPHICS_H
 
+/*
+ * Avdl Graphics
+ *
+ * Contains all the information to handle a window and a graphics library.
+ * For example on Linux it uses SDL and OpenGL
+ *
+ */
+
 // import opengl on android
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <EGL/egl.h>
@@ -45,6 +53,17 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+struct avdl_graphics {
+	int x;
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	SDL_Window *sdl_window;
+	SDL_GLContext gl_context;
+	#elif defined( AVDL_DIRECT3D11 )
+	//ComPtr<ID3D11Device3> avdl_d3dDevice;
+	//ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
+	#endif
+};
 
 void avdl_graphics_ClearDepth();
 void avdl_graphics_ClearToColour();
@@ -97,6 +116,16 @@ int avdl_graphics_generateContext();
 #define avdl_graphics_SetUniform4ui(uniform, ui1, ui2, ui3, ui4) glUniform4ui(uniform, ui1, ui2, ui3, ui4)
 
 #endif
+
+// handle window
+int avdl_graphics_CreateWindow(struct avdl_graphics *);
+int avdl_graphics_DestroyWindow(struct avdl_graphics *);
+void avdl_graphics_FullscreenToggle();
+int avdl_graphics_CanFullscreenToggle();
+
+// render
+int avdl_graphics_SwapFramebuffer(struct avdl_graphics *);
+
 
 int avdl_graphics_Init();
 

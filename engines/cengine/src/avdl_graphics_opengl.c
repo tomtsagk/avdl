@@ -6,6 +6,110 @@
 #include "dd_game.h"
 #include "dd_log.h"
 #include <stdlib.h>
+#include "avdl_assetManager.h"
+#include "dd_image.h"
+#include "avdl_engine.h"
+
+extern struct avdl_engine engine;
+
+int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
+
+	// Initialise SDL window
+	int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	if (sdlError < 0) {
+		dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
+		return -1;
+	}
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP;
+	int width = dd_gameInitWindowWidth;
+	int height = dd_gameInitWindowHeight;
+	o->sdl_window = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED, width, height, flags);
+	if (o->sdl_window == NULL) {
+		dd_log("avdl: failed to create SDL2 window: %s\n", SDL_GetError());
+		return -1;
+	}
+	o->gl_context = SDL_GL_CreateContext(o->sdl_window);
+	if (o->gl_context == NULL) {
+		dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
+	}
+
+	// window icon
+	char filename[400];
+	#if defined(_WIN32) || defined(WIN32)
+	strcpy(filename, "assets/icon_64x64.png");
+	#else
+	strcpy(filename, avdl_getProjectLocation());
+	strcat(filename, GAME_ASSET_PREFIX);
+	strcat(filename, "assets/icon_64x64.png");
+	#endif
+
+	struct dd_image img;
+	dd_image_create(&img);
+	dd_image_load_png(&img, filename);
+	if (img.pixels && img.pixelFormat == GL_RGBA) {
+		SDL_Surface *surface;
+		int size = sizeof(GLubyte) *img.width *img.height *4;
+		GLubyte *pixels = malloc(size);
+		for (int h = 0; h < img.height; h++) {
+		for (int w = 0; w < img.width ; w++) {
+			int iterator = (img.width *h *4) +(w *4);
+			int iterator2 = (img.width *(img.height -1 -h) *4) +(w *4);
+			pixels[iterator +0] = img.pixels[iterator2 +0] *255.0;
+			pixels[iterator +1] = img.pixels[iterator2 +1] *255.0;
+			pixels[iterator +2] = img.pixels[iterator2 +2] *255.0;
+			pixels[iterator +3] = img.pixels[iterator2 +3] *255.0;
+		}
+		}
+		surface = SDL_CreateRGBSurfaceFrom(
+			pixels, // pixels
+			img.width, img.height, // width height
+			32, // depth
+			img.width *(sizeof(GLubyte) * 4), // pitch
+			0x000000FF, 0x0000FF00, 0x00FF0000, 0xFF000000 // color masks
+		);
+		SDL_SetWindowIcon(o->sdl_window, surface);
+		SDL_FreeSurface(surface);
+		free(pixels);
+		dd_image_clean(&img);
+	}
+
+	return 0;
+}
+
+int avdl_graphics_DestroyWindow(struct avdl_graphics *o) {
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	SDL_GL_DeleteContext(o->gl_context);
+	SDL_DestroyWindow(o->sdl_window);
+	#endif
+	return 0;
+}
+
+int avdl_graphics_SwapFramebuffer(struct avdl_graphics *o) {
+
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	SDL_GL_SwapWindow(o->sdl_window);
+	#endif
+
+	return 0;
+}
+
+void avdl_graphics_FullscreenToggle() {
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	Uint32 FullscreenFlag = SDL_WINDOW_FULLSCREEN_DESKTOP;
+	int isFullscreen = SDL_GetWindowFlags(engine.graphics.sdl_window) & FullscreenFlag;
+	SDL_SetWindowFullscreen(engine.graphics.sdl_window, isFullscreen ? 0 : FullscreenFlag);
+	#endif
+}
+
+int avdl_graphics_CanFullscreenToggle() {
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	return 0;
+#endif
+	return 1;
+}
 
 void avdl_graphics_ClearDepth() {
 	glClear(GL_DEPTH_BUFFER_BIT);
