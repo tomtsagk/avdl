@@ -86,13 +86,10 @@ struct ModelViewProjectionConstantBuffer
 };
 
 // temp cube
-extern ComPtr<ID3D11Buffer> avdl_constantBuffer;
-extern ModelViewProjectionConstantBuffer avdl_constantBufferData;
 extern ComPtr<ID3D11VertexShader> avdl_vertexShader;
 extern ComPtr<ID3D11PixelShader> avdl_pixelShader;
 extern ComPtr<ID3D11PixelShader> avdl_pixelShader2;
 extern ComPtr<ID3D11InputLayout> avdl_inputLayout;
-extern ComPtr<ID3D11Buffer> avdl_vertexBuffer;
 
 extern "C" struct dd_matrix matPerspective;
 
@@ -202,64 +199,6 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	if (o->cworld && o->cworld->draw) {
 		o->cworld->draw(o->cworld);
 	}
-
-	/*
-	 * ??
-	// Prepare the constant buffer to send it to the graphics device.
-	avdl_d3dContext->UpdateSubresource1(
-		avdl_constantBuffer.Get(),
-		0,
-		NULL,
-		&avdl_constantBufferData,
-		0,
-		0,
-		0
-	);
-
-	// Each vertex is one instance of the VertexPositionColor struct.
-	UINT stride = sizeof(VertexPositionColor);
-	UINT offset = 0;
-	avdl_d3dContext->IASetVertexBuffers(
-		0,
-		1,
-		avdl_vertexBuffer.GetAddressOf(),
-		&stride,
-		&offset
-	);
-
-	avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
-
-	// Attach our vertex shader.
-	avdl_d3dContext->VSSetShader(
-		avdl_vertexShader.Get(),
-		nullptr,
-		0
-	);
-
-	// Send the constant buffer to the graphics device.
-	avdl_d3dContext->VSSetConstantBuffers1(
-		0,
-		1,
-		avdl_constantBuffer.GetAddressOf(),
-		nullptr,
-		nullptr
-		);
-
-	// Attach our pixel shader.
-	avdl_d3dContext->PSSetShader(
-		avdl_pixelShader.Get(),
-		nullptr,
-		0
-		);
-	
-	// Draw cube
-	avdl_d3dContext->Draw(
-		9,
-		0
-	);
-	 */
 
 	// The first argument instructs DXGI to block until VSync, putting the application
 	// to sleep until the next VSync. This ensures we don't waste any cycles rendering
@@ -372,8 +311,6 @@ extern "C" ComPtr<ID3D11RenderTargetView1> avdl_d3dRenderTargetView;
 // mesh
 ComPtr<ID3D11Buffer> avdl_constantBuffer;
 ModelViewProjectionConstantBuffer avdl_constantBufferData;
-
-ComPtr<ID3D11Buffer> avdl_vertexBuffer;
 
 // shaders
 ComPtr<ID3D11VertexShader> avdl_vertexShader;
@@ -556,33 +493,6 @@ void D3D11AvdlApplication::Load(Platform::String^ entryPoint)
 		&constantBufferDesc,
 		nullptr,
 		&avdl_constantBuffer
-	);
-
-	// Load mesh vertices. Each vertex has a position and a color.
-	static const VertexPositionColor cubeVertices[] = 
-	{
-		{XMFLOAT3( 0.5f, -0.5f,  0.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f)},
-		{XMFLOAT3(-0.5f, -0.5f,  0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f)},
-		{XMFLOAT3( 0.0f,  0.5f,  0.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)},
-
-		{XMFLOAT3(-0.5f,  0.5f,  0.5f), XMFLOAT3(1.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f)},
-		{XMFLOAT3( 0.5f, -0.5f, -0.5f), XMFLOAT3(0.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)},
-		{XMFLOAT3( 0.5f, -0.5f,  0.5f), XMFLOAT3(1.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)},
-
-		{XMFLOAT3( 0.5f,  0.5f, -0.5f), XMFLOAT3(0.7f, 0.5f, 0.5f), XMFLOAT2(0.0f, 0.0f)},
-		{XMFLOAT3( 0.5f,  0.5f,  0.5f), XMFLOAT3(0.5f, 0.7f, 0.5f), XMFLOAT2(0.0f, 0.0f)},
-		{XMFLOAT3(-0.5f, -0.5f, -0.5f), XMFLOAT3(0.5f, 0.5f, 0.7f), XMFLOAT2(0.0f, 0.0f)},
-	};
-
-	D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
-	vertexBufferData.pSysMem = cubeVertices;
-	vertexBufferData.SysMemPitch = 0;
-	vertexBufferData.SysMemSlicePitch = 0;
-	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(cubeVertices), D3D11_BIND_VERTEX_BUFFER);
-	avdl_d3dDevice->CreateBuffer(
-		&vertexBufferDesc,
-		&vertexBufferData,
-		&avdl_vertexBuffer
 	);
 
 	CoreWindow^ Window = CoreWindow::GetForCurrentThread();
@@ -803,7 +713,6 @@ extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struc
 	avdl_d3dContext->IASetVertexBuffers(
 		0,
 		1,
-		//avdl_vertexBuffer.GetAddressOf(),
 		vertexBuffer.GetAddressOf(),
 		&stride,
 		&offset
@@ -873,7 +782,6 @@ extern "C" void avdl_graphics_direct3d11_drawMeshMesh(struct dd_mesh* m, struct 
 	avdl_d3dContext->IASetVertexBuffers(
 		0,
 		1,
-		//avdl_vertexBuffer.GetAddressOf(),
 		vertexBuffer.GetAddressOf(),
 		&stride,
 		&offset
@@ -945,7 +853,6 @@ extern "C" void avdl_graphics_direct3d11_drawMeshTexture(struct dd_meshTexture* 
 	avdl_d3dContext->IASetVertexBuffers(
 		0,
 		1,
-		//avdl_vertexBuffer.GetAddressOf(),
 		vertexBuffer.GetAddressOf(),
 		&stride,
 		&offset
