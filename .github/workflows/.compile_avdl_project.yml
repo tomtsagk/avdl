@@ -595,6 +595,7 @@ jobs:
         git clone https://github.com/${{ inputs.github_project }} .
         git checkout ${{ inputs.github_branch }}
     - name: get_avdl
+      if: ${{ inputs.avdl_linux_artifact == '' }}
       run: |
         mkdir avdl_linux
         cd avdl_linux
@@ -602,6 +603,16 @@ jobs:
         unzip avdl_linux.zip
         rm avdl_linux.zip
         cd ..
+        mv avdl_linux AVDL_BUILD
+    - uses: actions/download-artifact@v3
+      if: ${{ inputs.avdl_linux_artifact != '' }}
+      with:
+        name: ${{ inputs.avdl_linux_artifact }}
+        path: avdl_linux
+    - name: unpack_avdl
+      if: ${{ inputs.avdl_linux_artifact != '' }}
+      shell: bash
+      run: |
         mv avdl_linux AVDL_BUILD
     - name: compile
       shell: bash

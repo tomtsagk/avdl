@@ -1,8 +1,8 @@
 #include "avdl_graphics.h"
 
+#ifdef AVDL_DIRECT3D11
 #include "avdl_cengine.h"
 
-#ifdef AVDL_DIRECT3D11
 #include "pch.h"
 
 #include "DDSTextureLoader.h"
