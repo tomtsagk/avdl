@@ -496,6 +496,13 @@ avdl_texture_id avdl_graphics_loadDDS(char *filename) {
 	return resView;
 }
 
+void avdl_graphics_FullscreenToggle() {
+}
+
+int avdl_graphics_CanFullscreenToggle() {
+	return 0;
+}
+
 #ifdef __cplusplus
 }
 #endif
