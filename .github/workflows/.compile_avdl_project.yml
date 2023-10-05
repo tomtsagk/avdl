@@ -660,7 +660,7 @@ jobs:
     - name: Sign
       run: |
         $signtool = "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe"
-        & $signtool sign /fd sha256 /a /f avdl_project_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} rue-d3d11_prepare/AppPackages/avdl_project/avdl_project_1.0.0.0_Test/avdl_project_1.0.0.0_x86_x64.msixbundle
+        & $signtool sign /fd sha256 /a /f avdl_project_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} avdl_project/AppPackages/avdl_project/avdl_project_1.0.0.0_Test/avdl_project_1.0.0.0_x86_x64.msixbundle
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
