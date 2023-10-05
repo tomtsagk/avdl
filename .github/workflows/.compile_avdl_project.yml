@@ -134,6 +134,11 @@ on:
         required: false
       OCULUS_CLI_URL:
         required: false
+      # d3d11
+      BASE64_PFX:
+        required: false
+      PFX_PASSWORD:
+        required: false
 
 env:
   AVDL_BUILD_URL_LINUX: https://github.com/tomtsagk/avdl/releases/download/v0.17.4/avdl_v0.17.4_linux.zip
@@ -567,6 +572,90 @@ jobs:
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}_vs
         path: build/
+
+  # Windows d3d11 - preparation
+  windows_d3d11_prepare:
+    if: ${{ inputs.build_windows }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        build_type: [windows-d3d11]
+        build_windows_d3d11:
+          - ${{ inputs.build_windows }}
+        exclude:
+          - build_type: windows-d3d11
+            build_windows_d3d11: false
+    steps:
+    - name: init_project
+      if: ${{ inputs.github_project == '' }}
+      uses: actions/checkout@v3
+    - name: init_project custom
+      if: ${{ inputs.github_project != '' }}
+      run: |
+        git clone https://github.com/${{ inputs.github_project }} .
+        git checkout ${{ inputs.github_branch }}
+    - name: get_avdl
+      if: ${{ inputs.avdl_linux_artifact == '' }}
+      run: |
+        mkdir avdl_linux
+        cd avdl_linux
+        wget -q $AVDL_BUILD_URL_LINUX -O avdl_linux.zip
+        unzip avdl_linux.zip
+        rm avdl_linux.zip
+        cd ..
+        mv avdl_linux AVDL_BUILD
+    - name: compile
+      shell: bash
+      run: |
+        chmod +x ./AVDL_BUILD/bin/avdl
+        ./AVDL_BUILD/bin/avdl --d3d11
+    - name: prepare_freetype
+      shell: bash
+      run: |
+        mkdir avdl_build_d3d11/dependencies
+        cd avdl_build_d3d11/dependencies
+        git clone https://github.com/ubawurinna/freetype-windows-binaries freetype_repository
+        cp -r freetype_repository/include/* .
+        cp -r freetype_repository/release\ dll/* .
+        rm -rf freetype_repository
+    - name: Upload prepare artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ inputs.project_name }}_${{ matrix.build_type }}_prepare
+        path: avdl_build_d3d11
+  # Windows d3d11
+  windows_d3d11:
+    runs-on: windows-latest
+    needs: [windows_d3d11_prepare]
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: ${{ inputs.project_name }}_windows-d3d11_prepare
+        path: avdl_project
+    - name: Add msbuild to PATH
+      uses: microsoft/setup-msbuild@v1.1
+    - name: Build app for release
+      run: msbuild "avdl_project/avdl_project.vcxproj" /p:AppxBundlePlatforms="x86|x64" /p:Configuration=Release /p:AppxBundle=Always /p:GenerateAppxPackageOnBuild=true
+      env:
+        Appx_Bundle: Never
+        Appx_Bundle_Platforms: x86|x64
+        Appx_Package_Build_Mode: SideloadOnly
+        Appx_Package_Dir: Packages\
+        Configuration: Release
+    - name: Decode the pfx
+      run: |
+        $pfx_cert_byte = [System.Convert]::FromBase64String("${{ secrets.BASE64_PFX }}")
+        $certificatePath = Join-Path -Path ./ -ChildPath avdl_project_TemporaryKey.pfx
+        [IO.File]::WriteAllBytes("$certificatePath", $pfx_cert_byte)
+    - name: Sign
+      run: |
+        $signtool = "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe"
+        & $signtool sign /fd sha256 /a /f avdl_project_TemporaryKey.pfx /p ${{ secrets.PFX_PASSWORD }} rue-d3d11_prepare/AppPackages/avdl_project/avdl_project_1.0.0.0_Test/avdl_project_1.0.0.0_x86_x64.msixbundle
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: rue-d3d11
+        path: rue-d3d11_prepare/AppPackages/avdl_project/avdl_project_1.0.0.0_Test
 
   # Itch.io release
   release_itchio:

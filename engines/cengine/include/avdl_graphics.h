@@ -55,6 +55,7 @@ extern "C" {
 #endif
 
 struct avdl_graphics {
+	int x;
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	SDL_Window *sdl_window;
 	SDL_GLContext gl_context;
@@ -62,7 +63,6 @@ struct avdl_graphics {
 	//ComPtr<ID3D11Device3> avdl_d3dDevice;
 	//ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
 	#else
-	int x;
 	#endif
 };
 

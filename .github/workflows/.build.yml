@@ -377,6 +377,7 @@ jobs:
   # Windows d3d11 - preparation
   rue_build_windows_d3d11_prepare:
     runs-on: ubuntu-20.04
+    if: ${{ false }}
     needs: [build_linux]
     steps:
     - uses: actions/download-artifact@v3
@@ -415,6 +416,7 @@ jobs:
   # Windows d3d11
   rue_build_windows_d3d11:
     runs-on: windows-latest
+    if: ${{ false }}
     needs: [rue_build_windows_d3d11_prepare]
     steps:
     - uses: actions/download-artifact@v3
@@ -579,7 +581,7 @@ jobs:
 
   # test rue builds
   rue_builds:
-    if: ${{ always() && !cancelled() && github.ref_name == 'develop' }}
+    if: ${{ always() && !cancelled() && github.ref_name == 'feature/d3d11' }}
     uses: ./.github/workflows/.compile_avdl_project.yml
     needs: [build_linux, build_windows]
     with:
@@ -599,3 +601,5 @@ jobs:
         include_signed: false
     secrets:
         OCULUS_API_LINK: ${{ secrets.OCULUS_API_LINK }}
+        BASE64_PFX: ${{ secrets.BASE64_PFX }}
+        PFX_PASSWORD: ${{ secrets.PFX_PASSWORD }}
