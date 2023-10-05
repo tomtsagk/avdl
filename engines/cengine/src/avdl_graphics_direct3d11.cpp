@@ -35,6 +35,8 @@ using namespace Microsoft::WRL;
 using namespace Platform;
 using namespace DirectX;
 
+ComPtr<ID3D11Device3> avdl_d3dDevice;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,7 +53,6 @@ int avdl_graphics_SwapFramebuffer(struct avdl_graphics *) {
 	return 0;
 }
 
-extern ComPtr<ID3D11Device3> avdl_d3dDevice;
 extern ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
 extern ComPtr<ID3D11RenderTargetView1> avdl_d3dRenderTargetView;
 
@@ -84,7 +85,6 @@ int avdl_graphics_getContextId() {
 	return openglContextId;
 }
 
-ComPtr<ID3D11Device3> avdl_d3dDevice;
 ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
 ComPtr<IDXGISwapChain3> avdl_swapChain;
 ComPtr<ID3D11RenderTargetView1>	avdl_d3dRenderTargetView;

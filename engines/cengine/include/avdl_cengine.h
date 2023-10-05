@@ -5,14 +5,6 @@
 #define AVDL_GAME_VERSION "0.0.0"
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifndef AVDL_VR
-#define AVDL_VR 0
-#endif
-
 #include "dd_dynamic_array.h"
 #include "dd_filetomesh.h"
 #include "dd_matrix.h"
@@ -50,6 +42,15 @@ extern "C" {
 #include "avdl_webapi.h"
 #include "avdl_ads.h"
 #include "avdl_font.h"
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#ifndef AVDL_VR
+#define AVDL_VR 0
+#endif
 
 int dd_main(int argc, char *argv[]);
 

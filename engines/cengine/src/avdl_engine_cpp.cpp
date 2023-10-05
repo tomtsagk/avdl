@@ -304,7 +304,7 @@ struct VertexPositionColor
 };
 
 // parts of `avdl_graphics`
-extern "C" ComPtr<ID3D11Device3> avdl_d3dDevice;
+extern ComPtr<ID3D11Device3> avdl_d3dDevice;
 extern "C" ComPtr<ID3D11DeviceContext3> avdl_d3dContext;
 extern "C" ComPtr<ID3D11RenderTargetView1> avdl_d3dRenderTargetView;
 
