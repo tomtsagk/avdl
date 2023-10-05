@@ -595,7 +595,6 @@ jobs:
         git clone https://github.com/${{ inputs.github_project }} .
         git checkout ${{ inputs.github_branch }}
     - name: get_avdl
-      if: ${{ inputs.avdl_linux_artifact == '' }}
       run: |
         mkdir avdl_linux
         cd avdl_linux

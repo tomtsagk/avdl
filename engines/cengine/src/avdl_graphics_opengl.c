@@ -14,6 +14,7 @@ extern struct avdl_engine engine;
 
 int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 
+	#if defined( AVDL_LINUX ) && defined( AVDL_WINDOWS )
 	// Initialise SDL window
 	int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	if (sdlError < 0) {
@@ -75,6 +76,7 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 		free(pixels);
 		dd_image_clean(&img);
 	}
+	#endif
 
 	return 0;
 }

@@ -4,6 +4,8 @@
 
 #ifdef AVDL_DIRECT3D11
 #include "pch.h"
+
+#include "DDSTextureLoader.h"
 /*
 #include <d3d11.h>
 #include <dxgi.h>
@@ -472,7 +474,6 @@ void avdl_graphics_d3d11_SetWindow() {
 extern FILE* avdl_filetomesh_openFile(char* filename);
 #endif
 
-#include "DDSTextureLoader.h"
 avdl_texture_id avdl_graphics_loadDDS(char *filename) {
 
 	ComPtr<ID3D11Device> device;
