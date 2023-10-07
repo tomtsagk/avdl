@@ -1039,71 +1039,6 @@ static int create_executable_file(const char *filename, const char *content) {
 	return 0;
 }
 
-int add_object_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
-
-	// ignore `.` and `..`
-	if (strcmp(filename, ".") == 0
-	||  strcmp(filename, "..") == 0) {
-		return 0;
-	}
-
-	// src file full path
-	struct avdl_string srcFilePath;
-	avdl_string_create(&srcFilePath, 1024);
-	avdl_string_cat(&srcFilePath, dirname);
-	avdl_string_cat(&srcFilePath, filename);
-	if ( !avdl_string_isValid(&srcFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// skip non-regular files (like directories)
-	struct stat statbuf;
-	if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
-		avdl_log_error("Unable to stat file '%s': %s\n", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// is regular file - add to link command
-	if (Avdl_FileOp_IsRegStat(&statbuf)) {
-		strcat(buffer, ".avdl_cache/");
-		strcat(buffer, filename);
-		strcat(buffer, ".c.o ");
-	}
-	// not supporting other file types - skip
-	else {
-		//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
-		avdl_string_clean(&srcFilePath);
-		return 0;
-	}
-
-	/*
-	// skip files already transpiled (check last modified)
-	strcpy(buffer, dir->d_name);
-	strcat(buffer, ".c");
-	if ( faccessat(dst_dir, buffer, F_OK, 0) == 0 ) {
-		struct stat statbuf2;
-		if (fstatat(dst_dir, buffer, &statbuf2, 0) != 0) {
-			printf("avdl error: Unable to stat file '%s/%s': %s\n", cache_dir, dir->d_name, strerror(errno));
-			continue;
-		}
-
-		// transpiled file is same or newer (?) - skip transpilation
-		if (difftime(statbuf2.st_mtime, statbuf.st_mtime) >= 0) {
-			//printf("avdl src file not modified, skipping transpilation of '%s'\n", dir->d_name);
-			continue;
-		}
-		printf("Last file src modification: %s\n", ctime(&statbuf.st_mtime));
-		printf("Last file dst modification: %s\n", ctime(&statbuf2.st_mtime));
-
-	}
-	*/
-	avdl_string_clean(&srcFilePath);
-	return 0;
-}
-
 int avdl_link(struct AvdlSettings *avdl_settings) {
 
 	printf("avdl: creating executable - " YEL "..." RESET "\r");
@@ -1135,10 +1070,28 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	avdl_string_cat(&link_cmd, " -DAVDL_LINUX ");
 	#endif
 
-	// add game files to link
-	buffer[0] = '\0';
-	Avdl_FileOp_ForFileInDirectory(avdl_settings->src_dir, add_object_file);
-	avdl_string_cat(&link_cmd, buffer);
+	// collect avdl project assets
+	struct dd_dynamic_array objFiles;
+	Avdl_FileOp_GetFilesInDirectory(avdl_settings->src_dir, &objFiles);
+
+	struct avdl_string objFilesStr;
+	avdl_string_create(&objFilesStr, 100000);
+
+	// filter out some files
+	for (int i = 0; i < dd_da_count(&objFiles); i++) {
+		struct avdl_string *str = dd_da_get(&objFiles, i);
+
+		if (strcmp("." , avdl_string_toCharPtr(str)) == 0
+		||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
+			continue;
+		}
+		else {
+			avdl_string_cat(&link_cmd, ".avdl_cache/");
+			avdl_string_cat(&link_cmd, avdl_string_toCharPtr(str));
+			avdl_string_cat(&link_cmd, ".c.o ");
+		}
+
+	}
 
 	// add cengine files to link
 	char tempDir[DD_BUFFER_SIZE];
