@@ -1978,10 +1978,15 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 			i--;
 		}
 		else {
-			avdl_string_cat("game/");
-			avdl_string_cat(avdl_string_toCharPtr(str));
-			avdl_string_cat(" ");
+			avdl_string_cat(&objFilesStr, "game/");
+			avdl_string_cat(&objFilesStr, avdl_string_toCharPtr(str));
+			avdl_string_cat(&objFilesStr, " ");
 		}
+	}
+
+	if (!avdl_string_isValid(&objFilesStr)) {
+		avdl_log_error("unable to construct obj files for android");
+		return -1;
 	}
 
 	// cpp directory
