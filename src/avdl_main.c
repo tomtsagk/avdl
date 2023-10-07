@@ -24,8 +24,6 @@
 #include <unistd.h>
 #endif
 
-char big_buffer[100000];
-
 extern enum AVDL_PLATFORM avdl_platform_temp;
 
 const char cache_dir[] = ".avdl_cache/";
@@ -356,7 +354,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// from `.dd` to `.c`
 	if ( avdl_transpile(&avdl_settings) != 0) {
-		avdl_log_error("couldn't transpile project\n");
+		avdl_log_error("failed to transpile project\n");
 		return -1;
 	}
 
@@ -612,116 +610,123 @@ int create_d3d11_directory(const char *dirName) {
 	return 0;
 }
 
-// Handles files to be transpiled
-int transpile_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
-
-	// ignore `.` and `..`
-	if (strcmp(filename, ".") == 0
-	||  strcmp(filename, "..") == 0) {
-		return 0;
-	}
-
-	// src file full path
-	struct avdl_string srcFilePath;
-	avdl_string_create(&srcFilePath, 1024);
-	avdl_string_cat(&srcFilePath, dirname);
-	avdl_string_cat(&srcFilePath, filename);
-	if ( !avdl_string_isValid(&srcFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// dst file full path
-	struct avdl_string dstFilePath;
-	avdl_string_create(&dstFilePath, 1024);
-	avdl_string_cat(&dstFilePath, cache_dir);
-	avdl_string_cat(&dstFilePath, filename);
-	avdl_string_cat(&dstFilePath, ".c");
-	if ( !avdl_string_isValid(&dstFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", cache_dir, filename, avdl_string_getError(&dstFilePath));
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return -1;
-	}
-
-	// check file type
-	struct stat statbuf;
-	if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
-		avdl_log_error("Unable to stat file '%s': %s", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return -1;
-	}
-
-	// is directory - skip - maybe recursive compilation at some point?
-	if (Avdl_FileOp_IsDirStat(&statbuf)) {
-		avdl_log("skipping directory: %s", avdl_string_toCharPtr(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return 0;
-	}
-	else
-	// is regular file - do nothing
-	if (Avdl_FileOp_IsRegStat(&statbuf)) {
-	}
-	// not supporting other file types - skip
-	else {
-		avdl_log_error("Unsupported file type '%s' - skip\n", avdl_string_toCharPtr(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return 0;
-	}
-
-	// skip files already compiled (check last modified)
-	// but compile everything if a header file has changed
-	if ( avdl_settings_ptr->use_cache
-	&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
-	&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
-		//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", buffer, buffer2);
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return 0;
-	}
-	//printf("transpiling %s to %s\n", buffer, buffer2);
-
-	included_files_num = 0;
-
-	// TODO: Find a better way to do this
-	avdl_platform_temp = avdl_settings_ptr->target_platform;
-
-	// initialise the parent node
-	game_node = ast_create(AST_GAME);
-	if (semanticAnalyser_convertToAst(game_node, avdl_string_toCharPtr(&srcFilePath)) != 0) {
-		avdl_log_error("failed to do semantic analysis on '" BLU "%s" RESET "'", filename);
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return -1;
-	}
-
-	// write results to destination file
-	if (transpile_cglut(avdl_string_toCharPtr(&dstFilePath), game_node) != 0) {
-		avdl_log_error("failed to transpile: %s -> %s", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath));
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return -1;
-	}
-	printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
-
-	avdl_string_clean(&srcFilePath);
-	avdl_string_clean(&dstFilePath);
-
-	return 0;
-}
-
 int avdl_transpile(struct AvdlSettings *avdl_settings) {
 
 	printf("avdl: transpiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
-	if ( Avdl_FileOp_ForFileInDirectory(avdl_settings->src_dir, transpile_file) != 0 ) {
-		avdl_log_error("one or more files failed to transpile");
-		return -1;
+	// collect avdl project src
+	struct dd_dynamic_array srcFiles;
+	Avdl_FileOp_GetFilesInDirectory(avdl_settings->src_dir, &srcFiles);
+
+	// for each file
+	for (int i = 0; i < dd_da_count(&srcFiles); i++) {
+		struct avdl_string *str = dd_da_get(&srcFiles, i);
+
+		// only avdl `.dd` files
+		if (!avdl_string_endsIn(str, ".dd")) {
+			continue;
+		}
+
+		// src file full path
+		struct avdl_string srcFilePath;
+		avdl_string_create(&srcFilePath, 1024);
+		avdl_string_cat(&srcFilePath, avdl_settings->src_dir);
+		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
+		if ( !avdl_string_isValid(&srcFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s",
+				avdl_settings->src_dir, avdl_string_toCharPtr(str),
+				avdl_string_getError(&srcFilePath)
+			);
+			avdl_string_clean(&srcFilePath);
+			return -1;
+		}
+
+		// dst file full path
+		struct avdl_string dstFilePath;
+		avdl_string_create(&dstFilePath, 1024);
+		avdl_string_cat(&dstFilePath, cache_dir);
+		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
+		avdl_string_cat(&dstFilePath, ".c");
+		if ( !avdl_string_isValid(&dstFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s",
+				cache_dir, avdl_string_toCharPtr(str),
+				avdl_string_getError(&dstFilePath)
+			);
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			return -1;
+		}
+
+		// check file type
+		struct stat statbuf;
+		if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
+			avdl_log_error("Unable to stat file '%s': %s", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			return -1;
+		}
+
+		// is directory - skip - maybe recursive compilation at some point?
+		if (Avdl_FileOp_IsDirStat(&statbuf)) {
+			avdl_log("skipping directory: %s", avdl_string_toCharPtr(&srcFilePath));
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			continue;
+		}
+		else
+		// is regular file - do nothing
+		if (Avdl_FileOp_IsRegStat(&statbuf)) {
+		}
+		// not supporting other file types - skip
+		else {
+			avdl_log_error("Unsupported file type '%s' - skip\n", avdl_string_toCharPtr(&srcFilePath));
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			continue;
+		}
+
+		// skip files already compiled (check last modified)
+		// but compile everything if a header file has changed
+		if ( avdl_settings_ptr->use_cache
+		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
+		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
+			//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", buffer, buffer2);
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			continue;
+		}
+		//printf("transpiling %s to %s\n", buffer, buffer2);
+
+		included_files_num = 0;
+
+		// TODO: Find a better way to do this
+		avdl_platform_temp = avdl_settings_ptr->target_platform;
+
+		// initialise the parent node
+		game_node = ast_create(AST_GAME);
+		if (semanticAnalyser_convertToAst(game_node, avdl_string_toCharPtr(&srcFilePath)) != 0) {
+			avdl_log_error("failed to do semantic analysis on '" BLU "%s" RESET "'", avdl_string_toCharPtr(&srcFilePath));
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			return -1;
+		}
+
+		// write results to destination file
+		if (transpile_cglut(avdl_string_toCharPtr(&dstFilePath), game_node) != 0) {
+			avdl_log_error("failed to transpile: %s -> %s", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath));
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			return -1;
+		}
+		printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (i)/dd_da_count(&srcFiles) *100));
+		fflush(stdout);
+
+		sleep(1);
+
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+
 	}
 
 	printf("avdl: transpiling - " GRN "100%%" RESET "\n");
@@ -1924,13 +1929,6 @@ int d3d11_object_file(const char *dirname, const char *filename, int fileIndex, 
 		return -1;
 	}
 
-	strcat(big_buffer, "    <ClCompile Include=\"src/");
-	strcat(big_buffer, filename);
-	strcat(big_buffer, "\">\n");
-	strcat(big_buffer, "      <CompileAsWinRT>false</CompileAsWinRT>\n");
-	strcat(big_buffer, "      <PrecompiledHeader>NotUsing</PrecompiledHeader>\n");
-	strcat(big_buffer, "    </ClCompile>\n");
-
 	// dst file full path
 	struct avdl_string dstFilePath;
 	avdl_string_create(&dstFilePath, 1024);
@@ -2600,7 +2598,6 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	dir_create(buffer);
 
 	// copy project src files
-	big_buffer[0] = '\0';
 	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", d3d11_object_file);
 
 	// collect avdl project source
