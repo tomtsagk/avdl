@@ -152,12 +152,6 @@ int avdl_android_object(struct AvdlSettings *);
 int avdl_quest2_object(struct AvdlSettings *);
 int avdl_d3d11_object(struct AvdlSettings *);
 
-const char *avdl_project_path;
-
-// temp hack
-struct AvdlSettings *avdl_settings_ptr = 0;
-enum AVDL_PLATFORM avdl_target_platform;
-
 // hide main when doing unit tests - temporary solution
 #ifdef AVDL_UNIT_TEST
 #define AVDL_MAIN avdl_main
@@ -178,14 +172,9 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		avdl_log_error("unable to initialise avdl settings");
 		return -1;
 	}
-	avdl_settings_ptr = &avdl_settings;
 
-	// temp solutions
-	avdl_project_path = avdl_settings.pkg_path;
-
+	// check arguments
 	int handle_return = avdl_arguments_handle(&avdl_settings, argc, argv);
-
-	avdl_target_platform = avdl_settings.target_platform;
 
 	// the arguments require the program to stop executing
 	if (handle_return > 0) {
@@ -204,6 +193,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		return -1;
 	}
 
+	// display project data
 	avdl_log("~ Project Details ~");
 	avdl_log("Project Name: " BLU "%s" RESET, avdl_settings.project_name);
 	avdl_log("Version: " BLU "%d" RESET " (" BLU "%s" RESET ")-" BLU "%d" RESET, avdl_settings.version_code, avdl_settings.version_name, avdl_settings.revision);
@@ -215,7 +205,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// makefile generation
 	if (avdl_settings.makefile_mode) {
-		avdl_log("Generating makefile ...");
 		struct avdl_string makefilePath;
 		avdl_string_create(&makefilePath, 1024);
 		avdl_string_cat(&makefilePath, avdl_pkg_GetProjectPath());
@@ -236,8 +225,21 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		file_remove(".makefile2");
 		file_remove(".makefile3");
 		file_remove(".makefile4");
-		avdl_log(BLU "makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated" RESET, avdl_settings.project_name);
+
+		avdl_time_end(&clock);
+		avdl_log("avdl: " BLU "makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
 		return 0;
+	}
+
+	// cache directory
+	if (!is_dir(".avdl_cache")) {
+		dir_create(".avdl_cache");
+	}
+
+	// from `.dd` to `.c`
+	if ( avdl_transpile(&avdl_settings) != 0) {
+		avdl_log_error("failed to transpile project\n");
+		return -1;
 	}
 
 	// cmake generation
@@ -341,17 +343,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	// normal directories
 	if (!is_dir("avdl_build")) {
 		dir_create("avdl_build");
-	}
-
-	// cache directory
-	if (!is_dir(".avdl_cache")) {
-		dir_create(".avdl_cache");
-	}
-
-	// from `.dd` to `.c`
-	if ( avdl_transpile(&avdl_settings) != 0) {
-		avdl_log_error("failed to transpile project\n");
-		return -1;
 	}
 
 	// android
@@ -684,7 +675,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 
 		// skip files already compiled (check last modified)
 		// but compile everything if a header file has changed
-		if ( avdl_settings_ptr->use_cache
+		if ( avdl_settings->use_cache
 		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
 		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
 			//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", buffer, buffer2);
@@ -697,7 +688,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 		included_files_num = 0;
 
 		// TODO: Find a better way to do this
-		avdl_platform_temp = avdl_settings_ptr->target_platform;
+		avdl_platform_temp = avdl_settings->target_platform;
 
 		// initialise the parent node
 		game_node = ast_create(AST_GAME);
@@ -819,7 +810,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 
 		// skip files already compiled (check last modified)
 		// but if any header in `include/` has changed, compile everything
-		if ( avdl_settings_ptr->use_cache
+		if ( avdl_settings->use_cache
 		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
 		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
 			avdl_string_clean(&srcFilePath);
@@ -833,7 +824,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		struct avdl_string commandString;
 		avdl_string_create(&commandString, 1024);
 		avdl_string_cat(&commandString, "gcc -O3 -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
-		avdl_string_cat(&commandString, avdl_settings_ptr->version_name);
+		avdl_string_cat(&commandString, avdl_settings->version_name);
 		avdl_string_cat(&commandString, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
 		avdl_string_cat(&commandString, "0");
 		avdl_string_cat(&commandString, "\\\"\" -c -w ");
@@ -844,16 +835,16 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		#endif
 		// cengine headers
 		avdl_string_cat(&commandString, " -I ");
-		avdl_string_cat(&commandString, avdl_project_path);
+		avdl_string_cat(&commandString, avdl_settings->pkg_path);
 		avdl_string_cat(&commandString, "/include ");
 		avdl_string_cat(&commandString, " -I /usr/include/freetype2 ");
 
 		avdl_string_cat(&commandString, avdl_string_toCharPtr(&srcFilePath));
 		avdl_string_cat(&commandString, " -o ");
 		avdl_string_cat(&commandString, avdl_string_toCharPtr(&dstFilePath));
-		for (int i = 0; i < avdl_settings_ptr->total_include_directories; i++) {
+		for (int i = 0; i < avdl_settings->total_include_directories; i++) {
 			avdl_string_cat(&commandString, " -I ");
-			avdl_string_cat(&commandString, avdl_settings_ptr->additional_include_directory[i]);
+			avdl_string_cat(&commandString, avdl_settings->additional_include_directory[i]);
 		}
 		avdl_string_cat(&commandString, " -I include ");
 
@@ -980,13 +971,13 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		strcat(compile_command, " -I /usr/include/freetype2 ");
 
 		// cengine extra directories (mostly for custom dependencies)
-		for (int i = 0; i < avdl_settings_ptr->total_include_directories; i++) {
+		for (int i = 0; i < avdl_settings->total_include_directories; i++) {
 			strcat(compile_command, " -I ");
-			strcat(compile_command, avdl_settings_ptr->additional_include_directory[i]);
+			strcat(compile_command, avdl_settings->additional_include_directory[i]);
 		}
 
 		// skip files already compiled
-		if ( avdl_settings_ptr->use_cache && Avdl_FileOp_DoesFileExist(avdl_string_toCharPtr(&cenginePathOut)) ) {
+		if ( avdl_settings->use_cache && Avdl_FileOp_DoesFileExist(avdl_string_toCharPtr(&cenginePathOut)) ) {
 			//printf("skipping: %s\n", buffer);
 			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/cengine_files_total *100));
 			fflush(stdout);
@@ -1361,7 +1352,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		}
 
 		// on android, put assets in a specific directory
-		if (avdl_target_platform == AVDL_PLATFORM_ANDROID) {
+		if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
 			char *assetDir;
 
 			if (avdl_string_endsIn(str, ".wav")
@@ -1401,7 +1392,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		}
 		else
 		// on quest2, put assets in a specific directory
-		if (avdl_target_platform == AVDL_PLATFORM_QUEST2) {
+		if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
 			char *assetDir = "";
 
 			if (avdl_string_endsIn(str, ".ogg")
@@ -1440,7 +1431,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		}
 		else
 		// on d3d11, put assets in a specific directory
-		if (avdl_target_platform == AVDL_PLATFORM_D3D11) {
+		if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
 			char *assetDir = "assets";
 
 			if (!is_dir("avdl_build_d3d11/assets/")) {
@@ -1516,7 +1507,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 		// skip files already compiled (check last modified)
 		// but if any header in `include/` has changed, compile everything
-		if ( avdl_settings_ptr->use_cache && !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath)) ) {
+		if ( avdl_settings->use_cache && !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath)) ) {
 			//printf("avdl asset file not modified, skipping handling of '%s'\n", dir->d_name);
 			avdl_string_clean(&srcFilePath);
 			avdl_string_clean(&dstFilePath);
