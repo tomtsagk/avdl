@@ -1404,6 +1404,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 			avdl_string_clean(&androidFilePath);
 
 			avdl_string_clean(&srcFilePath);
+			continue;
 		}
 		else
 		// on quest2, put assets in a specific directory
@@ -1442,6 +1443,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 			avdl_string_clean(&androidFilePath);
 
 			avdl_string_clean(&srcFilePath);
+			continue;
 		}
 		else
 		// on d3d11, put assets in a specific directory
@@ -1471,6 +1473,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 			avdl_string_clean(&d3d11FilePath);
 
 			avdl_string_clean(&srcFilePath);
+			continue;
 		}
 
 		char *outdir = "avdl_build/assets/";
