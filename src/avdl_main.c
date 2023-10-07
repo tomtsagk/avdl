@@ -215,6 +215,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 			return -1;
 		}
 		file_copy(avdl_string_toCharPtr(&makefilePath), ".makefile", 0);
+		avdl_string_clean(&makefilePath);
 		file_replace(0, ".makefile", 0, ".makefile1", "%AVDL_PROJECT_NAME%", avdl_settings.project_name);
 		file_replace(0, ".makefile1", 0, ".makefile2", "%AVDL_PROJECT_NAME_CODE%", avdl_settings.project_name_code);
 		file_replace(0, ".makefile2", 0, ".makefile3", "%AVDL_VERSION_NAME%", avdl_settings.version_name);
@@ -231,12 +232,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		return 0;
 	}
 
-	// cache directory
-	if (!is_dir(".avdl_cache")) {
-		dir_create(".avdl_cache");
-	}
-
-	// from `.dd` to `.c`
+	// from `.dd` to `.c` inside `.avdl_cache`
 	if ( avdl_transpile(&avdl_settings) != 0) {
 		avdl_log_error("failed to transpile project\n");
 		return -1;
@@ -337,12 +333,12 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		file_write("avdl_project.cmake", avdl_string_toCharPtr(&cmake_data), 0);
 		file_copy(avdl_string_toCharPtr(&path), "CMakeLists.txt", 0);
 		avdl_log(BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated" RESET, avdl_settings.project_name);
-		return 0;
-	}
 
-	// normal directories
-	if (!is_dir("avdl_build")) {
-		dir_create("avdl_build");
+		avdl_string_clean(&path);
+		avdl_string_clean(&avdl_src);
+		avdl_string_clean(&cmake_data);
+
+		return 0;
 	}
 
 	// android
@@ -381,7 +377,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	else if (avdl_settings.target_platform == AVDL_PLATFORM_D3D11) {
 		create_d3d11_directory("avdl_build_d3d11");
 
-		//avdl_quest2_object(&avdl_settings);
 		avdl_d3d11_object(&avdl_settings);
 
 		// handle assets
@@ -406,6 +401,11 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for d3d11 at " BLU "./avdl_build_d3d11/" RESET, avdl_settings.project_name);
 
 		return 0;
+	}
+
+	// normal directories
+	if (!is_dir("avdl_build")) {
+		dir_create("avdl_build");
 	}
 
 	if (avdl_settings.translate_only) {
@@ -598,6 +598,11 @@ int create_d3d11_directory(const char *dirName) {
 }
 
 int avdl_transpile(struct AvdlSettings *avdl_settings) {
+
+	// cache directory
+	if (!is_dir(".avdl_cache")) {
+		dir_create(".avdl_cache");
+	}
 
 	printf("avdl: transpiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
@@ -1296,12 +1301,14 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 // handle assets and put them in the final build
 int avdl_assets(struct AvdlSettings *avdl_settings) {
 
-	if (!is_dir("avdl_build")) {
-		dir_create("avdl_build");
-	}
+	if (avdl_settings->target_platform == AVDL_PLATFORM_LINUX) {
+		if (!is_dir("avdl_build")) {
+			dir_create("avdl_build");
+		}
 
-	if (!is_dir("avdl_build/assets/")) {
-		dir_create("avdl_build/assets/");
+		if (!is_dir("avdl_build/assets/")) {
+			dir_create("avdl_build/assets/");
+		}
 	}
 
 	printf("avdl: assets - " RED "0%%" RESET "\r");
@@ -1317,9 +1324,6 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	// collect avdl project assets
 	struct dd_dynamic_array assetFiles;
 	Avdl_FileOp_GetFilesInDirectory(avdl_settings->asset_dir, &assetFiles);
-
-	struct avdl_string assetFilesStr;
-	avdl_string_create(&assetFilesStr, 100000);
 
 	// filter out some files
 	for (int i = 0; i < dd_da_count(&assetFiles); i++) {
@@ -1531,6 +1535,9 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 	if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
 
+		struct avdl_string assetFilesStr;
+		avdl_string_create(&assetFilesStr, 100000);
+
 		// filter out some files
 		for (int i = 0; i < dd_da_count(&assetFiles); i++) {
 			struct avdl_string *str = dd_da_get(&assetFiles, i);
@@ -1583,6 +1590,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 			0, "avdl_build_d3d11/avdl_project.vcxproj",
 			"%AVDL_PROJECT_ASSETS%", avdl_string_toCharPtr(&assetFilesStr)
 		);
+		avdl_string_clean(&assetFilesStr);
 
 		// package file
 		file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in",
@@ -1836,9 +1844,11 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 		avdl_string_clean(&cppFilePath);
 		return -1;
 	}
+	avdl_string_clean(&cppFilePath);
 
 	// add in the avdl-compiled source files
 	file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt.in2", "%AVDL_GAME_FILES%", avdl_string_toCharPtr(&objFilesStr));
+	avdl_string_clean(&objFilesStr);
 
 	// add C flags
 	{
@@ -1861,11 +1871,10 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 		file_replace(outDir, "CMakeLists.txt.in2", outDir, "CMakeLists.txt", "%AVDL_C_FLAGS%", avdl_string_toCharPtr(&cflags));
+		avdl_string_clean(&cflags);
 	}
 
 	close(outDir);
-
-	avdl_string_clean(&cppFilePath);
 
 	// handle versioning
 	outDir = open("avdl_build_android/app/", O_DIRECTORY);
@@ -1891,6 +1900,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 		file_write("avdl_build_android/app/build.gradle", "}\n", 1);
 	}
 
+	// backwards compatible icon
 	struct avdl_string iconPath;
 	avdl_string_create(&iconPath, 1024);
 	avdl_string_cat(&iconPath, "avdl_build_android/");
@@ -1903,6 +1913,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	file_copy(avdl_settings->icon_path, avdl_string_toCharPtr(&iconPath), 0);
 	avdl_string_clean(&iconPath);
 
+	// adaptable icon foreground
 	struct avdl_string foregroundPath;
 	avdl_string_create(&foregroundPath, 1024);
 	avdl_string_cat(&foregroundPath, "avdl_build_android/");
@@ -1915,6 +1926,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	file_copy(avdl_settings->icon_foreground_path, avdl_string_toCharPtr(&foregroundPath), 0);
 	avdl_string_clean(&foregroundPath);
 
+	// adaptable icon background
 	struct avdl_string backgroundPath;
 	avdl_string_create(&backgroundPath, 1024);
 	avdl_string_cat(&backgroundPath, "avdl_build_android/");
@@ -1981,6 +1993,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 		dir_create("avdl_build_android/app/src/main/res/values/");
 	}
 	file_write("avdl_build_android/app/src/main/res/values/strings.xml", avdl_string_toCharPtr(&values_file), 0);
+	avdl_string_clean(&values_file);
 
 	// collect metadata and permissions
 	struct avdl_string metadata;
@@ -2230,31 +2243,46 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	if ( !avdl_string_isValid(&permissions) ) {
 		avdl_log_error("cannot construct android manifest permissions: %s", avdl_string_getError(&permissions));
+		avdl_string_clean(&metadata);
 		avdl_string_clean(&permissions);
 		return -1;
 	}
 
 	if ( !avdl_string_isValid(&ads_imports) ) {
 		avdl_log_error("cannot construct admob imports: %s", avdl_string_getError(&ads_imports));
+		avdl_string_clean(&metadata);
 		avdl_string_clean(&permissions);
+		avdl_string_clean(&ads_imports);
 		return -1;
 	}
 
 	if ( !avdl_string_isValid(&ads_declarations) ) {
 		avdl_log_error("cannot construct admob declarations: %s", avdl_string_getError(&ads_declarations));
+		avdl_string_clean(&metadata);
 		avdl_string_clean(&permissions);
+		avdl_string_clean(&ads_imports);
+		avdl_string_clean(&ads_declarations);
 		return -1;
 	}
 
 	if ( !avdl_string_isValid(&ads_init) ) {
 		avdl_log_error("cannot construct admob init: %s", avdl_string_getError(&ads_init));
+		avdl_string_clean(&metadata);
 		avdl_string_clean(&permissions);
+		avdl_string_clean(&ads_imports);
+		avdl_string_clean(&ads_declarations);
+		avdl_string_clean(&ads_init);
 		return -1;
 	}
 
 	if ( !avdl_string_isValid(&ads_functions) ) {
 		avdl_log_error("cannot construct admob functions: %s", avdl_string_getError(&ads_functions));
+		avdl_string_clean(&metadata);
 		avdl_string_clean(&permissions);
+		avdl_string_clean(&ads_imports);
+		avdl_string_clean(&ads_declarations);
+		avdl_string_clean(&ads_init);
+		avdl_string_clean(&ads_functions);
 		return -1;
 	}
 
@@ -2313,6 +2341,13 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	file_remove(
 		"avdl_build_android/app/src/main/AndroidManifest.xml.in"
 	);
+
+	avdl_string_clean(&metadata);
+	avdl_string_clean(&ads_functions);
+	avdl_string_clean(&ads_init);
+	avdl_string_clean(&ads_declarations);
+	avdl_string_clean(&permissions);
+	avdl_string_clean(&ads_imports);
 
 	#endif
 	return 0;
@@ -2397,6 +2432,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 		avdl_string_clean(&cppFilePath);
 		return -1;
 	}
+	avdl_string_clean(&cppFilePath);
 
 	// add C flags
 	{
@@ -2422,12 +2458,12 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 		file_replace(outDir, "Android.mk.in", outDir, "Android.mk.in2", "%AVDL_CFLAGS%", avdl_string_toCharPtr(&cflags));
+		avdl_string_clean(&cflags);
 	}
 
 	file_replace(outDir, "Android.mk.in2", outDir, "Android.mk", "%AVDL_GAME_FILES%", avdl_string_toCharPtr(&objFilesStr));
+	avdl_string_clean(&objFilesStr);
 	close(outDir);
-
-	avdl_string_clean(&cppFilePath);
 
 	// handle versioning
 	outDir = open("avdl_build_quest2/Projects/Android/", O_DIRECTORY);
