@@ -1309,210 +1309,6 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	return 0;
 }
 
-int asset_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
-
-	// ignore `.` and `..`
-	if (strcmp(filename, ".") == 0
-	||  strcmp(filename, "..") == 0) {
-		return 0;
-	}
-
-	// sanity check
-	for (const char *p = filename; p[0] != '\0'; p++) {
-		if (p[0] == '-') {
-			avdl_log_error("filename contains invalid character '-': " BLU "%s" RESET, filename);
-			return -1;
-		}
-	}
-
-	// src file full path
-	struct avdl_string srcFilePath;
-	avdl_string_create(&srcFilePath, 1024);
-	avdl_string_cat(&srcFilePath, dirname);
-	avdl_string_cat(&srcFilePath, filename);
-	if ( !avdl_string_isValid(&srcFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// on android, put assets in a specific directory
-	if (avdl_target_platform == AVDL_PLATFORM_ANDROID) {
-		char *assetDir;
-
-		if (strcmp(filename +strlen(filename) -4, ".ogg") == 0
-		||  strcmp(filename +strlen(filename) -4, ".wav") == 0) {
-			assetDir = "res/raw";
-		}
-		else
-		if (strcmp(filename +strlen(filename) -4, ".bmp") == 0
-		||  strcmp(filename +strlen(filename) -4, ".png") == 0) {
-			assetDir = "res/drawable";
-		}
-		else {
-			assetDir = "assets";
-		}
-
-		// android file full path
-		struct avdl_string androidFilePath;
-		avdl_string_create(&androidFilePath, 1024);
-		avdl_string_cat(&androidFilePath, "avdl_build_android/");
-		avdl_string_cat(&androidFilePath, "/app/src/main/");
-		avdl_string_cat(&androidFilePath, assetDir);
-		avdl_string_cat(&androidFilePath, "/");
-		if ( !avdl_string_isValid(&androidFilePath) ) {
-			avdl_log_error("cannot construct android file path: %s", avdl_string_getError(&androidFilePath));
-			avdl_string_clean(&srcFilePath);
-			avdl_string_clean(&androidFilePath);
-			return -1;
-		}
-		dir_create(avdl_string_toCharPtr(&androidFilePath));
-		avdl_string_cat(&androidFilePath, filename);
-
-		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
-		avdl_string_clean(&androidFilePath);
-
-		avdl_string_clean(&srcFilePath);
-		return 0;
-	}
-	else
-	// on quest2, put assets in a specific directory
-	if (avdl_target_platform == AVDL_PLATFORM_QUEST2) {
-		char *assetDir = "";
-
-		if (strcmp(filename +strlen(filename) -4, ".ogg") == 0
-		||  strcmp(filename +strlen(filename) -4, ".wav") == 0) {
-			assetDir = "res/raw";
-		}
-		else
-		if (strcmp(filename +strlen(filename) -4, ".bmp") == 0
-		||  strcmp(filename +strlen(filename) -4, ".png") == 0) {
-			assetDir = "res/drawable";
-		}
-		else {
-			assetDir = "assets";
-		}
-
-		// android file full path
-		struct avdl_string androidFilePath;
-		avdl_string_create(&androidFilePath, 1024);
-		avdl_string_cat(&androidFilePath, "avdl_build_quest2/");
-		avdl_string_cat(&androidFilePath, assetDir);
-		avdl_string_cat(&androidFilePath, "/");
-		if ( !avdl_string_isValid(&androidFilePath) ) {
-			avdl_log_error("cannot construct quest2 file path: %s", avdl_string_getError(&androidFilePath));
-			avdl_string_clean(&srcFilePath);
-			avdl_string_clean(&androidFilePath);
-			return -1;
-		}
-		dir_create(avdl_string_toCharPtr(&androidFilePath));
-		avdl_string_cat(&androidFilePath, filename);
-
-		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
-		avdl_string_clean(&androidFilePath);
-
-		avdl_string_clean(&srcFilePath);
-		return 0;
-	}
-	else
-	// on d3d11, put assets in a specific directory
-	if (avdl_target_platform == AVDL_PLATFORM_D3D11) {
-		char *assetDir = "assets";
-
-		if (!is_dir("avdl_build_d3d11/assets/")) {
-			dir_create("avdl_build_d3d11/assets/");
-		}
-
-		// d3d11 file full path
-		struct avdl_string d3d11FilePath;
-		avdl_string_create(&d3d11FilePath, 1024);
-		avdl_string_cat(&d3d11FilePath, "avdl_build_d3d11/");
-		avdl_string_cat(&d3d11FilePath, assetDir);
-		avdl_string_cat(&d3d11FilePath, "/");
-		if ( !avdl_string_isValid(&d3d11FilePath) ) {
-			avdl_log_error("cannot construct d3d11 file path: %s", avdl_string_getError(&d3d11FilePath));
-			avdl_string_clean(&srcFilePath);
-			avdl_string_clean(&d3d11FilePath);
-			return -1;
-		}
-		dir_create(avdl_string_toCharPtr(&d3d11FilePath));
-		avdl_string_cat(&d3d11FilePath, filename);
-
-		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&d3d11FilePath), 0);
-		avdl_string_clean(&d3d11FilePath);
-
-		avdl_string_clean(&srcFilePath);
-
-		return 0;
-	}
-
-	char *outdir = "avdl_build/assets/";
-
-	// dst file full path
-	struct avdl_string dstFilePath;
-	avdl_string_create(&dstFilePath, 1024);
-	avdl_string_cat(&dstFilePath, outdir);
-	avdl_string_cat(&dstFilePath, filename);
-	if ( !avdl_string_isValid(&dstFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", outdir, filename, avdl_string_getError(&dstFilePath));
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return -1;
-	}
-
-	// skip non-regular files (like directories)
-	struct stat statbuf;
-	if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
-		avdl_log_error("Unable to stat file '%s': %s\n", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return -1;
-	}
-
-	// is directory - skip - maybe recursive compilation at some point?
-	if (Avdl_FileOp_IsDirStat(&statbuf)) {
-		//printf("avdl skipping directory: %s\n", dir->d_name);
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return 0;
-	}
-	else
-	// is regular file - do nothing
-	if (Avdl_FileOp_IsRegStat(&statbuf)) {
-	}
-	// not supporting other file types - skip
-	else {
-		//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return 0;
-	}
-
-	// skip files already compiled (check last modified)
-	// but if any header in `include/` has changed, compile everything
-	if ( avdl_settings_ptr->use_cache && !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath)) ) {
-		//printf("avdl asset file not modified, skipping handling of '%s'\n", dir->d_name);
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return 0;
-	}
-	//printf("handling %s\n", dir->d_name);
-
-	/*
-	 * Currently assets are just copy-pasted,
-	 * however on a future version there will be more fine
-	 * control of editing files to supported formats
-	 * and throwing errors on unsupported formats.
-	 */
-	file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
-
-	printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (fileIndex)/filesTotal *100));
-	fflush(stdout);
-	avdl_string_clean(&srcFilePath);
-	avdl_string_clean(&dstFilePath);
-	return 0;
-}
-
 // handle assets and put them in the final build
 int avdl_assets(struct AvdlSettings *avdl_settings) {
 
@@ -1527,10 +1323,6 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	printf("avdl: assets - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
-	if (Avdl_FileOp_ForFileInDirectory(avdl_settings->asset_dir, asset_file) != 0) {
-		return -1;
-	}
-
 	/*
 	int outDir = open("avdl_build_d3d11/", O_DIRECTORY);
 	if (!outDir) {
@@ -1538,14 +1330,219 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		return -1;
 	}
 	*/
+	// collect avdl project assets
+	struct dd_dynamic_array assetFiles;
+	Avdl_FileOp_GetFilesInDirectory(avdl_settings->asset_dir, &assetFiles);
+
+	struct avdl_string assetFilesStr;
+	avdl_string_create(&assetFilesStr, 100000);
+
+	// filter out some files
+	for (int i = 0; i < dd_da_count(&assetFiles); i++) {
+		struct avdl_string *str = dd_da_get(&assetFiles, i);
+
+		// ignore `.` and `..`
+		if (strcmp(avdl_string_toCharPtr(str), ".") == 0
+		||  strcmp(avdl_string_toCharPtr(str), "..") == 0) {
+			continue;
+		}
+
+		// sanity check
+		if (strstr(avdl_string_toCharPtr(str), "-")) {
+			avdl_log_error("asset contains invalid character '-': " BLU "%s" RESET, avdl_string_toCharPtr(str));
+			return -1;
+		}
+
+		// src file full path
+		struct avdl_string srcFilePath;
+		avdl_string_create(&srcFilePath, 1024);
+		avdl_string_cat(&srcFilePath, avdl_settings->asset_dir);
+		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
+		if ( !avdl_string_isValid(&srcFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s",
+				avdl_settings->asset_dir, avdl_string_toCharPtr(str),
+				avdl_string_getError(&srcFilePath)
+			);
+			avdl_string_clean(&srcFilePath);
+			return -1;
+		}
+
+		// on android, put assets in a specific directory
+		if (avdl_target_platform == AVDL_PLATFORM_ANDROID) {
+			char *assetDir;
+
+			if (avdl_string_endsIn(str, ".wav")
+			||  avdl_string_endsIn(str, ".ogg")) {
+				assetDir = "res/raw";
+			}
+			else
+			if (avdl_string_endsIn(str, ".bmp")
+			||  avdl_string_endsIn(str, ".png")) {
+				assetDir = "res/drawable";
+			}
+			else {
+				assetDir = "assets";
+			}
+
+			// android file full path
+			struct avdl_string androidFilePath;
+			avdl_string_create(&androidFilePath, 1024);
+			avdl_string_cat(&androidFilePath, "avdl_build_android/");
+			avdl_string_cat(&androidFilePath, "/app/src/main/");
+			avdl_string_cat(&androidFilePath, assetDir);
+			avdl_string_cat(&androidFilePath, "/");
+			if ( !avdl_string_isValid(&androidFilePath) ) {
+				avdl_log_error("cannot construct android file path: %s", avdl_string_getError(&androidFilePath));
+				avdl_string_clean(&srcFilePath);
+				avdl_string_clean(&androidFilePath);
+				return -1;
+			}
+			dir_create(avdl_string_toCharPtr(&androidFilePath));
+			avdl_string_cat(&androidFilePath, avdl_string_toCharPtr(str));
+
+			file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
+			avdl_string_clean(&androidFilePath);
+
+			avdl_string_clean(&srcFilePath);
+		}
+		else
+		// on quest2, put assets in a specific directory
+		if (avdl_target_platform == AVDL_PLATFORM_QUEST2) {
+			char *assetDir = "";
+
+			if (avdl_string_endsIn(str, ".ogg")
+			||  avdl_string_endsIn(str, ".wav")) {
+				assetDir = "res/raw";
+			}
+			else
+			if (avdl_string_endsIn(str, ".bmp")
+			||  avdl_string_endsIn(str, ".png")) {
+				assetDir = "res/drawable";
+			}
+			else {
+				assetDir = "assets";
+			}
+
+			// quest2 file full path
+			struct avdl_string androidFilePath;
+			avdl_string_create(&androidFilePath, 1024);
+			avdl_string_cat(&androidFilePath, "avdl_build_quest2/");
+			avdl_string_cat(&androidFilePath, assetDir);
+			avdl_string_cat(&androidFilePath, "/");
+			if ( !avdl_string_isValid(&androidFilePath) ) {
+				avdl_log_error("cannot construct quest2 file path: %s", avdl_string_getError(&androidFilePath));
+				avdl_string_clean(&srcFilePath);
+				avdl_string_clean(&androidFilePath);
+				return -1;
+			}
+			dir_create(avdl_string_toCharPtr(&androidFilePath));
+			avdl_string_cat(&androidFilePath, avdl_string_toCharPtr(str));
+
+			file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
+			avdl_string_clean(&androidFilePath);
+
+			avdl_string_clean(&srcFilePath);
+		}
+		else
+		// on d3d11, put assets in a specific directory
+		if (avdl_target_platform == AVDL_PLATFORM_D3D11) {
+			char *assetDir = "assets";
+
+			if (!is_dir("avdl_build_d3d11/assets/")) {
+				dir_create("avdl_build_d3d11/assets/");
+			}
+
+			// d3d11 file full path
+			struct avdl_string d3d11FilePath;
+			avdl_string_create(&d3d11FilePath, 1024);
+			avdl_string_cat(&d3d11FilePath, "avdl_build_d3d11/");
+			avdl_string_cat(&d3d11FilePath, assetDir);
+			avdl_string_cat(&d3d11FilePath, "/");
+			if ( !avdl_string_isValid(&d3d11FilePath) ) {
+				avdl_log_error("cannot construct d3d11 file path: %s", avdl_string_getError(&d3d11FilePath));
+				avdl_string_clean(&srcFilePath);
+				avdl_string_clean(&d3d11FilePath);
+				return -1;
+			}
+			dir_create(avdl_string_toCharPtr(&d3d11FilePath));
+			avdl_string_cat(&d3d11FilePath, avdl_string_toCharPtr(str));
+
+			file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&d3d11FilePath), 0);
+			avdl_string_clean(&d3d11FilePath);
+
+			avdl_string_clean(&srcFilePath);
+		}
+
+		char *outdir = "avdl_build/assets/";
+
+		// dst file full path
+		struct avdl_string dstFilePath;
+		avdl_string_create(&dstFilePath, 1024);
+		avdl_string_cat(&dstFilePath, outdir);
+		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
+		if ( !avdl_string_isValid(&dstFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s",
+				outdir, avdl_string_toCharPtr(str),
+				avdl_string_getError(&dstFilePath)
+			);
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			return -1;
+		}
+
+		// skip non-regular files (like directories)
+		struct stat statbuf;
+		if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
+			avdl_log_error("Unable to stat file '%s': %s\n", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			return -1;
+		}
+
+		// is directory - skip - maybe recursive compilation at some point?
+		if (Avdl_FileOp_IsDirStat(&statbuf)) {
+			//printf("avdl skipping directory: %s\n", dir->d_name);
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			continue;
+		}
+		else
+		// is regular file - do nothing
+		if (Avdl_FileOp_IsRegStat(&statbuf)) {
+		}
+		// not supporting other file types - skip
+		else {
+			//printf("avdl error: Unsupported file type '%s' - skip\n", dir->d_name);
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			continue;
+		}
+
+		// skip files already compiled (check last modified)
+		// but if any header in `include/` has changed, compile everything
+		if ( avdl_settings_ptr->use_cache && !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath)) ) {
+			//printf("avdl asset file not modified, skipping handling of '%s'\n", dir->d_name);
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			continue;
+		}
+		//printf("handling %s\n", dir->d_name);
+
+		/*
+		 * Currently assets are just copy-pasted,
+		 * however on a future version there will be more fine
+		 * control of editing files to supported formats
+		 * and throwing errors on unsupported formats.
+		 */
+		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
+
+		printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (i)/dd_da_count(&assetFiles) *100));
+		fflush(stdout);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+	}
 
 	if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
-		// collect avdl project assets
-		struct dd_dynamic_array assetFiles;
-		Avdl_FileOp_GetFilesInDirectory(avdl_settings->asset_dir, &assetFiles);
-
-		struct avdl_string assetFilesStr;
-		avdl_string_create(&assetFilesStr, 100000);
 
 		// filter out some files
 		for (int i = 0; i < dd_da_count(&assetFiles); i++) {
