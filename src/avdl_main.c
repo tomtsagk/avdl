@@ -280,7 +280,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &srcFiles);
 		for (int i = 0; i < dd_da_count(&srcFiles); i++) {
 			struct avdl_string *str = dd_da_get(&srcFiles, i);
-			if (!avdl_string_endsIn(str, ".dd.c.o")) {
+			if (!avdl_string_endsIn(str, ".dd.c")) {
 				dd_da_remove(&srcFiles, 1, i);
 				i--;
 			}
