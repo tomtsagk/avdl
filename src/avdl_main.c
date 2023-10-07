@@ -722,8 +722,6 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 		printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (i)/dd_da_count(&srcFiles) *100));
 		fflush(stdout);
 
-		sleep(1);
-
 		avdl_string_clean(&srcFilePath);
 		avdl_string_clean(&dstFilePath);
 
