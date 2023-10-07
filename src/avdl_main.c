@@ -276,10 +276,14 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		}
 
 		// collect avdl project source
-		big_buffer[0] = '\0';
-		if ( Avdl_FileOp_ForFileInDirectory(".avdl_cache", collect_src_files) != 0 ) {
-			avdl_log_error("failed to collect source files");
-			return -1;
+		struct dd_dynamic_array srcFiles;
+		Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &srcFiles);
+		for (int i = 0; i < dd_da_count(&srcFiles); i++) {
+			struct avdl_string *str = dd_da_get(&srcFiles, i);
+			if (!avdl_string_endsIn(str, ".dd.c.o")) {
+				dd_da_remove(&srcFiles, 1, i);
+				i--;
+			}
 		}
 
 		// project data in cmake
@@ -296,20 +300,38 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		avdl_string_cat(&cmake_data, ")\n");
 		avdl_string_cat(&cmake_data, "set(AVDL_SRC ");
 		avdl_string_cat(&cmake_data, avdl_string_toCharPtr(&avdl_src));
-		avdl_string_cat(&cmake_data, big_buffer);
+
+		// avdl project src
+		for (int i = 0; i < dd_da_count(&srcFiles); i++) {
+			struct avdl_string *str = dd_da_get(&srcFiles, i);
+			avdl_string_cat(&cmake_data, ".avdl_cache/");
+			avdl_string_cat(&cmake_data, avdl_string_toCharPtr(str));
+			avdl_string_cat(&cmake_data, " ");
+		}
+
 		avdl_string_cat(&cmake_data, avdl_settings.project_name_code);
 		avdl_string_cat(&cmake_data, ".rc ");
 		avdl_string_cat(&cmake_data, ")\n");
 		avdl_string_cat(&cmake_data, "set(AVDL_ASSETS ");
 
 		// collect avdl project assets
-		big_buffer[0] = '\0';
-		if ( Avdl_FileOp_ForFileInDirectory("assets", collect_asset_files) != 0 ) {
-			avdl_log_error("failed to collect source files");
-			return -1;
+		struct dd_dynamic_array assetFiles;
+		Avdl_FileOp_GetFilesInDirectory("assets", &assetFiles);
+
+		// put assets into cmake
+		for (int i = 0; i < dd_da_count(&assetFiles); i++) {
+			struct avdl_string *str = dd_da_get(&assetFiles, i);
+			if (strcmp("." , avdl_string_toCharPtr(str)) == 0
+			||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
+				dd_da_remove(&assetFiles, 1, i);
+				i--;
+			}
+			else {
+				avdl_string_cat(&cmake_data, avdl_string_toCharPtr(str));
+				avdl_string_cat(&cmake_data, " ");
+			}
 		}
 
-		avdl_string_cat(&cmake_data, big_buffer);
 		avdl_string_cat(&cmake_data, ")\n");
 		if ( !avdl_string_isValid(&cmake_data) ) {
 			avdl_log_error("could not construct cmake_data");
@@ -319,17 +341,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 		file_write("avdl_project.cmake", avdl_string_toCharPtr(&cmake_data), 0);
 		file_copy(avdl_string_toCharPtr(&path), "CMakeLists.txt", 0);
-		/*
-		file_copy(avdl_string_toCharPtr(&path), ".cmake", 0);
-		file_replace(0, ".cmake", 0, ".cmake1", "%AVDL_PROJECT_NAME%", avdl_settings.project_name);
-		file_replace(0, ".cmake1", 0, ".cmake2", "%AVDL_VERSION_NAME%", avdl_settings.version_name);
-		file_replace(0, ".cmake2", 0, ".cmake3", "%AVDL_SRC%", avdl_string_toCharPtr(&avdl_src));
-		file_replace(0, ".cmake3", 0, "CMakeLists.txt", "%AVDL_PROJECT_SRC%", big_buffer);
-		file_remove(".cmake");
-		file_remove(".cmake1");
-		file_remove(".cmake2");
-		file_remove(".cmake3");
-		*/
 		avdl_log(BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated" RESET, avdl_settings.project_name);
 		return 0;
 	}
@@ -404,8 +415,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		/*
 		 * instructions after build is complete:
 		 * * git clone https://github.com/ubawurinna/freetype-windows-binaries
-		 * * cp include/* avdl_build_d3d11/dependencies
-		 * * cp "release dll"/* avdl_build_d3d11/dependencies
+		 * * cp include/<everything> avdl_build_d3d11/dependencies
+		 * * cp "release dll"/<everything> avdl_build_d3d11/dependencies
 		 */
 
 		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for d3d11 at " BLU "./avdl_build_d3d11/" RESET, avdl_settings.project_name);

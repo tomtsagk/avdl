@@ -664,7 +664,7 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: ${{ inputs.project_name }}-d3d11
+        name: ${{ inputs.project_name }}_windows-d3d11
         path: avdl_project/AppPackages/avdl_project/avdl_project_1.0.0.0_Test
 
   # Itch.io release

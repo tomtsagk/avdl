@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#include "avdl_dynamic_array.h"
+
 int file_copy(const char *src, const char *dest, int append);
 int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int append);
 int file_replace(int src_at, const char *src, int dst_at, const char *dst,
@@ -20,6 +22,8 @@ int Avdl_FileOp_GetNumberOfFiles(const char *directory);
 
 // for each file in given directory, call function
 int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(const char *, const char*, int, int));
+
+int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct dd_dynamic_array *array);
 
 int Avdl_FileOp_IsFileOlderThan(const char *filename, const char *filename2);
 
