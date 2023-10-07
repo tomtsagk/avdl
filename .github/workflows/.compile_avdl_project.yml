@@ -664,8 +664,8 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: rue-d3d11
-        path: rue-d3d11_prepare/AppPackages/avdl_project/avdl_project_1.0.0.0_Test
+        name: ${{ inputs.project_name }}-d3d11
+        path: avdl_project/AppPackages/avdl_project/avdl_project_1.0.0.0_Test
 
   # Itch.io release
   release_itchio:
