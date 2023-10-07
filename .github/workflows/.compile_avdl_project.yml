@@ -538,10 +538,7 @@ jobs:
         mkdir cengine
         cp -r AVDL_BUILD/share/avdl/cengine/*.c AVDL_BUILD/share/avdl/cengine/*.cpp AVDL_BUILD/include/*.h cengine
         mkdir build
-        AVDL_BUILD/bin/avdl.exe -t
         AVDL_BUILD/bin/avdl.exe --cmake
-        cp .avdl_cache/*.c src/
-        for i in src/*.c; do mv $i ${i/.dd.c/.c}; done
         cd build
         cmake ../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD"
         cmake --build . --config Release
@@ -553,10 +550,7 @@ jobs:
         mkdir cengine
         cp -r AVDL_BUILD/share/avdl/cengine/*.c AVDL_BUILD/share/avdl/cengine/*.cpp AVDL_BUILD/include/*.h cengine
         mkdir build
-        AVDL_BUILD/bin/avdl.exe -t
         AVDL_BUILD/bin/avdl.exe --cmake
-        cp .avdl_cache/*.c src/
-        for i in src/*.c; do mv $i ${i/.dd.c/.c}; done
         cd build
         cmake ../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD" -DAVDL_STEAM=1
         cmake --build . --config Release
