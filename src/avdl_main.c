@@ -45,8 +45,6 @@ struct ast_node *game_node;
 int create_android_directory(const char *androidDirName);
 int create_quest2_directory(const char *dirName);
 int create_d3d11_directory(const char *dirName);
-int collect_src_files(const char *dirname, const char *filename, int fileIndex, int filesTotal);
-int collect_asset_files(const char *dirname, const char *filename, int fileIndex, int filesTotal);
 
 char *cengine_files[] = {
 	"avdl_assetManager.c",
@@ -1484,41 +1482,6 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 
 		avdl_string_clean(&srcFilePath);
 
-		/*
-		// images (textures)
-		if (strcmp(filename +strlen(filename) -4, ".png") == 0) {
-			strcat(big_buffer, "  <ItemGroup>\n");
-			strcat(big_buffer, "    <ImageContentTask Include=\"assets/");
-			strcat(big_buffer, filename);
-			strcat(big_buffer, "\">\n");
-			strcat(big_buffer, "      <FileType>Image</FileType>\n");
-			strcat(big_buffer, "      <DestinationFolders>$(OutDir)/assets</DestinationFolders>\n");
-			strcat(big_buffer, "      <ContentOutput >$(OutDir)/assets/%(Filename).dds</ContentOutput>\n");
-			strcat(big_buffer, "    </ImageContentTask>\n");
-			strcat(big_buffer, "  </ItemGroup>\n");
-		}
-		else
-		// json (localisation)
-		// ply (3d meshes)
-		// ttf (fonts)
-		if (strcmp(filename +strlen(filename) -5, ".json") == 0
-		||  strcmp(filename +strlen(filename) -4, ".ply" ) == 0
-		||  strcmp(filename +strlen(filename) -4, ".ttf" ) == 0) {
-			strcat(big_buffer, "  <ItemGroup>\n");
-			strcat(big_buffer, "    <CopyFileToFolders Include=\"assets/");
-			strcat(big_buffer, filename);
-			strcat(big_buffer, "\">\n");
-			strcat(big_buffer, "      <FileType>Document</FileType>\n");
-			strcat(big_buffer, "      <DestinationFolders>$(OutDir)/assets</DestinationFolders>\n");
-			strcat(big_buffer, "    </CopyFileToFolders>\n");
-			strcat(big_buffer, "  </ItemGroup>\n");
-		}
-		// asset unsupported for d3d11
-		else {
-		}
-		*/
-
-
 		return 0;
 	}
 
@@ -1871,10 +1834,6 @@ int android_object_file(const char *dirname, const char *filename, int fileIndex
 		return -1;
 	}
 
-	strcat(big_buffer, "game/");
-	strcat(big_buffer, filename);
-	strcat(big_buffer, " ");
-
 	// dst file full path
 	struct avdl_string dstFilePath;
 	avdl_string_create(&dstFilePath, 1024);
@@ -2007,6 +1966,24 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	big_buffer[0] = '\0';
 	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", android_object_file);
 
+	// collect avdl android project source
+	struct avdl_string objFilesStr;
+	avdl_string_create(&objFilesStr, 100000);
+	struct dd_dynamic_array objFiles;
+	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
+	for (int i = 0; i < dd_da_count(&objFiles); i++) {
+		struct avdl_string *str = dd_da_get(&objFiles, i);
+		if (!avdl_string_endsIn(str, ".c")) {
+			dd_da_remove(&objFiles, 1, i);
+			i--;
+		}
+		else {
+			avdl_string_cat("game/");
+			avdl_string_cat(avdl_string_toCharPtr(str));
+			avdl_string_cat(" ");
+		}
+	}
+
 	// cpp directory
 	struct avdl_string cppFilePath;
 	avdl_string_create(&cppFilePath, 1024);
@@ -2027,7 +2004,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	}
 
 	// add in the avdl-compiled source files
-	file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt.in2", "%AVDL_GAME_FILES%", big_buffer);
+	file_replace(outDir, "CMakeLists.txt.in", outDir, "CMakeLists.txt.in2", "%AVDL_GAME_FILES%", avdl_string_toCharPtr(&objFilesStr));
 
 	// add C flags
 	{
@@ -2719,111 +2696,5 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	close(outDir);
 	*/
 	#endif
-	return 0;
-}
-
-int collect_src_files(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
-
-	// ignore `.` and `..`
-	if (strcmp(filename, ".") == 0
-	||  strcmp(filename, "..") == 0) {
-		return 0;
-	}
-
-	// src file full path
-	struct avdl_string srcFilePath;
-	avdl_string_create(&srcFilePath, 1024);
-	avdl_string_cat(&srcFilePath, dirname);
-	avdl_string_cat(&srcFilePath, "/");
-	avdl_string_cat(&srcFilePath, filename);
-	if ( !avdl_string_isValid(&srcFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// check file type
-	struct stat statbuf;
-	if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
-		avdl_log_error("Unable to stat file '%s': %s", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// is directory - skip - maybe recursive compilation at some point?
-	if (Avdl_FileOp_IsDirStat(&statbuf)) {
-		avdl_log("skipping directory: %s", avdl_string_toCharPtr(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return 0;
-	}
-	else
-	// is regular file - do nothing
-	if (Avdl_FileOp_IsRegStat(&statbuf)) {
-	}
-	// not supporting other file types - skip
-	else {
-		avdl_log_error("Unsupported file type '%s' - skip\n", avdl_string_toCharPtr(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return 0;
-	}
-
-	strcat(big_buffer, avdl_string_toCharPtr(&srcFilePath));
-	strcat(big_buffer, " ");
-
-	avdl_string_clean(&srcFilePath);
-
-	return 0;
-}
-
-int collect_asset_files(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
-
-	// ignore `.` and `..`
-	if (strcmp(filename, ".") == 0
-	||  strcmp(filename, "..") == 0) {
-		return 0;
-	}
-
-	// src file full path
-	struct avdl_string srcFilePath;
-	avdl_string_create(&srcFilePath, 1024);
-	avdl_string_cat(&srcFilePath, dirname);
-	avdl_string_cat(&srcFilePath, "/");
-	avdl_string_cat(&srcFilePath, filename);
-	if ( !avdl_string_isValid(&srcFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// check file type
-	struct stat statbuf;
-	if (stat(avdl_string_toCharPtr(&srcFilePath), &statbuf) != 0) {
-		avdl_log_error("Unable to stat file '%s': %s", avdl_string_toCharPtr(&srcFilePath), strerror(errno));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// is directory - skip - maybe recursive at some point?
-	if (Avdl_FileOp_IsDirStat(&statbuf)) {
-		avdl_log("skipping directory: %s", avdl_string_toCharPtr(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return 0;
-	}
-	else
-	// is regular file - do nothing
-	if (Avdl_FileOp_IsRegStat(&statbuf)) {
-	}
-	// not supporting other file types - skip
-	else {
-		avdl_log_error("Unsupported file type '%s' - skip\n", avdl_string_toCharPtr(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return 0;
-	}
-
-	strcat(big_buffer, avdl_string_toCharPtr(&srcFilePath));
-	strcat(big_buffer, " ");
-
-	avdl_string_clean(&srcFilePath);
-
 	return 0;
 }
