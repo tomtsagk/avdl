@@ -327,6 +327,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 				i--;
 			}
 			else {
+				avdl_string_cat(&cmake_data, "assets/");
 				avdl_string_cat(&cmake_data, avdl_string_toCharPtr(str));
 				avdl_string_cat(&cmake_data, " ");
 			}
