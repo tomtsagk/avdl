@@ -1879,10 +1879,6 @@ int quest2_object_file(const char *dirname, const char *filename, int fileIndex,
 		return -1;
 	}
 
-	strcat(big_buffer, "../../../src/");
-	strcat(big_buffer, filename);
-	strcat(big_buffer, " ");
-
 	// dst file full path
 	struct avdl_string dstFilePath;
 	avdl_string_create(&dstFilePath, 1024);
@@ -1963,7 +1959,6 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	strcat(buffer, "/app/src/main/cpp/game/");
 	dir_create(buffer);
 
-	big_buffer[0] = '\0';
 	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", android_object_file);
 
 	// collect avdl android project source
@@ -2479,8 +2474,25 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	dir_create(buffer);
 
 	// copy project src files
-	big_buffer[0] = '\0';
 	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", quest2_object_file);
+
+	// collect quest2 project object
+	struct avdl_string objFilesStr;
+	avdl_string_create(&objFilesStr, 10000);
+	struct dd_dynamic_array objFiles;
+	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
+	for (int i = 0; i < dd_da_count(&objFiles); i++) {
+		struct avdl_string *str = dd_da_get(&objFiles, i);
+		if (!avdl_string_endsIn(str, ".c")) {
+			dd_da_remove(&objFiles, 1, i);
+			i--;
+		}
+		else {
+			avdl_string_cat(&objFilesStr, "../../../src/");
+			avdl_string_cat(&objFilesStr, avdl_string_toCharPtr(str));
+			avdl_string_cat(&objFilesStr, " ");
+		}
+	}
 
 	// Android.mk directory
 	struct avdl_string cppFilePath;
@@ -2527,7 +2539,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 		file_replace(outDir, "Android.mk.in", outDir, "Android.mk.in2", "%AVDL_CFLAGS%", avdl_string_toCharPtr(&cflags));
 	}
 
-	file_replace(outDir, "Android.mk.in2", outDir, "Android.mk", "%AVDL_GAME_FILES%", big_buffer);
+	file_replace(outDir, "Android.mk.in2", outDir, "Android.mk", "%AVDL_GAME_FILES%", avdl_string_toCharPtr(&objFilesStr));
 	close(outDir);
 
 	avdl_string_clean(&cppFilePath);
@@ -2591,6 +2603,32 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	big_buffer[0] = '\0';
 	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", d3d11_object_file);
 
+	// collect avdl project source
+	struct avdl_string objFilesStr;
+	avdl_string_create(&objFilesStr, 10000);
+	struct dd_dynamic_array objFiles;
+	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
+	for (int i = 0; i < dd_da_count(&objFiles); i++) {
+		struct avdl_string *str = dd_da_get(&objFiles, i);
+		if (!avdl_string_endsIn(str, ".c")) {
+			dd_da_remove(&objFiles, 1, i);
+			i--;
+		}
+		else {
+			avdl_string_cat(&objFilesStr, "    <ClCompile Include=\"src/");
+			avdl_string_cat(&objFilesStr, avdl_string_toCharPtr(str));
+			avdl_string_cat(&objFilesStr, "\">\n");
+			avdl_string_cat(&objFilesStr, "      <CompileAsWinRT>false</CompileAsWinRT>\n");
+			avdl_string_cat(&objFilesStr, "      <PrecompiledHeader>NotUsing</PrecompiledHeader>\n");
+			avdl_string_cat(&objFilesStr, "    </ClCompile>\n");
+		}
+	}
+
+	if (!avdl_string_isValid(&objFilesStr)) {
+		avdl_log_error("unable to collect d3d11 object files");
+		return -1;
+	}
+
 	int outDir = open("avdl_build_d3d11/", O_DIRECTORY);
 	if (!outDir) {
 		printf("avdl: can't open %s: %s\n", "avdl_build_d3d11/", strerror(errno));
@@ -2599,7 +2637,7 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 
 	file_replace(outDir, "avdl_project.vcxproj.in3",
 		outDir, "avdl_project.vcxproj.in4",
-		"%AVDL_PROJECT_SRC%", big_buffer
+		"%AVDL_PROJECT_SRC%", avdl_string_toCharPtr(&objFilesStr)
 	);
 	/*
 	// Android.mk directory
