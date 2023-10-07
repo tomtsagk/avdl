@@ -1770,141 +1770,6 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 
 }
 
-int android_object_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
-
-	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
-	// ignore `.` and `..`
-	if (strcmp(filename, ".") == 0
-	||  strcmp(filename, "..") == 0) {
-		return 0;
-	}
-
-	// only keep `.c` files
-	if (strcmp(filename +strlen(filename) -2, ".c") != 0) {
-		return 0;
-	}
-
-	// src file full path
-	struct avdl_string srcFilePath;
-	avdl_string_create(&srcFilePath, 1024);
-	avdl_string_cat(&srcFilePath, dirname);
-	avdl_string_cat(&srcFilePath, filename);
-	if ( !avdl_string_isValid(&srcFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// dst file full path
-	struct avdl_string dstFilePath;
-	avdl_string_create(&dstFilePath, 1024);
-	avdl_string_cat(&dstFilePath, "avdl_build_android/app/src/main/cpp/game/");
-	avdl_string_cat(&dstFilePath, filename);
-	if ( !avdl_string_isValid(&dstFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", "avdl_build_android/app/src/main/cpp/game/", filename, avdl_string_getError(&dstFilePath));
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return -1;
-	}
-
-	file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
-	avdl_string_clean(&srcFilePath);
-	avdl_string_clean(&dstFilePath);
-	#endif
-
-	return 0;
-}
-
-int quest2_object_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
-
-	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
-	// ignore `.` and `..`
-	if (strcmp(filename, ".") == 0
-	||  strcmp(filename, "..") == 0) {
-		return 0;
-	}
-
-	// only keep `.c` files
-	if (strcmp(filename +strlen(filename) -2, ".c") != 0) {
-		return 0;
-	}
-
-	// src file full path
-	struct avdl_string srcFilePath;
-	avdl_string_create(&srcFilePath, 1024);
-	avdl_string_cat(&srcFilePath, dirname);
-	avdl_string_cat(&srcFilePath, filename);
-	if ( !avdl_string_isValid(&srcFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// dst file full path
-	struct avdl_string dstFilePath;
-	avdl_string_create(&dstFilePath, 1024);
-	avdl_string_cat(&dstFilePath, "avdl_build_quest2/src/");
-	avdl_string_cat(&dstFilePath, filename);
-	if ( !avdl_string_isValid(&dstFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", "avdl_build_android/app/src/main/cpp/game/", filename, avdl_string_getError(&dstFilePath));
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return -1;
-	}
-
-	file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
-	avdl_string_clean(&srcFilePath);
-	avdl_string_clean(&dstFilePath);
-	#endif
-
-	return 0;
-}
-
-int d3d11_object_file(const char *dirname, const char *filename, int fileIndex, int filesTotal) {
-
-	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
-	// ignore `.` and `..`
-	if (strcmp(filename, ".") == 0
-	||  strcmp(filename, "..") == 0) {
-		return 0;
-	}
-
-	// only keep `.c` files
-	if (strcmp(filename +strlen(filename) -2, ".c") != 0) {
-		return 0;
-	}
-
-	// src file full path
-	struct avdl_string srcFilePath;
-	avdl_string_create(&srcFilePath, 1024);
-	avdl_string_cat(&srcFilePath, dirname);
-	avdl_string_cat(&srcFilePath, filename);
-	if ( !avdl_string_isValid(&srcFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", dirname, filename, avdl_string_getError(&srcFilePath));
-		avdl_string_clean(&srcFilePath);
-		return -1;
-	}
-
-	// dst file full path
-	struct avdl_string dstFilePath;
-	avdl_string_create(&dstFilePath, 1024);
-	avdl_string_cat(&dstFilePath, "avdl_build_d3d11/src/");
-	avdl_string_cat(&dstFilePath, filename);
-	if ( !avdl_string_isValid(&dstFilePath) ) {
-		avdl_log_error("cannot construct path '%s%s': %s", "avdl_build_d3d11/src/", filename, avdl_string_getError(&dstFilePath));
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		return -1;
-	}
-
-	file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
-	avdl_string_clean(&srcFilePath);
-	avdl_string_clean(&dstFilePath);
-	#endif
-
-	return 0;
-}
-
 int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
@@ -1913,8 +1778,6 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	strcat(buffer, "/app/src/main/cpp/game/");
 	dir_create(buffer);
 
-	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", android_object_file);
-
 	// collect avdl android project source
 	struct avdl_string objFilesStr;
 	avdl_string_create(&objFilesStr, 100000);
@@ -1922,15 +1785,50 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
 	for (int i = 0; i < dd_da_count(&objFiles); i++) {
 		struct avdl_string *str = dd_da_get(&objFiles, i);
+
 		if (!avdl_string_endsIn(str, ".c")) {
-			dd_da_remove(&objFiles, 1, i);
-			i--;
+			continue;
 		}
 		else {
 			avdl_string_cat(&objFilesStr, "game/");
 			avdl_string_cat(&objFilesStr, avdl_string_toCharPtr(str));
 			avdl_string_cat(&objFilesStr, " ");
 		}
+
+		#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
+		// src file full path
+		struct avdl_string srcFilePath;
+		avdl_string_create(&srcFilePath, 1024);
+		avdl_string_cat(&srcFilePath, ".avdl_cache");
+		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
+		if ( !avdl_string_isValid(&srcFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s",
+				".avdl_cache", avdl_string_toCharPtr(str),
+				avdl_string_getError(&srcFilePath)
+			);
+			avdl_string_clean(&srcFilePath);
+			return -1;
+		}
+
+		// dst file full path
+		struct avdl_string dstFilePath;
+		avdl_string_create(&dstFilePath, 1024);
+		avdl_string_cat(&dstFilePath, "avdl_build_android/app/src/main/cpp/game/");
+		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
+		if ( !avdl_string_isValid(&dstFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s",
+				"avdl_build_android/app/src/main/cpp/game/", avdl_string_toCharPtr(str),
+				avdl_string_getError(&dstFilePath)
+			);
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			return -1;
+		}
+
+		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+		#endif
 	}
 
 	if (!avdl_string_isValid(&objFilesStr)) {
@@ -2428,7 +2326,6 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	dir_create(buffer);
 
 	// copy project src files
-	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", quest2_object_file);
 
 	// collect quest2 project object
 	struct avdl_string objFilesStr;
@@ -2446,6 +2343,41 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 			avdl_string_cat(&objFilesStr, avdl_string_toCharPtr(str));
 			avdl_string_cat(&objFilesStr, " ");
 		}
+
+		#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
+		// src file full path
+		struct avdl_string srcFilePath;
+		avdl_string_create(&srcFilePath, 1024);
+		avdl_string_cat(&srcFilePath, ".avdl_cache");
+		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
+		if ( !avdl_string_isValid(&srcFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s",
+				".avdl_cache", avdl_string_toCharPtr(str),
+				avdl_string_getError(&srcFilePath)
+			);
+			avdl_string_clean(&srcFilePath);
+			return -1;
+		}
+
+		// dst file full path
+		struct avdl_string dstFilePath;
+		avdl_string_create(&dstFilePath, 1024);
+		avdl_string_cat(&dstFilePath, "avdl_build_quest2/src/");
+		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
+		if ( !avdl_string_isValid(&dstFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s",
+				"avdl_build_android/app/src/main/cpp/game/", avdl_string_toCharPtr(str),
+				avdl_string_getError(&dstFilePath)
+			);
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			return -1;
+		}
+
+		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+		#endif
 	}
 
 	// Android.mk directory
@@ -2554,7 +2486,6 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	dir_create(buffer);
 
 	// copy project src files
-	Avdl_FileOp_ForFileInDirectory(".avdl_cache/", d3d11_object_file);
 
 	// collect avdl project source
 	struct avdl_string objFilesStr;
@@ -2564,8 +2495,7 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	for (int i = 0; i < dd_da_count(&objFiles); i++) {
 		struct avdl_string *str = dd_da_get(&objFiles, i);
 		if (!avdl_string_endsIn(str, ".c")) {
-			dd_da_remove(&objFiles, 1, i);
-			i--;
+			continue;
 		}
 		else {
 			avdl_string_cat(&objFilesStr, "    <ClCompile Include=\"src/");
@@ -2575,6 +2505,41 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 			avdl_string_cat(&objFilesStr, "      <PrecompiledHeader>NotUsing</PrecompiledHeader>\n");
 			avdl_string_cat(&objFilesStr, "    </ClCompile>\n");
 		}
+
+		#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
+		// src file full path
+		struct avdl_string srcFilePath;
+		avdl_string_create(&srcFilePath, 1024);
+		avdl_string_cat(&srcFilePath, ".avdl_cache");
+		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
+		if ( !avdl_string_isValid(&srcFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s",
+				".avdl_cache", avdl_string_toCharPtr(str),
+				avdl_string_getError(&srcFilePath)
+			);
+			avdl_string_clean(&srcFilePath);
+			return -1;
+		}
+
+		// dst file full path
+		struct avdl_string dstFilePath;
+		avdl_string_create(&dstFilePath, 1024);
+		avdl_string_cat(&dstFilePath, "avdl_build_d3d11/src/");
+		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
+		if ( !avdl_string_isValid(&dstFilePath) ) {
+			avdl_log_error("cannot construct path '%s%s': %s",
+				"avdl_build_d3d11/src/", avdl_string_toCharPtr(str),
+				avdl_string_getError(&dstFilePath)
+			);
+			avdl_string_clean(&srcFilePath);
+			avdl_string_clean(&dstFilePath);
+			return -1;
+		}
+
+		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
+		avdl_string_clean(&srcFilePath);
+		avdl_string_clean(&dstFilePath);
+		#endif
 	}
 
 	if (!avdl_string_isValid(&objFilesStr)) {
