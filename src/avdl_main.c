@@ -1799,7 +1799,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 		// src file full path
 		struct avdl_string srcFilePath;
 		avdl_string_create(&srcFilePath, 1024);
-		avdl_string_cat(&srcFilePath, ".avdl_cache");
+		avdl_string_cat(&srcFilePath, ".avdl_cache/");
 		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&srcFilePath) ) {
 			avdl_log_error("cannot construct path '%s%s': %s",
@@ -2348,7 +2348,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 		// src file full path
 		struct avdl_string srcFilePath;
 		avdl_string_create(&srcFilePath, 1024);
-		avdl_string_cat(&srcFilePath, ".avdl_cache");
+		avdl_string_cat(&srcFilePath, ".avdl_cache/");
 		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&srcFilePath) ) {
 			avdl_log_error("cannot construct path '%s%s': %s",
@@ -2510,7 +2510,7 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 		// src file full path
 		struct avdl_string srcFilePath;
 		avdl_string_create(&srcFilePath, 1024);
-		avdl_string_cat(&srcFilePath, ".avdl_cache");
+		avdl_string_cat(&srcFilePath, ".avdl_cache/");
 		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&srcFilePath) ) {
 			avdl_log_error("cannot construct path '%s%s': %s",
