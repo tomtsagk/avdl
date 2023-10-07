@@ -1483,6 +1483,7 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 
 		avdl_string_clean(&srcFilePath);
 
+		/*
 		// images (textures)
 		if (strcmp(filename +strlen(filename) -4, ".png") == 0) {
 			strcat(big_buffer, "  <ItemGroup>\n");
@@ -1514,6 +1515,8 @@ int asset_file(const char *dirname, const char *filename, int fileIndex, int fil
 		// asset unsupported for d3d11
 		else {
 		}
+		*/
+
 
 		return 0;
 	}
@@ -1599,7 +1602,6 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	printf("avdl: assets - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
-	big_buffer[0] = '\0';
 	if (Avdl_FileOp_ForFileInDirectory(avdl_settings->asset_dir, asset_file) != 0) {
 		return -1;
 	}
@@ -1612,48 +1614,105 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	}
 	*/
 
-	file_replace(0, "avdl_build_d3d11/avdl_project.vcxproj.in4",
-		0, "avdl_build_d3d11/avdl_project.vcxproj",
-		"%AVDL_PROJECT_ASSETS%", big_buffer
-	);
+	if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
+		// collect avdl project assets
+		struct dd_dynamic_array assetFiles;
+		Avdl_FileOp_GetFilesInDirectory(avdl_settings->asset_dir, &assetFiles);
 
-	// package file
-	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in",
-		0, "avdl_build_d3d11/Package.appxmanifest.in2",
-		"%AVDL_WINDOWS_ID%",
-		"8047DarkDimension.Rue-CardGame"
-	);
-	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in2",
-		0, "avdl_build_d3d11/Package.appxmanifest.in3",
-		"%AVDL_VERSION%",
-		"1.0.0.0"
-	);
-	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in3",
-		0, "avdl_build_d3d11/Package.appxmanifest.in4",
-		"%AVDL_WINDOWS_PUBLISHER%",
-		"CN=F02BE368-CAA8-48A5-ACFD-482F4512EC85"
-	);
+		struct avdl_string assetFilesStr;
+		avdl_string_create(&assetFilesStr, 100000);
 
-	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in4",
-		0, "avdl_build_d3d11/Package.appxmanifest.in5",
-		"%AVDL_PROJECT_NAME%",
-		"Rue - Card Game"
-	);
-	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in5",
-		0, "avdl_build_d3d11/Package.appxmanifest.in6",
-		"%AVDL_PUBLISHER_NAME%",
-		"Afloofdev"
-	);
-	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in6",
-		0, "avdl_build_d3d11/Package.appxmanifest.in7",
-		"%AVDL_PROJECT_NAME2%",
-		"Rue - Card Game 2"
-	);
-	file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in7",
-		0, "avdl_build_d3d11/Package.appxmanifest",
-		"%AVDL_PROJECT_DESCRIPTION%",
-		"Avdl Description"
-	);
+		// filter out some files
+		for (int i = 0; i < dd_da_count(&assetFiles); i++) {
+			struct avdl_string *str = dd_da_get(&assetFiles, i);
+			if (strcmp("." , avdl_string_toCharPtr(str)) == 0
+			||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
+				dd_da_remove(&assetFiles, 1, i);
+				i--;
+				continue;
+			}
+
+			// images (textures)
+			if (avdl_string_endsIn(str, ".png")) {
+				avdl_string_cat(&assetFilesStr, "  <ItemGroup>\n");
+				avdl_string_cat(&assetFilesStr, "    <ImageContentTask Include=\"assets/");
+				avdl_string_cat(&assetFilesStr, avdl_string_toCharPtr(str));
+				avdl_string_cat(&assetFilesStr, "\">\n");
+				avdl_string_cat(&assetFilesStr, "      <FileType>Image</FileType>\n");
+				avdl_string_cat(&assetFilesStr, "      <DestinationFolders>$(OutDir)/assets</DestinationFolders>\n");
+				avdl_string_cat(&assetFilesStr, "      <ContentOutput >$(OutDir)/assets/%(Filename).dds</ContentOutput>\n");
+				avdl_string_cat(&assetFilesStr, "    </ImageContentTask>\n");
+				avdl_string_cat(&assetFilesStr, "  </ItemGroup>\n");
+			}
+			else
+			// json (localisation)
+			// ply (3d meshes)
+			// ttf (fonts)
+			if (avdl_string_endsIn(str, ".json")
+			||  avdl_string_endsIn(str, ".ply")
+			||  avdl_string_endsIn(str, ".ttf")) {
+				avdl_string_cat(&assetFilesStr, "  <ItemGroup>\n");
+				avdl_string_cat(&assetFilesStr, "    <CopyFileToFolders Include=\"assets/");
+				avdl_string_cat(&assetFilesStr, avdl_string_toCharPtr(str));
+				avdl_string_cat(&assetFilesStr, "\">\n");
+				avdl_string_cat(&assetFilesStr, "      <FileType>Document</FileType>\n");
+				avdl_string_cat(&assetFilesStr, "      <DestinationFolders>$(OutDir)/assets</DestinationFolders>\n");
+				avdl_string_cat(&assetFilesStr, "    </CopyFileToFolders>\n");
+				avdl_string_cat(&assetFilesStr, "  </ItemGroup>\n");
+			}
+			// asset unsupported for d3d11
+			else {
+			}
+		}
+
+		if (!avdl_string_isValid(&assetFilesStr)) {
+			avdl_log_error("cannot construct asset files str");
+			return -1;
+		}
+
+		file_replace(0, "avdl_build_d3d11/avdl_project.vcxproj.in4",
+			0, "avdl_build_d3d11/avdl_project.vcxproj",
+			"%AVDL_PROJECT_ASSETS%", avdl_string_toCharPtr(&assetFilesStr)
+		);
+
+		// package file
+		file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in",
+			0, "avdl_build_d3d11/Package.appxmanifest.in2",
+			"%AVDL_WINDOWS_ID%",
+			"8047DarkDimension.Rue-CardGame"
+		);
+		file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in2",
+			0, "avdl_build_d3d11/Package.appxmanifest.in3",
+			"%AVDL_VERSION%",
+			"1.0.0.0"
+		);
+		file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in3",
+			0, "avdl_build_d3d11/Package.appxmanifest.in4",
+			"%AVDL_WINDOWS_PUBLISHER%",
+			"CN=F02BE368-CAA8-48A5-ACFD-482F4512EC85"
+		);
+	
+		file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in4",
+			0, "avdl_build_d3d11/Package.appxmanifest.in5",
+			"%AVDL_PROJECT_NAME%",
+			"Rue - Card Game"
+		);
+		file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in5",
+			0, "avdl_build_d3d11/Package.appxmanifest.in6",
+			"%AVDL_PUBLISHER_NAME%",
+			"Afloofdev"
+		);
+		file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in6",
+			0, "avdl_build_d3d11/Package.appxmanifest.in7",
+			"%AVDL_PROJECT_NAME2%",
+			"Rue - Card Game 2"
+		);
+		file_replace(0, "avdl_build_d3d11/Package.appxmanifest.in7",
+			0, "avdl_build_d3d11/Package.appxmanifest",
+			"%AVDL_PROJECT_DESCRIPTION%",
+			"Avdl Description"
+		);
+	}
 
 	printf("avdl: assets - " GRN "100%%" RESET "\n");
 	fflush(stdout);
