@@ -33,10 +33,6 @@ extern float parsing_float;
 char included_files[10][100];
 int included_files_num = 0;
 
-// buffer for general use
-#define DD_BUFFER_SIZE 6000
-char buffer[DD_BUFFER_SIZE];
-
 // game node, parent of all nodes
 struct ast_node *game_node;
 
@@ -917,7 +913,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 	printf("avdl: compiling cengine - " RED "0%%" RESET "\r");
 	fflush(stdout);
-	char compile_command[DD_BUFFER_SIZE];
+	char compile_command[6000];
 	for (int i = 0; i < cengine_files_total; i++) {
 
 		struct avdl_string cEngFile;
@@ -1094,11 +1090,8 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 
 	// add cengine files to link
-	char tempDir[DD_BUFFER_SIZE];
-	strcpy(tempDir, ".avdl_cache/cengine/");
 	for (int i = 0; i < cengine_files_total; i++) {
-		avdl_string_cat(&link_cmd, tempDir);
-		avdl_string_cat(&link_cmd, "/");
+		avdl_string_cat(&link_cmd, ".avdl_cache/cengine/");
 
 		struct avdl_string tempfile;
 		avdl_string_create(&tempfile, 1024);
@@ -1774,9 +1767,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 	// put all object files to android
-	strcpy(buffer, "avdl_build_android/");
-	strcat(buffer, "/app/src/main/cpp/game/");
-	dir_create(buffer);
+	dir_create("avdl_build_android/app/src/main/cpp/game/");
 
 	// collect avdl android project source
 	struct avdl_string objFilesStr;
@@ -1886,9 +1877,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	avdl_string_clean(&cppFilePath);
 
 	// handle versioning
-	strcpy(buffer, "avdl_build_android/");
-	strcat(buffer, "/app/");
-	outDir = open(buffer, O_DIRECTORY);
+	outDir = open("avdl_build_android/app/", O_DIRECTORY);
 	file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
 	file_replace(outDir, "build.gradle.in2", outDir, "build.gradle.in3", "%AVDL_VERSION_CODE%", avdl_settings->version_code_str);
 	file_replace(outDir, "build.gradle.in3", outDir, "build.gradle", "%AVDL_VERSION_NAME%", avdl_settings->version_name);
@@ -1911,20 +1900,41 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 		file_write("avdl_build_android/app/build.gradle", "}\n", 1);
 	}
 
-	strcpy(buffer, "avdl_build_android/");
-	strcat(buffer, "/app/src/main/res/drawable/");
-	strcat(buffer, avdl_settings->icon_path);
-	file_copy(avdl_settings->icon_path, buffer, 0);
+	struct avdl_string iconPath;
+	avdl_string_create(&iconPath, 1024);
+	avdl_string_cat(&iconPath, "avdl_build_android/");
+	avdl_string_cat(&iconPath, "/app/src/main/res/drawable/");
+	avdl_string_cat(&iconPath, avdl_settings->icon_path);
+	if (!avdl_string_isValid(&iconPath)) {
+		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&iconPath));
+		return -1;
+	}
+	file_copy(avdl_settings->icon_path, avdl_string_toCharPtr(&iconPath), 0);
+	avdl_string_clean(&iconPath);
 
-	strcpy(buffer, "avdl_build_android/");
-	strcat(buffer, "/app/src/main/res/drawable/");
-	strcat(buffer, avdl_settings->icon_foreground_path);
-	file_copy(avdl_settings->icon_foreground_path, buffer, 0);
+	struct avdl_string foregroundPath;
+	avdl_string_create(&foregroundPath, 1024);
+	avdl_string_cat(&foregroundPath, "avdl_build_android/");
+	avdl_string_cat(&foregroundPath, "/app/src/main/res/drawable/");
+	avdl_string_cat(&foregroundPath, avdl_settings->icon_foreground_path);
+	if (!avdl_string_isValid(&foregroundPath)) {
+		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&foregroundPath));
+		return -1;
+	}
+	file_copy(avdl_settings->icon_foreground_path, avdl_string_toCharPtr(&foregroundPath), 0);
+	avdl_string_clean(&foregroundPath);
 
-	strcpy(buffer, "avdl_build_android/");
-	strcat(buffer, "/app/src/main/res/drawable/");
-	strcat(buffer, avdl_settings->icon_background_path);
-	file_copy(avdl_settings->icon_background_path, buffer, 0);
+	struct avdl_string backgroundPath;
+	avdl_string_create(&backgroundPath, 1024);
+	avdl_string_cat(&backgroundPath, "avdl_build_android/");
+	avdl_string_cat(&backgroundPath, "/app/src/main/res/drawable/");
+	avdl_string_cat(&backgroundPath, avdl_settings->icon_background_path);
+	if (!avdl_string_isValid(&backgroundPath)) {
+		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&backgroundPath));
+		return -1;
+	}
+	file_copy(avdl_settings->icon_background_path, avdl_string_toCharPtr(&backgroundPath), 0);
+	avdl_string_clean(&backgroundPath);
 
 	// strings
 	struct avdl_string values_file;
@@ -2321,9 +2331,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 
 	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 	// put all object files to android
-	strcpy(buffer, "avdl_build_quest2/");
-	strcat(buffer, "/src/");
-	dir_create(buffer);
+	dir_create("avdl_build_quest2/src/");
 
 	// copy project src files
 
@@ -2431,9 +2439,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	avdl_string_clean(&cppFilePath);
 
 	// handle versioning
-	strcpy(buffer, "avdl_build_quest2/");
-	strcat(buffer, "/Projects/Android/");
-	outDir = open(buffer, O_DIRECTORY);
+	outDir = open("avdl_build_quest2/Projects/Android/", O_DIRECTORY);
 	file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
 	file_replace(outDir, "build.gradle.in2", outDir, "build.gradle.in3", "%AVDL_VERSION_CODE%", avdl_settings->version_code_str);
 	file_replace(outDir, "build.gradle.in3", outDir, "build.gradle", "%AVDL_VERSION_NAME%", avdl_settings->version_name);
@@ -2446,31 +2452,49 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 		dir_create("avdl_build_quest2/res/drawable/");
 	}
 
-	strcpy(buffer, "avdl_build_quest2/");
-	strcat(buffer, "/res/drawable/");
-	strcat(buffer, avdl_settings->icon_path);
-	file_copy(avdl_settings->icon_path, buffer, 0);
+	struct avdl_string iconPath;
+	avdl_string_create(&iconPath, 1024);
+	avdl_string_cat(&iconPath, "avdl_build_quest2/");
+	avdl_string_cat(&iconPath, "/res/drawable/");
+	avdl_string_cat(&iconPath, avdl_settings->icon_path);
+	if (!avdl_string_isValid(&iconPath)) {
+		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&iconPath));
+		return -1;
+	}
+	file_copy(avdl_settings->icon_path, avdl_string_toCharPtr(&iconPath), 0);
+	avdl_string_clean(&iconPath);
 
-	strcpy(buffer, "avdl_build_quest2/");
-	strcat(buffer, "/res/drawable/");
-	strcat(buffer, avdl_settings->icon_foreground_path);
-	file_copy(avdl_settings->icon_foreground_path, buffer, 0);
+	struct avdl_string foregroundPath;
+	avdl_string_create(&foregroundPath, 1024);
+	avdl_string_cat(&foregroundPath, "avdl_build_quest2/");
+	avdl_string_cat(&foregroundPath, "/res/drawable/");
+	avdl_string_cat(&foregroundPath, avdl_settings->icon_foreground_path);
+	if (!avdl_string_isValid(&foregroundPath)) {
+		avdl_log_error("unable to construct foreground path: %s", avdl_string_getError(&foregroundPath));
+		return -1;
+	}
+	file_copy(avdl_settings->icon_foreground_path, avdl_string_toCharPtr(&foregroundPath), 0);
+	avdl_string_clean(&foregroundPath);
 
-	strcpy(buffer, "avdl_build_quest2/");
-	strcat(buffer, "/res/drawable/");
-	strcat(buffer, avdl_settings->icon_background_path);
-	file_copy(avdl_settings->icon_background_path, buffer, 0);
+	struct avdl_string backgroundPath;
+	avdl_string_create(&backgroundPath, 1024);
+	avdl_string_cat(&backgroundPath, "avdl_build_quest2/");
+	avdl_string_cat(&backgroundPath, "/res/drawable/");
+	avdl_string_cat(&backgroundPath, avdl_settings->icon_foreground_path);
+	if (!avdl_string_isValid(&backgroundPath)) {
+		avdl_log_error("unable to construct background path: %s", avdl_string_getError(&foregroundPath));
+		return -1;
+	}
+	file_copy(avdl_settings->icon_background_path, avdl_string_toCharPtr(&foregroundPath), 0);
+	avdl_string_clean(&backgroundPath);
 
 	if (!is_dir("avdl_build_quest2/res/values/")) {
 		dir_create("avdl_build_quest2/res/values/");
 	}
 
 	// project name
-	strcpy(buffer, "avdl_build_quest2/");
-	strcat(buffer, "/res/values/");
-	outDir = open(buffer, O_DIRECTORY);
+	outDir = open("avdl_build_quest2/res/values/", O_DIRECTORY);
 	file_replace(outDir, "strings.xml.in", outDir, "strings.xml", "%AVDL_PROJECT_NAME%", avdl_settings->project_name);
-	strcat(buffer, "strings.xml.in");
 	file_remove("avdl_build_quest2/res/values/strings.xml.in");
 	close(outDir);
 	#endif
@@ -2481,9 +2505,7 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 
 	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 	// put all object files to android
-	strcpy(buffer, "avdl_build_d3d11/");
-	strcat(buffer, "/src/");
-	dir_create(buffer);
+	dir_create("avdl_build_d3d11/src/");
 
 	// copy project src files
 
