@@ -151,6 +151,8 @@ int avdl_metadata(struct AvdlSettings *);
 int avdl_android_object(struct AvdlSettings *);
 int avdl_quest2_object(struct AvdlSettings *);
 int avdl_d3d11_object(struct AvdlSettings *);
+int avdl_cmake(struct AvdlSettings *);
+int avdl_makefile(struct AvdlSettings *);
 
 // hide main when doing unit tests - temporary solution
 #ifdef AVDL_UNIT_TEST
@@ -205,30 +207,14 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// makefile generation
 	if (avdl_settings.makefile_mode) {
-		struct avdl_string makefilePath;
-		avdl_string_create(&makefilePath, 1024);
-		avdl_string_cat(&makefilePath, avdl_pkg_GetProjectPath());
-		avdl_string_cat(&makefilePath, "/share/avdl/templates/makefile");
-		if ( !avdl_string_isValid(&makefilePath) ) {
-			avdl_log_error("could not construct makefile path");
-			avdl_string_clean(&makefilePath);
+		if (avdl_makefile(&avdl_settings) != 0) {
+			avdl_log_error("failed to generate " BLU "makefile" RESET " for " BLU "%s" RESET, avdl_settings.project_name);
 			return -1;
 		}
-		file_copy(avdl_string_toCharPtr(&makefilePath), ".makefile", 0);
-		avdl_string_clean(&makefilePath);
-		file_replace(0, ".makefile", 0, ".makefile1", "%AVDL_PROJECT_NAME%", avdl_settings.project_name);
-		file_replace(0, ".makefile1", 0, ".makefile2", "%AVDL_PROJECT_NAME_CODE%", avdl_settings.project_name_code);
-		file_replace(0, ".makefile2", 0, ".makefile3", "%AVDL_VERSION_NAME%", avdl_settings.version_name);
-		file_replace(0, ".makefile3", 0, ".makefile4", "%AVDL_VERSION_CODE%", avdl_settings.version_code_str);
-		file_replace(0, ".makefile4", 0, "makefile", "%AVDL_PACKAGE_NAME%", avdl_settings.package);
-		file_remove(".makefile");
-		file_remove(".makefile1");
-		file_remove(".makefile2");
-		file_remove(".makefile3");
-		file_remove(".makefile4");
 
+		// report results
 		avdl_time_end(&clock);
-		avdl_log("avdl: " BLU "makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
+		avdl_log("avdl: " BLU "./makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
 		return 0;
 	}
 
@@ -240,104 +226,12 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// cmake generation
 	if (avdl_settings.cmake_mode) {
-
-		struct avdl_string path;
-		avdl_string_create(&path, 1024);
-		avdl_string_cat(&path, avdl_pkg_GetProjectPath());
-		avdl_string_cat(&path, "/share/avdl/templates/CMakeLists.txt");
-		if ( !avdl_string_isValid(&path) ) {
-			avdl_log_error("could not construct cmake path");
-			avdl_string_clean(&path);
+		if (avdl_cmake(&avdl_settings) != 0) {
+			avdl_log_error("failed to generate " BLU "cmake" RESET " for " BLU "%s" RESET, avdl_settings.project_name);
 			return -1;
 		}
-
-		// collect avdl source
-		struct avdl_string avdl_src;
-		avdl_string_create(&avdl_src, 5024);
-		for (int i = 0; i < cengine_files_total; i++) {
-			avdl_string_cat(&avdl_src, "cengine/");
-			avdl_string_cat(&avdl_src, cengine_files[i]);
-			avdl_string_cat(&avdl_src, " ");
-		}
-		if ( !avdl_string_isValid(&avdl_src) ) {
-			avdl_log_error("could not construct avdl_src path");
-			avdl_string_clean(&avdl_src);
-			return -1;
-		}
-
-		// collect avdl project source
-		struct dd_dynamic_array srcFiles;
-		Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &srcFiles);
-		for (int i = 0; i < dd_da_count(&srcFiles); i++) {
-			struct avdl_string *str = dd_da_get(&srcFiles, i);
-			if (!avdl_string_endsIn(str, ".dd.c")) {
-				dd_da_remove(&srcFiles, 1, i);
-				i--;
-			}
-		}
-
-		// project data in cmake
-		struct avdl_string cmake_data;
-		avdl_string_create(&cmake_data, 5024);
-		avdl_string_cat(&cmake_data, "set(AVDL_PROJECT_NAME \"");
-		avdl_string_cat(&cmake_data, avdl_settings.project_name);
-		avdl_string_cat(&cmake_data, "\")\n");
-		avdl_string_cat(&cmake_data, "set(AVDL_PROJECT_NAME_CODE ");
-		avdl_string_cat(&cmake_data, avdl_settings.project_name_code);
-		avdl_string_cat(&cmake_data, ")\n");
-		avdl_string_cat(&cmake_data, "set(AVDL_VERSION_NAME ");
-		avdl_string_cat(&cmake_data, avdl_settings.version_name);
-		avdl_string_cat(&cmake_data, ")\n");
-		avdl_string_cat(&cmake_data, "set(AVDL_SRC ");
-		avdl_string_cat(&cmake_data, avdl_string_toCharPtr(&avdl_src));
-
-		// avdl project src
-		for (int i = 0; i < dd_da_count(&srcFiles); i++) {
-			struct avdl_string *str = dd_da_get(&srcFiles, i);
-			avdl_string_cat(&cmake_data, ".avdl_cache/");
-			avdl_string_cat(&cmake_data, avdl_string_toCharPtr(str));
-			avdl_string_cat(&cmake_data, " ");
-		}
-
-		avdl_string_cat(&cmake_data, avdl_settings.project_name_code);
-		avdl_string_cat(&cmake_data, ".rc ");
-		avdl_string_cat(&cmake_data, ")\n");
-		avdl_string_cat(&cmake_data, "set(AVDL_ASSETS ");
-
-		// collect avdl project assets
-		struct dd_dynamic_array assetFiles;
-		Avdl_FileOp_GetFilesInDirectory("assets", &assetFiles);
-
-		// put assets into cmake
-		for (int i = 0; i < dd_da_count(&assetFiles); i++) {
-			struct avdl_string *str = dd_da_get(&assetFiles, i);
-			if (strcmp("." , avdl_string_toCharPtr(str)) == 0
-			||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
-				dd_da_remove(&assetFiles, 1, i);
-				i--;
-			}
-			else {
-				avdl_string_cat(&cmake_data, "assets/");
-				avdl_string_cat(&cmake_data, avdl_string_toCharPtr(str));
-				avdl_string_cat(&cmake_data, " ");
-			}
-		}
-
-		avdl_string_cat(&cmake_data, ")\n");
-		if ( !avdl_string_isValid(&cmake_data) ) {
-			avdl_log_error("could not construct cmake_data");
-			avdl_string_clean(&cmake_data);
-			return -1;
-		}
-
-		file_write("avdl_project.cmake", avdl_string_toCharPtr(&cmake_data), 0);
-		file_copy(avdl_string_toCharPtr(&path), "CMakeLists.txt", 0);
-		avdl_log(BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated" RESET, avdl_settings.project_name);
-
-		avdl_string_clean(&path);
-		avdl_string_clean(&avdl_src);
-		avdl_string_clean(&cmake_data);
-
+		avdl_time_end(&clock);
+		avdl_log("avdl: " BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
 		return 0;
 	}
 
@@ -403,14 +297,15 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		return 0;
 	}
 
-	// normal directories
-	if (!is_dir("avdl_build")) {
-		dir_create("avdl_build");
-	}
-
+	// translate only (-t)
 	if (avdl_settings.translate_only) {
 		avdl_log("avdl: done translating");
 		return 0;
+	}
+
+	// normal directories
+	if (!is_dir("avdl_build")) {
+		dir_create("avdl_build");
 	}
 
 	// from `.c` to `.o`
@@ -711,7 +606,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 			avdl_string_clean(&dstFilePath);
 			return -1;
 		}
-		printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (i)/dd_da_count(&srcFiles) *100));
+		printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(dd_da_count(&srcFiles)+1) *100));
 		fflush(stdout);
 
 		avdl_string_clean(&srcFilePath);
@@ -872,7 +767,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 
-		printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (i)/dd_da_count(&srcFiles) *100));
+		printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(dd_da_count(&srcFiles) +1) *100));
 		fflush(stdout);
 
 		avdl_string_clean(&srcFilePath);
@@ -984,7 +879,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		// skip files already compiled
 		if ( avdl_settings->use_cache && Avdl_FileOp_DoesFileExist(avdl_string_toCharPtr(&cenginePathOut)) ) {
 			//printf("skipping: %s\n", buffer);
-			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/cengine_files_total *100));
+			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(cengine_files_total+1) *100));
 			fflush(stdout);
 			continue;
 		}
@@ -996,7 +891,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 ////		if (!avdlQuietMode) {
-			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/cengine_files_total *100));
+			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(cengine_files_total+1) *100));
 			fflush(stdout);
 ////		}
 	}
@@ -1527,7 +1422,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		 */
 		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
 
-		printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (i)/dd_da_count(&assetFiles) *100));
+		printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(dd_da_count(&assetFiles)+1) *100));
 		fflush(stdout);
 		avdl_string_clean(&srcFilePath);
 		avdl_string_clean(&dstFilePath);
@@ -2706,5 +2601,135 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	close(outDir);
 	*/
 	#endif
+	return 0;
+}
+
+int avdl_cmake(struct AvdlSettings *avdl_settings) {
+
+	// copy cmake template to current directory
+	struct avdl_string path;
+	avdl_string_create(&path, 1024);
+	avdl_string_cat(&path, avdl_pkg_GetProjectPath());
+	avdl_string_cat(&path, "/share/avdl/templates/CMakeLists.txt");
+	if ( !avdl_string_isValid(&path) ) {
+		avdl_log_error("could not construct cmake path");
+		avdl_string_clean(&path);
+		return -1;
+	}
+	file_copy(avdl_string_toCharPtr(&path), "CMakeLists.txt", 0);
+	avdl_string_clean(&path);
+
+	// collect avdl source
+	struct avdl_string avdl_src;
+	avdl_string_create(&avdl_src, 5024);
+	for (int i = 0; i < cengine_files_total; i++) {
+		avdl_string_cat(&avdl_src, "cengine/");
+		avdl_string_cat(&avdl_src, cengine_files[i]);
+		avdl_string_cat(&avdl_src, " ");
+	}
+	if ( !avdl_string_isValid(&avdl_src) ) {
+		avdl_log_error("could not construct avdl_src path");
+		avdl_string_clean(&avdl_src);
+		return -1;
+	}
+
+	// collect avdl project source
+	struct dd_dynamic_array srcFiles;
+	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &srcFiles);
+	for (int i = 0; i < dd_da_count(&srcFiles); i++) {
+		struct avdl_string *str = dd_da_get(&srcFiles, i);
+		if (!avdl_string_endsIn(str, ".dd.c")) {
+			dd_da_remove(&srcFiles, 1, i);
+			i--;
+		}
+	}
+
+	// project data in cmake
+	struct avdl_string cmake_data;
+	avdl_string_create(&cmake_data, 5024);
+	avdl_string_cat(&cmake_data, "set(AVDL_PROJECT_NAME \"");
+	avdl_string_cat(&cmake_data, avdl_settings->project_name);
+	avdl_string_cat(&cmake_data, "\")\n");
+	avdl_string_cat(&cmake_data, "set(AVDL_PROJECT_NAME_CODE ");
+	avdl_string_cat(&cmake_data, avdl_settings->project_name_code);
+	avdl_string_cat(&cmake_data, ")\n");
+	avdl_string_cat(&cmake_data, "set(AVDL_VERSION_NAME ");
+	avdl_string_cat(&cmake_data, avdl_settings->version_name);
+	avdl_string_cat(&cmake_data, ")\n");
+	avdl_string_cat(&cmake_data, "set(AVDL_SRC ");
+	avdl_string_cat(&cmake_data, avdl_string_toCharPtr(&avdl_src));
+
+	// avdl project src
+	for (int i = 0; i < dd_da_count(&srcFiles); i++) {
+		struct avdl_string *str = dd_da_get(&srcFiles, i);
+		avdl_string_cat(&cmake_data, ".avdl_cache/");
+		avdl_string_cat(&cmake_data, avdl_string_toCharPtr(str));
+		avdl_string_cat(&cmake_data, " ");
+	}
+
+	avdl_string_cat(&cmake_data, avdl_settings->project_name_code);
+	avdl_string_cat(&cmake_data, ".rc ");
+	avdl_string_cat(&cmake_data, ")\n");
+	avdl_string_cat(&cmake_data, "set(AVDL_ASSETS ");
+
+	// collect avdl project assets
+	struct dd_dynamic_array assetFiles;
+	Avdl_FileOp_GetFilesInDirectory("assets", &assetFiles);
+
+	// put assets into cmake
+	for (int i = 0; i < dd_da_count(&assetFiles); i++) {
+		struct avdl_string *str = dd_da_get(&assetFiles, i);
+		if (strcmp("." , avdl_string_toCharPtr(str)) == 0
+		||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
+			continue;
+		}
+		else {
+			avdl_string_cat(&cmake_data, "assets/");
+			avdl_string_cat(&cmake_data, avdl_string_toCharPtr(str));
+			avdl_string_cat(&cmake_data, " ");
+		}
+	}
+
+	avdl_string_cat(&cmake_data, ")\n");
+	if ( !avdl_string_isValid(&cmake_data) ) {
+		avdl_log_error("could not construct cmake_data");
+		avdl_string_clean(&cmake_data);
+		return -1;
+	}
+
+	file_write("avdl_project.cmake", avdl_string_toCharPtr(&cmake_data), 0);
+
+	avdl_string_clean(&avdl_src);
+	avdl_string_clean(&cmake_data);
+	return 0;
+}
+
+int avdl_makefile(struct AvdlSettings *avdl_settings) {
+
+	// copy the makefile template to the current directory
+	struct avdl_string makefilePath;
+	avdl_string_create(&makefilePath, 1024);
+	avdl_string_cat(&makefilePath, avdl_pkg_GetProjectPath());
+	avdl_string_cat(&makefilePath, "/share/avdl/templates/makefile");
+	if ( !avdl_string_isValid(&makefilePath) ) {
+		avdl_log_error("could not construct makefile path");
+		avdl_string_clean(&makefilePath);
+		return -1;
+	}
+	file_copy(avdl_string_toCharPtr(&makefilePath), ".makefile", 0);
+	avdl_string_clean(&makefilePath);
+
+	// inject project details to the makefile
+	file_replace(0, ".makefile", 0, ".makefile1", "%AVDL_PROJECT_NAME%", avdl_settings->project_name);
+	file_replace(0, ".makefile1", 0, ".makefile2", "%AVDL_PROJECT_NAME_CODE%", avdl_settings->project_name_code);
+	file_replace(0, ".makefile2", 0, ".makefile3", "%AVDL_VERSION_NAME%", avdl_settings->version_name);
+	file_replace(0, ".makefile3", 0, ".makefile4", "%AVDL_VERSION_CODE%", avdl_settings->version_code_str);
+	file_replace(0, ".makefile4", 0, "makefile", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
+	file_remove(".makefile");
+	file_remove(".makefile1");
+	file_remove(".makefile2");
+	file_remove(".makefile3");
+	file_remove(".makefile4");
+
 	return 0;
 }
