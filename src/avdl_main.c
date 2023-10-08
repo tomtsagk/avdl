@@ -515,6 +515,8 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 			continue;
 		}
 
+		//avdl_log("about to transpile: %s", avdl_string_toCharPtr(str));
+
 		// src file full path
 		struct avdl_string srcFilePath;
 		avdl_string_create(&srcFilePath, 1024);
@@ -713,12 +715,14 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		if ( avdl_settings->use_cache
 		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
 		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
+			//avdl_log("skipping file: %s", avdl_string_toCharPtr(&srcFilePath));
 			avdl_string_clean(&srcFilePath);
 			avdl_string_clean(&dstFilePath);
-			return 0;
+			continue;
 		}
 
 		//printf("compiling %s\n", dir->d_name);
+		//avdl_log("compiling %s\n", avdl_string_toCharPtr(&srcFilePath));
 
 		// command string
 		struct avdl_string commandString;
