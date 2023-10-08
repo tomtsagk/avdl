@@ -31,7 +31,7 @@ extern int dd_gameInitWindowWidth, dd_gameInitWindowHeight;
 #define dd_setInitWindowSize(w, h) dd_gameInitWindowWidth = w; dd_gameInitWindowHeight = h;
 
 // return screen limits on given `z`
-#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
 extern int dd_width;
 extern int dd_height;
 #define dd_window_width() dd_width
@@ -46,10 +46,6 @@ float dd_screen_height_get(float z);
 // return distance from camera, based on given width or height
 float dd_screen_distance_getw(float width);
 float dd_screen_distance_geth(float height);
-
-// full screen
-void dd_fullscreenToggle();
-int dd_canFullscreenToggle();
 
 extern int dd_flag_initialised;
 extern int dd_flag_focused;

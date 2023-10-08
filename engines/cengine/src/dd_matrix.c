@@ -54,7 +54,7 @@ void dd_matrix_translatea(struct dd_matrix *m, float x, float y, float z) {
 void dd_matrix_translates(struct dd_matrix *m, float x, float y, float z) {
 	// the quest 2 engine is using different ways to organise
 	// matrices, this is a temp solution
-	#if defined(AVDL_QUEST2)
+	#if defined( AVDL_DIRECT3D11 ) || defined( AVDL_QUEST2 )
 	m->cell[ 3] = x;
 	m->cell[ 7] = y;
 	m->cell[11] = z;
@@ -173,7 +173,7 @@ void dd_matrix_rotatelocal_z(struct dd_matrix *m, float rad) {
 void dd_matrix_rotate(struct dd_matrix *m, float angle, float x, float y, float z) {
 	struct dd_matrix m2;
 	float angleRadians = 3.14/180.0 *(-angle);
-	#if defined(AVDL_QUEST2)
+	#if defined( AVDL_DIRECT3D11 ) || defined( AVDL_QUEST2 )
 	m2.cell[ 0] = pow(x, 2) *(1-cos(angleRadians))+cos(angleRadians);
 	m2.cell[ 1] = y*x*(1-cos(angleRadians))+z*sin(angleRadians);
 	m2.cell[ 2] = x*z*(1-cos(angleRadians))-y*sin(angleRadians);
@@ -215,7 +215,7 @@ void dd_matrix_mult(struct dd_matrix *m1, struct dd_matrix *m2) {
 	struct dd_matrix new_mat;
 	int x;
 	for (x = 0; x < 16; x++) {
-		#if defined(AVDL_QUEST2)
+		#if defined( AVDL_DIRECT3D11 ) || defined( AVDL_QUEST2 )
 		new_mat.cell[x] =
 			(m2->cell[(x%4)+ 0] *m1->cell[(x/4)*4+0]) +
 			(m2->cell[(x%4)+ 4] *m1->cell[(x/4)*4+1]) +
@@ -293,7 +293,7 @@ void dd_matrix_globalInit() {
 
 	// for the time being, on quest 2, the engine is giving the default matrix
 	// (where the headset is) so don't create perspective
-	#if defined(AVDL_QUEST2)
+	#if defined( AVDL_QUEST2 )
 	dd_matrix_identity(&dd_cam[0]);
 	#else
 	dd_matrix_copy(&dd_cam[0], &matPerspective);
@@ -351,7 +351,7 @@ void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float t
 	dd_vec3_cross(&up, &forward, &right);
 	dd_vec3_normalise(&up);
 
-	#if defined(AVDL_QUEST2)
+	#if defined( AVDL_DIRECT3D11 ) || defined( AVDL_QUEST2 )
 	float rot_mat[] = {
 		right.x, up.x, forward.x, 0,
 		right.y, up.y, forward.y, 0,

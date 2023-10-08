@@ -64,6 +64,7 @@ enum AVDL_PLATFORM {
 	AVDL_PLATFORM_WINDOWS,
 	AVDL_PLATFORM_ANDROID,
 	AVDL_PLATFORM_QUEST2,
+	AVDL_PLATFORM_D3D11,
 
 	AVDL_PLATFORM_UNKNOWN,
 };
@@ -110,8 +111,13 @@ struct AvdlSettings {
 	char pkg_path[1024];
 	char cengine_path[1024];
 	char save_path[1024];
+
+	// add steam
 	int steam_mode;
+
+	// include c++ functionality
 	int cpp_mode;
+
 	int standalone;
 	int quiet_mode;
 	int makefile_mode;

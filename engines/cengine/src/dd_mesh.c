@@ -71,8 +71,12 @@ void dd_mesh_create(struct dd_mesh *m) {
 	m->load = dd_mesh_load;
 	m->copy = dd_mesh_copy;
 
+	#if !defined( AVDL_DIRECT3D11 )
 	m->buffer = 0;
 	m->array = 0;
+	#endif
+
+	m->vertexBuffer = 0;
 }
 
 void dd_mesh_set_primitive(struct dd_mesh *m, enum dd_primitives shape) {
@@ -109,19 +113,25 @@ void dd_mesh_clean(struct dd_mesh *m) {
 		m->dirtyVertices = 0;
 	}
 
+	#if !defined( AVDL_DIRECT3D11 )
 	if (m->array) {
 		glDeleteVertexArrays(1, &m->array);
 		glDeleteBuffers(1, &m->buffer);
 		m->array = 0;
 		m->buffer = 0;
 	}
+	#endif
 }
 
 /* draw the mesh itself
  */
 void dd_mesh_draw(struct dd_mesh *m) {
-
-	#ifndef AVDL_DIRECT3D11
+	#ifdef AVDL_DIRECT3D11
+	if (!m->vertexBuffer && m->v) {
+		avdl_graphics_direct3d11_setVertexBufferMesh(m);
+	}
+	avdl_graphics_direct3d11_drawMeshMesh(m, dd_matrix_globalGet());
+	#else
 
 	if (m->array == 0 || m->openglContextId != avdl_graphics_getContextId()) {
 

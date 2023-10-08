@@ -36,18 +36,15 @@ enum { ovrMaxLayerCount = 16 };
 
 struct avdl_engine {
 
+	// graphics to display window and render
+	struct avdl_graphics graphics;
+
 	#ifdef AVDL_DIRECT3D11
 	/*
 	HINSTANCE hInstance;
 	int nCmdShow;
 	HWND hwnd;
 	*/
-	#else
-	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-	SDL_Window *window;
-	SDL_GLContext glContext;
-	#endif
-
 	#endif
 
 	int isRunning;

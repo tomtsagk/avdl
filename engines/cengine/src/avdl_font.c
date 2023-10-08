@@ -17,14 +17,12 @@ FT_Library library;
 
 int avdl_font_init() {
 
-	#ifndef AVDL_DIRECT3D11
 	int error = FT_Init_FreeType( &library );
 	if (error) {
 		dd_log("avdl: error initialising freetype2");
 		return -1;
 	}
 
-	#endif
 	return 0;
 
 } // string3d init
@@ -52,7 +50,11 @@ void avdl_font_create(struct avdl_font *o) {
 	dd_image_create(&o->texture);
 	o->texture.width = FONT_ATLAS_WIDTH;
 	o->texture.height = FONT_ATLAS_HEIGHT;
+	#if defined( AVDL_DIRECT3D11)
+	o->texture.pixelFormat = 0;
+	#else
 	o->texture.pixelFormat = GL_RGBA;
+	#endif
 	o->texture.openglContextId = avdl_graphics_getContextId();
 	o->outline_thickness = 0;
 	o->fontData = 0;
@@ -72,6 +74,7 @@ void avdl_font_create(struct avdl_font *o) {
 	}
 
 	#else
+
 	o->texture.pixels = malloc(sizeof(float) *4 *o->texture.width *o->texture.height);
 
 	// clean the texture
@@ -162,7 +165,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 	// outline
 	int cx = 0;
 	int cy = 0;
-	FT_Glyph glyphDescStroke;
+	FT_Glyph glyphDescStroke = {0};
 	if (o->outline_thickness > 0) {
 		FT_Stroker stroker;
 		FT_Stroker_New(library, &stroker);
@@ -339,6 +342,8 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 	else
 	// texture already made, pass sub texture to draw
 	if (o->texture.tex) {
+		#if defined( AVDL_DIRECT3D11 )
+		#else
 		glBindTexture(GL_TEXTURE_2D, o->texture.tex);
 
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
@@ -358,6 +363,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		#endif
 
 		glBindTexture(GL_TEXTURE_2D, 0);
+		#endif
 	}
 	else {
 		//dd_log("dd_image has error state ?");
@@ -397,6 +403,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 	#endif
 
 	return glyph_id;
+
 }
 
 int avdl_font_releaseGlyph(struct avdl_font *o, int glyph_id) {
@@ -509,6 +516,8 @@ extern JavaVM* jvm;
 extern jclass *clazz;
 #endif
 
+extern const char* getAppLocation(void);
+
 void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outline_thickness) {
 
 	CleanFontData(o);
@@ -536,20 +545,36 @@ void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outl
 	}
 	#else
 
+	char *assetName;
+	#if defined( AVDL_DIRECT3D11 )
+	char* appLoc = getAppLocation();
+	char buffer[10000];
+	strcpy_s(buffer, 10000, appLoc);
+	strcat_s(buffer, 10000, "/");
+	strcat_s(buffer, 10000, name);
+	assetName = buffer;
+	#else
+	assetName = name;
+	#endif
+
 	// native
 
 	int error = FT_New_Face(library,
-		name,
+		assetName,
 		0,
 		&o->face
 	);
 	if ( error == FT_Err_Unknown_File_Format ) {
-		dd_log("avdl: unsupported font file format: %s", name);
+		dd_log("avdl: unsupported font file format: %s", assetName);
 		o->face = 0;
 		return;
 	}
+	else if (error == FT_Err_Cannot_Open_Resource) {
+		dd_log("avdl: cannot open resource: %s", assetName);
+		o->face = 0;
+	}
 	else if ( error ) {
-		dd_log("avdl: unknown error parsing font: %s", name);
+		dd_log("avdl: unknown error parsing font: %s", assetName);
 		o->face = 0;
 		return;
 	}
@@ -568,6 +593,7 @@ float avdl_font_getGlyphAdvance(struct avdl_font *o, int glyph_id) {
 
 int avdl_font_needsRefresh(struct avdl_font *o) {
 
+	#if !defined( AVDL_DIRECT3D11 )
 	// font needs to refresh
 	if (o->openglContextId != o->texture.openglContextId) {
 		//dd_log("font needs refresh");
@@ -575,11 +601,13 @@ int avdl_font_needsRefresh(struct avdl_font *o) {
 		avdl_font_releaseAllGlyphs(o);
 		return 1;
 	}
+	#endif
 
 	return 0;
 }
 
 void avdl_font_addCustomIcon(struct avdl_font *o, const char *keyword, struct dd_image *image) {
+	#if !defined( AVDL_DIRECT3D11 )
 	if (o->customIconCount >= 10) {
 		dd_log("avdl error: too many custom icons in font");
 		return;
@@ -587,4 +615,5 @@ void avdl_font_addCustomIcon(struct avdl_font *o, const char *keyword, struct dd
 	o->customIcon[o->customIconCount] = image;
 	o->customIconKeyword[o->customIconCount] = keyword;
 	o->customIconCount++;
+	#endif
 }

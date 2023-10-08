@@ -106,6 +106,9 @@ INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/man/man1/ \
 	${DESTDIR}${prefix}/share/avdl/android \
 	${DESTDIR}${prefix}/share/avdl/quest2 \
 	${DESTDIR}${prefix}/share/avdl/quest2/src \
+	${DESTDIR}${prefix}/share/avdl/d3d11 \
+	${DESTDIR}${prefix}/share/avdl/d3d11/src \
+	${DESTDIR}${prefix}/share/avdl/d3d11/avdl_src \
 	${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine \
 	${DESTDIR}${prefix}/share/avdl/templates \
 	${DESTDIR}${prefix}/share/vim/vimfiles/syntax/ \
@@ -140,6 +143,12 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 		${DESTDIR}${prefix}/share/avdl/quest2/src
 	sed -i '/%AVDL_ENGINE_FILES%/ s#%AVDL_ENGINE_FILES%#${ENGINE_FILES_QUEST2_SRC}#'\
 		${DESTDIR}${prefix}/share/avdl/quest2/Projects/Android/jni/Android.mk.in
+	@# d3d11 engine
+	cp -r engines/d3d11/* ${DESTDIR}${prefix}/share/avdl/d3d11
+	cp -r engines/cengine/src/*.c engines/cengine/src/*.cpp engines/cengine/include/*.h\
+		${DESTDIR}${prefix}/share/avdl/d3d11/avdl_src
+	@#sed -i '/%AVDL_ENGINE_FILES%/ s#%AVDL_ENGINE_FILES%#${ENGINE_FILES_QUEST2_SRC}#'
+	@#	${DESTDIR}${prefix}/share/avdl/quest2/Projects/Android/jni/Android.mk.in
 	@# vim syntax files
 	install vim/syntax/avdl.vim ${DESTDIR}${prefix}/share/vim/vimfiles/syntax/
 	install vim/ftdetect/avdl.vim ${DESTDIR}${prefix}/share/vim/vimfiles/ftdetect/

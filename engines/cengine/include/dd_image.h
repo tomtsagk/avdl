@@ -15,7 +15,7 @@ enum AVDL_IMAGETYPE {
 
 struct dd_image {
 	#ifdef AVDL_DIRECT3D11
-	int tex;
+	avdl_texture_id tex;
 	int *pixelsb;
 	#else
 	GLuint tex;

@@ -1,13 +1,13 @@
 #ifndef DD_TEXT_H
 #define DD_TEXT_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "avdl_cengine.h"
 #include "dd_image.h"
 #include "avdl_font.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 enum dd_string3d_align {
 	DD_STRING3D_ALIGN_LEFT,

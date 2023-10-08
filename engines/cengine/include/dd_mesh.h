@@ -28,8 +28,10 @@ struct dd_mesh {
 	int dirtyVertices;
 	float *v;
 
+	#if !defined( AVDL_DIRECT3D11 )
 	GLuint buffer;
 	GLuint array;
+	#endif
 
 	int openglContextId;
 
@@ -43,6 +45,8 @@ struct dd_mesh {
 
 	void (*translatef)(struct dd_mesh *, float x, float y, float z);
 	void (*scalef)(struct dd_mesh *, float x, float y, float z);
+
+	avdl_graphics_mesh* vertexBuffer;
 };
 
 // constructor

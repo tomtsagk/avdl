@@ -9,6 +9,8 @@
 
 #include "avdl_file_op.h"
 #include "avdl_settings.h"
+#include "avdl_string.h"
+#include "avdl_log.h"
 
 #if AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <io.h>
@@ -477,6 +479,102 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 	closedir(d);
 	return 0;
 	#endif
+}
+
+int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct dd_dynamic_array *array) {
+
+	dd_da_init(array, sizeof(struct avdl_string));
+
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+
+	WIN32_FIND_DATA fdFile;
+	HANDLE hFind = NULL;
+
+	char sPath[2048];
+
+	//Specify a file mask. *.* = We want everything!
+	sprintf(sPath, "%s\\*.*", dirname);
+
+	if((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE)
+	{
+		avdl_log_error("Path not found: [%s]\n", dirname);
+		return -1;
+	}
+
+	do
+	{
+
+		//Find first file will always return "."
+		//    and ".." as the first two directories.
+		if(strcmp(fdFile.cFileName, ".") == 0
+		|| strcmp(fdFile.cFileName, "..") == 0) {
+			continue;
+		}
+
+		//Build up our file path using the passed in
+		//  [sDir] and the file/foldername we just found:
+		sprintf(sPath, "%s\\%s", dirname, fdFile.cFileName);
+
+		//Is the entity a File or Folder?
+		if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY)
+		{
+			//avdl_log("Directory: %s\n", sPath);
+			//ListDirectoryContents(sPath); //Recursion, I love it!
+		}
+		else{
+
+			// add a string into the array and get a pointer to it
+			struct avdl_string str;
+			dd_da_push(array, &str);
+			struct avdl_string *str2 = dd_da_get(array, -1);
+
+			// put filename into the string
+			avdl_string_create(str2, 1024);
+			avdl_string_cat(str2, fdFile.cFileName);
+			if ( !avdl_string_isValid(str2) ) {
+				avdl_log_error("Unable to collect filename");
+				return -1;
+			}
+		}
+	}
+	while(FindNextFile(hFind, &fdFile)); //Find the next file.
+
+	FindClose(hFind); //Always, Always, clean things up!
+
+	return 0;
+	#else
+
+	/*
+	 * start reading all files from source directory
+	 */
+	DIR *d = opendir(dirname);
+	if (!d) {
+		avdl_log_error("Unable to open directory '%s': %s\n", dirname, strerror(errno));
+		return -1;
+	}
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+
+		// add a string into the array and get a pointer to it
+		struct avdl_string str;
+		dd_da_push(array, &str);
+		struct avdl_string *str2 = dd_da_get(array, -1);
+
+		// put filename into the string
+		avdl_string_create(str2, 1024);
+		avdl_string_cat(str2, dir->d_name);
+		if ( !avdl_string_isValid(str2) ) {
+			avdl_log_error("Unable to collect filename");
+			return -1;
+		}
+
+	}
+
+	closedir(d);
+	return 0;
+	#endif
+	return 0;
 }
 
 int Avdl_FileOp_DoesFileExist(const char *filename) {

@@ -5,8 +5,7 @@
 #include "avdl_assetManager.h"
 #include <errno.h>
 
-#ifdef AVDL_DIRECT3D11
-#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
 #else
 #include <png.h>
 #endif
@@ -39,21 +38,47 @@ void dd_image_create(struct dd_image *o) {
 	o->clean = dd_image_clean;
 	o->set = dd_image_set;
 
+	#if !defined( AVDL_DIRECT3D11 )
 	dd_da_init(&o->subpixels, sizeof(struct Subpixel));
+	#endif
 }
+
+#if defined( AVDL_DIRECT3D11 )
+extern avdl_texture_id avdl_graphics_loadDDS(char *filename);
+extern FILE* avdl_filetomesh_openFile(char* filename);
+#endif
 
 void dd_image_load_png(struct dd_image *img, const char *filename) {
 
-	#ifdef AVDL_DIRECT3D11
-	#else
-
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	#elif defined( AVDL_DIRECT3D11 )
+	img->tex = avdl_graphics_loadDDS(filename);
+	/*
+	img->width = 10;
+	img->height = 10;
+	img->pixelFormat = 0;
+	img->pixels = malloc(sizeof(float) * img->width * img->height * 3);
+	for (int x = 0; x < img->width; x++)
+		for (int y = 0; y < img->height; y++) {
+			int index = (y * img->width * 3) + x * 3;
+			//img->pixels[(y * img->width * 3) + x * 3 + 0] = x * 0.1;
+			img->pixels[index + 0] = x * 0.1;
+			img->pixels[index + 1] = 0;
+			//img->pixels[(y * img->width * 3) + x * 3 + 2] = y * 0.1;
+			img->pixels[index + 2] = y * 0.1;
+		}
+		*/
 	#else
 
 	// check signature
-	FILE *fp = fopen(filename, "rb");
+	#if defined( AVDL_DIRECT3D11 )
+	FILE* fp = avdl_filetomesh_openFile(filename);
+	//FILE* fp = avdl_filetomesh_openFile("assets/button.ply");
+	#else
+	FILE* fp = fopen(filename, "rb");
+	#endif;
 	if (!fp) {
-		dd_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
+		//dd_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
 		return;
 	}
 	char header[9];
@@ -90,25 +115,34 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	png_init_io(png_ptr, fp);
 	png_set_sig_bytes(png_ptr, 8);
 	png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, 0);
+	//png_read_info(png_ptr, info_ptr);
 
-	png_uint_32 width;
-	png_uint_32 height;
-	int bit_depth;
-	int color_type;
-	int interlace_type;
-	int compression_type;
-	int filter_method;
+	png_uint_32 width = 0;
+	png_uint_32 height = 0;
+	int bit_depth = 0;
+	int color_type = 0;
+	int interlace_type = 0;
+	int compression_type = 0;
+	int filter_method = 0;
 	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method);
 
 	//dd_log("%dx%d %d %d | %d %d %d", width, height, bit_depth, color_type, interlace_type, compression_type, filter_method);
 
+	#if defined( AVDL_DIRECT3D11)
+	img->pixelFormat = 0;
+	#else
 	img->pixelFormat = GL_RGB;
+	#endif
 	img->width = width;
 	img->height = height;
 	png_bytep *row_pointers = png_get_rows(png_ptr, info_ptr);
 	// grayscale images
 	if (color_type == PNG_COLOR_TYPE_GRAY) {
+		#if defined( AVDL_DIRECT3D11)
+		img->pixelFormat = 0;
+		#else
 		img->pixelFormat = GL_RGB;
+		#endif
 		img->pixels = malloc(sizeof(float) *img->width *img->height *3);
 		for (int x = 0; x < img->width ; x++)
 		for (int y = 0; y < img->height; y++) {
@@ -121,7 +155,11 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	else
 	// RGB images
 	if (color_type == PNG_COLOR_TYPE_RGB) {
+		#if defined( AVDL_DIRECT3D11)
+		img->pixelFormat = 0;
+		#else
 		img->pixelFormat = GL_RGB;
+		#endif
 		img->pixels = malloc(sizeof(float) *img->width *img->height *3);
 		for (int x = 0; x < img->width ; x++)
 		for (int y = 0; y < img->height; y++) {
@@ -134,7 +172,11 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	else
 	// RGBA images
 	if (color_type == PNG_COLOR_TYPE_RGBA) {
+		#if defined( AVDL_DIRECT3D11)
+		img->pixelFormat = 0;
+		#else
 		img->pixelFormat = GL_RGBA;
+		#endif
 		img->pixels = malloc(sizeof(float) *img->width *img->height *4);
 		for (int x = 0; x < img->width ; x++)
 		for (int y = 0; y < img->height; y++) {
@@ -158,8 +200,6 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
 
 	#endif
-
-	#endif // direct3d 11
 
 }
 
@@ -234,8 +274,6 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 }
 
 void dd_image_clean(struct dd_image *o) {
-	#ifdef AVDL_DIRECT3D11
-	#else
 	if (o->pixels) {
 		free(o->pixels);
 		o->pixels = 0;
@@ -250,6 +288,7 @@ void dd_image_clean(struct dd_image *o) {
 		avdl_graphics_DeleteTexture(o->tex);
 	}
 
+	#if !defined( AVDL_DIRECT3D11 )
 	for (int i = 0; i < o->subpixels.elements; i++) {
 		struct Subpixel *subpixel = dd_da_get(&o->subpixels, i);
 		free(subpixel->pixels);
@@ -261,6 +300,17 @@ void dd_image_clean(struct dd_image *o) {
 void dd_image_bind(struct dd_image *o) {
 
 	#ifdef AVDL_DIRECT3D11
+	// send texture to GPU if needed
+	if (o->pixels) {
+		o->tex = avdl_graphics_ImageToGpu(o->pixels, o->pixelFormat, o->width, o->height);
+		free(o->pixels);
+		o->pixels = 0;
+	}
+
+	// bind texture
+	//if (o->openglContextId == avdl_graphics_getContextId()) {
+		avdl_graphics_BindTexture(o->tex);
+	//}
 	#else
 	// manually made texture
 	if (o->openglContextId != avdl_graphics_getContextId() && !o->assetName) {
@@ -307,6 +357,7 @@ void dd_image_bind(struct dd_image *o) {
 		#endif
 	}
 
+	#if !defined( AVDL_DIRECT3D11 )
 	// update texture
 	if (o->subpixels.elements > 0 && o->tex) {
 
@@ -325,6 +376,7 @@ void dd_image_bind(struct dd_image *o) {
 		}
 		dd_da_empty(&o->subpixels);
 	}
+	#endif
 
 	// texture is valid in this opengl context, bind it
 	if (o->openglContextId == avdl_graphics_getContextId()) {
@@ -354,6 +406,9 @@ void dd_image_unbind(struct dd_image *o) {
 
 void dd_image_set(struct dd_image *o, const char *filename, int type) {
 	#ifdef AVDL_DIRECT3D11
+	o->assetName = filename;
+	o->assetType = type;
+	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
 	#else
 	o->openglContextId = avdl_graphics_getContextId();
 	o->assetName = filename;
@@ -363,6 +418,10 @@ void dd_image_set(struct dd_image *o, const char *filename, int type) {
 }
 
 void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, int x, int y, int w, int h) {
+
+	#if defined( AVDL_DIRECT3D11 )
+	return;
+	#else
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	GLubyte *pixelsf = pixels;
@@ -390,5 +449,7 @@ void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, i
 	subpixel.height = h;
 
 	dd_da_add(&o->subpixels, &subpixel);
+
+	#endif
 
 }
