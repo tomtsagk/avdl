@@ -66,6 +66,7 @@ struct avdl_engine {
 	struct AvdlInput input;
 
 	struct avdl_time end_of_update_time;
+	struct avdl_time frame_duration;
 
 	// fps
 	int avdl_fps;

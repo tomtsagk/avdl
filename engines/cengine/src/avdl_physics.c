@@ -384,8 +384,8 @@ void avdl_physics_clean(struct avdl_physics *o) {
 }
 
 void avdl_physics_addObject(struct avdl_physics *o, struct avdl_rigidbody *obj) {
-	if (o->object_count >= 100) {
-		dd_log("avdl error: physics engine: can't add more than 10 objects");
+	if (o->object_count >= 500) {
+		dd_log("avdl error: physics engine: can't add more than 500 objects");
 		return;
 	}
 

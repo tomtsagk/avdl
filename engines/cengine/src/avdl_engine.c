@@ -125,6 +125,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	#endif
 
 	avdl_time_start(&o->end_of_update_time);
+	avdl_time_start(&o->frame_duration);
 
 	#ifdef AVDL_STEAM
 	if (!o->verify) {
@@ -539,6 +540,7 @@ int avdl_engine_update(struct avdl_engine *o, float dt) {
 
 	avdl_time_end(&o->end_of_update_time);
 	float dt2 = avdl_time_getTimeDouble(&o->end_of_update_time);
+	avdl_time_start(&o->end_of_update_time);
 
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	if (avdl_engine_isPaused(o)) {
@@ -673,8 +675,6 @@ int avdl_engine_update(struct avdl_engine *o, float dt) {
 		avdl_assetManager_loadAll();
 	}
 
-	avdl_time_start(&o->end_of_update_time);
-
 	return 0;
 }
 
@@ -793,6 +793,8 @@ int avdl_engine_loop(struct avdl_engine *o) {
 	int isRunning = 1;
 	SDL_Event event;
 	while (isRunning && !dd_flag_exit) {
+
+		avdl_time_start(&o->frame_duration);
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT:
@@ -870,7 +872,16 @@ int avdl_engine_loop(struct avdl_engine *o) {
 		//draw();
 		#endif
 
-		SDL_Delay(o->avdl_fps_delay);
+		avdl_time_end(&o->frame_duration);
+		float frame_duration_ms = avdl_time_getTimeDouble(&o->frame_duration) *1000;
+		// frame completed within the expected time
+		if (frame_duration_ms < o->avdl_fps_delay) {
+			SDL_Delay(o->avdl_fps_delay -frame_duration_ms);
+		}
+		// frame took longer to complete than it should
+		// for now just proceed to the next frame immidiatelly
+		else {
+		}
 	}
 	#endif
 	return 0;
