@@ -306,4 +306,28 @@ int avdl_graphics_generateContext() {
 	currentProgram = defaultProgram;
 	return 0;
 }
+
+int avdl_graphics_setVSync(int flag) {
+	// try to turn vsync on
+	if (flag) {
+		if (SDL_GL_SetSwapInterval(1) == 0) {
+			// success
+			return 0;
+		}
+		else {
+			// vsync not supported
+			return -1;
+		}
+	}
+	else {
+		if (SDL_GL_SetSwapInterval(0) == 0) {
+			// success
+			return 0;
+		}
+		else {
+			// vsync not supported
+			return -1;
+		}
+	}
+}
 #endif

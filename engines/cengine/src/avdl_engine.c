@@ -224,6 +224,13 @@ int avdl_engine_init(struct avdl_engine *o) {
 	srand(time(NULL));
 
 	avdl_graphics_CreateWindow(&o->graphics);
+	if (avdl_engine_hasVSync()) {
+		o->avdl_vsync = -1;
+		avdl_engine_setVSync(1);
+	}
+	else {
+		o->avdl_vsync = 0;
+	}
 
 	//handleResize(dd_window_width(), dd_window_height());
 
@@ -873,14 +880,16 @@ int avdl_engine_loop(struct avdl_engine *o) {
 		#endif
 
 		avdl_time_end(&o->frame_duration);
-		float frame_duration_ms = avdl_time_getTimeDouble(&o->frame_duration) *1000;
-		// frame completed within the expected time
-		if (frame_duration_ms < o->avdl_fps_delay) {
-			SDL_Delay(o->avdl_fps_delay -frame_duration_ms);
-		}
-		// frame took longer to complete than it should
-		// for now just proceed to the next frame immidiatelly
-		else {
+		if (o->avdl_fps > 0) {
+			float frame_duration_ms = avdl_time_getTimeDouble(&o->frame_duration) *1000;
+			// frame completed within the expected time
+			if (frame_duration_ms < o->avdl_fps_delay) {
+				SDL_Delay(o->avdl_fps_delay -frame_duration_ms);
+			}
+			// frame took longer to complete than it should
+			// for now just proceed to the next frame immidiatelly
+			else {
+			}
 		}
 	}
 	#endif
@@ -916,9 +925,44 @@ void avdl_engine_verify(struct avdl_engine *o) {
 }
 
 void avdl_engine_setFPS(int fps) {
-	if (fps < 1) {
+
+	// 0 not allowed
+	if (fps == 0) {
 		fps = 1;
 	}
+	else
+	// -1 is as fast as possible
+	if (fps < 0) {
+		fps = -1;
+	}
 	engine.avdl_fps = fps;
-	engine.avdl_fps_delay = 1000/engine.avdl_fps;
+	if (engine.avdl_fps > 0) {
+		engine.avdl_fps_delay = 1000/engine.avdl_fps;
+	}
+}
+
+void avdl_engine_setVSync(int flag) {
+
+	// skip if already set or vsync not supported
+	if (engine.avdl_vsync == flag || !avdl_engine_hasVSync()) {
+		return;
+	}
+
+	// try to set vsync for given flat, if failed, assume no vsync is available
+	if (avdl_graphics_setVSync(flag) != 0) {
+		engine.avdl_vsync = 0;
+	}
+	// vsync is available
+	else {
+		engine.avdl_vsync = flag;
+	}
+}
+
+// which platforms support changing vsync
+int avdl_engine_hasVSync() {
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	return 1;
+	#else
+	return 0;
+	#endif
 }

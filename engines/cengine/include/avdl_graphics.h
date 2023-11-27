@@ -165,6 +165,8 @@ void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, in
 void avdl_graphics_d3d11_SetWindow();
 #endif
 
+int avdl_graphics_setVSync(int flag);
+
 #ifdef __cplusplus
 }
 #endif

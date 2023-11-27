@@ -71,6 +71,7 @@ struct avdl_engine {
 	// fps
 	int avdl_fps;
 	float avdl_fps_delay;
+	int avdl_vsync;
 
 	#if defined(AVDL_QUEST2)
 
@@ -129,6 +130,8 @@ int avdl_engine_isPaused(struct avdl_engine *o);
 void avdl_engine_verify(struct avdl_engine *o);
 
 void avdl_engine_setFPS(int fps);
+void avdl_engine_setVSync(int flag);
+int avdl_engine_hasVSync();
 
 #ifdef __cplusplus
 }

@@ -503,6 +503,10 @@ int avdl_graphics_CanFullscreenToggle() {
 	return 0;
 }
 
+int avdl_graphics_setVSync(int flag) {
+	return -1;
+}
+
 #ifdef __cplusplus
 }
 #endif
