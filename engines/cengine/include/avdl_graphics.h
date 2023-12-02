@@ -48,13 +48,15 @@
 #include <SDL2/SDL.h>
 #endif
 
+
+#endif
+
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 extern void test_glError(char *file, int line);
 #define GL(line) do { \
 	line;\
 	test_glError(__FILE__, __LINE__);\
 	} while (0);
-
-
 #endif
 
 #ifdef __cplusplus
