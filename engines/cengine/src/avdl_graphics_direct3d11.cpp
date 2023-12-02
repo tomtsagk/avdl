@@ -507,6 +507,12 @@ int avdl_graphics_setVSync(int flag) {
 	return -1;
 }
 
+void avdl_graphics_SetMSAntiAlias(int samples) {
+}
+
+void avdl_graphics_SetNoAntiAlias() {
+}
+
 #ifdef __cplusplus
 }
 #endif
