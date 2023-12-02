@@ -513,6 +513,9 @@ void avdl_graphics_SetMSAntiAlias(int samples) {
 void avdl_graphics_SetNoAntiAlias() {
 }
 
+void avdl_graphics_Refresh() {
+}
+
 #ifdef __cplusplus
 }
 #endif
