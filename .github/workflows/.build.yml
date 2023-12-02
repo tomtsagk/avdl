@@ -184,12 +184,8 @@ jobs:
     - name: glew - linux
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
-        git clone https://github.com/nigels-com/glew glew
+        wget https://github.com/nigels-com/glew/releases/download/glew-${GLEW_VERSION_LINUX}/glew-${GLEW_VERSION_LINUX}.tgz glew
         cd glew
-        git checkout glew-${GLEW_VERSION_LINUX}
-        cd auto
-        make
-        cd ..
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
         make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
         cd ..
