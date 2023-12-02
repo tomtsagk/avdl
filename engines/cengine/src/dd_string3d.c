@@ -107,7 +107,7 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 		break;
 	}
 
-	if (o->font && avdl_font_needsRefresh(o->font)) {
+	if (o->font && (avdl_font_needsRefresh(o->font) || o->openglContextId != o->font->openglContextId)) {
 		if (o->is_int) {
 			dd_string3d_setTextInt(o);
 		}
@@ -146,7 +146,6 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 	int linesTotal = 0;
 
 	if (o->font && (avdl_font_needsRefresh(o->font) || o->openglContextId != o->font->openglContextId)) {
-		//dd_log("string3d needs to refresh");
 		if (o->text) {
 			dd_string3d_setText(o, o->text);
 		}

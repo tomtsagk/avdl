@@ -10,18 +10,45 @@
 #include "dd_image.h"
 #include "avdl_engine.h"
 
+void test_glError(char *file, int line) {
+	GLenum err = glGetError();
+	if (err != GL_NO_ERROR) {
+		switch (err) {
+		case GL_INVALID_ENUM:
+			dd_log("invalid enum");
+			break;
+		case GL_INVALID_VALUE:
+			dd_log("invalid value");
+			break;
+		case GL_INVALID_OPERATION:
+			dd_log("invalid operation %s %d", file, line);
+			break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION:
+			dd_log("invalid framebuffer operation");
+			break;
+		case GL_OUT_OF_MEMORY:
+			dd_log("out of memory");
+			break;
+		case GL_STACK_UNDERFLOW:
+			dd_log("stack underflow");
+			break;
+		case GL_STACK_OVERFLOW:
+			dd_log("stack overflow");
+			break;
+		}
+	}
+}
+
 extern struct avdl_engine engine;
 
 int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-	// Initialise SDL window
-	int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-	if (sdlError < 0) {
-		dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
-		return -1;
-	}
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+	// anti-aliasing
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP;
 	int width = dd_gameInitWindowWidth;
@@ -32,9 +59,23 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 		dd_log("avdl: failed to create SDL2 window: %s\n", SDL_GetError());
 		return -1;
 	}
+
+	/*
+	 * For RenderDoc ask OpenGl 3.2+ Core
+	 */
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	o->gl_context = SDL_GL_CreateContext(o->sdl_window);
 	if (o->gl_context == NULL) {
 		dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
+	}
+
+	// init glew
+	GLenum glewError = glewInit();
+	if (glewError != GLEW_OK) {
+		dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
+		return -1;
 	}
 
 	// window icon
@@ -78,6 +119,9 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 	}
 	#endif
 
+	avdl_graphics_PrintInfo();
+	avdl_graphics_generateContext();
+
 	return 0;
 }
 
@@ -106,6 +150,34 @@ void avdl_graphics_FullscreenToggle() {
 	#endif
 }
 
+void avdl_graphics_Refresh() {
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+
+	// destroy opengl context
+	SDL_GL_DeleteContext(engine.graphics.gl_context);
+
+	// recreate opengl context
+	engine.graphics.gl_context = SDL_GL_CreateContext(engine.graphics.sdl_window);
+	if (engine.graphics.gl_context == NULL) {
+		dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
+	}
+
+	// re-init glew
+	GLenum glewError = glewInit();
+	if (glewError != GLEW_OK) {
+		dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
+		return -1;
+	}
+
+	// re-generate context
+	avdl_graphics_generateContext();
+
+	// re-create current world?
+	//
+
+	#endif
+}
+
 int avdl_graphics_CanFullscreenToggle() {
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	return 0;
@@ -114,15 +186,15 @@ int avdl_graphics_CanFullscreenToggle() {
 }
 
 void avdl_graphics_ClearDepth() {
-	glClear(GL_DEPTH_BUFFER_BIT);
+	GL(glClear(GL_DEPTH_BUFFER_BIT));
 }
 
 void avdl_graphics_ClearToColour() {
-	glClearColor(dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1);
+	GL(glClearColor(dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b, 1));
 }
 
 void avdl_graphics_ClearColourAndDepth() {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	GL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
 // context id - used to re-load assets if context is reset
@@ -143,22 +215,20 @@ GLuint currentProgram;
 int avdl_graphics_Init() {
 
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-	// init glew
-	GLenum glewError = glewInit();
-	if (glewError != GLEW_OK) {
-		dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
+	// Initialise SDL window
+	int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	if (sdlError < 0) {
+		dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
 		return -1;
 	}
 	#endif
-
-	avdl_graphics_generateContext();
 
 	return 0;
 
 }
 
 void avdl_graphics_Viewport(int x, int y, int w, int h) {
-	glViewport(x, y, w, h);
+	GL(glViewport(x, y, w, h));
 }
 
 void avdl_graphics_PrintInfo() {
@@ -170,12 +240,12 @@ void avdl_graphics_PrintInfo() {
 
 int avdl_graphics_GetCurrentProgram() {
 	int program = 0;
-	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
+	GL(glGetIntegerv(GL_CURRENT_PROGRAM, &program));
 	return program;
 }
 
 void avdl_graphics_UseProgram(int program) {
-	glUseProgram(program);
+	GL(glUseProgram(program));
 }
 
 int avdl_graphics_GetUniformLocation(int program, const char *uniform) {
@@ -185,8 +255,8 @@ int avdl_graphics_GetUniformLocation(int program, const char *uniform) {
 avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height) {
 
 	GLuint tex;
-	glGenTextures(1, &tex);
-	glBindTexture(GL_TEXTURE_2D, tex);
+	GL(glGenTextures(1, &tex));
+	GL(glBindTexture(GL_TEXTURE_2D, tex));
 	/*
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -194,19 +264,19 @@ avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int wid
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	*/
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-	glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_FLOAT, pixels);
+	GL(glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_FLOAT, pixels));
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_UNSIGNED_BYTE, pixels);
+	GL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+	GL(glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_UNSIGNED_BYTE, pixels));
 	#endif
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+	GL(glBindTexture(GL_TEXTURE_2D, 0));
 
 	return tex;
 
@@ -214,10 +284,10 @@ avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int wid
 
 void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, int pixel_format, int x, int y, int width, int height) {
 
-	glBindTexture(GL_TEXTURE_2D, texture_id);
+	GL(glBindTexture(GL_TEXTURE_2D, texture_id));
 
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-	glTexSubImage2D(GL_TEXTURE_2D, 0,
+	GL(glTexSubImage2D(GL_TEXTURE_2D, 0,
 		x,
 		y,
 		width,
@@ -225,9 +295,9 @@ void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, in
 		pixel_format,
 		GL_FLOAT,
 		pixels
-	);
+	));
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	glTexSubImage2D(GL_TEXTURE_2D, 0,
+	GL(glTexSubImage2D(GL_TEXTURE_2D, 0,
 		x,
 		y,
 		width,
@@ -235,36 +305,36 @@ void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, in
 		pixel_format,
 		GL_UNSIGNED_BYTE,
 		pixels
-	);
+	));
 	#endif
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+	GL(glBindTexture(GL_TEXTURE_2D, 0));
 
 }
 
 void avdl_graphics_DeleteTexture(avdl_texture_id tex) {
-	glDeleteTextures(1, &tex);
+	GL(glDeleteTextures(1, &tex));
 }
 
 void avdl_graphics_BindTexture(avdl_texture_id tex) {
-	glBindTexture(GL_TEXTURE_2D, tex);
+	GL(glBindTexture(GL_TEXTURE_2D, tex));
 }
 
 void avdl_graphics_EnableBlend() {
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GL(glEnable(GL_BLEND));
+	GL(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 }
 
 void avdl_graphics_DisableBlend() {
-	glDisable(GL_BLEND);
+	GL(glDisable(GL_BLEND));
 }
 
 void avdl_graphics_EnableVertexAttribArray(int attrib) {
-	glEnableVertexAttribArray(attrib);
+	GL(glEnableVertexAttribArray(attrib));
 }
 
 void avdl_graphics_DisableVertexAttribArray(int attrib) {
-	glDisableVertexAttribArray(attrib);
+	GL(glDisableVertexAttribArray(attrib));
 }
 
 void avdl_graphics_VertexAttribPointer(int p, int size, int format, int normalised, int stride, void *data) {
@@ -275,19 +345,19 @@ void avdl_graphics_VertexAttribPointer(int p, int size, int format, int normalis
 	else {
 		norm = GL_TRUE;
 	}
-	glVertexAttribPointer(p, size, format, norm, stride, data);
+	GL(glVertexAttribPointer(p, size, format, norm, stride, data));
 }
 
 void avdl_graphics_DrawArrays(int vcount) {
-	glDrawArrays(GL_TRIANGLES, 0, vcount);
+	GL(glDrawArrays(GL_TRIANGLES, 0, vcount));
 }
 
 int avdl_graphics_generateContext() {
 
 	avdl_graphics_generateContextId();
 
-	glEnable(GL_DEPTH_TEST);
-	glClearColor(0.8, 0.6, 1.0, 1);
+	GL(glEnable(GL_DEPTH_TEST));
+	GL(glClearColor(0.8, 0.6, 1.0, 1));
 
 	/*
 	 * load shaders
@@ -302,7 +372,7 @@ int avdl_graphics_generateContext() {
 		return -1;
 	}
 
-	glUseProgram(defaultProgram);
+	GL(glUseProgram(defaultProgram));
 	currentProgram = defaultProgram;
 	return 0;
 }

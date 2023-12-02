@@ -144,25 +144,26 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 			}
 		}
 
-		glGenVertexArrays(1, &m->parent.parent.array);
-		glBindVertexArray(m->parent.parent.array);
+		GL(glGenVertexArrays(1, &m->parent.parent.array));
+		GL(glBindVertexArray(m->parent.parent.array));
 	
-		glGenBuffers(1, &m->parent.parent.buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, m->parent.parent.buffer);
+		GL(glGenBuffers(1, &m->parent.parent.buffer));
+		GL(glBindBuffer(GL_ARRAY_BUFFER, m->parent.parent.buffer));
 	
-		glBufferData(GL_ARRAY_BUFFER, sizeof(struct dd_vertex_tex) *m->parent.parent.vcount, m->verticesTex, GL_STATIC_DRAW);
+		GL(glBufferData(GL_ARRAY_BUFFER, sizeof(struct dd_vertex_tex) *m->parent.parent.vcount, m->verticesTex, GL_STATIC_DRAW));
 	
 		int pos = glGetAttribLocation(currentProgram, "position");
-		glVertexAttribPointer(pos, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, pos));
-		glEnableVertexAttribArray(pos);
+		GL(glVertexAttribPointer(pos, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, pos)));
+		GL(glEnableVertexAttribArray(pos));
 
 		int col = glGetAttribLocation(currentProgram, "colour");
-		glVertexAttribPointer(col, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, col));
-		glEnableVertexAttribArray(col);
+		GL(glVertexAttribPointer(col, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, col)));
+		GL(glEnableVertexAttribArray(col));
 
 		int tex = glGetAttribLocation(currentProgram, "texCoord");
-		glVertexAttribPointer(tex, 2, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, tex));
-		glEnableVertexAttribArray(tex);
+		GL(glVertexAttribPointer(tex, 2, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, tex)));
+		GL(glEnableVertexAttribArray(tex));
+
 	}
 
 	if (m->hasTransparency) {
@@ -173,7 +174,7 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 		m->img->bind(m->img);
 	}
 
-	glBindVertexArray(m->parent.parent.array);
+	GL(glBindVertexArray(m->parent.parent.array));
 
 	#if defined(AVDL_QUEST2)
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
@@ -181,12 +182,12 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 		dd_log("avdl: dd_meshTexture: location of `matrix` not found in current program");
 	}
 	else {
-		glUniformMatrix4fv(
+		GL(glUniformMatrix4fv(
 			MatrixID,
 			1,
 			GL_TRUE,
 			(float *)dd_matrix_globalGet()
-		);
+		));
 	}
 	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
@@ -198,8 +199,8 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 	}
 	#endif
 
-	glDrawArrays(GL_TRIANGLES, 0, m->parent.parent.vcount);
-	glBindVertexArray(0);
+	GL(glDrawArrays(GL_TRIANGLES, 0, m->parent.parent.vcount));
+	GL(glBindVertexArray(0));
 
 	if (m->img) {
 		m->img->unbind(m->img);

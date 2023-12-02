@@ -137,20 +137,21 @@ void dd_mesh_draw(struct dd_mesh *m) {
 
                 m->openglContextId = avdl_graphics_getContextId();
 
-		glGenVertexArrays(1, &m->array);
-		glBindVertexArray(m->array);
+		GL(glGenVertexArrays(1, &m->array));
+		GL(glBindVertexArray(m->array));
 	
-		glGenBuffers(1, &m->buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, m->buffer);
+		GL(glGenBuffers(1, &m->buffer));
+		GL(glBindBuffer(GL_ARRAY_BUFFER, m->buffer));
 	
-		glBufferData(GL_ARRAY_BUFFER, sizeof(float) *m->vcount *3, m->v, GL_STATIC_DRAW);
+		GL(glBufferData(GL_ARRAY_BUFFER, sizeof(float) *m->vcount *3, m->v, GL_STATIC_DRAW));
 	
 		int pos = glGetAttribLocation(currentProgram, "position");
-		glVertexAttribPointer(pos, 3, GL_FLOAT, 0, 0, 0);
-		glEnableVertexAttribArray(pos);
+		GL(glVertexAttribPointer(pos, 3, GL_FLOAT, 0, 0, 0));
+		GL(glEnableVertexAttribArray(pos));
+
 	}
 
-	glBindVertexArray(m->array);
+	GL(glBindVertexArray(m->array));
 
 	#if defined(AVDL_QUEST2)
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
@@ -158,12 +159,12 @@ void dd_mesh_draw(struct dd_mesh *m) {
 		dd_log("avdl: dd_mesh: location of `matrix` not found in current program");
 	}
 	else {
-		glUniformMatrix4fv(
+		GL(glUniformMatrix4fv(
 			MatrixID,
 			1,
 			GL_TRUE,
 			(float *)dd_matrix_globalGet()
-		);
+		));
 	}
 	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
@@ -174,8 +175,8 @@ void dd_mesh_draw(struct dd_mesh *m) {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 	}
 	#endif
-	glDrawArrays(GL_TRIANGLES, 0, m->vcount);
-	glBindVertexArray(0);
+	GL(glDrawArrays(GL_TRIANGLES, 0, m->vcount));
+	GL(glBindVertexArray(0));
 	#endif
 }
 

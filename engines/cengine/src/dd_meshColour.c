@@ -128,36 +128,36 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 			#endif
 		}
 
-		glGenVertexArrays(1, &m->parent.array);
-		glBindVertexArray(m->parent.array);
+		GL(glGenVertexArrays(1, &m->parent.array));
+		GL(glBindVertexArray(m->parent.array));
 	
-		glGenBuffers(1, &m->parent.buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, m->parent.buffer);
+		GL(glGenBuffers(1, &m->parent.buffer));
+		GL(glBindBuffer(GL_ARRAY_BUFFER, m->parent.buffer));
 	
-		glBufferData(GL_ARRAY_BUFFER, sizeof(struct dd_vertex_col) *m->parent.vcount, m->verticesCol, GL_STATIC_DRAW);
+		GL(glBufferData(GL_ARRAY_BUFFER, sizeof(struct dd_vertex_col) *m->parent.vcount, m->verticesCol, GL_STATIC_DRAW));
 	
 		int pos = glGetAttribLocation(currentProgram, "position");
-		glVertexAttribPointer(pos, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_col), (void *)offsetof(struct dd_vertex_col, pos));
-		glEnableVertexAttribArray(pos);
+		GL(glVertexAttribPointer(pos, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_col), (void *)offsetof(struct dd_vertex_col, pos)));
+		GL(glEnableVertexAttribArray(pos));
 
 		int col = glGetAttribLocation(currentProgram, "colour");
-		glVertexAttribPointer(col, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_col), (void *)offsetof(struct dd_vertex_col, col));
-		glEnableVertexAttribArray(col);
+		GL(glVertexAttribPointer(col, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_col), (void *)offsetof(struct dd_vertex_col, col)));
+		GL(glEnableVertexAttribArray(col));
 	}
 
-	glBindVertexArray(m->parent.array);
+	GL(glBindVertexArray(m->parent.array));
 	#if defined(AVDL_QUEST2)
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
 		dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
 	}
 	else {
-		glUniformMatrix4fv(
+		GL(glUniformMatrix4fv(
 			MatrixID,
 			1,
 			GL_TRUE,
 			(float *)dd_matrix_globalGet()
-		);
+		));
 	}
 	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
@@ -168,8 +168,8 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 	}
 	#endif
-	glDrawArrays(GL_TRIANGLES, 0, m->parent.vcount);
-	glBindVertexArray(0);
+	GL(glDrawArrays(GL_TRIANGLES, 0, m->parent.vcount));
+	GL(glBindVertexArray(0));
 
 	#endif
 }

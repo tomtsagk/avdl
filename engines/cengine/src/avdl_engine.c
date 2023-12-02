@@ -223,6 +223,11 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	srand(time(NULL));
 
+	if (avdl_graphics_Init()) {
+		dd_log("avdl: error initialising engine graphics");
+		return -1;
+	}
+
 	avdl_graphics_CreateWindow(&o->graphics);
 	if (avdl_engine_hasVSync()) {
 		o->avdl_vsync = -1;
@@ -239,11 +244,6 @@ int avdl_engine_init(struct avdl_engine *o) {
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS ) || defined(AVDL_QUEST2)
 	avdl_engine_resize(o, dd_window_width(), dd_window_height());
 	#endif
-
-	if (avdl_graphics_Init()) {
-		dd_log("avdl: error initialising engine graphics");
-		return -1;
-	}
 
 	/*
 	 * string3d initialisation for displaying text
@@ -267,7 +267,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 		0,
 		GL_STATIC_DRAW
 	);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	GL(glBindBuffer(GL_UNIFORM_BUFFER, 0));
 
 	// framebuffer
 	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC glFramebufferTextureMultiviewOVR =
@@ -491,8 +491,8 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	avdl_graphics_SwapFramebuffer(&o->graphics);
 
 	#if defined(AVDL_QUEST2)
-	glUseProgram(0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	GL(glUseProgram(0));
+	GL(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
 	#endif
 
 	return 0;

@@ -48,6 +48,13 @@
 #include <SDL2/SDL.h>
 #endif
 
+extern void test_glError(char *file, int line);
+#define GL(line) do { \
+	line;\
+	test_glError(__FILE__, __LINE__);\
+	} while (0);
+
+
 #endif
 
 #ifdef __cplusplus
@@ -166,6 +173,8 @@ void avdl_graphics_d3d11_SetWindow();
 #endif
 
 int avdl_graphics_setVSync(int flag);
+
+void avdl_graphics_Refresh();
 
 #ifdef __cplusplus
 }

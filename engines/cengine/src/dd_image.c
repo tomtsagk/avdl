@@ -4,6 +4,7 @@
 #include "dd_log.h"
 #include "avdl_assetManager.h"
 #include <errno.h>
+#include "dd_math.h"
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
 #else
@@ -49,6 +50,8 @@ extern FILE* avdl_filetomesh_openFile(char* filename);
 #endif
 
 void dd_image_load_png(struct dd_image *img, const char *filename) {
+
+	dd_image_clean(img);
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#elif defined( AVDL_DIRECT3D11 )
@@ -143,14 +146,15 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 		#else
 		img->pixelFormat = GL_RGB;
 		#endif
-		img->pixels = malloc(sizeof(float) *img->width *img->height *3);
+		float *pixels = malloc(sizeof(float) *img->width *img->height *3);
 		for (int x = 0; x < img->width ; x++)
 		for (int y = 0; y < img->height; y++) {
 			int ry = img->height-1 -y;
-			img->pixels[(y*width*3) +x*3+0] = row_pointers[ry][x]/ 255.0;
-			img->pixels[(y*width*3) +x*3+1] = row_pointers[ry][x]/ 255.0;
-			img->pixels[(y*width*3) +x*3+2] = row_pointers[ry][x]/ 255.0;
+			pixels[(y*width*3) +x*3+0] = dd_math_pow(row_pointers[ry][x]/ 255.0, 2.2);
+			pixels[(y*width*3) +x*3+1] = dd_math_pow(row_pointers[ry][x]/ 255.0, 2.2);
+			pixels[(y*width*3) +x*3+2] = dd_math_pow(row_pointers[ry][x]/ 255.0, 2.2);
 		}
+		img->pixels = pixels;
 	}
 	else
 	// RGB images
@@ -160,14 +164,15 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 		#else
 		img->pixelFormat = GL_RGB;
 		#endif
-		img->pixels = malloc(sizeof(float) *img->width *img->height *3);
+		float *pixels = malloc(sizeof(float) *img->width *img->height *3);
 		for (int x = 0; x < img->width ; x++)
 		for (int y = 0; y < img->height; y++) {
 			int ry = img->height-1 -y;
-			img->pixels[(y*width*3) +x*3+0] = row_pointers[ry][x*3+0]/ 255.0;
-			img->pixels[(y*width*3) +x*3+1] = row_pointers[ry][x*3+1]/ 255.0;
-			img->pixels[(y*width*3) +x*3+2] = row_pointers[ry][x*3+2]/ 255.0;
+			pixels[(y*width*3) +x*3+0] = dd_math_pow(row_pointers[ry][x*3+0]/ 255.0, 2.2);
+			pixels[(y*width*3) +x*3+1] = dd_math_pow(row_pointers[ry][x*3+1]/ 255.0, 2.2);
+			pixels[(y*width*3) +x*3+2] = dd_math_pow(row_pointers[ry][x*3+2]/ 255.0, 2.2);
 		}
+		img->pixels = pixels;
 	}
 	else
 	// RGBA images
@@ -177,15 +182,16 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 		#else
 		img->pixelFormat = GL_RGBA;
 		#endif
-		img->pixels = malloc(sizeof(float) *img->width *img->height *4);
+		float *pixels = malloc(sizeof(float) *img->width *img->height *4);
 		for (int x = 0; x < img->width ; x++)
 		for (int y = 0; y < img->height; y++) {
 			int ry = img->height-1 -y;
-			img->pixels[(y*width*4) +x*4+0] = row_pointers[ry][x*4+0]/ 255.0;
-			img->pixels[(y*width*4) +x*4+1] = row_pointers[ry][x*4+1]/ 255.0;
-			img->pixels[(y*width*4) +x*4+2] = row_pointers[ry][x*4+2]/ 255.0;
-			img->pixels[(y*width*4) +x*4+3] = row_pointers[ry][x*4+3]/ 255.0;
+			pixels[(y*width*4) +x*4+0] = dd_math_pow(row_pointers[ry][x*4+0]/ 255.0, 2.2);
+			pixels[(y*width*4) +x*4+1] = dd_math_pow(row_pointers[ry][x*4+1]/ 255.0, 2.2);
+			pixels[(y*width*4) +x*4+2] = dd_math_pow(row_pointers[ry][x*4+2]/ 255.0, 2.2);
+			pixels[(y*width*4) +x*4+3] = dd_math_pow(row_pointers[ry][x*4+3]/ 255.0, 2.2);
 		}
+		img->pixels = pixels;
 	}
 	// unsupported format
 	else {
@@ -328,19 +334,22 @@ void dd_image_bind(struct dd_image *o) {
 		}
 
 		#else
-		o->pixels = malloc(sizeof(float) *4 *o->width *o->height);
+		float *pixels = malloc(sizeof(float) *o->width *o->height *4);
 
 		// clean the texture
 		for (int x = 0; x < o->width ; x++)
 		for (int y = 0; y < o->height; y++) {
-			o->pixels[(y*o->width*4) +x*4+0] = 1;
-			o->pixels[(y*o->width*4) +x*4+1] = 1;
-			o->pixels[(y*o->width*4) +x*4+2] = 1;
-			o->pixels[(y*o->width*4) +x*4+3] = 0;
+			pixels[(y*o->width*4) +x*4+0] = 1;
+			pixels[(y*o->width*4) +x*4+1] = 1;
+			pixels[(y*o->width*4) +x*4+2] = 1;
+			pixels[(y*o->width*4) +x*4+3] = 0;
 		}
+		o->pixelFormat = GL_RGB;
 
 		#endif
 		o->openglContextId = avdl_graphics_getContextId();
+
+		o->pixels = pixels;
 	}
 
 	if (o->pixels || o->pixelsb) {

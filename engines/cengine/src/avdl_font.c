@@ -344,7 +344,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 	if (o->texture.tex) {
 		#if defined( AVDL_DIRECT3D11 )
 		#else
-		glBindTexture(GL_TEXTURE_2D, o->texture.tex);
+		GL(glBindTexture(GL_TEXTURE_2D, o->texture.tex));
 
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		dd_image_addSubpixels(&o->texture, pixels, GL_RGBA,
@@ -362,7 +362,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		);
 		#endif
 
-		glBindTexture(GL_TEXTURE_2D, 0);
+		GL(glBindTexture(GL_TEXTURE_2D, 0));
 		#endif
 	}
 	else {
