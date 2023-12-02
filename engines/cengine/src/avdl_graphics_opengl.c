@@ -30,12 +30,15 @@ void test_glError(char *file, int line) {
 		case GL_OUT_OF_MEMORY:
 			dd_log("out of memory");
 			break;
+		// are these not present in OpenGL ES (Android)?
+		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 		case GL_STACK_UNDERFLOW:
 			dd_log("stack underflow");
 			break;
 		case GL_STACK_OVERFLOW:
 			dd_log("stack overflow");
 			break;
+		#endif
 		}
 	}
 }
@@ -43,6 +46,7 @@ void test_glError(char *file, int line) {
 extern struct avdl_engine engine;
 
 static void opengl_antialias(struct avdl_graphics *o) {
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	if (o->antialias) {
 		GL(glEnable(GL_MULTISAMPLE));
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
@@ -53,6 +57,7 @@ static void opengl_antialias(struct avdl_graphics *o) {
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 	}
+	#endif
 }
 
 int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
@@ -393,6 +398,7 @@ int avdl_graphics_generateContext() {
 }
 
 int avdl_graphics_setVSync(int flag) {
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	// try to turn vsync on
 	if (flag) {
 		if (SDL_GL_SetSwapInterval(1) == 0) {
@@ -414,6 +420,7 @@ int avdl_graphics_setVSync(int flag) {
 			return -1;
 		}
 	}
+	#endif
 }
 
 void avdl_graphics_SetMSAntiAlias(int samples) {
