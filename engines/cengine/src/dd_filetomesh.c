@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include "avdl_time.h"
+#include "dd_math.h"
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 
@@ -1475,9 +1476,10 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 		if (settings & DD_FILETOMESH_SETTINGS_COLOUR) {
 			struct dd_vec3 *col = dd_da_get(&v_col_face, i);
-			m->c[(i*3)] = col->x;
-			m->c[(i*3)+1] = col->y;
-			m->c[(i*3)+2] = col->z;
+			// convert to linear space for gamma correction
+			m->c[(i*3)]   = dd_math_pow(col->x, 2.2);
+			m->c[(i*3)+1] = dd_math_pow(col->y, 2.2);
+			m->c[(i*3)+2] = dd_math_pow(col->z, 2.2);
 		}
 
 		if (settings & DD_FILETOMESH_SETTINGS_TEX_COORD) {

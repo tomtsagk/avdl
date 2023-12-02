@@ -423,8 +423,13 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	}
 	#endif
 
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
+	// gamma correction - this is not needed in OpenGL ES
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	GL(glEnable(GL_FRAMEBUFFER_SRGB));
+	#endif
+
+	GL(glEnable(GL_CULL_FACE));
+	GL(glCullFace(GL_BACK));
 
 	#if defined(AVDL_QUEST2)
 
