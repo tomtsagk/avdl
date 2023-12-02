@@ -221,6 +221,10 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	#endif
 
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	avdl_graphics_generateContext();
+	#endif
+
 	// window
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 

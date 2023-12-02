@@ -16,19 +16,19 @@ void test_glError(char *file, int line) {
 	if (err != GL_NO_ERROR) {
 		switch (err) {
 		case GL_INVALID_ENUM:
-			dd_log("invalid enum");
+			dd_log("avdl: opengl error: invalid enum at %s %d", file, line);
 			break;
 		case GL_INVALID_VALUE:
-			dd_log("invalid value");
+			dd_log("avdl: opengl error: invalid value at %s %d", file, line);
 			break;
 		case GL_INVALID_OPERATION:
-			dd_log("invalid operation %s %d", file, line);
+			dd_log("avdl: opengl error: invalid operation at %s %d", file, line);
 			break;
 		case GL_INVALID_FRAMEBUFFER_OPERATION:
-			dd_log("invalid framebuffer operation");
+			dd_log("avdl: opengl error: invalid framebuffer operation at %s %d", file, line);
 			break;
 		case GL_OUT_OF_MEMORY:
-			dd_log("out of memory");
+			dd_log("avdl: opengl error: out of memory at %s %d", file, line);
 			break;
 		// are these not present in OpenGL ES (Android)?
 		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
