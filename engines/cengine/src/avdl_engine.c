@@ -172,6 +172,12 @@ int avdl_engine_init(struct avdl_engine *o) {
 	*/
 	#endif
 
+	// default anti-aliasing 8 samples
+	avdl_graphics_SetMSAntiAlias(8);
+
+	// start at full volume
+	avdl_sound_setVolume(100);
+
 	// initialise pre-game data to defaults then to game-specifics
 	dd_gameInitDefault();
 	dd_gameInit();
@@ -203,9 +209,6 @@ int avdl_engine_init(struct avdl_engine *o) {
 			if (dd_numberOfAudioChannels < 8) {
 				dd_numberOfAudioChannels = Mix_AllocateChannels(8);
 			}
-
-			// start at full volume
-			avdl_sound_setVolume(100);
 
 		}
 

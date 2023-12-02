@@ -62,7 +62,11 @@ extern "C" {
 #endif
 
 struct avdl_graphics {
-	int x;
+
+	// anti-alias settings
+	int antialias;
+	int antialias_samples;
+
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	SDL_Window *sdl_window;
 	SDL_GLContext gl_context;
@@ -175,6 +179,9 @@ void avdl_graphics_d3d11_SetWindow();
 int avdl_graphics_setVSync(int flag);
 
 void avdl_graphics_Refresh();
+
+void avdl_graphics_SetMSAntiAlias(int samples);
+void avdl_graphics_SetNoAntiAlias();
 
 #ifdef __cplusplus
 }

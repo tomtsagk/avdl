@@ -9,6 +9,7 @@
 #include "avdl_assetManager.h"
 #include "dd_image.h"
 #include "avdl_engine.h"
+#include "dd_math.h"
 
 void test_glError(char *file, int line) {
 	GLenum err = glGetError();
@@ -41,14 +42,26 @@ void test_glError(char *file, int line) {
 
 extern struct avdl_engine engine;
 
+static void opengl_antialias(struct avdl_graphics *o) {
+	if (o->antialias) {
+		GL(glEnable(GL_MULTISAMPLE));
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, o->antialias_samples);
+	}
+	else {
+		GL(glDisable(GL_MULTISAMPLE));
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+	}
+}
+
 int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 	// anti-aliasing
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-	SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+	opengl_antialias(o);
 
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP;
 	int width = dd_gameInitWindowWidth;
@@ -152,6 +165,8 @@ void avdl_graphics_FullscreenToggle() {
 
 void avdl_graphics_Refresh() {
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+
+	opengl_antialias(&engine.graphics);
 
 	// destroy opengl context
 	SDL_GL_DeleteContext(engine.graphics.gl_context);
@@ -399,5 +414,16 @@ int avdl_graphics_setVSync(int flag) {
 			return -1;
 		}
 	}
+}
+
+void avdl_graphics_SetMSAntiAlias(int samples) {
+	samples = dd_math_max(samples, 1);
+	samples = dd_math_min(samples, 8);
+	engine.graphics.antialias = 1;
+	engine.graphics.antialias_samples = samples;
+}
+
+void avdl_graphics_SetNoAntiAlias() {
+	engine.graphics.antialias = 0;
 }
 #endif
