@@ -345,11 +345,10 @@ void dd_image_bind(struct dd_image *o) {
 			pixels[(y*o->width*4) +x*4+3] = 0;
 		}
 		o->pixelFormat = GL_RGB;
+		o->pixels = pixels;
 
 		#endif
 		o->openglContextId = avdl_graphics_getContextId();
-
-		o->pixels = pixels;
 	}
 
 	if (o->pixels || o->pixelsb) {
