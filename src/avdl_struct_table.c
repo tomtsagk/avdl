@@ -123,13 +123,16 @@ void struct_table_init() {
 	struct_table_push_member("getMaxX", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getMaxY", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getMaxZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_collider_sphere", "avdl_collider");
 	struct_table_push_member("setRadius", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_rigidbody", 0);
 	struct_table_push_member("setPositionf", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setMass", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setRestitution", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("addVelocityf", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setVelocityf", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("addAngularVelocityf", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("matrixMultiply", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setCollider", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

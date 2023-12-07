@@ -38,6 +38,7 @@ struct avdl_rigidbody {
 	void (*setRestitution)(struct avdl_rigidbody *, float);
 	void (*setCollider)(struct avdl_rigidbody *, struct avdl_collider *);
 
+	void (*setVelocityf)(struct avdl_rigidbody *, float, float, float);
 	void (*addVelocityf)(struct avdl_rigidbody *, float, float, float);
 	void (*addAngularVelocityf)(struct avdl_rigidbody *, float, float, float);
 	int (*hasJustCollided)(struct avdl_rigidbody *);
@@ -57,6 +58,7 @@ void avdl_rigidbody_setCollider(struct avdl_rigidbody *, struct avdl_collider *)
 void avdl_rigidbody_matrixMultiply(struct avdl_rigidbody *);
 
 void avdl_rigidbody_addVelocityf(struct avdl_rigidbody *, float, float, float);
+void avdl_rigidbody_setVelocityf(struct avdl_rigidbody *, float, float, float);
 void avdl_rigidbody_addAngularVelocityf(struct avdl_rigidbody *, float, float, float);
 void avdl_rigidbody_setAngularVelocityf(struct avdl_rigidbody *, float, float, float);
 int avdl_rigidbody_hasJustCollided(struct avdl_rigidbody *);

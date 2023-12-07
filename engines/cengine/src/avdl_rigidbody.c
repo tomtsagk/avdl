@@ -13,6 +13,7 @@ void avdl_rigidbody_create(struct avdl_rigidbody *o) {
 	o->setCollider = avdl_rigidbody_setCollider;
 	o->addAngularVelocityf = avdl_rigidbody_addAngularVelocityf;
 	o->addVelocityf = avdl_rigidbody_addVelocityf;
+	o->setVelocityf = avdl_rigidbody_setVelocityf;
 	o->getPositionX = avdl_rigidbody_getPositionX;
 	o->getPositionY = avdl_rigidbody_getPositionY;
 	o->getPositionZ = avdl_rigidbody_getPositionZ;
@@ -62,6 +63,10 @@ void avdl_rigidbody_setCollider(struct avdl_rigidbody *o, struct avdl_collider *
 
 void avdl_rigidbody_addVelocityf(struct avdl_rigidbody *o, float x, float y, float z) {
 	dd_vec3_addf(&o->velocity, x, y, z);
+}
+
+void avdl_rigidbody_setVelocityf(struct avdl_rigidbody *o, float x, float y, float z) {
+	dd_vec3_setf(&o->velocity, x, y, z);
 }
 
 void avdl_rigidbody_addAngularVelocityf(struct avdl_rigidbody *o, float x, float y, float z) {

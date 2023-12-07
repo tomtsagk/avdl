@@ -168,7 +168,12 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 	}
 	#endif
-	GL(glDrawArrays(GL_TRIANGLES, 0, m->parent.vcount));
+	if (m->parent.draw_type) {
+		GL(glDrawArrays(GL_LINES, 0, m->parent.vcount));
+	}
+	else {
+		GL(glDrawArrays(GL_TRIANGLES, 0, m->parent.vcount));
+	}
 	GL(glBindVertexArray(0));
 
 	#endif

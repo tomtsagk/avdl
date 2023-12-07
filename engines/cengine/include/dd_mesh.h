@@ -28,6 +28,8 @@ struct dd_mesh {
 	int dirtyVertices;
 	float *v;
 
+	int draw_type;
+
 	#if !defined( AVDL_DIRECT3D11 )
 	GLuint buffer;
 	GLuint array;

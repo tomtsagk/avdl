@@ -60,6 +60,12 @@ void dd_vec3_cross(struct dd_vec3 *o, struct dd_vec3 *v1, struct dd_vec3 *v2) {
 
 void dd_vec3_normalise(struct dd_vec3 *o) {
 	float magn = dd_vec3_magnitude(o);
+	if (magn == 0) {
+		o->x = 0;
+		o->y = 1;
+		o->z = 0;
+		return;
+	}
 	o->x /= magn;
 	o->y /= magn;
 	o->z /= magn;
