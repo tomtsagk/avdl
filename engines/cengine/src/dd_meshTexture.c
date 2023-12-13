@@ -157,12 +157,16 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 		GL(glEnableVertexAttribArray(pos));
 
 		int col = glGetAttribLocation(currentProgram, "colour");
-		GL(glVertexAttribPointer(col, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, col)));
-		GL(glEnableVertexAttribArray(col));
+		if (col != -1) {
+			GL(glVertexAttribPointer(col, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, col)));
+			GL(glEnableVertexAttribArray(col));
+		}
 
 		int tex = glGetAttribLocation(currentProgram, "texCoord");
-		GL(glVertexAttribPointer(tex, 2, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, tex)));
-		GL(glEnableVertexAttribArray(tex));
+		if (tex != -1) {
+			GL(glVertexAttribPointer(tex, 2, GL_FLOAT, 0, sizeof(struct dd_vertex_tex), (void *)offsetof(struct dd_vertex_tex, tex)));
+			GL(glEnableVertexAttribArray(tex));
+		}
 
 	}
 

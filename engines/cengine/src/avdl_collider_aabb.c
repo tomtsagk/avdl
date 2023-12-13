@@ -6,10 +6,10 @@ void avdl_collider_aabb_create(struct avdl_collider_aabb *o) {
 	dd_vec3_setf(&o->min, -0.5, -0.5, -0.5);
 	dd_vec3_setf(&o->max,  0.5,  0.5,  0.5);
 
-	dd_meshColour_create(&o->mesh);
-	dd_meshColour_set_primitive(&o->mesh, DD_PRIMITIVE_BOX);
-	dd_meshColour_set_colour(&o->mesh, 0, 0, 0);
-	o->mesh.parent.draw_type = 1;
+	avdl_mesh_create(&o->mesh);
+	avdl_mesh_set_primitive(&o->mesh, DD_PRIMITIVE_BOX);
+	avdl_mesh_set_colour(&o->mesh, 0, 0, 0);
+	o->mesh.draw_type = 1;
 
 	o->setMin = avdl_collider_aabb_setMin;
 	o->setMax = avdl_collider_aabb_setMax;
@@ -61,6 +61,6 @@ void avdl_collider_aabb_draw(struct avdl_collider_aabb *o) {
 		dd_vec3_getY(&o->max) -dd_vec3_getY(&o->min),
 		dd_vec3_getZ(&o->max) -dd_vec3_getZ(&o->min)
 	);
-	dd_meshColour_draw(&o->mesh);
+	avdl_mesh_draw(&o->mesh);
 	dd_matrix_pop();
 }

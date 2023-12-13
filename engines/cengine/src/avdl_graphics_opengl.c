@@ -138,7 +138,10 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 	#endif
 
 	avdl_graphics_PrintInfo();
-	avdl_graphics_generateContext();
+	if (avdl_graphics_generateContext() != 0) {
+		dd_log("error generating graphics context");
+		return -1;
+	}
 
 	return 0;
 }

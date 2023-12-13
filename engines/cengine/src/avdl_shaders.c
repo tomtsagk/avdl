@@ -194,12 +194,10 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 			char *buf = malloc(sizeof(char) *(logsz +1));
 			glGetShaderInfoLog(sdr, logsz, 0, buf);
 			buf[logsz] = 0;
-			/*
 			dd_log("avdl: compilation of %s shader failed: %s",
 				type == GL_VERTEX_SHADER   ? "vertex" :
 				type == GL_FRAGMENT_SHADER ? "fragment" :
 				"<unknown>", buf);
-				*/
 			free(buf);
 		}
 
@@ -250,13 +248,11 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
 	int logsz;
 	glGetProgramiv(prog, GL_INFO_LOG_LENGTH, &logsz);
 	if (logsz > 1) {
-		/*
 		char *buf = malloc(sizeof(char) *(logsz +1));
 		glGetProgramInfoLog(prog, logsz, 0, buf);
 		buf[logsz] = 0;
 		dd_log("linking shader program failed.\nshader program linker log: %s", buf);
 		free(buf);
-		*/
 	}
 
 	//Check compilation status
@@ -326,8 +322,8 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 	}
 
 	if (!vsdr || !fsdr) {
-		dd_log("avdl: one or more shaders failed to compile: "
-			"vertex('%s') = %d - fragment('%s') = %d", vfname, vsdr, ffname, fsdr);
+		dd_log("avdl: one or more shaders failed to compile:\n"
+			"vertex:\n%s\nresult code '%d'\nfragment:\n%s\nresult code '%d'", vfname, vsdr, ffname, fsdr);
 		return 0;
 	}
 

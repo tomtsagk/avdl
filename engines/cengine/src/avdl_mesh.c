@@ -1,0 +1,564 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "avdl_mesh.h"
+#include "dd_filetomesh.h"
+#include <string.h>
+#include "avdl_assetManager.h"
+#include "dd_log.h"
+#include <stdlib.h>
+#include "avdl_graphics.h"
+
+#ifndef AVDL_DIRECT3D11
+extern GLuint defaultProgram;
+extern GLuint currentProgram;
+#endif
+
+static float shape_triangle[] = {
+	0, 0.5, 0,
+	-0.5, -0.5, 0,
+	0.5, -0.5, 0,
+};
+
+static float shape_rectangle[] = {
+	-0.5, 0.5, 0,
+	-0.5, -0.5, 0,
+	0.5, -0.5, 0,
+
+	0.5, -0.5, 0,
+	0.5, 0.5, 0,
+	-0.5, 0.5, 0,
+};
+
+static float shape_box[] = {
+	// front side
+	-0.5, 0.5, 0.5,
+	-0.5, -0.5, 0.5,
+	0.5, -0.5, 0.5,
+
+	0.5, -0.5, 0.5,
+	0.5, 0.5, 0.5,
+	-0.5, 0.5, 0.5,
+
+	// back side
+	-0.5, 0.5, -0.5,
+	0.5, 0.5, -0.5,
+	-0.5, -0.5, -0.5,
+
+	0.5, -0.5, -0.5,
+	-0.5, -0.5, -0.5,
+	0.5, 0.5, -0.5,
+
+	// top side
+	-0.5,  0.5, -0.5,
+	-0.5,  0.5,  0.5,
+	 0.5,  0.5, -0.5,
+
+	 0.5,  0.5, -0.5,
+	-0.5,  0.5,  0.5,
+	 0.5,  0.5,  0.5,
+
+	// bottom side
+	-0.5, -0.5, -0.5,
+	 0.5, -0.5, -0.5,
+	-0.5, -0.5,  0.5,
+
+	 0.5, -0.5, -0.5,
+	 0.5, -0.5,  0.5,
+	-0.5, -0.5,  0.5,
+
+	// left side
+	-0.5, -0.5, -0.5,
+	-0.5, -0.5,  0.5,
+	-0.5,  0.5, -0.5,
+
+	-0.5,  0.5, -0.5,
+	-0.5, -0.5,  0.5,
+	-0.5,  0.5,  0.5,
+
+	// right side
+	 0.5, -0.5, -0.5,
+	 0.5,  0.5, -0.5,
+	 0.5, -0.5,  0.5,
+
+	 0.5,  0.5, -0.5,
+	 0.5,  0.5,  0.5,
+	 0.5, -0.5,  0.5,
+};
+
+static void clean_position(struct avdl_mesh *m) {
+	if (m->v && m->dirtyVertices) {
+		free(m->v);
+		m->dirtyVertices = 0;
+	}
+	m->v = 0;
+}
+
+static void clean_colour(struct avdl_mesh *m) {
+	if (m->c && m->dirtyColours) {
+		free(m->c);
+		m->dirtyColours = 0;
+	}
+	m->c = 0;
+}
+
+static void clean_textures(struct avdl_mesh *m) {
+	if (m->t && m->dirtyTextures) {
+		free(m->t);
+		m->dirtyTextures = 0;
+	}
+	m->t = 0;
+}
+
+static void clean_normals(struct avdl_mesh *m) {
+	if (m->n && m->dirtyNormals) {
+		free(m->n);
+		m->dirtyNormals = 0;
+	}
+	m->n = 0;
+}
+
+// constructor
+void avdl_mesh_create(struct avdl_mesh *m) {
+
+	// num of vertices
+	m->vcount = 0;
+
+	// vertex attributes
+	m->v = 0;
+	m->dirtyVertices = 0;
+	m->c = 0;
+	m->dirtyColours = 0;
+	m->n = 0;
+	m->dirtyNormals = 0;
+
+	// graphics context
+	m->graphicsContextId = -1;
+
+	// draw solid or wireframe
+	m->draw_type = 0;
+
+	// array
+	m->verticesCol = 0;
+	m->dirtyColourArrayObject = 0;
+
+	// textures
+	m->dirtyTextures = 0;
+	m->t = 0;
+	m->img = 0;
+	m->hasTransparency = 0;
+
+	m->draw = avdl_mesh_draw;
+	m->clean = avdl_mesh_clean;
+	m->set_primitive = avdl_mesh_set_primitive;
+	m->load = avdl_mesh_load;
+	m->copy = avdl_mesh_copy;
+
+	m->set_colour = avdl_mesh_set_colour;
+
+	#if !defined( AVDL_DIRECT3D11 )
+	m->buffer = 0;
+	m->array = 0;
+	#endif
+
+	m->set_primitive_texcoords = avdl_mesh_set_primitive_texcoords;
+	m->setTexture = avdl_mesh_setTexture;
+	m->setTransparency = avdl_mesh_setTransparency;
+
+	m->vertexBuffer = 0;
+}
+
+void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
+
+	// clean previous vertices
+	clean_position(m);
+
+	// set mesh shape based on given value
+	switch (shape) {
+		case DD_PRIMITIVE_TRIANGLE:
+			m->v = shape_triangle;
+			m->vcount = sizeof(shape_triangle) /sizeof(float) /3;
+			break;
+
+		case DD_PRIMITIVE_RECTANGLE:
+			m->v = shape_rectangle;
+			m->vcount = sizeof(shape_rectangle) /sizeof(float) /3;
+			/*
+			m->t = malloc(sizeof(float) *6 *2);
+			m->dirtyTextures = 1;
+			for (int i = 0; i < 6; i++) {
+				m->t[i*2+0] = m->parent.parent.v[i*3+0] +0.5;
+				m->t[i*2+1] = m->parent.parent.v[i*3+1] +0.5;
+			}
+			*/
+			break;
+
+		case DD_PRIMITIVE_BOX:
+			m->v = shape_box;
+			m->vcount = sizeof(shape_box) /sizeof(float) /3;
+			break;
+	}
+
+}
+
+/* Free mesh from allocated memory
+ * the mesh is left in an undefined state.
+ * It should either get a new state with a
+ * load function or not used anymore.
+ */
+void avdl_mesh_clean(struct avdl_mesh *m) {
+	clean_position(m);
+	clean_colour(m);
+	clean_textures(m);
+	clean_normals(m);
+
+	#if !defined( AVDL_DIRECT3D11 )
+	if (m->array) {
+		glDeleteVertexArrays(1, &m->array);
+		glDeleteBuffers(1, &m->buffer);
+		m->array = 0;
+		m->buffer = 0;
+	}
+	#endif
+
+	if (m->dirtyColourArrayObject) {
+		free(m->verticesCol);
+		m->verticesCol = 0;
+		m->dirtyColourArrayObject = 0;
+	}
+
+}
+
+/* draw the mesh itself
+ */
+void avdl_mesh_draw(struct avdl_mesh *m) {
+	#ifdef AVDL_DIRECT3D11
+	/*
+	if (!m->vertexBuffer && m->v) {
+		avdl_graphics_direct3d11_setVertexBufferMesh(m);
+	}
+	avdl_graphics_direct3d11_drawMeshMesh(m, dd_matrix_globalGet());
+	if (!m->parent.vertexBuffer && m->c) {
+		avdl_graphics_direct3d11_setVertexBuffer(m);
+	}
+	avdl_graphics_direct3d11_drawMesh(m, dd_matrix_globalGet());
+	if (!m->parent.parent.vertexBuffer && m->t) {
+		avdl_graphics_direct3d11_setVertexBufferTexture(m);
+	}
+	avdl_graphics_direct3d11_drawMeshTexture(m, dd_matrix_globalGet());
+	*/
+	#else
+
+	if (!m->v) {
+		return;
+	}
+
+	if (m->array == 0 || m->graphicsContextId != avdl_graphics_getContextId()) {
+
+		// keep graphics context up to date
+                m->graphicsContextId = avdl_graphics_getContextId();
+
+		size_t totalSize = 0;
+
+		// vertex positions
+		size_t posOffset = 0;
+		size_t posSize = sizeof(float) *3 *m->vcount;
+		totalSize += posSize;
+
+		// vertex colours
+		size_t colOffset = posOffset +posSize;
+		size_t colSize = 0;
+		if (m->c) {
+			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+			colSize = sizeof(float) *4 *m->vcount;
+			#else
+			colSize = sizeof(float) *3 *m->vcount;
+			#endif
+		}
+		totalSize += colSize;
+
+		// texture coordinates
+		size_t texOffset = colOffset +colSize;
+		size_t texSize = 0;
+		if (m->t) {
+			texSize = sizeof(float) *2 *m->vcount;
+		}
+		totalSize += texSize;
+
+		// normals
+		size_t norOffset = texOffset +texSize;
+		size_t norSize = 0;
+		if (m->n) {
+			norSize = sizeof(float) *3 *m->vcount;
+		}
+		totalSize += norSize;
+
+		// create array as one unit
+		m->verticesCol = malloc( totalSize );
+		m->dirtyColourArrayObject = 1;
+		memcpy(((char *)m->verticesCol) +posOffset, m->v, posSize);
+		if (m->c) {
+			memcpy(((char *)m->verticesCol) +colOffset, m->c, colSize);
+		}
+		if (m->t) {
+			memcpy(((char *)m->verticesCol) +texOffset, m->t, texSize);
+		}
+		if (m->n) {
+			memcpy(((char *)m->verticesCol) +norOffset, m->n, norSize);
+		}
+
+		// generate array object
+		GL(glGenVertexArrays(1, &m->array));
+		GL(glBindVertexArray(m->array));
+	
+		// generate buffer attached to array
+		GL(glGenBuffers(1, &m->buffer));
+		GL(glBindBuffer(GL_ARRAY_BUFFER, m->buffer));
+
+		// give data to buffer
+		GL(glBufferData(GL_ARRAY_BUFFER, totalSize, m->verticesCol, GL_STATIC_DRAW));
+	
+		// attach vertex positions to current program
+		int pos = glGetAttribLocation(currentProgram, "position");
+		// program has `position`
+		if (pos != -1) {
+			GL(glVertexAttribPointer(pos, 3, GL_FLOAT, 0, 0, posOffset));
+			GL(glEnableVertexAttribArray(pos));
+		}
+
+		// attach vertex colours
+		if (m->c) {
+			int col = glGetAttribLocation(currentProgram, "colour");
+			// program has colours
+			if (col != -1) {
+				GL(glVertexAttribPointer(col, 3, GL_FLOAT, 0, 0, colOffset));
+				GL(glEnableVertexAttribArray(col));
+			}
+		}
+
+		// attach texture coordinates
+		if (m->t) {
+			int tex = glGetAttribLocation(currentProgram, "texCoord");
+			// program has texCoord
+			if (tex != -1) {
+				GL(glVertexAttribPointer(tex, 2, GL_FLOAT, 0, 0, texOffset));
+				GL(glEnableVertexAttribArray(tex));
+			}
+		}
+
+		// attach texture coordinates
+		if (m->n) {
+			int nor = glGetAttribLocation(currentProgram, "normal");
+			// program has texCoord
+			if (nor != -1) {
+				GL(glVertexAttribPointer(nor, 3, GL_FLOAT, 0, 0, norOffset));
+				GL(glEnableVertexAttribArray(nor));
+			}
+		}
+	}
+
+	if (m->hasTransparency) {
+		avdl_graphics_EnableBlend();
+	}
+
+	if (m->img) {
+		m->img->bind(m->img);
+	}
+
+	GL(glBindVertexArray(m->array));
+
+	#if defined(AVDL_QUEST2)
+	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
+	if (MatrixID < 0) {
+		dd_log("avdl: avdl_mesh: location of `matrix` not found in current program");
+	}
+	else {
+		GL(glUniformMatrix4fv(
+			MatrixID,
+			1,
+			GL_TRUE,
+			(float *)dd_matrix_globalGet()
+		));
+	}
+	#else
+	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
+	if (MatrixID < 0) {
+		dd_log("avdl: avdl_mesh: location of `matrix` not found in current program");
+	}
+	else {
+		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
+	}
+	#endif
+
+	// draw arrays
+	if (m->draw_type) {
+		GL(glDrawArrays(GL_LINES, 0, m->vcount));
+	}
+	else {
+		GL(glDrawArrays(GL_TRIANGLES, 0, m->vcount));
+	}
+	GL(glBindVertexArray(0));
+
+	if (m->img) {
+		m->img->unbind(m->img);
+	}
+
+	if (m->hasTransparency) {
+		avdl_graphics_DisableBlend();
+	}
+	#endif
+}
+
+/*
+ * add the mesh to be loaded from the asset manager
+ */
+void avdl_mesh_load(struct avdl_mesh *m, const char *asset, int type) {
+
+	// clean the mesh, if was dirty
+	avdl_mesh_clean(m);
+
+	// mark to be loaded
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH2, asset, type);
+
+}
+
+void avdl_mesh_copy(struct avdl_mesh *dest, struct avdl_mesh *src) {
+	avdl_mesh_clean(dest);
+	dest->vcount = src->vcount;
+	dest->v = malloc(src->vcount *sizeof(float) *3);
+	memcpy(dest->v, src->v, sizeof(float) *src->vcount *3);
+	dest->dirtyVertices = 1;
+
+	if (src->c) {
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+		dest->c = malloc(sizeof(float) *src->vcount *4);
+		memcpy(dest->c, src->c, sizeof(float) *src->vcount *4);
+		#else
+		dest->c = malloc(sizeof(float) *src->vcount *3);
+		memcpy(dest->c, src->c, sizeof(float) *src->vcount *3);
+		#endif
+		dest->dirtyColours = 1;
+	}
+
+	if (src->t) {
+		dest->t = malloc(sizeof(float) *(dest->vcount*2));
+		memcpy(dest->t, src->t, sizeof(float) *(dest->vcount*2));
+		dest->dirtyTextures = 1;
+	}
+}
+
+void avdl_mesh_combine(struct avdl_mesh *dst, struct avdl_mesh *src, float offsetX, float offsetY, float offsetZ) {
+	dst->v = realloc(dst->v, (dst->vcount +src->vcount) *sizeof(float) *3);
+	dst->dirtyVertices = 1;
+	for (int i = dst->vcount *3; i < (dst->vcount +src->vcount) *3; i += 3) {
+		dst->v[i+0] = src->v[(i+0) -(dst->vcount *3)] +offsetX;
+		dst->v[i+1] = src->v[(i+1) -(dst->vcount *3)] +offsetY;
+		dst->v[i+2] = src->v[(i+2) -(dst->vcount *3)] +offsetZ;
+	}
+	dst->vcount += src->vcount;
+
+	if ((!dst->c && src->c) || dst->c) {
+		dst->c = realloc(dst->c, dst->vcount *sizeof(float) *4);
+		dst->dirtyColours = 1;
+		int oldVertices = dst->vcount -src->vcount;
+		for (int i = oldVertices *4; i < dst->vcount *4; i += 4) {
+			// get new mesh's colour
+			if (src->c) {
+				dst->c[i+0] = src->c[(i+0) -(oldVertices *4)];
+				dst->c[i+1] = src->c[(i+1) -(oldVertices *4)];
+				dst->c[i+2] = src->c[(i+2) -(oldVertices *4)];
+				dst->c[i+3] = src->c[(i+3) -(oldVertices *4)];
+			}
+			// new mesh has no colour - add default
+			else {
+				dst->c[i+0] = 0;
+				dst->c[i+1] = 0;
+				dst->c[i+2] = 0;
+				dst->c[i+3] = 0;
+			}
+		}
+	}
+
+	if ((!dst->t && src->t) || dst->t) {
+		dst->t = realloc(dst->t, dst->vcount *sizeof(float) *2);
+		dst->dirtyTextures = 1;
+		int oldVertices = dst->vcount -src->vcount;
+		for (int i = oldVertices *2; i < dst->vcount *2; i += 2) {
+			if (src->t) {
+				dst->t[i+0] = src->t[(i+0) -(oldVertices *2)];
+				dst->t[i+1] = src->t[(i+1) -(oldVertices *2)];
+			}
+			else {
+				dst->t[i+0] = 0;
+				dst->t[i+1] = 0;
+			}
+		}
+	}
+}
+
+void avdl_mesh_translatef(struct avdl_mesh *o, float x, float y, float z) {
+	if (o->v && !o->dirtyVertices) {
+		float *p = malloc(sizeof(float) *o->vcount *3);
+		memcpy(p, o->v, sizeof(float) *o->vcount *3);
+		o->v = p;
+		o->dirtyVertices = 1;
+	}
+	for (int i = 0; i < o->vcount; i++) {
+		o->v[i*3 +0] += x;
+		o->v[i*3 +1] += y;
+		o->v[i*3 +2] += z;
+	}
+}
+
+void avdl_mesh_scalef(struct avdl_mesh *o, float x, float y, float z) {
+	if (o->v && !o->dirtyVertices) {
+		float *p = malloc(sizeof(float) *o->vcount *3);
+		memcpy(p, o->v, sizeof(float) *o->vcount *3);
+		o->v = p;
+		o->dirtyVertices = 1;
+	}
+	for (int i = 0; i < o->vcount; i++) {
+		o->v[i*3 +0] *= x;
+		o->v[i*3 +1] *= y;
+		o->v[i*3 +2] *= z;
+	}
+}
+
+void avdl_mesh_set_colour(struct avdl_mesh *m, float r, float g, float b) {
+	clean_colour(m);
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	m->c = malloc(m->vcount *sizeof(float) *4);
+	m->dirtyColours = 1;
+	for (int i = 0; i < m->vcount *4; i += 4) {
+		m->c[i+0] = r;
+		m->c[i+1] = g;
+		m->c[i+2] = b;
+		m->c[i+3] = 0;
+	}
+	#else
+	m->c = malloc(m->vcount *sizeof(float) *3);
+	m->dirtyColours = 1;
+	for (int i = 0; i < m->vcount *3; i += 3) {
+		m->c[i+0] = r;
+		m->c[i+1] = g;
+		m->c[i+2] = b;
+	}
+	#endif
+}
+
+void avdl_mesh_set_primitive_texcoords(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY) {
+	for (int i = 0; i < m->vcount*2; i += 2) {
+		m->t[i+0] *= sizeX;
+		m->t[i+0] += offsetX;
+
+		m->t[i+1] *= sizeY;
+		m->t[i+1] += offsetY;
+	}
+}
+
+void avdl_mesh_setTransparency(struct avdl_mesh *o, int transparency) {
+	o->hasTransparency = transparency;
+}
+
+void avdl_mesh_setTexture(struct avdl_mesh *o, struct dd_image *tex) {
+	o->img = tex;
+}

@@ -456,7 +456,7 @@ void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, i
 	subpixel.width = w;
 	subpixel.height = h;
 
-	dd_da_add(&o->subpixels, &subpixel);
+	dd_da_push(&o->subpixels, &subpixel);
 
 	#endif
 

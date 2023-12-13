@@ -141,8 +141,10 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 		GL(glEnableVertexAttribArray(pos));
 
 		int col = glGetAttribLocation(currentProgram, "colour");
-		GL(glVertexAttribPointer(col, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_col), (void *)offsetof(struct dd_vertex_col, col)));
-		GL(glEnableVertexAttribArray(col));
+		if (col != -1) {
+			GL(glVertexAttribPointer(col, 3, GL_FLOAT, 0, sizeof(struct dd_vertex_col), (void *)offsetof(struct dd_vertex_col, col)));
+			GL(glEnableVertexAttribArray(col));
+		}
 	}
 
 	GL(glBindVertexArray(m->parent.array));

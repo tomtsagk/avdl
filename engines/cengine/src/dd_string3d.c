@@ -334,7 +334,7 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 		}
 
 		// create new mesh for the new word
-		dd_da_add(&o->textMeshes, &m);
+		dd_da_push(&o->textMeshes, &m);
 		p = dd_da_get(&o->textMeshes, o->textMeshes.elements-1);
 
 		dd_meshTexture_create(&p->m);

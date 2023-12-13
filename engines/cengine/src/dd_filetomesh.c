@@ -711,18 +711,18 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 		vertex.x = v_pos_index[v_pos_face2[i]].x;
 		vertex.y = v_pos_index[v_pos_face2[i]].y;
 		vertex.z = v_pos_index[v_pos_face2[i]].z;
-		dd_da_add(&v_pos_face, &vertex);
+		dd_da_push(&v_pos_face, &vertex);
 
 		struct dd_vec3 cvertex;
 		cvertex.x = v_col_index[v_pos_face2[i]].x;
 		cvertex.y = v_col_index[v_pos_face2[i]].y;
 		cvertex.z = v_col_index[v_pos_face2[i]].z;
-		dd_da_add(&v_col_face, &cvertex);
+		dd_da_push(&v_col_face, &cvertex);
 
 		struct dd_vec2 tex;
 		tex.x = v_tex_index[v_pos_face2[i]].x;
 		tex.y = v_tex_index[v_pos_face2[i]].y;
-		dd_da_add(&v_tex_face, &tex);
+		dd_da_push(&v_tex_face, &tex);
 	}
 
 	/*
@@ -831,15 +831,13 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings);
 int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int file_type) {
 
 	switch (file_type) {
-		case DD_PLY: return dd_load_ply(m, path, settings);
+		//case DD_PLY: return dd_load_ply(m, path, settings);
+		case DD_PLY: return avdl_load_ply(m, path, settings);
 		case DD_OBJ: return dd_load_obj(m, path, settings);
 	}
 
 	return -1;
 }
-
-#if defined(_WIN32) || defined(WIN32)
-#include <windows.h>
 
 char *skip_whitespace(char *str) {
 	while (str[0] == ' '
@@ -864,6 +862,10 @@ char *skip_to_whitespace(char *str) {
 	return str;
 }
 
+
+#if defined(_WIN32) || defined(WIN32)
+#include <windows.h>
+
 int my_min(num1, num2) {
 	return num1 > num2 ? num2 : num1;
 }
@@ -872,6 +874,585 @@ int my_min(num1, num2) {
 #if defined( AVDL_DIRECT3D11 )
 extern FILE *avdl_filetomesh_openFile(char *filename);
 #endif
+
+int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
+
+	/*
+	struct avdl_time t;
+	avdl_time_start(&t);
+	*/
+
+	//dd_log("file: %s", path);
+
+	// open file and check error
+	FILE *f = fopen(path, "r");
+	if (!f)
+	{
+		dd_log("avdl: avdl_load_ply: error opening file: %s: %s", path, strerror(errno));
+		return -1;
+	}
+
+	// put file into memory
+	fseek(f, 0, SEEK_END);
+	long fsize = ftell(f);
+	fseek(f, 0, SEEK_SET);
+	char *fstr = malloc(fsize + 1);
+	fread(fstr, fsize, 1, f);
+	fclose(f);
+
+	if ( avdl_load_ply_string(m, fstr, settings) != 0) {
+		dd_log("avdl: avdl_load_ply_string: failed to load asset: %s", path);
+		free(fstr);
+		return -1;
+	}
+
+	// clean
+	free(fstr);
+
+	/*
+	avdl_time_end(&t);
+	dd_log("loading took %ld for size %ld", avdl_time_getTimeDouble(&t), fsize);
+	*/
+
+	return 0;
+}
+
+int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int settings) {
+	// main pointer
+	char *p = string;
+
+	// verify ply signature
+	if ( strncmp(p, "ply", strlen("ply")) != 0) {
+		dd_log("avdl: avdl_load_ply_string: ply signature not found");
+		return -1;
+	}
+	p += 3;
+
+	// ply structures
+	enum ply_format {
+		PLY_FORMAT_CHAR,
+		PLY_FORMAT_UCHAR,
+		PLY_FORMAT_SHORT,
+		PLY_FORMAT_USHORT,
+		PLY_FORMAT_INT,
+		PLY_FORMAT_UINT,
+		PLY_FORMAT_FLOAT,
+		PLY_FORMAT_DOUBLE,
+		PLY_FORMAT_NONE,
+	};
+
+	struct avdl_ply_property {
+		char name[100];
+		enum ply_format format;
+		enum ply_format list_format;
+	};
+
+	struct avdl_ply_element {
+		char name[100];
+		struct avdl_ply_property p[100];
+		int propertyTotal;
+		int amount;
+	};
+
+	struct avdl_ply_element elements[100];
+	int elementTotal = 0;
+
+	int vertex_count = 0;
+
+	// ready ply commands
+	while ( strncmp(p, "end_header", strlen("end_header")) != 0 ) {
+
+		p = skip_whitespace(p);
+
+		// format
+		if ( strncmp(p, "format", strlen("format")) == 0 ) {
+			p += strlen("format");
+			p = skip_whitespace(p);
+			if ( strncmp(p, "ascii 1.0", strlen("ascii 1.0")) != 0) {
+				dd_log("avdl: avdl_load_ply_string: unsupported ply format, only ascii supported");
+				return -1;
+			}
+			while (p[0] != '\n') {
+				p++;
+			}
+			p++;
+		}
+		else
+		// comments
+		if ( strncmp(p, "comment", strlen("comment")) == 0 ) {
+			p += strlen("comment");
+			while (p[0] != '\n') {
+				p++;
+			}
+			p++;
+		}
+		else
+		// elements
+		if ( strncmp(p, "element", strlen("element")) == 0 ) {
+			p += strlen("element");
+
+			// element limit
+			if (elementTotal >= 100) {
+				dd_log("avdl: avdl_load_ply_string: too many elements, max is 100");
+				return -1;
+			}
+
+			// init element
+			elements[elementTotal].propertyTotal = 0;
+
+			// get element name
+			p = skip_whitespace(p);
+			char *p2 = p;
+			p2 = skip_to_whitespace(p2);
+			if (p2 -p >= 100) {
+				dd_log("avdl: avdl_load_ply_string: element name has to be smaller than 100 characters");
+				return -1;
+			}
+
+			// attach it to element
+			strncpy(elements[elementTotal].name, p, p2 -p);
+			elements[elementTotal].name[p2 -p] = '\0';
+			p = p2;
+
+			// get element amount
+			p = skip_whitespace(p);
+			elements[elementTotal].amount = atoi(p);
+			p = skip_to_whitespace(p);
+
+			if ( strncmp( elements[elementTotal].name, "vertex", strlen("vertex") ) == 0 ) {
+				vertex_count = elements[elementTotal].amount;
+			}
+
+			//dd_log("element: %s %d - %d", elements[elementTotal].name, elements[elementTotal].amount, elementTotal);
+
+			// advance element
+			elementTotal++;
+
+			// temp skip
+			while (p[0] != '\n') {
+				p++;
+			}
+			p++;
+		}
+		else
+		// property
+		if ( strncmp(p, "property", strlen("property")) == 0 ) {
+			p += strlen("property");
+			p = skip_whitespace(p);
+
+			struct avdl_ply_property *property = &elements[elementTotal-1].p[elements[elementTotal-1].propertyTotal];
+
+			// check element is valid
+			if (elementTotal == 0) {
+				dd_log("avdl: avdl_load_ply_string: property found before element");
+				return -1;
+			}
+
+			property->list_format = PLY_FORMAT_NONE;
+			// check if list
+			if ( strncmp(p, "list", strlen("list")) == 0 ) {
+				p += strlen("list");
+				p = skip_whitespace(p);
+
+				// get list type
+				char *p2 = p;
+				p2 = skip_to_whitespace(p2);
+				if (p2 -p >= 100) {
+					dd_log("avdl: avdl_load_ply_string: property list type has to be smaller than 100 characters");
+					return -1;
+				}
+
+				// detect format
+				if ( strncmp(p, "uchar", strlen("uchar")) == 0 ) {
+					property->list_format = PLY_FORMAT_UCHAR;
+				}
+				else {
+					dd_log("avdl: avdl_load_ply_string: unsupported list type");
+					return -1;
+				}
+				p = p2;
+				p = skip_whitespace(p);
+			}
+
+			// get property type
+			char *p2 = p;
+			p2 = skip_to_whitespace(p2);
+			if (p2 -p >= 100) {
+				dd_log("avdl: avdl_load_ply_string: property type has to be smaller than 100 characters");
+				return -1;
+			}
+
+			// detect format
+			if ( strncmp(p, "float", strlen("float")) == 0 ) {
+				property->format = PLY_FORMAT_FLOAT;
+			}
+			else
+			if ( strncmp(p, "uchar", strlen("uchar")) == 0 ) {
+				property->format = PLY_FORMAT_UCHAR;
+			}
+			else
+			if ( strncmp(p, "uint", strlen("uint")) == 0 ) {
+				property->format = PLY_FORMAT_UINT;
+			}
+			else {
+				property->format = PLY_FORMAT_NONE;
+			}
+			p = p2;
+
+			// property name
+			p = skip_whitespace(p);
+			p2 = p;
+			p2 = skip_to_whitespace(p2);
+			if (p2 -p >= 100) {
+				dd_log("avdl: avdl_load_ply_string: property name has to be smaller than 100 characters");
+				return -1;
+			}
+			strncpy(property->name, p, p2 -p);
+			property->name[p2 -p] = '\0';
+			p = p2;
+			elements[elementTotal-1].propertyTotal++;
+
+			//dd_log("property: %s %d - %d %d", property->name, property->format, elementTotal-1, elements[elementTotal-1].propertyTotal);
+
+		}
+		// unrecognised word
+		else {
+			char *p2 = p;
+			p2 = skip_to_whitespace(p2);
+
+			char temp[100];
+			strncpy(temp, p, dd_math_min(p2-p, 99));
+			temp[dd_math_min(p2-p, 99)] = '\0';
+			//dd_log("unrecognised word: %s", temp);
+			return -1;
+		}
+
+		p = skip_whitespace(p);
+	}
+	p = skip_whitespace(p);
+	p += strlen("end_header");
+	p = skip_whitespace(p);
+
+	// check if mesh is valid
+	int has_positions = 0;
+	int has_colours = 0;
+	int has_texcoord = 0;
+	int has_normals = 0;
+
+	for (int i = 0; i < elementTotal; i++) {
+		struct avdl_ply_element *element = &elements[i];
+
+		// currently only check vertex attributes
+		if ( strncmp(element->name, "vertex", strlen("vertex")) != 0) {
+			continue;
+		}
+
+		// pos
+		int has_x = 0;
+		int has_y = 0;
+		int has_z = 0;
+
+		// col
+		int has_red = 0;
+		int has_green = 0;
+		int has_blue = 0;
+
+		// normals
+		int has_nx = 0;
+		int has_ny = 0;
+		int has_nz = 0;
+
+		// tex
+		int has_s = 0;
+		int has_t = 0;
+
+		for (int j = 0; j < elements[i].propertyTotal; j++) {
+			struct avdl_ply_property *property = &elements[i].p[j];
+
+			// pos
+			if ( strncmp(property->name, "x", strlen("x")) == 0 ) {
+				has_x = 1;
+			}
+			else
+			if ( strncmp(property->name, "y", strlen("y")) == 0 ) {
+				has_y = 1;
+			}
+			else
+			if ( strncmp(property->name, "z", strlen("z")) == 0 ) {
+				has_z = 1;
+			}
+			else
+			// col
+			if ( strncmp(property->name, "red", strlen("red")) == 0 ) {
+				has_red = 1;
+			}
+			else
+			if ( strncmp(property->name, "green", strlen("green")) == 0 ) {
+				has_green = 1;
+			}
+			else
+			if ( strncmp(property->name, "blue", strlen("blue")) == 0 ) {
+				has_blue = 1;
+			}
+			else
+			// normals
+			if ( strncmp(property->name, "nx", strlen("nx")) == 0 ) {
+				has_nx = 1;
+			}
+			else
+			if ( strncmp(property->name, "ny", strlen("ny")) == 0 ) {
+				has_ny = 1;
+			}
+			else
+			if ( strncmp(property->name, "nz", strlen("nz")) == 0 ) {
+				has_nz = 1;
+			}
+			else
+			// tex
+			if ( strncmp(property->name, "s", strlen("s")) == 0 ) {
+				has_s = 1;
+			}
+			else
+			if ( strncmp(property->name, "t", strlen("t")) == 0 ) {
+				has_t = 1;
+			}
+		}
+
+		// pos
+		if (has_x && has_y && has_z) {
+			has_positions = 1;
+		}
+
+		// col
+		if (has_red && has_green && has_blue) {
+			has_colours = 1;
+		}
+
+		// normals
+		if (has_nx && has_ny && has_nz) {
+			has_normals = 1;
+		}
+
+		// tex
+		if (has_s && has_t) {
+			has_texcoord = 1;
+		}
+	}
+
+	// error!
+	if (!has_positions) {
+		dd_log("avdl: avdl_load_ply_string: asset has no vertex positions!");
+		return -1;
+	}
+
+	// vertex attributes v2
+	float *array_vertex_pos = malloc(sizeof(float) *vertex_count *3);
+	float *array_vertex_col = 0;
+	float *array_vertex_st = 0;
+	float *array_vertex_nor = 0;
+	if (has_colours) {
+		array_vertex_col = malloc(sizeof(float) *vertex_count *3);
+	}
+	if (has_texcoord) {
+		array_vertex_st = malloc(sizeof(float) *vertex_count *2);
+	}
+	if (has_normals) {
+		array_vertex_nor = malloc(sizeof(float) *vertex_count *3);
+	}
+	struct dd_dynamic_array array_vertex_indices;
+	dd_da_init(&array_vertex_indices, sizeof(int));
+
+	// for each element
+	for (int i = 0; i < elementTotal; i++) {
+		struct avdl_ply_element *element = &elements[i];
+
+		int is_vertex = 0;
+		int is_face_indices = 0;
+
+		if ( strncmp(element->name, "vertex", strlen("vertex")) == 0 ) {
+			is_vertex = 1;
+		}
+		if ( strncmp(element->name, "face", strlen("face")) == 0 ) {
+			is_face_indices = 1;
+		}
+
+		//dd_log("element %d %s properties %d", i, element->name, element->propertyTotal);
+		for (int j = 0; j < element->amount; j++) {
+
+			for (int z = 0; z < element->propertyTotal; z++) {
+				struct avdl_ply_property *property = &element->p[z];
+				//dd_log("property %s %d %d", property->name, z, property->format);
+
+				p = skip_whitespace(p);
+
+				int values = 1;
+
+				// is list
+				if (property->list_format == PLY_FORMAT_UCHAR) {
+					p = skip_whitespace(p);
+					values = atoi(p);
+					p = skip_to_whitespace(p);
+					//dd_log("is list with values %d", values);
+				}
+
+				// read property value(s)
+				if (property->format == PLY_FORMAT_FLOAT) {
+					for (int list_i = 0; list_i < values; list_i++) {
+						p = skip_whitespace(p);
+						float f = atof(p);
+						p = skip_to_whitespace(p);
+
+						if ( is_vertex && strncmp( property->name, "x", strlen("x") ) == 0) {
+							array_vertex_pos[j*3 +0] = f;
+						}
+						else
+						if ( is_vertex && strncmp( property->name, "y", strlen("y") ) == 0) {
+							array_vertex_pos[j*3 +1] = f;
+						}
+						else
+						if ( is_vertex && strncmp( property->name, "z", strlen("z") ) == 0) {
+							array_vertex_pos[j*3 +2] = f;
+						}
+						else
+						if ( is_vertex && strncmp( property->name, "nx", strlen("nx") ) == 0 && has_normals) {
+							array_vertex_nor[j*3 +0] = f;
+						}
+						else
+						if ( is_vertex && strncmp( property->name, "ny", strlen("ny") ) == 0 && has_normals) {
+							array_vertex_nor[j*3 +1] = f;
+						}
+						else
+						if ( is_vertex && strncmp( property->name, "nz", strlen("nz") ) == 0 && has_normals) {
+							array_vertex_nor[j*3 +2] = f;
+						}
+						else
+						if ( is_vertex && strncmp( property->name, "s", strlen("s") ) == 0 && has_texcoord) {
+							array_vertex_st[j*2 +0] = f;
+						}
+						else
+						if ( is_vertex && strncmp( property->name, "t", strlen("t") ) == 0 && has_texcoord) {
+							array_vertex_st[j*2 +1] = f;
+						}
+						//dd_log("\tfloat: %f", f);
+					}
+				}
+				else
+				if (property->format == PLY_FORMAT_UCHAR) {
+					for (int list_i = 0; list_i < values; list_i++) {
+						p = skip_whitespace(p);
+						int integer = atoi(p);
+						p = skip_to_whitespace(p);
+
+						if ( is_vertex && strncmp( property->name, "red", strlen("red") ) == 0 && has_colours) {
+							array_vertex_col[j*3 +0] = integer /255.0;
+						}
+						else
+						if ( is_vertex && strncmp( property->name, "green", strlen("green") ) == 0 && has_colours) {
+							array_vertex_col[j*3 +1] = integer /255.0;
+						}
+						else
+						if ( is_vertex && strncmp( property->name, "blue", strlen("blue") ) == 0 && has_colours) {
+							array_vertex_col[j*3 +2] = integer /255.0;
+						}
+						else
+						// for the time being no alpha on vertex colours
+						if ( is_vertex && strncmp( property->name, "alpha", strlen("alpha") ) == 0 && has_colours) {
+							//dd_da_push(&array_vertex_alpha, &integer);
+						}
+						//dd_log("\tuchar: %d", integer);
+					}
+				}
+				else
+				if (property->format == PLY_FORMAT_UINT) {
+					for (int list_i = 0; list_i < values; list_i++) {
+						p = skip_whitespace(p);
+						int integer = atoi(p);
+						p = skip_to_whitespace(p);
+
+						if ( is_face_indices && strncmp( property->name, "vertex_indices", strlen("vertex_indices") ) == 0) {
+							if (list_i >= 3) {
+								// do not insert parts of the array in itself, extract numbers first
+								int i1 = ((int*)dd_da_get(&array_vertex_indices, -3 +((list_i -3) *3)))[0];
+								int i2 = ((int*)dd_da_get(&array_vertex_indices, -1))[0];
+								//dd_da_push(&array_vertex_indices, dd_da_get(&array_vertex_indices, -3 +((list_i -3) *3)));
+								//dd_da_push(&array_vertex_indices, dd_da_get(&array_vertex_indices, -2));
+								dd_da_push(&array_vertex_indices, &i1);
+								dd_da_push(&array_vertex_indices, &i2);
+							}
+							dd_da_push(&array_vertex_indices, &integer);
+						}
+
+						//dd_log("\tuint: %d", integer);
+					}
+				}
+			}
+		}
+
+	}
+
+	// init loaded mesh
+
+	m->vcount = array_vertex_indices.elements;
+	m->v = malloc(sizeof(float) *m->vcount *3);
+	m->c = 0;
+	m->t = 0;
+	m->n = 0;
+	if (has_colours) {
+		m->c = malloc(sizeof(float) *m->vcount *3);
+	}
+	if (has_texcoord) {
+		m->t = malloc(sizeof(float) *m->vcount *2);
+	}
+	if (has_normals) {
+		m->n = malloc(sizeof(float) *m->vcount *3);
+	}
+	for (int i = 0; i < m->vcount; i++) {
+		int *index = dd_da_get(&array_vertex_indices, i);
+		m->v[i*3 +0] = array_vertex_pos[index[0]*3 +0];
+		m->v[i*3 +1] = array_vertex_pos[index[0]*3 +1];
+		m->v[i*3 +2] = array_vertex_pos[index[0]*3 +2];
+
+		if (has_colours) {
+			m->c[i*3 +0] = dd_math_pow(array_vertex_col[index[0]*3 +0], 2.2);
+			m->c[i*3 +1] = dd_math_pow(array_vertex_col[index[0]*3 +1], 2.2);
+			m->c[i*3 +2] = dd_math_pow(array_vertex_col[index[0]*3 +2], 2.2);
+		}
+
+		if (has_texcoord) {
+			m->t[i*2 +0] = array_vertex_st[index[0]*2 +0];
+			m->t[i*2 +1] = array_vertex_st[index[0]*2 +1];
+		}
+
+		if (has_normals) {
+			m->n[i*3 +0] = array_vertex_nor[index[0]*3 +0];
+			m->n[i*3 +1] = array_vertex_nor[index[0]*3 +1];
+			m->n[i*3 +2] = array_vertex_nor[index[0]*3 +2];
+		}
+	}
+
+	// cleanup TODO
+	if (array_vertex_pos) {
+		free(array_vertex_pos);
+		array_vertex_pos = 0;
+	}
+	if (array_vertex_col) {
+		free(array_vertex_col);
+		array_vertex_col = 0;
+	}
+	if (array_vertex_st) {
+		free(array_vertex_st);
+		array_vertex_st = 0;
+	}
+	if (array_vertex_nor) {
+		free(array_vertex_nor);
+		array_vertex_nor = 0;
+	}
+	dd_da_free(&array_vertex_indices);
+
+	// parse elements to loaded mesh
+
+	return 0;
+}
 
 /* Parse PLY - STILL WORKING ON IT */
 /*
@@ -1195,8 +1776,6 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	buff[3] = '\0';
 	if ( strcmp(buff, "ply") != 0) goto error;
 
-	//Check format (let's skip it for now, assume "ascii 1.0")
-
 	/* What this parser reads:
 	 *		element vertex
 	 			x, y, z
@@ -1346,6 +1925,9 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 					property->target = v_col_index_d +2;
 					property->offsetSize = sizeof(int) *3;
 				}
+				else {
+					dd_log("unsupported property: %s", property->name);
+				}
 			}
 			else
 			if (strcmp(element->name, "face") == 0) {
@@ -1353,6 +1935,25 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 					property->target = v_pos_face2;
 					property->offsetSize = sizeof(unsigned int);
 				}
+			}
+		}
+		else
+		// format
+		if ( strcmp(buff, "format") == 0 ) {
+			// Get format/list
+			buff[1023] = '\0';
+			if ( fscanf(f, "%*[ \t]%1022[a-zA-Z0-9 \.]", buff) == EOF )
+				goto error;
+			if ( strcmp(buff, "ascii 1.0") != 0 ) {
+				dd_log("unsupported format: %s", buff);
+				goto error;
+			}
+		}
+		// unsupported ply command
+		else {
+			//dd_log("skip unsupported ply command: %s", buff);
+			if ( fscanf(f, "%*[^\n]%*1c") == EOF) {
+				goto error;
 			}
 		}
 	}
@@ -1419,18 +2020,18 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		vertex.x = v_pos_index[v_pos_face2[i]].x;
 		vertex.y = v_pos_index[v_pos_face2[i]].y;
 		vertex.z = v_pos_index[v_pos_face2[i]].z;
-		dd_da_add(&v_pos_face, &vertex);
+		dd_da_push(&v_pos_face, &vertex);
 
 		struct dd_vec3 cvertex;
 		cvertex.x = v_col_index[v_pos_face2[i]].x;
 		cvertex.y = v_col_index[v_pos_face2[i]].y;
 		cvertex.z = v_col_index[v_pos_face2[i]].z;
-		dd_da_add(&v_col_face, &cvertex);
+		dd_da_push(&v_col_face, &cvertex);
 
 		struct dd_vec2 tex;
 		tex.x = v_tex_index[v_pos_face2[i]].x;
 		tex.y = v_tex_index[v_pos_face2[i]].y;
-		dd_da_add(&v_tex_face, &tex);
+		dd_da_push(&v_tex_face, &tex);
 	}
 
 	//Close file
@@ -1562,7 +2163,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 			*/
 
 			//Push vertex
-			dd_da_add(&v_ind, &v);
+			dd_da_push(&v_ind, &v);
 
 			//Skip until next line
 			fscanf(f, "%*[^\n]%*1c");
@@ -1581,9 +2182,9 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 			new--;
 
 			/* add first face (assuming each face has at least 3 vertices) */
-			dd_da_add(&v_out, dd_da_get(&v_ind, base));
-			dd_da_add(&v_out, dd_da_get(&v_ind, last));
-			dd_da_add(&v_out, dd_da_get(&v_ind, new ));
+			dd_da_push(&v_out, dd_da_get(&v_ind, base));
+			dd_da_push(&v_out, dd_da_get(&v_ind, last));
+			dd_da_push(&v_out, dd_da_get(&v_ind, new ));
 
 			/* for each extra vertex, add a new face, like a fan */
 			int vert_ind;
@@ -1593,9 +2194,9 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 				new = vert_ind;
 				//dd_log("parse extra face %d %d %d", base, last, new);
 
-				dd_da_add(&v_out, dd_da_get(&v_ind, base));
-				dd_da_add(&v_out, dd_da_get(&v_ind, last));
-				dd_da_add(&v_out, dd_da_get(&v_ind, new ));
+				dd_da_push(&v_out, dd_da_get(&v_ind, base));
+				dd_da_push(&v_out, dd_da_get(&v_ind, last));
+				dd_da_push(&v_out, dd_da_get(&v_ind, new ));
 
 			}
 		}

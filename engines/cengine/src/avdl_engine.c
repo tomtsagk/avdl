@@ -235,7 +235,10 @@ int avdl_engine_init(struct avdl_engine *o) {
 		return -1;
 	}
 
-	avdl_graphics_CreateWindow(&o->graphics);
+	if (avdl_graphics_CreateWindow(&o->graphics) != 0) {
+		dd_log("avdl: error creating window");
+		return -1;
+	}
 	if (avdl_engine_hasVSync()) {
 		o->avdl_vsync = -1;
 		avdl_engine_setVSync(1);

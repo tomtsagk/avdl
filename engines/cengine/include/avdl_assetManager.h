@@ -15,6 +15,7 @@ extern "C" {
 #define AVDL_ASSETMANAGER_MESHCOLOUR 2
 #define AVDL_ASSETMANAGER_MESHTEXTURE 3
 #define AVDL_ASSETMANAGER_TEXTURE 4
+#define AVDL_ASSETMANAGER_MESH2 5
 
 struct dd_meshToLoad {
 	void *object;

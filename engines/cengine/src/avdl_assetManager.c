@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "dd_meshTexture.h"
+#include "avdl_mesh.h"
 #include <stdio.h>
 #include "dd_game.h"
 
@@ -97,7 +98,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	meshToLoad.meshType = meshType;
 	meshToLoad.type = type;
 	strcpy_s(meshToLoad.filename, 300, assetname);
-	dd_da_add(&meshesToLoad, &meshToLoad);
+	dd_da_push(&meshesToLoad, &meshToLoad);
 	#else
 
 	struct dd_meshToLoad meshToLoad;
@@ -117,7 +118,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	//printf("add asset: %s\n", meshToLoad.filename);
 	//dd_log("add asset: %s\n", meshToLoad.filename);
 	#endif
-	dd_da_add(&meshesToLoad, &meshToLoad);
+	dd_da_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
 	#endif
@@ -237,6 +238,37 @@ void avdl_assetManager_loadAssets() {
 		// load mesh
 		else {
 			// mesh
+			if (m->meshType == AVDL_ASSETMANAGER_MESH2) {
+				struct avdl_mesh *mesh = m->object;
+				struct dd_loaded_mesh lm;
+				if (dd_filetomesh(&lm, m->filename,
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY) == -1) {
+					// error loading file
+				}
+				else {
+					pthread_mutex_lock(&updateDrawMutex);
+					avdl_mesh_clean(mesh);
+					mesh->vcount = lm.vcount;
+					if (lm.v) {
+						mesh->v = lm.v;
+						mesh->dirtyVertices = 1;
+					}
+					if (lm.c) {
+						mesh->c = lm.c;
+						mesh->dirtyColours = 1;
+					}
+					if (lm.t) {
+						mesh->t = lm.t;
+						mesh->dirtyTextures = 1;
+					}
+					if (lm.n) {
+						mesh->n = lm.n;
+						mesh->dirtyNormals = 1;
+					}
+					pthread_mutex_unlock(&updateDrawMutex);
+				}
+			}
+			else
 			if (m->meshType == AVDL_ASSETMANAGER_MESH) {
 				struct dd_mesh *mesh = m->object;
 				dd_mesh_clean(mesh);

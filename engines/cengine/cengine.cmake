@@ -24,6 +24,7 @@ install(FILES
 	engines/cengine/src/dd_math.c
 	engines/cengine/src/dd_matrix.c
 	engines/cengine/src/dd_mesh.c
+	engines/cengine/src/avdl_mesh.c
 	engines/cengine/src/dd_meshColour.c
 	engines/cengine/src/dd_meshTexture.c
 	engines/cengine/src/dd_mouse.c

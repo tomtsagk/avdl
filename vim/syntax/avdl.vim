@@ -35,6 +35,7 @@ syntax match avdlKeywords ']'
 " classes
 syntax match avdlKeywords 'dd_matrix'
 syntax match avdlKeywords 'dd_world'
+syntax match avdlKeywords 'avdl_mesh'
 syntax match avdlKeywords 'dd_mesh'
 syntax match avdlKeywords 'dd_meshColour'
 syntax match avdlKeywords 'dd_meshTexture'
@@ -64,6 +65,10 @@ syntax match avdlKeywords 'dd_clearColour'
 syntax match avdlKeywords 'dd_world_prepareReady'
 syntax match avdlKeywords 'avdl_setUniform1f'
 syntax match avdlKeywords 'avdl_exit'
+syntax match avdlKeywords 'avdl_rigitbody'
+syntax match avdlKeywords 'avdl_collider'
+syntax match avdlKeywords 'avdl_collider_aabb'
+syntax match avdlKeywords 'avdl_collider_sphere'
 
 " primitive variable types
 syntax keyword avdlPrimitiveVariableTypes int float string char void

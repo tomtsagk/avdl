@@ -7,7 +7,7 @@ extern "C" {
 
 #include "avdl_collider.h"
 #include "dd_vec3.h"
-#include "dd_meshColour.h"
+#include "avdl_mesh.h"
 
 struct avdl_collider_aabb {
 	struct avdl_collider parent;
@@ -15,7 +15,7 @@ struct avdl_collider_aabb {
 	struct dd_vec3 min;
 	struct dd_vec3 max;
 
-	struct dd_meshColour mesh;
+	struct avdl_mesh mesh;
 
 	void (*setMin)(struct avdl_collider_aabb *, float, float, float);
 	void (*setMax)(struct avdl_collider_aabb *, float, float, float);
