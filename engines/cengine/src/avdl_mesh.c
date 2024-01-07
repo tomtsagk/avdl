@@ -117,6 +117,21 @@ static void clean_normals(struct avdl_mesh *m) {
 	m->n = 0;
 }
 
+static void clean_tan(struct avdl_mesh *m) {
+	if (m->tan && m->dirtyTan) {
+		free(m->tan);
+		m->dirtyTan = 0;
+	}
+	m->tan = 0;
+}
+static void clean_bitan(struct avdl_mesh *m) {
+	if (m->bitan && m->dirtyTan) {
+		free(m->bitan);
+		m->dirtyTan = 0;
+	}
+	m->bitan = 0;
+}
+
 // constructor
 void avdl_mesh_create(struct avdl_mesh *m) {
 
@@ -130,6 +145,12 @@ void avdl_mesh_create(struct avdl_mesh *m) {
 	m->dirtyColours = 0;
 	m->n = 0;
 	m->dirtyNormals = 0;
+
+	// bump map
+	m->tan = 0;
+	m->dirtyTan = 0;
+	m->bitan = 0;
+	m->dirtyBitan = 0;
 
 	// graphics context
 	m->graphicsContextId = -1;
@@ -145,6 +166,7 @@ void avdl_mesh_create(struct avdl_mesh *m) {
 	m->dirtyTextures = 0;
 	m->t = 0;
 	m->img = 0;
+	m->img_normal = 0;
 	m->hasTransparency = 0;
 
 	m->draw = avdl_mesh_draw;
@@ -162,6 +184,8 @@ void avdl_mesh_create(struct avdl_mesh *m) {
 
 	m->set_primitive_texcoords = avdl_mesh_set_primitive_texcoords;
 	m->setTexture = avdl_mesh_setTexture;
+	m->setTextureNormal = avdl_mesh_setTextureNormal;
+	m->hasTexture = avdl_mesh_hasTexture;
 	m->setTransparency = avdl_mesh_setTransparency;
 
 	m->vertexBuffer = 0;
@@ -210,6 +234,8 @@ void avdl_mesh_clean(struct avdl_mesh *m) {
 	clean_colour(m);
 	clean_textures(m);
 	clean_normals(m);
+	clean_tan(m);
+	clean_bitan(m);
 
 	#if !defined( AVDL_DIRECT3D11 )
 	if (m->array) {
@@ -227,6 +253,11 @@ void avdl_mesh_clean(struct avdl_mesh *m) {
 	}
 
 }
+
+extern struct dd_matrix matPerspective;
+extern struct dd_matrix matView;
+extern struct dd_matrix matModel[];
+extern int matModel_index;
 
 /* draw the mesh itself
  */
@@ -292,6 +323,22 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 		}
 		totalSize += norSize;
 
+		// tan
+		size_t tanOffset = norOffset +norSize;
+		size_t tanSize = 0;
+		if (m->tan) {
+			tanSize = sizeof(float) *3 *m->vcount;
+		}
+		totalSize += tanSize;
+
+		// bitan
+		size_t bitanOffset = tanOffset +tanSize;
+		size_t bitanSize = 0;
+		if (m->bitan) {
+			bitanSize = sizeof(float) *3 *m->vcount;
+		}
+		totalSize += bitanSize;
+
 		// create array as one unit
 		m->verticesCol = malloc( totalSize );
 		m->dirtyColourArrayObject = 1;
@@ -304,6 +351,12 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 		}
 		if (m->n) {
 			memcpy(((char *)m->verticesCol) +norOffset, m->n, norSize);
+		}
+		if (m->tan) {
+			memcpy(((char *)m->verticesCol) +tanOffset, m->tan, tanSize);
+		}
+		if (m->bitan) {
+			memcpy(((char *)m->verticesCol) +bitanOffset, m->bitan, bitanSize);
 		}
 
 		// generate array object
@@ -345,13 +398,33 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 			}
 		}
 
-		// attach texture coordinates
+		// attach normal
 		if (m->n) {
 			int nor = glGetAttribLocation(currentProgram, "normal");
-			// program has texCoord
+			// program has normal
 			if (nor != -1) {
 				GL(glVertexAttribPointer(nor, 3, GL_FLOAT, 0, 0, norOffset));
 				GL(glEnableVertexAttribArray(nor));
+			}
+		}
+
+		// attach tan
+		if (m->tan) {
+			int tanLoc = glGetAttribLocation(currentProgram, "tangent");
+			// program has tan
+			if (tanLoc != -1) {
+				GL(glVertexAttribPointer(tanLoc, 3, GL_FLOAT, 0, 0, tanOffset));
+				GL(glEnableVertexAttribArray(tanLoc));
+			}
+		}
+
+		// attach bitan
+		if (m->bitan) {
+			int bitanLoc = glGetAttribLocation(currentProgram, "bitangent");
+			// program has bitan
+			if (bitanLoc != -1) {
+				GL(glVertexAttribPointer(bitanLoc, 3, GL_FLOAT, 0, 0, bitanOffset));
+				GL(glEnableVertexAttribArray(bitanLoc));
 			}
 		}
 	}
@@ -361,7 +434,18 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	}
 
 	if (m->img) {
-		m->img->bind(m->img);
+		m->img->bindIndex(m->img, 0);
+		GLuint loc = glGetUniformLocation(currentProgram, "image");
+		if (loc != -1) {
+			GL(glUniform1i(loc, 0));
+		}
+	}
+	if (m->img_normal) {
+		m->img_normal->bindIndex(m->img_normal, 1);
+		GLuint loc = glGetUniformLocation(currentProgram, "image_normal");
+		if (loc != -1) {
+			GL(glUniform1i(loc, 1));
+		}
 	}
 
 	GL(glBindVertexArray(m->array));
@@ -369,7 +453,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	#if defined(AVDL_QUEST2)
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		dd_log("avdl: avdl_mesh: location of `matrix` not found in current program");
+		//dd_log("avdl: avdl_mesh: location of `matrix` not found in current program");
 	}
 	else {
 		GL(glUniformMatrix4fv(
@@ -382,10 +466,22 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		dd_log("avdl: avdl_mesh: location of `matrix` not found in current program");
+		//dd_log("avdl: avdl_mesh: location of `matrix` not found in current program");
 	}
 	else {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
+	}
+	int MatrixIDProjection = avdl_graphics_GetUniformLocation(currentProgram, "matrix_projection");
+	if (MatrixIDProjection >= 0) {
+		avdl_graphics_SetUniformMatrix4f(MatrixIDProjection, (float *)&matPerspective);
+	}
+	int MatrixIDView = avdl_graphics_GetUniformLocation(currentProgram, "matrix_view");
+	if (MatrixIDView >= 0) {
+		avdl_graphics_SetUniformMatrix4f(MatrixIDView, (float *)&matView);
+	}
+	int MatrixIDModel = avdl_graphics_GetUniformLocation(currentProgram, "matrix_model");
+	if (MatrixIDModel >= 0) {
+		avdl_graphics_SetUniformMatrix4f(MatrixIDModel, (float *)&matModel[matModel_index]);
 	}
 	#endif
 
@@ -400,6 +496,10 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 
 	if (m->img) {
 		m->img->unbind(m->img);
+	}
+
+	if (m->img_normal) {
+		m->img_normal->unbind(m->img_normal);
 	}
 
 	if (m->hasTransparency) {
@@ -561,4 +661,12 @@ void avdl_mesh_setTransparency(struct avdl_mesh *o, int transparency) {
 
 void avdl_mesh_setTexture(struct avdl_mesh *o, struct dd_image *tex) {
 	o->img = tex;
+}
+
+void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct dd_image *tex) {
+	o->img_normal = tex;
+}
+
+int avdl_mesh_hasTexture(struct avdl_mesh *o) {
+	return o->img != 0;
 }

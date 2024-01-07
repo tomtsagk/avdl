@@ -38,6 +38,9 @@ static char *avsl_shader_vertex =
 #else
 "AVDL_IN vec4 position;\n"
 "uniform mat4 matrix;\n"
+"uniform mat4 matrix_projection;\n"
+"uniform mat4 matrix_view;\n"
+"uniform mat4 matrix_model;\n"
 "vec4 final_position() {\n"
 "	return (matrix *position);\n"
 "}\n"

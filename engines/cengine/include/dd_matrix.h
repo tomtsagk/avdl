@@ -66,10 +66,14 @@ struct dd_matrix *dd_matrix_globalVRGet();
 
 #define dd_pushMatrix() dd_matrix_push()
 #define dd_popMatrix() dd_matrix_pop()
-#define dd_translatef(x, y, z) dd_matrix_translatem(dd_matrix_globalGet(), x, y, z)
-#define dd_scalef(x, y, z) dd_matrix_scalem(dd_matrix_globalGet(), x, y, z)
-#define dd_rotatef(angle, x, y, z) dd_matrix_rotatem(dd_matrix_globalGet(), angle, x, y, z)
-#define dd_multMatrixf(matrix) dd_matrix_mult(dd_matrix_globalGet(), matrix);
+void dd_translatef(float x, float y, float z);
+void dd_scalef(float x, float y, float z);
+void dd_rotatef(float angle, float x, float y, float z);
+void dd_multMatrixf(struct dd_matrix *matrix);
+void dd_translatef_camera(float x, float y, float z);
+void dd_scalef_camera(float x, float y, float z);
+void dd_rotatef_camera(float angle, float x, float y, float z);
+void dd_multMatrixf_camera(struct dd_matrix *matrix);
 
 void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float targetZ);
 

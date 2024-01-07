@@ -340,6 +340,12 @@ void avdl_graphics_DeleteTexture(avdl_texture_id tex) {
 }
 
 void avdl_graphics_BindTexture(avdl_texture_id tex) {
+	//GL(glBindTexture(GL_TEXTURE_2D, tex));
+	avdl_graphics_BindTextureIndex(tex, 0);
+}
+
+void avdl_graphics_BindTextureIndex(avdl_texture_id tex, int index) {
+	GL(glActiveTexture(GL_TEXTURE0 +index));
 	GL(glBindTexture(GL_TEXTURE_2D, tex));
 }
 

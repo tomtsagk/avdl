@@ -30,6 +30,12 @@ struct avdl_mesh {
 	float *n;
 	int dirtyNormals;
 
+	// bump map
+	float *tan;
+	int dirtyTan;
+	float *bitan;
+	int dirtyBitan;
+
 	// structs
 	void *verticesCol;
 	int dirtyColourArrayObject;
@@ -49,6 +55,7 @@ struct avdl_mesh {
 	// textures
 	// texture to be used
 	struct dd_image *img;
+	struct dd_image *img_normal;
 
 	// transparency
 	int hasTransparency;
@@ -70,6 +77,8 @@ struct avdl_mesh {
 
 	void (*set_primitive_texcoords)(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY);
 	void (*setTexture)(struct avdl_mesh *o, struct dd_image *img);
+	void (*setTextureNormal)(struct avdl_mesh *o, struct dd_image *img);
+	int (*hasTexture)(struct avdl_mesh *o);
 	void (*setTransparency)(struct avdl_mesh *o, int transparency);
 
 	avdl_graphics_mesh* vertexBuffer;
@@ -95,8 +104,11 @@ void avdl_mesh_scalef(struct avdl_mesh *o, float x, float y, float z);
 void avdl_mesh_set_colour(struct avdl_mesh *m, float r, float g, float b);
 
 void avdl_mesh_setTexture(struct avdl_mesh *o, struct dd_image *tex);
+void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct dd_image *tex);
 void avdl_mesh_setTransparency(struct avdl_mesh *o, int transparency);
 void avdl_mesh_set_primitive_texcoords(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY);
+
+int avdl_mesh_hasTexture(struct avdl_mesh *o);
 
 #ifdef __cplusplus
 }

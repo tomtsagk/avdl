@@ -31,6 +31,7 @@ struct dd_image {
 	int pixelFormat;
 
 	void (*bind)(struct dd_image *o);
+	void (*bindIndex)(struct dd_image *o, int index);
 	void (*unbind)(struct dd_image *o);
 	void (*clean)(struct dd_image *o);
 	void (*set)(struct dd_image *o, const char *filename, int type);
@@ -50,6 +51,7 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename);
 void dd_image_load_png(struct dd_image *img, const char *filename);
 
 void dd_image_bind(struct dd_image *o);
+void dd_image_bindIndex(struct dd_image *o, int index);
 void dd_image_unbind(struct dd_image *o);
 void dd_image_set(struct dd_image *o, const char *filename, int type);
 

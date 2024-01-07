@@ -1397,11 +1397,15 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 	m->c = 0;
 	m->t = 0;
 	m->n = 0;
+	m->tan = 0;
+	m->bitan = 0;
 	if (has_colours) {
 		m->c = malloc(sizeof(float) *m->vcount *3);
 	}
 	if (has_texcoord) {
 		m->t = malloc(sizeof(float) *m->vcount *2);
+		m->tan = malloc(sizeof(float) *m->vcount *3);
+		m->bitan = malloc(sizeof(float) *m->vcount *3);
 	}
 	if (has_normals) {
 		m->n = malloc(sizeof(float) *m->vcount *3);
@@ -1430,7 +1434,81 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 		}
 	}
 
-	// cleanup TODO
+	if (m->t) {
+	for (int i = 0; i < m->vcount; i += 3) {
+
+		struct dd_vec3 deltaPos1;
+		dd_vec3_setf(&deltaPos1,
+			m->v[(i+1)*3 +0] -m->v[(i+0)*3 +0],
+			m->v[(i+1)*3 +1] -m->v[(i+0)*3 +1],
+			m->v[(i+1)*3 +2] -m->v[(i+0)*3 +2]
+		);
+		struct dd_vec3 deltaPos2;
+		dd_vec3_setf(&deltaPos2,
+			m->v[(i+2)*3 +0] -m->v[(i+0)*3 +0],
+			m->v[(i+2)*3 +1] -m->v[(i+0)*3 +1],
+			m->v[(i+2)*3 +2] -m->v[(i+0)*3 +2]
+		);
+
+		struct dd_vec3 deltaUV1;
+		dd_vec3_setf(&deltaUV1,
+			m->t[(i+1)*2 +0] -m->t[(i+0)*2 +0],
+			m->t[(i+1)*2 +1] -m->t[(i+0)*2 +1],
+			0
+		);
+		struct dd_vec3 deltaUV2;
+		dd_vec3_setf(&deltaUV2,
+			m->t[(i+2)*2 +0] -m->t[(i+0)*2 +0],
+			m->t[(i+2)*2 +1] -m->t[(i+0)*2 +1],
+			0
+		);
+
+		float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+		struct dd_vec3 tangent;
+		dd_vec3_setf(&tangent,
+			(deltaPos1.x *deltaUV2.y -deltaPos2.x *deltaUV1.y) *r,
+			(deltaPos1.y *deltaUV2.y -deltaPos2.y *deltaUV1.y) *r,
+			(deltaPos1.z *deltaUV2.y -deltaPos2.z *deltaUV1.y) *r
+		);
+		struct dd_vec3 bitangent;
+		dd_vec3_setf(&bitangent,
+			(deltaPos2.x *deltaUV1.x -deltaPos1.x *deltaUV2.x) *r,
+			(deltaPos2.y *deltaUV1.x -deltaPos1.y *deltaUV2.x) *r,
+			(deltaPos2.z *deltaUV1.x -deltaPos1.z *deltaUV2.x) *r
+		);
+
+		dd_vec3_normalise(&tangent);
+		dd_vec3_normalise(&bitangent);
+
+		// tans
+		m->tan[(i+0)*3 +0] = tangent.x;
+		m->tan[(i+0)*3 +1] = tangent.y;
+		m->tan[(i+0)*3 +2] = tangent.z;
+
+		m->tan[(i+1)*3 +0] = tangent.x;
+		m->tan[(i+1)*3 +1] = tangent.y;
+		m->tan[(i+1)*3 +2] = tangent.z;
+
+		m->tan[(i+2)*3 +0] = tangent.x;
+		m->tan[(i+2)*3 +1] = tangent.y;
+		m->tan[(i+2)*3 +2] = tangent.z;
+
+		// bitans
+		m->bitan[(i+0)*3 +0] = bitangent.x;
+		m->bitan[(i+0)*3 +1] = bitangent.y;
+		m->bitan[(i+0)*3 +2] = bitangent.z;
+
+		m->bitan[(i+1)*3 +0] = bitangent.x;
+		m->bitan[(i+1)*3 +1] = bitangent.y;
+		m->bitan[(i+1)*3 +2] = bitangent.z;
+
+		m->bitan[(i+2)*3 +0] = bitangent.x;
+		m->bitan[(i+2)*3 +1] = bitangent.y;
+		m->bitan[(i+2)*3 +2] = bitangent.z;
+	}
+	}
+
+	// cleanup
 	if (array_vertex_pos) {
 		free(array_vertex_pos);
 		array_vertex_pos = 0;

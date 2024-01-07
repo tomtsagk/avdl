@@ -287,9 +287,13 @@ void dd_matrix_print(struct dd_matrix *m) {
 struct dd_matrix dd_cam[DD_MATRIX_STACK_LIMIT];
 int dd_cam_index = 0;
 extern struct dd_matrix matPerspective;
+struct dd_matrix matView;
+struct dd_matrix matModel[DD_MATRIX_STACK_LIMIT];
+int matModel_index = 0;
 
 void dd_matrix_globalInit() {
 	dd_cam_index = 0;
+	matModel_index = 0;
 
 	// for the time being, on quest 2, the engine is giving the default matrix
 	// (where the headset is) so don't create perspective
@@ -297,6 +301,8 @@ void dd_matrix_globalInit() {
 	dd_matrix_identity(&dd_cam[0]);
 	#else
 	dd_matrix_copy(&dd_cam[0], &matPerspective);
+	dd_matrix_identity(&matView);
+	dd_matrix_identity(&matModel[0]);
 	#endif
 }
 
@@ -309,6 +315,14 @@ void dd_matrix_push() {
 		dd_log("dd_matrix: maximum matrix stack reached");
 		exit(-1);
 	}
+	if (matModel_index < (DD_MATRIX_STACK_LIMIT -1)) {
+		matModel_index++;
+		dd_matrix_copy(&matModel[matModel_index], &matModel[matModel_index-1]);
+	}
+	else {
+		dd_log("dd_matrix matModel: maximum matrix stack reached");
+		exit(-1);
+	}
 }
 
 void dd_matrix_pop() {
@@ -319,6 +333,54 @@ void dd_matrix_pop() {
 		dd_log("dd_matrix: no matrix to pop");
 		exit(-1);
 	}
+	if (matModel_index > 0) {
+		matModel_index--;
+	}
+	else {
+		dd_log("dd_matrix: no matrix model to pop");
+		exit(-1);
+	}
+}
+
+void dd_translatef(float x, float y, float z) {
+	dd_matrix_translatem(dd_matrix_globalGet(), x, y, z);
+	dd_matrix_translatem(&matModel[matModel_index], x, y, z);
+}
+
+void dd_scalef(float x, float y, float z) {
+	dd_matrix_scalem(dd_matrix_globalGet(), x, y, z);
+	dd_matrix_scalem(&matModel[matModel_index], x, y, z);
+}
+
+void dd_rotatef(float angle, float x, float y, float z) {
+	dd_matrix_rotatem(dd_matrix_globalGet(), angle, x, y, z);
+	dd_matrix_rotatem(&matModel[matModel_index], angle, x, y, z);
+}
+
+void dd_multMatrixf(struct dd_matrix *matrix) {
+	dd_matrix_mult(dd_matrix_globalGet(), matrix);
+	dd_matrix_mult(&matModel[matModel_index], matrix);
+}
+
+// camera translations
+void dd_translatef_camera(float x, float y, float z) {
+	dd_matrix_translatem(dd_matrix_globalGet(), x, y, z);
+	dd_matrix_translatem(&matView, x, y, z);
+}
+
+void dd_scalef_camera(float x, float y, float z) {
+	dd_matrix_scalem(dd_matrix_globalGet(), x, y, z);
+	dd_matrix_scalem(&matView, x, y, z);
+}
+
+void dd_rotatef_camera(float angle, float x, float y, float z) {
+	dd_matrix_rotatem(dd_matrix_globalGet(), angle, x, y, z);
+	dd_matrix_rotatem(&matView, angle, x, y, z);
+}
+
+void dd_multMatrixf_camera(struct dd_matrix *matrix) {
+	dd_matrix_mult(dd_matrix_globalGet(), matrix);
+	dd_matrix_mult(&matView, matrix);
 }
 
 struct dd_matrix *dd_matrix_globalGet() {

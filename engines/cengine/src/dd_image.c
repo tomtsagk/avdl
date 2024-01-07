@@ -35,6 +35,7 @@ void dd_image_create(struct dd_image *o) {
 	o->pixelFormat = 0;
 
 	o->bind = dd_image_bind;
+	o->bindIndex = dd_image_bindIndex;
 	o->unbind = dd_image_unbind;
 	o->clean = dd_image_clean;
 	o->set = dd_image_set;
@@ -304,6 +305,10 @@ void dd_image_clean(struct dd_image *o) {
 }
 
 void dd_image_bind(struct dd_image *o) {
+	dd_image_bindIndex(o, 0);
+}
+
+void dd_image_bindIndex(struct dd_image *o, int index) {
 
 	#ifdef AVDL_DIRECT3D11
 	// send texture to GPU if needed
@@ -388,7 +393,7 @@ void dd_image_bind(struct dd_image *o) {
 
 	// texture is valid in this opengl context, bind it
 	if (o->openglContextId == avdl_graphics_getContextId()) {
-		avdl_graphics_BindTexture(o->tex);
+		avdl_graphics_BindTextureIndex(o->tex, index);
 	}
 	// texture was in a previous opengl context, reload it
 	else {

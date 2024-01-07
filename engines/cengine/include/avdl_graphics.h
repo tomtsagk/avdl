@@ -170,6 +170,7 @@ typedef int avdl_texture_id;
 
 void avdl_graphics_DeleteTexture(avdl_texture_id tex);
 void avdl_graphics_BindTexture(avdl_texture_id tex);
+void avdl_graphics_BindTextureIndex(avdl_texture_id tex, int index);
 
 avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height);
 void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, int pixel_format, int x, int y, int width, int height);

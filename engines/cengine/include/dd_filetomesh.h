@@ -32,6 +32,8 @@ struct dd_loaded_mesh {
 	float *c;
 	float *t;
 	float *n;
+	float *tan;
+	float *bitan;
 };
 
 #ifdef AVDL_DIRECT3D11

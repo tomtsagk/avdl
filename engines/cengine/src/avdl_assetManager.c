@@ -265,6 +265,24 @@ void avdl_assetManager_loadAssets() {
 						mesh->n = lm.n;
 						mesh->dirtyNormals = 1;
 					}
+					if (lm.tan) {
+						if (mesh->img_normal) {
+							mesh->tan = lm.tan;
+							mesh->dirtyTan = 1;
+						}
+						else {
+							free(lm.tan);
+						}
+					}
+					if (lm.bitan) {
+						if (mesh->img_normal) {
+							mesh->bitan = lm.bitan;
+							mesh->dirtyBitan = 1;
+						}
+						else {
+							free(lm.bitan);
+						}
+					}
 					pthread_mutex_unlock(&updateDrawMutex);
 				}
 			}

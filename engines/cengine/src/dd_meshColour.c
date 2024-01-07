@@ -151,7 +151,7 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 	#if defined(AVDL_QUEST2)
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
+		//dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
 	}
 	else {
 		GL(glUniformMatrix4fv(
@@ -164,7 +164,7 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
+		//dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
 	}
 	else {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
