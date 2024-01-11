@@ -9,12 +9,14 @@ const char *primitive_keywords[] = {
 	"int",
 	"float",
 	"char",
+	"string",
 };
 unsigned int primitive_keywords_count = sizeof(primitive_keywords) /sizeof(char *);
 
 // native keywords
 const char *keywords[] = {
 	"echo",
+	"log",
 	"def",
 
 	"=",

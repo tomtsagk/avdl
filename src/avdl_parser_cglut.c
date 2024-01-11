@@ -18,6 +18,7 @@ static void print_command_classFunction(FILE *fd, struct ast_node *n);
 static void print_command_function(FILE *fd, struct ast_node *n);
 static void print_command_custom(FILE *fd, struct ast_node *n);
 static void print_command_echo(FILE *fd, struct ast_node *n);
+static void print_command_log(FILE *fd, struct ast_node *n);
 static void print_command_if(FILE *fd, struct ast_node *n);
 static void print_command_for(FILE *fd, struct ast_node *n);
 static void print_command_multistring(FILE *fd, struct ast_node *n);
@@ -212,6 +213,21 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 	fprintf(fd, ");\n");
 }
 
+static void print_command_log(FILE *fd, struct ast_node *n) {
+
+	fprintf(fd, "dd_log(");
+	for (int i = 0; i < n->children.elements; i++) {
+
+		if (i > 0) {
+			fprintf(fd, ", ");
+		}
+		struct ast_node *child = dd_da_get(&n->children, i);
+		print_node(fd, child);
+	}
+	fprintf(fd, "");
+	fprintf(fd, ");\n");
+}
+
 static void print_binaryOperation(FILE *fd, struct ast_node *n) {
 	struct ast_node *child1 = dd_da_get(&n->children, 0);
 
@@ -304,8 +320,12 @@ static void print_command_classFunction(FILE *fd, struct ast_node *n) {
 	int structIndex = struct_table_get_index(classname->lex);
 
 	// print function signature and args
-	fprintf(fd, "%s %s_%s(struct %s *this", functype->lex, classname->lex,
-		funcname->lex, classname->lex);
+	fprintf(fd, "%s %s_%s(struct %s *this",
+		dd_variable_type_getString(dd_variable_type_convert(functype->lex)),
+		classname->lex,
+		funcname->lex,
+		classname->lex
+	);
 	print_command_functionArguments(fd, funcargs, 1);
 	fprintf(fd, ") {\n");
 
@@ -459,10 +479,11 @@ static void print_command_functionArguments(FILE *fd, struct ast_node *n, int be
 
 		if (!dd_variable_type_isPrimitiveType(argtype->lex)) {
 			fprintf(fd, "struct ");
-		}
-		fprintf(fd, "%s ", argtype->lex);
-		if (!dd_variable_type_isPrimitiveType(argtype->lex)) {
+			fprintf(fd, "%s ", argtype->lex);
 			fprintf(fd, "*");
+		}
+		else {
+			fprintf(fd, "%s ", dd_variable_type_getString(dd_variable_type_convert(argtype->lex)));
 		}
 		fprintf(fd, "%s", argname->lex);
 	}
@@ -472,9 +493,25 @@ static void print_command_definitionClassFunction(FILE *fd, struct ast_node *n, 
 	struct ast_node *type = dd_da_get(&n->children, 0);
 	struct ast_node *name = dd_da_get(&n->children, 1);
 	struct ast_node *args = dd_da_get(&n->children, 2);
-	fprintf(fd, "%s (*%s)(struct %s *", type->lex, name->lex, classname);
+	fprintf(fd, "%s (*%s)(struct %s *",
+		//type->lex,
+		dd_variable_type_getString(dd_variable_type_convert(type->lex)),
+		name->lex,
+		classname
+	);
 	print_command_functionArguments(fd, args, 1);
 	fprintf(fd, ");\n");
+
+
+	/*
+	if (!dd_variable_type_isPrimitiveType(type->lex)) {
+		fprintf(fd, "struct ");
+		fprintf(fd, "%s ", type->lex);
+	}
+	else {
+		fprintf(fd, "%s ", dd_variable_type_getString(dd_variable_type_convert(type->lex)));
+	}
+	*/
 }
 
 static void print_command_definition(FILE *fd, struct ast_node *n) {
@@ -487,8 +524,11 @@ static void print_command_definition(FILE *fd, struct ast_node *n) {
 
 	if (!dd_variable_type_isPrimitiveType(type->lex)) {
 		fprintf(fd, "struct ");
+		fprintf(fd, "%s ", type->lex);
 	}
-	fprintf(fd, "%s ", type->lex);
+	else {
+		fprintf(fd, "%s ", dd_variable_type_getString(dd_variable_type_convert(type->lex)));
+	}
 	if (n->isRef) {
 		fprintf(fd, "*");
 	}
@@ -546,7 +586,12 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 		struct ast_node *funcname = dd_da_get(&child->children, 1);
 
 		// print the function signature
-		fprintf(fd, "%s %s_%s(struct %s *this", functype->lex, classname->lex, funcname->lex, classname->lex);
+		fprintf(fd, "%s %s_%s(struct %s *this",
+			dd_variable_type_getString(dd_variable_type_convert(functype->lex)),
+			classname->lex,
+			funcname->lex,
+			classname->lex
+		);
 		struct ast_node *args = dd_da_get(&child->children, 2);
 		print_command_functionArguments(fd, args, 1);
 		fprintf(fd, ");\n");
@@ -595,6 +640,10 @@ static void print_command_native(FILE *fd, struct ast_node *n) {
 	else
 	if (strcmp(n->lex, "echo") == 0) {
 		print_command_echo(fd, n);
+	}
+	else
+	if (strcmp(n->lex, "log") == 0) {
+		print_command_log(fd, n);
 	}
 	else
 	if (strcmp(n->lex, "if") == 0) {

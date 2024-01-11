@@ -799,6 +799,11 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 			ast_setLex(cmd, "echo");
 		}
 		else
+		if (strcmp(ast_getLex(cmdname), "log") == 0) {
+			cmd = expect_command_group(l);
+			ast_setLex(cmd, "log");
+		}
+		else
 		if (strcmp(ast_getLex(cmdname), "if") == 0) {
 			cmd = expect_command_if(l);
 		}

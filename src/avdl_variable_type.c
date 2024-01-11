@@ -24,6 +24,10 @@ enum dd_variable_type dd_variable_type_convert(const char *type) {
 	if (strcmp(type, "void") == 0) {
 		return DD_VARIABLE_TYPE_VOID;
 	}
+	else
+	if (strcmp(type, "string") == 0) {
+		return DD_VARIABLE_TYPE_STRING;
+	}
 
 	/*
 	 * structs
@@ -47,7 +51,9 @@ enum dd_variable_type dd_variable_type_convert(const char *type) {
 int dd_variable_type_isPrimitiveType(const char *type) {
 	if (strcmp(type, "int"  ) == 0
 	||  strcmp(type, "float") == 0
-	||  strcmp(type, "char" ) == 0) {
+	||  strcmp(type, "char" ) == 0
+	||  strcmp(type, "void" ) == 0
+	||  strcmp(type, "string" ) == 0) {
 		return 1;
 	}
 	return 0;
@@ -59,7 +65,7 @@ const char *dd_variable_type_getString(enum dd_variable_type type) {
 	case DD_VARIABLE_TYPE_FLOAT: return "float";
 	case DD_VARIABLE_TYPE_CHAR: return "char";
 	case DD_VARIABLE_TYPE_STRUCT: return "struct";
-	case DD_VARIABLE_TYPE_STRING: return "string";
+	case DD_VARIABLE_TYPE_STRING: return "char*";
 	case DD_VARIABLE_TYPE_VOID: return "void";
 	case DD_VARIABLE_TYPE_UNKNOWN: return "unknown";
 	default: return "unrecognized";
