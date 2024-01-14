@@ -206,14 +206,14 @@ void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
 		case DD_PRIMITIVE_RECTANGLE:
 			m->v = shape_rectangle;
 			m->vcount = sizeof(shape_rectangle) /sizeof(float) /3;
-			/*
+
+			// texture coordinates
 			m->t = malloc(sizeof(float) *6 *2);
 			m->dirtyTextures = 1;
 			for (int i = 0; i < 6; i++) {
-				m->t[i*2+0] = m->parent.parent.v[i*3+0] +0.5;
-				m->t[i*2+1] = m->parent.parent.v[i*3+1] +0.5;
+				m->t[i*2+0] = m->v[i*3+0] +0.5;
+				m->t[i*2+1] = m->v[i*3+1] +0.5;
 			}
-			*/
 			break;
 
 		case DD_PRIMITIVE_BOX:
