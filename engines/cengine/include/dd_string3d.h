@@ -60,6 +60,8 @@ struct dd_string3d {
 	void (*draw)(struct dd_string3d *);
 	void (*drawInt)(struct dd_string3d *, int num);
 	void (*drawLimit)(struct dd_string3d *, int limit);
+	void (*drawLimitTypewriter)(struct dd_string3d *, int limit, int words);
+	void (*drawTypewriter)(struct dd_string3d *, int words);
 
 	void (*setFont)(struct dd_string3d *, struct avdl_font *);
 
@@ -73,6 +75,8 @@ void dd_string3d_setAlignVertical(struct dd_string3d *o, enum dd_string3d_align_
 void dd_string3d_draw(struct dd_string3d *o);
 void dd_string3d_drawInt(struct dd_string3d *o, int num);
 void dd_string3d_drawLimit(struct dd_string3d *o, int limit);
+void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int wordsToDraw);
+void dd_string3d_drawTypewriter(struct dd_string3d *o, int wordsToDraw);
 
 void dd_string3d_clean(struct dd_string3d *o);
 

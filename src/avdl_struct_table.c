@@ -92,6 +92,8 @@ void struct_table_init() {
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("drawInt", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("drawLimit", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("drawLimitTypewriter", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("drawTypewriter", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setFont", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("isOnce", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

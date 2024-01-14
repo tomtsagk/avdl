@@ -36,6 +36,8 @@ void dd_string3d_create(struct dd_string3d *o) {
 	o->draw = dd_string3d_draw;
 	o->drawInt = dd_string3d_drawInt;
 	o->drawLimit = dd_string3d_drawLimit;
+	o->drawLimitTypewriter = dd_string3d_drawLimitTypewriter;
+	o->drawTypewriter = dd_string3d_drawTypewriter;
 	o->setText = dd_string3d_setText;
 	o->setTextInt = dd_string3d_setTextInt;
 	o->setFont = dd_string3d_setFont;
@@ -135,6 +137,14 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 }
 
 void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
+	dd_string3d_drawLimitTypewriter(o, limit, -1);
+}
+
+void dd_string3d_drawTypewriter(struct dd_string3d *o, int wordsToDraw) {
+	dd_string3d_drawLimitTypewriter(o, 0, wordsToDraw);
+}
+
+void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int wordsToDraw) {
 
 	if (o->is_int) {
 		dd_log("string3d configured as int, but trying to draw text");
@@ -144,6 +154,7 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 
 	int wordsTotal = 0;
 	int linesTotal = 0;
+	int drawnWords = 0;
 
 	if (o->font && (avdl_font_needsRefresh(o->font) || o->openglContextId != o->font->openglContextId)) {
 		if (o->text) {
@@ -241,6 +252,11 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 		}
 
 		for (int i = 0; i < lineWords; i++) {
+
+			if (wordsToDraw != -1 && drawnWords >= wordsToDraw) {
+				break;
+			}
+
 			struct dd_word_mesh *m = dd_da_get(&o->textMeshes, wordsTotal +i);
 
 			if (m->is_newline) {
@@ -262,6 +278,8 @@ void dd_string3d_drawLimit(struct dd_string3d *o, int limit) {
 			#endif
 
 			dd_translatef(m->widthf +m->space_size, 0, 0);
+
+			drawnWords++;
 		}
 		wordsTotal += lineWords;
 		dd_matrix_pop();
