@@ -191,9 +191,11 @@ int dd_main(int argc, char *argv[]) {
 #ifndef AVDL_DIRECT3D11
 #ifndef AVDL_UNIT_TEST
 #ifndef AVDL_STEAM
+#ifndef AVDL_ENGINE
 int main(int argc, char *argv[]) {
 	return dd_main(argc, argv);
 }
+#endif
 #endif
 #endif
 #endif

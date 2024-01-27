@@ -198,12 +198,12 @@ void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
 
 	// set mesh shape based on given value
 	switch (shape) {
-		case DD_PRIMITIVE_TRIANGLE:
+		case AVDL_PRIMITIVE_TRIANGLE:
 			m->v = shape_triangle;
 			m->vcount = sizeof(shape_triangle) /sizeof(float) /3;
 			break;
 
-		case DD_PRIMITIVE_RECTANGLE:
+		case AVDL_PRIMITIVE_RECTANGLE:
 			m->v = shape_rectangle;
 			m->vcount = sizeof(shape_rectangle) /sizeof(float) /3;
 
@@ -216,7 +216,7 @@ void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
 			}
 			break;
 
-		case DD_PRIMITIVE_BOX:
+		case AVDL_PRIMITIVE_BOX:
 			m->v = shape_box;
 			m->vcount = sizeof(shape_box) /sizeof(float) /3;
 			break;

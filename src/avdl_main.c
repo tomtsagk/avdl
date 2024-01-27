@@ -18,7 +18,8 @@
 #include "avdl_log.h"
 #include "avdl_string.h"
 #include "avdl_arguments.h"
-#include "avdl_time.h"
+#include "avdl_time2.h"
+#include "avdl_editor.h"
 
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
@@ -167,8 +168,8 @@ int avdl_makefile(struct AvdlSettings *);
 int AVDL_MAIN(int argc, char *argv[]) {
 
 	// measure time
-	struct avdl_time clock;
-	avdl_time_start(&clock);
+	struct avdl_time2 clock;
+	avdl_time2_start(&clock);
 
 	// project settings
 	struct AvdlSettings avdl_settings;
@@ -189,6 +190,13 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	if (handle_return < 0) {
 		avdl_log_error("failed to parse arguments");
 		return -1;
+	}
+
+	// editor mode
+	if (avdl_settings.editor_mode) {
+		avdl_log("start editor");
+		avdl_OpenEditor();
+		return 0;
 	}
 
 	// load settings from the current project
@@ -215,8 +223,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		}
 
 		// report results
-		avdl_time_end(&clock);
-		avdl_log("avdl: " BLU "./makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
+		avdl_time2_end(&clock);
+		avdl_log("avdl: " BLU "./makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time2_getTimeDouble(&clock));
 		return 0;
 	}
 
@@ -232,8 +240,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 			avdl_log_error("failed to generate " BLU "cmake" RESET " for " BLU "%s" RESET, avdl_settings.project_name);
 			return -1;
 		}
-		avdl_time_end(&clock);
-		avdl_log("avdl: " BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
+		avdl_time2_end(&clock);
+		avdl_log("avdl: " BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time2_getTimeDouble(&clock));
 		return 0;
 	}
 
@@ -335,8 +343,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	}
 
 	// report results
-	avdl_time_end(&clock);
-	avdl_log("avdl: project " BLU "%s" RESET " compiled successfully at " BLU "./avdl_build/" RESET " in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
+	avdl_time2_end(&clock);
+	avdl_log("avdl: project " BLU "%s" RESET " compiled successfully at " BLU "./avdl_build/" RESET " in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time2_getTimeDouble(&clock));
 
 	// success!
 	return 0;
@@ -505,12 +513,12 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 	fflush(stdout);
 
 	// collect avdl project src
-	struct dd_dynamic_array srcFiles;
+	struct avdl_dynamic_array srcFiles;
 	Avdl_FileOp_GetFilesInDirectory(avdl_settings->src_dir, &srcFiles);
 
 	// for each file
-	for (int i = 0; i < dd_da_count(&srcFiles); i++) {
-		struct avdl_string *str = dd_da_get(&srcFiles, i);
+	for (int i = 0; i < avdl_da_count(&srcFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&srcFiles, i);
 
 		// only avdl `.dd` files
 		if (!avdl_string_endsIn(str, ".dd")) {
@@ -610,7 +618,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 			avdl_string_clean(&dstFilePath);
 			return -1;
 		}
-		printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(dd_da_count(&srcFiles)+1) *100));
+		printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&srcFiles)+1) *100));
 		fflush(stdout);
 
 		avdl_string_clean(&srcFilePath);
@@ -630,12 +638,12 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 	fflush(stdout);
 
 	// collect avdl project src
-	struct dd_dynamic_array srcFiles;
+	struct avdl_dynamic_array srcFiles;
 	Avdl_FileOp_GetFilesInDirectory(cache_dir, &srcFiles);
 
 	// filter out some files
-	for (int i = 0; i < dd_da_count(&srcFiles); i++) {
-		struct avdl_string *str = dd_da_get(&srcFiles, i);
+	for (int i = 0; i < avdl_da_count(&srcFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&srcFiles, i);
 
 		// skip non `.c` files
 		if (!avdl_string_endsIn(str, ".c")) {
@@ -773,7 +781,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 
-		printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(dd_da_count(&srcFiles) +1) *100));
+		printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&srcFiles) +1) *100));
 		fflush(stdout);
 
 		avdl_string_clean(&srcFilePath);
@@ -964,15 +972,15 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	#endif
 
 	// collect avdl project assets
-	struct dd_dynamic_array objFiles;
+	struct avdl_dynamic_array objFiles;
 	Avdl_FileOp_GetFilesInDirectory(avdl_settings->src_dir, &objFiles);
 
 	struct avdl_string objFilesStr;
 	avdl_string_create(&objFilesStr, 100000);
 
 	// filter out some files
-	for (int i = 0; i < dd_da_count(&objFiles); i++) {
-		struct avdl_string *str = dd_da_get(&objFiles, i);
+	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&objFiles, i);
 
 		if (strcmp("." , avdl_string_toCharPtr(str)) == 0
 		||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
@@ -1223,12 +1231,12 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	}
 	*/
 	// collect avdl project assets
-	struct dd_dynamic_array assetFiles;
+	struct avdl_dynamic_array assetFiles;
 	Avdl_FileOp_GetFilesInDirectory(avdl_settings->asset_dir, &assetFiles);
 
 	// filter out some files
-	for (int i = 0; i < dd_da_count(&assetFiles); i++) {
-		struct avdl_string *str = dd_da_get(&assetFiles, i);
+	for (int i = 0; i < avdl_da_count(&assetFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&assetFiles, i);
 
 		// ignore `.` and `..`
 		if (strcmp(avdl_string_toCharPtr(str), ".") == 0
@@ -1428,7 +1436,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		 */
 		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
 
-		printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(dd_da_count(&assetFiles)+1) *100));
+		printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&assetFiles)+1) *100));
 		fflush(stdout);
 		avdl_string_clean(&srcFilePath);
 		avdl_string_clean(&dstFilePath);
@@ -1440,11 +1448,11 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		avdl_string_create(&assetFilesStr, 100000);
 
 		// filter out some files
-		for (int i = 0; i < dd_da_count(&assetFiles); i++) {
-			struct avdl_string *str = dd_da_get(&assetFiles, i);
+		for (int i = 0; i < avdl_da_count(&assetFiles); i++) {
+			struct avdl_string *str = avdl_da_get(&assetFiles, i);
 			if (strcmp("." , avdl_string_toCharPtr(str)) == 0
 			||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
-				dd_da_remove(&assetFiles, 1, i);
+				avdl_da_remove(&assetFiles, 1, i);
 				i--;
 				continue;
 			}
@@ -1672,10 +1680,10 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	// collect avdl android project source
 	struct avdl_string objFilesStr;
 	avdl_string_create(&objFilesStr, 100000);
-	struct dd_dynamic_array objFiles;
+	struct avdl_dynamic_array objFiles;
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
-	for (int i = 0; i < dd_da_count(&objFiles); i++) {
-		struct avdl_string *str = dd_da_get(&objFiles, i);
+	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&objFiles, i);
 
 		if (!avdl_string_endsIn(str, ".c")) {
 			continue;
@@ -2265,12 +2273,12 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	// collect quest2 project object
 	struct avdl_string objFilesStr;
 	avdl_string_create(&objFilesStr, 10000);
-	struct dd_dynamic_array objFiles;
+	struct avdl_dynamic_array objFiles;
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
-	for (int i = 0; i < dd_da_count(&objFiles); i++) {
-		struct avdl_string *str = dd_da_get(&objFiles, i);
+	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&objFiles, i);
 		if (!avdl_string_endsIn(str, ".c")) {
-			dd_da_remove(&objFiles, 1, i);
+			avdl_da_remove(&objFiles, 1, i);
 			i--;
 		}
 		else {
@@ -2440,10 +2448,10 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	// collect avdl project source
 	struct avdl_string objFilesStr;
 	avdl_string_create(&objFilesStr, 10000);
-	struct dd_dynamic_array objFiles;
+	struct avdl_dynamic_array objFiles;
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
-	for (int i = 0; i < dd_da_count(&objFiles); i++) {
-		struct avdl_string *str = dd_da_get(&objFiles, i);
+	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&objFiles, i);
 		if (!avdl_string_endsIn(str, ".c")) {
 			continue;
 		}
@@ -2640,12 +2648,12 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 	}
 
 	// collect avdl project source
-	struct dd_dynamic_array srcFiles;
+	struct avdl_dynamic_array srcFiles;
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &srcFiles);
-	for (int i = 0; i < dd_da_count(&srcFiles); i++) {
-		struct avdl_string *str = dd_da_get(&srcFiles, i);
+	for (int i = 0; i < avdl_da_count(&srcFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&srcFiles, i);
 		if (!avdl_string_endsIn(str, ".dd.c")) {
-			dd_da_remove(&srcFiles, 1, i);
+			avdl_da_remove(&srcFiles, 1, i);
 			i--;
 		}
 	}
@@ -2666,8 +2674,8 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 	avdl_string_cat(&cmake_data, avdl_string_toCharPtr(&avdl_src));
 
 	// avdl project src
-	for (int i = 0; i < dd_da_count(&srcFiles); i++) {
-		struct avdl_string *str = dd_da_get(&srcFiles, i);
+	for (int i = 0; i < avdl_da_count(&srcFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&srcFiles, i);
 		avdl_string_cat(&cmake_data, ".avdl_cache/");
 		avdl_string_cat(&cmake_data, avdl_string_toCharPtr(str));
 		avdl_string_cat(&cmake_data, " ");
@@ -2679,12 +2687,12 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 	avdl_string_cat(&cmake_data, "set(AVDL_ASSETS ");
 
 	// collect avdl project assets
-	struct dd_dynamic_array assetFiles;
+	struct avdl_dynamic_array assetFiles;
 	Avdl_FileOp_GetFilesInDirectory("assets", &assetFiles);
 
 	// put assets into cmake
-	for (int i = 0; i < dd_da_count(&assetFiles); i++) {
-		struct avdl_string *str = dd_da_get(&assetFiles, i);
+	for (int i = 0; i < avdl_da_count(&assetFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&assetFiles, i);
 		if (strcmp("." , avdl_string_toCharPtr(str)) == 0
 		||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
 			continue;

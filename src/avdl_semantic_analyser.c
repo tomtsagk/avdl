@@ -278,10 +278,10 @@ static struct ast_node *expect_command_classFunction(struct avdl_lexer *l) {
 	e->value = struct_table_get_index(ast_getLex(classname));
 
 	// function arguments
-	struct ast_node *funcargs = dd_da_get(&function->children, 2);
+	struct ast_node *funcargs = avdl_da_get(&function->children, 2);
 	for (int i = 1; i < funcargs->children.elements; i += 2) {
-		struct ast_node *type = dd_da_get(&funcargs->children, i-1);
-		struct ast_node *name = dd_da_get(&funcargs->children, i);
+		struct ast_node *type = avdl_da_get(&funcargs->children, i-1);
+		struct ast_node *name = avdl_da_get(&funcargs->children, i);
 
 		struct entry *symEntry = symtable_entryat(symtable_insert(ast_getLex(name), dd_variable_type_convert(ast_getLex(type))));
 		if (!dd_variable_type_isPrimitiveType(ast_getLex(type))) {
@@ -333,7 +333,7 @@ static struct ast_node *expect_command_group(struct avdl_lexer *l) {
 
 static struct ast_node *getIdentifierArrayNode(struct ast_node *n) {
 	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *child = dd_da_get(&n->children, i);
+		struct ast_node *child = avdl_da_get(&n->children, i);
 
 		if (child->node_type == AST_GROUP) {
 			return child;
@@ -375,9 +375,9 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 	}
 
 	for (int i = 0; i < definitions->children.elements; i++) {
-		struct ast_node *child = dd_da_get(&definitions->children, i);
-		struct ast_node *type = dd_da_get(&child->children, 0);
-		struct ast_node *name = dd_da_get(&child->children, 1);
+		struct ast_node *child = avdl_da_get(&definitions->children, i);
+		struct ast_node *type = avdl_da_get(&child->children, 0);
+		struct ast_node *name = avdl_da_get(&child->children, 1);
 
 		// new variable
 		if (strcmp(ast_getLex(child), "def") == 0) {
@@ -392,7 +392,7 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 					semantic_error(l, "array definition should have a value");
 				}
 
-				struct ast_node *arrayNum = dd_da_get(&arrayNode->children, 0);
+				struct ast_node *arrayNum = avdl_da_get(&arrayNode->children, 0);
 
 				if (arrayNum->node_type != AST_NUMBER) {
 					semantic_error(l, "array definition should only be a number");
@@ -670,7 +670,7 @@ static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 				ast_setLex(parentChild, "parent");
 				ast_addChild(lastChild, parentChild);
 				int childIndex = ast_getChildCount(lastChild) -1;
-				lastChild = dd_da_get(&lastChild->children, childIndex);
+				lastChild = avdl_da_get(&lastChild->children, childIndex);
 			}
 
 			// finally add the found child on the last "parent" node added

@@ -157,6 +157,9 @@ struct AvdlSettings {
 
 	int use_cache;
 
+	// gui
+	int editor_mode;
+
 };
 
 int AvdlSettings_Create(struct AvdlSettings *);

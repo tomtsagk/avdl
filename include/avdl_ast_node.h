@@ -59,7 +59,7 @@ struct ast_node {
 	int isIncluded;
 
 	// node may have a parent, and any number of children
-	struct dd_dynamic_array children;
+	struct avdl_dynamic_array children;
 	struct ast_node *parent;
 };
 

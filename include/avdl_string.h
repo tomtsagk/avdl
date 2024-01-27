@@ -5,7 +5,7 @@
 
 struct avdl_string {
 	int maxCharacters;
-	struct dd_dynamic_array string;
+	struct avdl_dynamic_array string;
 	int errorCode;
 	int errorCharacters;
 };

@@ -41,7 +41,7 @@ void dd_image_create(struct dd_image *o) {
 	o->set = dd_image_set;
 
 	#if !defined( AVDL_DIRECT3D11 )
-	dd_da_init(&o->subpixels, sizeof(struct Subpixel));
+	//dd_da_init(&o->subpixels, sizeof(struct Subpixel));
 	#endif
 }
 
@@ -296,11 +296,13 @@ void dd_image_clean(struct dd_image *o) {
 	}
 
 	#if !defined( AVDL_DIRECT3D11 )
+	/*
 	for (int i = 0; i < o->subpixels.elements; i++) {
 		struct Subpixel *subpixel = dd_da_get(&o->subpixels, i);
 		free(subpixel->pixels);
 	}
 	dd_da_free(&o->subpixels);
+	*/
 	#endif
 }
 
@@ -371,6 +373,7 @@ void dd_image_bindIndex(struct dd_image *o, int index) {
 	}
 
 	#if !defined( AVDL_DIRECT3D11 )
+	/*
 	// update texture
 	if (o->subpixels.elements > 0 && o->tex) {
 
@@ -389,6 +392,7 @@ void dd_image_bindIndex(struct dd_image *o, int index) {
 		}
 		dd_da_empty(&o->subpixels);
 	}
+	*/
 	#endif
 
 	// texture is valid in this opengl context, bind it
@@ -432,6 +436,7 @@ void dd_image_set(struct dd_image *o, const char *filename, int type) {
 
 void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, int x, int y, int w, int h) {
 
+	/*
 	#if defined( AVDL_DIRECT3D11 )
 	return;
 	#else
@@ -465,4 +470,5 @@ void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, i
 
 	#endif
 
+	*/
 }

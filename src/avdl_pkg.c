@@ -30,9 +30,9 @@ const char *avdl_pkg_GetCenginePath() {
 	if (avdl_pkg_location_type == AVDL_PKG_LOCATION_TYPE_DYNAMIC) {
 
 		// get path of binary
-		int length = wai_getExecutablePath(NULL, 0, NULL);
+		int length = wai_getExecutablePath2(NULL, 0, NULL);
 		if (length < 400) {
-			wai_getExecutablePath(buffer, length, 0);
+			wai_getExecutablePath2(buffer, length, 0);
 		}
 		else {
 			printf("too long path of cengine\n");
@@ -90,9 +90,9 @@ const char *avdl_pkg_GetProjectPath() {
 	if (avdl_pkg_location_type == AVDL_PKG_LOCATION_TYPE_DYNAMIC) {
 
 		// get path of binary
-		int length = wai_getExecutablePath(NULL, 0, NULL);
+		int length = wai_getExecutablePath2(NULL, 0, NULL);
 		if (length < 400) {
-			wai_getExecutablePath(buffer2, length, 0);
+			wai_getExecutablePath2(buffer2, length, 0);
 		}
 		else {
 			printf("too long path of cengine\n");

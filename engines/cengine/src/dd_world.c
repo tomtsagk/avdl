@@ -23,7 +23,7 @@ struct dd_world *dd_world_create_dynamic() {
 /* destructor frees everything
  */
 void dd_world_clean(struct dd_world *w) {
-	free(w);
+	//free(w);
 }
 
 // change to a new world, given size to allocate and constructor

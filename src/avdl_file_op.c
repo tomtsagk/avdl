@@ -481,9 +481,9 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 	#endif
 }
 
-int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct dd_dynamic_array *array) {
+int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_array *array) {
 
-	dd_da_init(array, sizeof(struct avdl_string));
+	avdl_da_init(array, sizeof(struct avdl_string));
 
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 
@@ -525,8 +525,8 @@ int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct dd_dynamic_array
 
 			// add a string into the array and get a pointer to it
 			struct avdl_string str;
-			dd_da_push(array, &str);
-			struct avdl_string *str2 = dd_da_get(array, -1);
+			avdl_da_push(array, &str);
+			struct avdl_string *str2 = avdl_da_get(array, -1);
 
 			// put filename into the string
 			avdl_string_create(str2, 1024);
@@ -558,8 +558,8 @@ int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct dd_dynamic_array
 
 		// add a string into the array and get a pointer to it
 		struct avdl_string str;
-		dd_da_push(array, &str);
-		struct avdl_string *str2 = dd_da_get(array, -1);
+		avdl_da_push(array, &str);
+		struct avdl_string *str2 = avdl_da_get(array, -1);
 
 		// put filename into the string
 		avdl_string_create(str2, 1024);

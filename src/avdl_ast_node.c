@@ -29,9 +29,9 @@ struct ast_node *ast_create(enum AST_NODE_TYPE node_type) {
 	new_node->isIncluded = 0;
 
 	// initialise children and parents
-	dd_da_init(&new_node->children, sizeof(struct ast_node));
-	/* dd_da_init cannot fail for now
-	if (!dd_da_init(&new_node->children, sizeof(struct ast_node))) {
+	avdl_da_init(&new_node->children, sizeof(struct ast_node));
+	/* avdl_da_init cannot fail for now
+	if (!avdl_da_init(&new_node->children, sizeof(struct ast_node))) {
 		avdl_free(new_node);
 		return 0;
 	}
@@ -60,7 +60,7 @@ int ast_addChildAt(struct ast_node *parent, struct ast_node *child, int index) {
 
 	// attempt to add child to array
 	child->parent = parent;
-	if (!dd_da_add(&parent->children, child, 1, index)) {
+	if (!avdl_da_add(&parent->children, child, 1, index)) {
 		child->parent = 0;
 		return 0;
 	}
@@ -77,7 +77,7 @@ static void ast_delete_children(struct ast_node *n) {
 	for (unsigned int i = 0; i < ast_getChildCount(n); i++) {
 		ast_delete_children(ast_getChild(n, i));
 	}
-	dd_da_free(&n->children);
+	avdl_da_free(&n->children);
 }
 
 // deletes children and the node itself
@@ -123,14 +123,14 @@ int ast_getChildCount(struct ast_node *n) {
 	if (!n) {
 		return 0;
 	}
-	return dd_da_count(&n->children);
+	return avdl_da_count(&n->children);
 }
 
 struct ast_node *ast_getChild(struct ast_node *n, int index) {
 	if (!n || index < 0 || index > ast_getChildCount(n) -1) {
 		return 0;
 	}
-	return dd_da_get(&n->children, index);
+	return avdl_da_get(&n->children, index);
 }
 
 enum AST_NODE_TYPE ast_getType(struct ast_node *n) {
@@ -215,7 +215,7 @@ void ast_print(struct ast_node *node) {
 	// Print children
 	tabs++;
 	for (unsigned int i = 0; i < node->children.elements; i++) {
-		struct ast_node *child = dd_da_get(&node->children, i);
+		struct ast_node *child = avdl_da_get(&node->children, i);
 		ast_print(child);
 	}
 	tabs--;

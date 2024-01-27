@@ -20,7 +20,7 @@ struct dd_image {
 	#else
 	GLuint tex;
 	GLubyte *pixelsb;
-	struct dd_dynamic_array subpixels;
+	//struct dd_dynamic_array subpixels;
 	#endif
 	int width, height;
 	float *pixels;

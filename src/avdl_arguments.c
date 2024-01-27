@@ -252,6 +252,10 @@ int avdl_arguments_handle(struct AvdlSettings *avdl_settings, int argc, char *ar
 						return -1;
 					}
 				}
+				else
+				if (strcmp(argv[i], "--editor") == 0) {
+					avdl_settings->editor_mode = 1;
+				}
 				// unknown double dash argument
 				else {
 					avdl_log_error("cannot understand double dash argument " BLU "'%s'" RESET, argv[i]);

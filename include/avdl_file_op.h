@@ -23,7 +23,7 @@ int Avdl_FileOp_GetNumberOfFiles(const char *directory);
 // for each file in given directory, call function
 int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(const char *, const char*, int, int));
 
-int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct dd_dynamic_array *array);
+int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_array *array);
 
 int Avdl_FileOp_IsFileOlderThan(const char *filename, const char *filename2);
 

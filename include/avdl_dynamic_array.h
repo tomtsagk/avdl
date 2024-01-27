@@ -9,7 +9,7 @@
 /*
  * main array struct
  */
-struct dd_dynamic_array {
+struct avdl_dynamic_array {
 	void *array;
 	unsigned int elements;
 	unsigned int array_size;
@@ -23,19 +23,19 @@ struct dd_dynamic_array {
  * for each `init` call, a `free` call should be called when
  * the array is no longer needed
  */
-int dd_da_init (struct dd_dynamic_array *da, int el_size);
+int avdl_da_init (struct avdl_dynamic_array *da, int el_size);
 
 /*
  * add functions
  * push : adds one element to end of array
  * add  : adds `data_count` elements at `position`
  */
-int dd_da_push(struct dd_dynamic_array *da, void *data);
-int dd_da_add (struct dd_dynamic_array *da, const void *data, unsigned int data_count, int position);
+int avdl_da_push(struct avdl_dynamic_array *da, void *data);
+int avdl_da_add (struct avdl_dynamic_array *da, const void *data, unsigned int data_count, int position);
 
 /* remove functions */
-int dd_da_pop(struct dd_dynamic_array *da);
-int dd_da_remove(struct dd_dynamic_array *da, unsigned int count, int position);
+int avdl_da_pop(struct avdl_dynamic_array *da);
+int avdl_da_remove(struct avdl_dynamic_array *da, unsigned int count, int position);
 
 /* Clean
  * responsible on freeing any memory that is allocated
@@ -43,14 +43,14 @@ int dd_da_remove(struct dd_dynamic_array *da, unsigned int count, int position);
  * a dynamic array that is cleaned is left undefined, 
  * it can be reused with another init function
  */
-void dd_da_free(struct dd_dynamic_array *da);
+void avdl_da_free(struct avdl_dynamic_array *da);
 
 /* Get element of the array */
-void *dd_da_get(struct dd_dynamic_array *da, int position);
+void *avdl_da_get(struct avdl_dynamic_array *da, int position);
 
 /*
  * Get number of elements in array
  */
-unsigned int dd_da_count(struct dd_dynamic_array *da);
+unsigned int avdl_da_count(struct avdl_dynamic_array *da);
 
 #endif

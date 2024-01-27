@@ -115,6 +115,9 @@ int AvdlSettings_Create(struct AvdlSettings *o) {
 	// useful flag
 	o->use_cache = 1;
 
+	// editor mode
+	o->editor_mode = 0;
+
 	return 0;
 }
 

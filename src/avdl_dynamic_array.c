@@ -6,7 +6,7 @@
 #include "avdl_std.h"
 #include "avdl_log.h"
 
-static int set_array_size(struct dd_dynamic_array *da, int count) {
+static int set_array_size(struct avdl_dynamic_array *da, int count) {
 
 	da->array_size = count;
 	if (!da->array) {
@@ -35,7 +35,7 @@ static int set_array_size(struct dd_dynamic_array *da, int count) {
 /*
  * Init empty array
  */
-int dd_da_init(struct dd_dynamic_array *da, int el_size) {
+int avdl_da_init(struct avdl_dynamic_array *da, int el_size) {
 	da->element_size = el_size;
 	da->elements = 0;
 	da->array_size = 0;
@@ -46,11 +46,11 @@ int dd_da_init(struct dd_dynamic_array *da, int el_size) {
 /*
  * Adds one element to the array
  */
-int dd_da_push(struct dd_dynamic_array *da, void *data) {
-	return dd_da_add(da, data, 1, -1);
+int avdl_da_push(struct avdl_dynamic_array *da, void *data) {
+	return avdl_da_add(da, data, 1, -1);
 }
 
-int dd_da_add(struct dd_dynamic_array *da, const void *data, unsigned int data_count, int position) {
+int avdl_da_add(struct avdl_dynamic_array *da, const void *data, unsigned int data_count, int position) {
 
 	/*
 	 * position of negative value means add to end of array
@@ -103,14 +103,14 @@ int dd_da_add(struct dd_dynamic_array *da, const void *data, unsigned int data_c
 /*
  * remove last element from array, shrink if needed
  */
-int dd_da_pop(struct dd_dynamic_array *da) {
-	return dd_da_remove(da, 1, -1);
+int avdl_da_pop(struct avdl_dynamic_array *da) {
+	return avdl_da_remove(da, 1, -1);
 }
 
 /*
  * remove arbitrary element from array
  */
-int dd_da_remove(struct dd_dynamic_array *da, unsigned int count, int position) {
+int avdl_da_remove(struct avdl_dynamic_array *da, unsigned int count, int position) {
 
 	/*
 	 * a negative position means remove last elements
@@ -134,7 +134,7 @@ int dd_da_remove(struct dd_dynamic_array *da, unsigned int count, int position) 
 	 * unless removing last elements of array
 	 */
 	if (position +count < da->elements) {
-		memmove(dd_da_get(da, position), dd_da_get(da, position +count), da->element_size *(da->elements -count -position));
+		memmove(avdl_da_get(da, position), avdl_da_get(da, position +count), da->element_size *(da->elements -count -position));
 	}
 
 	/* finaly, remove element */
@@ -155,7 +155,7 @@ int dd_da_remove(struct dd_dynamic_array *da, unsigned int count, int position) 
 /*
  * clean allocated memory
  */
-void dd_da_free(struct dd_dynamic_array *da) {
+void avdl_da_free(struct avdl_dynamic_array *da) {
 	/* if array exists, free it, leaves struct in undefined state */
 	if (da->array) {
 		avdl_free(da->array);
@@ -165,7 +165,7 @@ void dd_da_free(struct dd_dynamic_array *da) {
 /*
  * get element in array
  */
-void *dd_da_get(struct dd_dynamic_array *da, int position) {
+void *avdl_da_get(struct avdl_dynamic_array *da, int position) {
 
 	if (position < 0) {
 		position = da->elements -1;
@@ -178,6 +178,6 @@ void *dd_da_get(struct dd_dynamic_array *da, int position) {
 	return ((char*)da->array) +(position *da->element_size);
 }
 
-unsigned int dd_da_count(struct dd_dynamic_array *da) {
+unsigned int avdl_da_count(struct avdl_dynamic_array *da) {
 	return da->elements;
 }
