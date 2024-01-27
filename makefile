@@ -14,7 +14,8 @@ prefix=/usr/local/
 #
 #COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -fprofile-arcs -ftest-coverage --coverage#-Werror
 #COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -DAVDL_PKG_LOCATION="\"test_loc/test_loc2/\"" #-Werror
-COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -w #-g#-Werror
+COMPILER_FLAGS_CENGINE=-w
+COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security #-g#-Werror
 
 COMPILER_DEFINES_CENGINE=\
 	-DAVDL_LINUX\
@@ -55,7 +56,7 @@ OBJ=${SRC:src/%.c=${DIRECTORY_OBJ}/%.o}
 HEADERS=$(wildcard include/*.h)
 
 SRC_CENGINE=$(wildcard engines/cengine/src/*.c)
-OBJ_CENGINE=${SRC_CENGINE:src/%.c=${DIRECTORY_OBJ_CENGINE}/%.o}
+OBJ_CENGINE=${SRC_CENGINE:engines/cengine/src/%.c=${DIRECTORY_OBJ_CENGINE}/%.o}
 HEADERS_CENGINE=$(wildcard engines/cengine/include/*.h)
 
 #
@@ -112,7 +113,7 @@ all: ${EXECUTABLE}
 # build the executable, depends on source files
 #
 ${EXECUTABLE}: ${OBJ} ${OBJ_CENGINE} | ${DIRECTORY_EXE}
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} ${OBJ} ${OBJ_CENGINE} -o $@ -w
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} ${OBJ} ${OBJ_CENGINE} -o $@
 
 #
 # create install directories
@@ -256,6 +257,6 @@ ${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS} ${HEADERS_CENGINE} | ${DIRECTORY_OBJ}
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} -c $< -o $@
 
 ${DIRECTORY_OBJ_CENGINE}/%.o: engines/cengine/src/%.c ${HEADERS} ${HEADERS_CENGINE} | ${DIRECTORY_OBJ_CENGINE}
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} -c $< -o $@
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_FLAGS_CENGINE} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} -c $< -o $@
 
 .PHONY: all tarball clean install test test-advance ${TESTS_NAMES} ${SAMPLES}
