@@ -14,24 +14,14 @@ prefix=/usr/local/
 #
 #COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -fprofile-arcs -ftest-coverage --coverage#-Werror
 #COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -DAVDL_PKG_LOCATION="\"test_loc/test_loc2/\"" #-Werror
-COMPILER_FLAGS_CENGINE=-w
 COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security #-g#-Werror
 
-COMPILER_DEFINES_CENGINE=\
-	-DAVDL_LINUX\
-	-DAVDL_ENGINE\
-	-DGLEW_NO_GLU
 COMPILER_DEFINES=\
 	-DPKG_NAME=\"${PACKAGE_NAME}\"\
 	-DPKG_VERSION=\"${PACKAGE_VERSION}\"\
-	-DPKG_LOCATION=\"${prefix}\"\
-	${COMPILER_DEFINES_CENGINE}
+	-DPKG_LOCATION=\"${prefix}\"
 
-COMPILER_INCLUDES_CENGINE=-Iengines/cengine/include -I/usr/include/freetype2
-COMPILER_INCLUDES=-Iinclude ${COMPILER_INCLUDES_CENGINE}
-
-COMPILER_LIBRARIES_CENGINE=-lm -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lfreetype -lpng
-COMPILER_LIBRARIES=${COMPILER_LIBRARIES_CENGINE}
+COMPILER_INCLUDES=-Iinclude
 
 #
 # directories
@@ -39,13 +29,12 @@ COMPILER_LIBRARIES=${COMPILER_LIBRARIES_CENGINE}
 DIRECTORY_BUILD=build
 DIRECTORY_EXE=${DIRECTORY_BUILD}/bin
 DIRECTORY_OBJ=${DIRECTORY_BUILD}/objects
-DIRECTORY_OBJ_CENGINE=${DIRECTORY_BUILD}/objects_cengine
 DIRECTORY_TESTS=${DIRECTORY_BUILD}/tests
 DIRECTORY_TESTS_DEPS=${DIRECTORY_TESTS}/objects
 DIRECTORY_TESTS_CENG=${DIRECTORY_TESTS}/cengine
 DIRECTORY_TESTS_CENG_DEPS=${DIRECTORY_TESTS_CENG}/objects
 DIRECTORY_COVERAGE=coverage/
-DIRECTORY_ALL=${DIRECTORY_BUILD} ${DIRECTORY_EXE} ${DIRECTORY_OBJ} ${DIRECTORY_OBJ_CENGINE} ${DIRECTORY_TESTS} \
+DIRECTORY_ALL=${DIRECTORY_BUILD} ${DIRECTORY_EXE} ${DIRECTORY_OBJ} ${DIRECTORY_TESTS} \
 	${DIRECTORY_TESTS_DEPS} ${DIRECTORY_COVERAGE} ${DIRECTORY_TESTS_CENG} ${DIRECTORY_TESTS_CENG_DEPS}
 
 #
@@ -54,10 +43,6 @@ DIRECTORY_ALL=${DIRECTORY_BUILD} ${DIRECTORY_EXE} ${DIRECTORY_OBJ} ${DIRECTORY_O
 SRC=$(wildcard src/*.c)
 OBJ=${SRC:src/%.c=${DIRECTORY_OBJ}/%.o}
 HEADERS=$(wildcard include/*.h)
-
-SRC_CENGINE=$(wildcard engines/cengine/src/*.c)
-OBJ_CENGINE=${SRC_CENGINE:engines/cengine/src/%.c=${DIRECTORY_OBJ_CENGINE}/%.o}
-HEADERS_CENGINE=$(wildcard engines/cengine/include/*.h)
 
 #
 # engine files
@@ -112,8 +97,8 @@ all: ${EXECUTABLE}
 #
 # build the executable, depends on source files
 #
-${EXECUTABLE}: ${OBJ} ${OBJ_CENGINE} | ${DIRECTORY_EXE}
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} ${OBJ} ${OBJ_CENGINE} -o $@
+${EXECUTABLE}: ${OBJ} | ${DIRECTORY_EXE}
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${OBJ} -o $@
 
 #
 # create install directories
@@ -199,7 +184,7 @@ ${SAMPLES}: ${EXECUTABLE}
 
 ${TESTS_NAMES}:
 	@echo "Running tests on $@"
-	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} tests/$@.test.c src/*.c -DAVDL_UNIT_TEST -o $@.test.out -Wno-unused-variable -Wno-parentheses
+	@$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} tests/$@.test.c src/*.c -DAVDL_UNIT_TEST -o $@.test.out -Wno-unused-variable -Wno-parentheses
 	@./$@.test.out
 	@rm $@.test.out
 
@@ -219,30 +204,30 @@ ${DIRECTORY_COVERAGE}/lcov.info: ${TESTS_OUT} ${TESTS_CENG_OUT} ${DIRECTORY_COVE
 # test executables
 ${DIRECTORY_TESTS_CENG}/%.out: ${DIRECTORY_TESTS_CENG}/%.o ${TESTS_CENG_OBJ_DEPS}
 	@echo "Running cengine tests on $@"
-	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} -Iengines/cengine/include -I/usr/include/freetype2 --coverage -o $@ $^ -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lpng -lfreetype -DAVDL_LINUX
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include -I/usr/include/freetype2 --coverage -o $@ $^ -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lpng -lfreetype -DAVDL_LINUX
 	@./$@
 	@# These fail on some systems, so disabled for now
 	@#valgrind ${VALGRIND_ARGS} ./$@
 
 ${DIRECTORY_TESTS}/%.out: ${DIRECTORY_TESTS}/%.o ${TESTS_OBJ_DEPS}
 	@echo "Running tests on $@"
-	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} --coverage -o $@ $^ -DAVDL_UNIT_TEST
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage -o $@ $^ -DAVDL_UNIT_TEST
 	@./$@
 	@valgrind ${VALGRIND_ARGS} ./$@
 
 # test objects
 ${DIRECTORY_TESTS_CENG}/%.o: engines/cengine/tests/%.c ${DIRECTORY_TESTS_CENG}
-	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} -Iengines/cengine/include -I/usr/include/freetype2 -c --coverage -o $@ $< -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lpng -lfreetype -DAVDL_LINUX
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include -I/usr/include/freetype2 -c --coverage -o $@ $< -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lpng -lfreetype -DAVDL_LINUX
 
 ${DIRECTORY_TESTS}/%.o: tests/%.c ${DIRECTORY_TESTS}
-	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} --coverage -c -o $@ $< -DAVDL_UNIT_TEST
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage -c -o $@ $< -DAVDL_UNIT_TEST
 
 # test dependency objects
 ${DIRECTORY_TESTS_CENG_DEPS}/%.o: engines/cengine/src/%.c ${DIRECTORY_TESTS_CENG_DEPS}
-	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} -Iengines/cengine/include -I/usr/include/freetype2 -c --coverage -o $@ $< -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lpng -lfreetype -DAVDL_LINUX
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -Iengines/cengine/include -I/usr/include/freetype2 -c --coverage -o $@ $< -DAVDL_UNIT_TEST -Wno-unused-variable -Wno-parentheses -lGLU -lm -w -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lpng -lfreetype -DAVDL_LINUX
 
 ${DIRECTORY_TESTS_DEPS}/%.o: src/%.c ${DIRECTORY_TESTS_DEPS}
-	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} --coverage -c -o $@ $< -DAVDL_UNIT_TEST
+	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage -c -o $@ $< -DAVDL_UNIT_TEST
 
 #
 # create needed directories
@@ -253,10 +238,7 @@ ${DIRECTORY_ALL}:
 #
 # compile .c source files
 #
-${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS} ${HEADERS_CENGINE} | ${DIRECTORY_OBJ}
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} -c $< -o $@
-
-${DIRECTORY_OBJ_CENGINE}/%.o: engines/cengine/src/%.c ${HEADERS} ${HEADERS_CENGINE} | ${DIRECTORY_OBJ_CENGINE}
-	$(CC) ${COMPILER_FLAGS} ${COMPILER_FLAGS_CENGINE} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${COMPILER_LIBRARIES} -c $< -o $@
+${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS} | ${DIRECTORY_OBJ}
+	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -c $< -o $@
 
 .PHONY: all tarball clean install test test-advance ${TESTS_NAMES} ${SAMPLES}

@@ -18,8 +18,7 @@
 #include "avdl_log.h"
 #include "avdl_string.h"
 #include "avdl_arguments.h"
-#include "avdl_time2.h"
-#include "avdl_editor.h"
+#include "avdl_time.h"
 
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>
@@ -168,8 +167,8 @@ int avdl_makefile(struct AvdlSettings *);
 int AVDL_MAIN(int argc, char *argv[]) {
 
 	// measure time
-	struct avdl_time2 clock;
-	avdl_time2_start(&clock);
+	struct avdl_time clock;
+	avdl_time_start(&clock);
 
 	// project settings
 	struct AvdlSettings avdl_settings;
@@ -195,7 +194,10 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	// editor mode
 	if (avdl_settings.editor_mode) {
 		avdl_log("start editor");
-		avdl_OpenEditor();
+		if (system("avdl-editor") != 0) {
+			avdl_log("error running `avdl-editor`");
+			return -1;
+		}
 		return 0;
 	}
 
@@ -223,8 +225,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		}
 
 		// report results
-		avdl_time2_end(&clock);
-		avdl_log("avdl: " BLU "./makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time2_getTimeDouble(&clock));
+		avdl_time_end(&clock);
+		avdl_log("avdl: " BLU "./makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
 		return 0;
 	}
 
@@ -240,8 +242,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 			avdl_log_error("failed to generate " BLU "cmake" RESET " for " BLU "%s" RESET, avdl_settings.project_name);
 			return -1;
 		}
-		avdl_time2_end(&clock);
-		avdl_log("avdl: " BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time2_getTimeDouble(&clock));
+		avdl_time_end(&clock);
+		avdl_log("avdl: " BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
 		return 0;
 	}
 
@@ -343,8 +345,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	}
 
 	// report results
-	avdl_time2_end(&clock);
-	avdl_log("avdl: project " BLU "%s" RESET " compiled successfully at " BLU "./avdl_build/" RESET " in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time2_getTimeDouble(&clock));
+	avdl_time_end(&clock);
+	avdl_log("avdl: project " BLU "%s" RESET " compiled successfully at " BLU "./avdl_build/" RESET " in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
 
 	// success!
 	return 0;

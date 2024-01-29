@@ -8,7 +8,7 @@
 #include <windows.h>
 #endif
 
-struct avdl_time2 {
+struct avdl_time {
 	#if AVDL_IS_OS(AVDL_OS_LINUX)
 	struct timespec start;
 	struct timespec end;
@@ -22,8 +22,8 @@ struct avdl_time2 {
 	double elapsed_sec;
 };
 
-void avdl_time2_start(struct avdl_time2 *o);
-void avdl_time2_end(struct avdl_time2 *o);
-double avdl_time2_getTimeDouble(struct avdl_time2 *o);
+void avdl_time_start(struct avdl_time *o);
+void avdl_time_end(struct avdl_time *o);
+double avdl_time_getTimeDouble(struct avdl_time *o);
 
 #endif
