@@ -230,14 +230,16 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	srand(time(NULL));
 
-	if (avdl_graphics_Init()) {
-		dd_log("avdl: error initialising engine graphics");
-		return -1;
-	}
+	if (!o->verify) {
+		if (avdl_graphics_Init()) {
+			dd_log("avdl: error initialising engine graphics");
+			return -1;
+		}
 
-	if (avdl_graphics_CreateWindow(&o->graphics) != 0) {
-		dd_log("avdl: error creating window");
-		return -1;
+		if (avdl_graphics_CreateWindow(&o->graphics) != 0) {
+			dd_log("avdl: error creating window");
+			return -1;
+		}
 	}
 	if (avdl_engine_hasVSync()) {
 		o->avdl_vsync = -1;

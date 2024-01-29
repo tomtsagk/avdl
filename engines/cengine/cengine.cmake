@@ -12,6 +12,7 @@ install(FILES
 	engines/cengine/src/avdl_particle_system.c
 	engines/cengine/src/avdl_shaders.c
 	engines/cengine/src/avdl_steam.c
+	engines/cengine/src/avdl_mesh.c
 	engines/cengine/src/dd_dynamic_array.c
 	engines/cengine/src/dd_filetomesh.c
 	engines/cengine/src/dd_fov.c
@@ -64,6 +65,7 @@ install(FILES
 	engines/cengine/include/avdl_particle_system.h
 	engines/cengine/include/avdl_shaders.h
 	engines/cengine/include/avdl_steam.h
+	engines/cengine/include/avdl_mesh.h
 	engines/cengine/include/dd_async_call.h
 	engines/cengine/include/dd_dynamic_array.h
 	engines/cengine/include/dd_filetomesh.h
