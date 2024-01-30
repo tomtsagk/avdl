@@ -224,7 +224,6 @@ static void print_command_log(FILE *fd, struct ast_node *n) {
 		struct ast_node *child = avdl_da_get(&n->children, i);
 		print_node(fd, child);
 	}
-	fprintf(fd, "");
 	fprintf(fd, ");\n");
 }
 

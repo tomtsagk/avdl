@@ -209,11 +209,21 @@ void avdl_assetManager_loadAssets() {
 				(*env)->ReleaseIntArrayElements(env, size, sizeValues, JNI_ABORT);
 				(*env)->ReleaseIntArrayElements(env, pixels, pixelValues, JNI_ABORT);
 
+				#if defined( AVDL_DIRECT3D11 )
+				#elif defined( AVDL_WINDOWS )
+				WaitForSingleObject(updateDrawMutex, INFINITE);
+				#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 				pthread_mutex_lock(&updateDrawMutex);
+				#endif
 				mesh->width = width;
 				mesh->height = height;
 				mesh->pixelsb = pixelsb;
+				#if defined( AVDL_DIRECT3D11 )
+				#elif defined( AVDL_WINDOWS )
+				ReleaseMutex(updateDrawMutex);
+				#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 				pthread_mutex_unlock(&updateDrawMutex);
+				#endif
 			}
 			else {
 				dd_log("avdl: error loading texture: %s", m->filename);
@@ -246,7 +256,12 @@ void avdl_assetManager_loadAssets() {
 					// error loading file
 				}
 				else {
+					#if defined( AVDL_DIRECT3D11 )
+					#elif defined( AVDL_WINDOWS )
+					WaitForSingleObject(updateDrawMutex, INFINITE);
+					#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 					pthread_mutex_lock(&updateDrawMutex);
+					#endif
 					avdl_mesh_clean(mesh);
 					mesh->vcount = lm.vcount;
 					if (lm.v) {
@@ -283,7 +298,12 @@ void avdl_assetManager_loadAssets() {
 							free(lm.bitan);
 						}
 					}
+					#if defined( AVDL_DIRECT3D11 )
+					#elif defined( AVDL_WINDOWS )
+					ReleaseMutex(updateDrawMutex);
+					#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 					pthread_mutex_unlock(&updateDrawMutex);
+					#endif
 				}
 			}
 			else
