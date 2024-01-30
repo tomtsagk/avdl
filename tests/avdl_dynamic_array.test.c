@@ -24,7 +24,7 @@ void *custom_realloc(void *ptr, size_t size) {
 
 int main(int argc, char *argv[]) {
 
-	struct dd_dynamic_array array;
+	struct avdl_dynamic_array array;
 	int *exampleReturn;
 
 	// initialise array

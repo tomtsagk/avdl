@@ -877,6 +877,10 @@ extern FILE *avdl_filetomesh_openFile(char *filename);
 
 int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
+	#if defined( AVDL_DIRECT3D11 )
+	return 0;
+	#endif
+
 	/*
 	struct avdl_time t;
 	avdl_time_start(&t);
@@ -884,11 +888,20 @@ int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	//dd_log("file: %s", path);
 
-	// open file and check error
+	//Open file and check error
+	#if defined( AVDL_DIRECT3D11 )
+	FILE *f;
+	f = avdl_filetomesh_openFile(path);
+	#else
 	FILE *f = fopen(path, "r");
+	#endif
 	if (!f)
 	{
+		#if defined( AVDL_DIRECT3D11 )
+		dd_log("load_ply: error opening file: %s", path);
+		#else
 		dd_log("avdl: avdl_load_ply: error opening file: %s: %s", path, strerror(errno));
+		#endif
 		return -1;
 	}
 
