@@ -16,7 +16,11 @@ extern "C" {
 
 // way to change the background clear colour
 extern float dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b;
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #define dd_clearColour(r, g, b, a) dd_clearcolor_r = r; dd_clearcolor_g = g; dd_clearcolor_b = b;
+#else
+#define dd_clearColour(r, g, b, a) dd_clearcolor_r = dd_math_pow(r, 2.2); dd_clearcolor_g = dd_math_pow(g, 2.2); dd_clearcolor_b = dd_math_pow(b, 2.2);
+#endif
 
 // initialise all pre-game data
 void dd_gameInitDefault();

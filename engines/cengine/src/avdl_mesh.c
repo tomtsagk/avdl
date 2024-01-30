@@ -7,6 +7,7 @@
 #include "dd_log.h"
 #include <stdlib.h>
 #include "avdl_graphics.h"
+#include "dd_math.h"
 
 #ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;
@@ -299,11 +300,11 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 		size_t colOffset = posOffset +posSize;
 		size_t colSize = 0;
 		if (m->c) {
-			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-			colSize = sizeof(float) *4 *m->vcount;
-			#else
+			//#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+			//colSize = sizeof(float) *4 *m->vcount;
+			//#else
 			colSize = sizeof(float) *3 *m->vcount;
-			#endif
+			//#endif
 		}
 		totalSize += colSize;
 
@@ -529,13 +530,15 @@ void avdl_mesh_copy(struct avdl_mesh *dest, struct avdl_mesh *src) {
 	dest->dirtyVertices = 1;
 
 	if (src->c) {
+		/*
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		dest->c = malloc(sizeof(float) *src->vcount *4);
 		memcpy(dest->c, src->c, sizeof(float) *src->vcount *4);
 		#else
+		*/
 		dest->c = malloc(sizeof(float) *src->vcount *3);
 		memcpy(dest->c, src->c, sizeof(float) *src->vcount *3);
-		#endif
+		//#endif
 		dest->dirtyColours = 1;
 	}
 
@@ -625,16 +628,21 @@ void avdl_mesh_scalef(struct avdl_mesh *o, float x, float y, float z) {
 
 void avdl_mesh_set_colour(struct avdl_mesh *m, float r, float g, float b) {
 	clean_colour(m);
-	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	m->c = malloc(m->vcount *sizeof(float) *4);
-	m->dirtyColours = 1;
-	for (int i = 0; i < m->vcount *4; i += 4) {
-		m->c[i+0] = r;
-		m->c[i+1] = g;
-		m->c[i+2] = b;
-		m->c[i+3] = 0;
-	}
-	#else
+//	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+//	m->c = malloc(m->vcount *sizeof(float) *4);
+//	m->dirtyColours = 1;
+//	for (int i = 0; i < m->vcount *4; i += 4) {
+//		m->c[i+0] = r;
+//		m->c[i+1] = g;
+//		m->c[i+2] = b;
+//		m->c[i+3] = 0;
+//	}
+//	#else
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	r = dd_math_pow(r, 2.2);
+	g = dd_math_pow(g, 2.2);
+	b = dd_math_pow(b, 2.2);
+	#endif
 	m->c = malloc(m->vcount *sizeof(float) *3);
 	m->dirtyColours = 1;
 	for (int i = 0; i < m->vcount *3; i += 3) {
@@ -642,7 +650,7 @@ void avdl_mesh_set_colour(struct avdl_mesh *m, float r, float g, float b) {
 		m->c[i+1] = g;
 		m->c[i+2] = b;
 	}
-	#endif
+//	#endif
 }
 
 void avdl_mesh_set_primitive_texcoords(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY) {
