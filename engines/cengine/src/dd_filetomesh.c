@@ -879,7 +879,7 @@ int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	#if defined( AVDL_DIRECT3D11 )
 	return 0;
-	#endif
+	#else
 
 	/*
 	struct avdl_time t;
@@ -928,6 +928,7 @@ int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	*/
 
 	return 0;
+	#endif
 }
 
 int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int settings) {
