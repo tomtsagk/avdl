@@ -5,6 +5,17 @@
 #include "dd_dynamic_array.h"
 #include "dd_log.h"
 
+void dd_dynamic_array_create(struct dd_dynamic_array *da) {
+	da->array = 0;
+	da->elements = 0;
+	da->array_size = 0;
+	da->element_size = 0;
+}
+
+void dd_dynamic_array_clean(struct dd_dynamic_array *da) {
+	dd_da_free(da);
+}
+
 static int set_array_size(struct dd_dynamic_array *da, int count) {
 
 	da->array_size = count;
@@ -45,6 +56,10 @@ int dd_da_init(struct dd_dynamic_array *da, int el_size) {
 /*
  * Adds one element to the array
  */
+int dd_da_pushEmpty(struct dd_dynamic_array *da) {
+	return dd_da_add(da, 0, 1, -1);
+}
+
 int dd_da_push(struct dd_dynamic_array *da, void *data) {
 	return dd_da_add(da, data, 1, -1);
 }
@@ -88,9 +103,11 @@ int dd_da_add(struct dd_dynamic_array *da, const void *data, unsigned int data_c
 	}
 
 	/* Copy element byte-by-byte (according to element_size) to array */
-	memcpy(((char*)da->array) +(da->element_size *position),
-		data, da->element_size *data_count
-	);
+	if (data) {
+		memcpy(((char*)da->array) +(da->element_size *position),
+			data, da->element_size *data_count
+		);
+	}
 
 	/* Increment elements */
 	da->elements += data_count;

@@ -16,6 +16,9 @@ struct dd_dynamic_array {
 	unsigned int element_size;
 };
 
+void dd_dynamic_array_create(struct dd_dynamic_array *da);
+void dd_dynamic_array_clean(struct dd_dynamic_array *da);
+
 /*
  * init function
  * this has to be run once before the array is accessed
@@ -24,12 +27,14 @@ struct dd_dynamic_array {
  * the array is no longer needed
  */
 int dd_da_init (struct dd_dynamic_array *da, int el_size);
+#define dd_da_initStruct(da, str) dd_da_init(da, sizeof(struct str))
 
 /*
  * add functions
  * push : adds one element to end of array
  * add  : adds `data_count` elements at `position`
  */
+int dd_da_pushEmpty(struct dd_dynamic_array *da);
 int dd_da_push(struct dd_dynamic_array *da, void *data);
 int dd_da_add (struct dd_dynamic_array *da, const void *data, unsigned int data_count, int position);
 
