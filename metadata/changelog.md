@@ -1,1 +1,1 @@
-* Begin work on a visual editor
+* Expose `dd_dynamic_array` to `avdl`
