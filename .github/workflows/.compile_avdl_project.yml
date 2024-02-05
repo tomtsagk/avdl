@@ -532,15 +532,11 @@ jobs:
         unzip SDL2_mixer-devel-2.6.0-VC.zip
         cd ..
     - run: choco install -y imagemagick
-    - name: imagemagick prep
-      shell: cmd
-      run: |
-        call refreshenv
-        echo ::set-env name=PATH::%PATH%
     - name: compile_project
       if: ${{ matrix.build_type == 'windows-x86_64' }}
       shell: bash
       run: |
+        refreshenv
         mkdir cengine
         cp -r AVDL_BUILD/share/avdl/cengine/*.c AVDL_BUILD/share/avdl/cengine/*.cpp AVDL_BUILD/include/*.h cengine
         mkdir build
