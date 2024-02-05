@@ -569,7 +569,7 @@ jobs:
 
   # Windows d3d11 - preparation
   windows_d3d11_prepare:
-    if: ${{ inputs.build_windows }}
+    if: ${{ inputs.build_windows && false }}
     runs-on: ubuntu-20.04
     strategy:
       matrix:

@@ -237,6 +237,13 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// cmake generation
 	if (avdl_settings.cmake_mode) {
+
+		// handle assets
+		if ( avdl_assets(&avdl_settings) != 0) {
+			avdl_log_error("could not handle project assets for cmake\n");
+			return -1;
+		}
+
 		if (avdl_cmake(&avdl_settings) != 0) {
 			avdl_log_error("failed to generate " BLU "cmake" RESET " for " BLU "%s" RESET, avdl_settings.project_name);
 			return -1;
@@ -1277,6 +1284,10 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 			avdl_log_error("could not create resource file for Windows");
 			return -1;
 		}
+	}
+
+	if (avdl_settings->cmake_mode) {
+		return 0;
 	}
 
 	/*
