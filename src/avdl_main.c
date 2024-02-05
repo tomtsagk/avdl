@@ -1294,7 +1294,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	if (avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
 
 		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
-		if (system("magick.exe convert -quiet .avdl_cache/icon_cropped_256x256.png \\( -clone 0 -resize 16 \\) \\( -clone 0 -resize 24 \\) \\( -clone 0 -resize 32 \\) \\( -clone 0 -resize 48 \\) \\( -clone 0 -resize 64 \\) metadata/icon.ico") != 0) {
+		if (system("magick.exe convert -quiet .avdl_cache/icon_cropped_256x256.png ( -clone 0 -resize 16 ) ( -clone 0 -resize 24 ) ( -clone 0 -resize 32 ) ( -clone 0 -resize 48 ) ( -clone 0 -resize 64 ) metadata/icon.ico") != 0) {
 			avdl_log_error("could not create ICO for Windows using ImageMagick");
 			return -1;
 		}
