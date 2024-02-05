@@ -1226,16 +1226,30 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	fflush(stdout);
 
 	// create big icon
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	if (system("./magick.exe composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
+		avdl_log_error("could not create icon 768x768 using ImageMagick");
+		return -1;
+	}
+	#else
 	if (system("composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
 		avdl_log_error("could not create icon 768x768 using ImageMagick");
 		return -1;
 	}
+	#endif
 
 	// create cropped icon
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	if (system("./magick.exe convert -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
+		avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
+		return -1;
+	}
+	#else
 	if (system("convert -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
 		avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
 		return -1;
 	}
+	#endif
 
 	// create small icon - Linux and Windows
 	if (avdl_settings->target_platform == AVDL_PLATFORM_LINUX
@@ -1264,10 +1278,17 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	// create ico for windows
 	if (avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
 
+		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+		if (system("./magick.exe convert -quiet .avdl_cache/icon_cropped_256x256.png \\( -clone 0 -resize 16 \\) \\( -clone 0 -resize 24 \\) \\( -clone 0 -resize 32 \\) \\( -clone 0 -resize 48 \\) \\( -clone 0 -resize 64 \\) metadata/icon.ico") != 0) {
+			avdl_log_error("could not create ICO for Windows using ImageMagick");
+			return -1;
+		}
+		#else
 		if (system("convert -quiet .avdl_cache/icon_cropped_256x256.png \\( -clone 0 -resize 16 \\) \\( -clone 0 -resize 24 \\) \\( -clone 0 -resize 32 \\) \\( -clone 0 -resize 48 \\) \\( -clone 0 -resize 64 \\) metadata/icon.ico") != 0) {
 			avdl_log_error("could not create ICO for Windows using ImageMagick");
 			return -1;
 		}
+		#endif
 
 		// resource file for windows
 		struct avdl_string rcGenCmd;

@@ -461,8 +461,7 @@ jobs:
         git clone https://github.com/${{ inputs.github_project }} .
         git checkout ${{ inputs.github_branch }}
     - name: install imagemagick
-      run: |
-        choco install imagemagick.app
+      run: C:\msys64\usr\bin\wget.exe -q https://imagemagick.org/archive/binaries/ImageMagick-7.1.1-27-Q16-HDRI-x64-dll.exe -O magick.exe
     - name: prepare_libraries
       shell: bash
       run: |
