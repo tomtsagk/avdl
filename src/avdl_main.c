@@ -1254,10 +1254,17 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	// create small icon - Linux and Windows
 	if (avdl_settings->target_platform == AVDL_PLATFORM_LINUX
 	||  avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
+		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+		if (system("magick.exe composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 64 assets/icon_64x64.png") != 0) {
+			avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
+			return -1;
+		}
+		#else
 		if (system("composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 64 assets/icon_64x64.png") != 0) {
 			avdl_log_error("could not create icon 64x64 using ImageMagick");
 			return -1;
 		}
+		#endif
 	}
 
 	// create backwards compatibility icon for android
