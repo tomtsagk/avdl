@@ -29,20 +29,20 @@ int AvdlSettings_Create(struct AvdlSettings *o) {
 	o->version_name[99] = '\0';
 	o->revision = 0;
 
-	strncpy(o->icon_path, "icon.png", 99);
+	strncpy(o->icon_path, "metadata/icon.png", 99);
 	o->icon_path[99] = '\0';
 
-	strncpy(o->icon_ico_path, "icon.ico", 99);
+	strncpy(o->icon_ico_path, "metadata/icon.ico", 99);
 	o->icon_ico_path[99] = '\0';
 
-	strncpy(o->icon_foreground_path, "icon_foreground.png", 99);
+	strncpy(o->icon_foreground_path, "metadata/icon_foreground.png", 99);
 	o->icon_foreground_path[99] = '\0';
 
-	strncpy(o->icon_background_path, "icon_background.png", 99);
+	strncpy(o->icon_background_path, "metadata/icon_background.png", 99);
 	o->icon_background_path[99] = '\0';
 
 	strncpy(o->package, "com.company.sample_project", 99);
-	o->icon_path[99] = '\0';
+	o->package[99] = '\0';
 
 	// get avdl path
 	const char *avdl_project_path = avdl_pkg_GetProjectPath();

@@ -211,7 +211,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	avdl_log("~ Project Details ~");
 	avdl_log("Project Name: " BLU "%s" RESET, avdl_settings.project_name);
 	avdl_log("Version: " BLU "%d" RESET " (" BLU "%s" RESET ")-" BLU "%d" RESET, avdl_settings.version_code, avdl_settings.version_name, avdl_settings.revision);
-	avdl_log("Icon: " BLU "%s" RESET, avdl_settings.icon_path);
 	avdl_log("Package: " BLU "%s" RESET, avdl_settings.package);
 	avdl_log("CEngine location in: " BLU "%s" RESET, avdl_settings.cengine_path);
 	avdl_log("~ Project Details end ~");
@@ -251,13 +250,13 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	if (avdl_settings.target_platform == AVDL_PLATFORM_ANDROID) {
 		create_android_directory("avdl_build_android");
 
-		avdl_android_object(&avdl_settings);
-
 		// handle assets
 		if ( avdl_assets(&avdl_settings) != 0) {
 			avdl_log_error("could not handle project assets for android\n");
 			return -1;
 		}
+
+		avdl_android_object(&avdl_settings);
 
 		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for android at " BLU "./avdl_build_android/" RESET, avdl_settings.project_name);
 
@@ -267,13 +266,13 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	else if (avdl_settings.target_platform == AVDL_PLATFORM_QUEST2) {
 		create_quest2_directory("avdl_build_quest2");
 
-		avdl_quest2_object(&avdl_settings);
-
 		// handle assets
 		if ( avdl_assets(&avdl_settings) != 0) {
 			avdl_log_error("could not handle project assets for quest2\n");
 			return -1;
 		}
+
+		avdl_quest2_object(&avdl_settings);
 
 		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for quest2 at " BLU "./avdl_build_quest2/" RESET, avdl_settings.project_name);
 
@@ -283,13 +282,13 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	else if (avdl_settings.target_platform == AVDL_PLATFORM_D3D11) {
 		create_d3d11_directory("avdl_build_d3d11");
 
-		avdl_d3d11_object(&avdl_settings);
-
 		// handle assets
 		if ( avdl_assets(&avdl_settings) != 0) {
 			avdl_log_error("could not handle project assets for d3d11\n");
 			return -1;
 		}
+
+		avdl_d3d11_object(&avdl_settings);
 
 		// metadata
 		if ( avdl_metadata(&avdl_settings) != 0) {
@@ -335,12 +334,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	// combine all `.o` to executable
 	if ( avdl_link(&avdl_settings) != 0) {
 		avdl_log_error("failed to link '" BLU "%s" RESET "'", avdl_settings.project_name);
-		return -1;
-	}
-
-	// handle assets
-	if ( avdl_assets(&avdl_settings) != 0) {
-		avdl_log_error("failed to handle assets");
 		return -1;
 	}
 
@@ -1225,6 +1218,67 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	printf("avdl: assets - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
+	// create big icon
+	if (system("composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
+		avdl_log_error("could not create icon 768x768 using ImageMagick");
+		return -1;
+	}
+
+	// create cropped icon
+	if (system("convert -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
+		avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
+		return -1;
+	}
+
+	// create small icon - Linux and Windows
+	if (avdl_settings->target_platform == AVDL_PLATFORM_LINUX
+	||  avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
+		if (system("composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 64 assets/icon_64x64.png") != 0) {
+			avdl_log_error("could not create icon 64x64 using ImageMagick");
+			return -1;
+		}
+	}
+
+	// create backwards compatibility icon for android
+	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
+		if (file_copy(".avdl_cache/icon_cropped_512x512.png", "avdl_build_android/app/src/main/res/drawable/icon.png", 0) != 0) {
+			avdl_log_error("could not create backwards compatibility icon for Android using ImageMagick");
+			return -1;
+		}
+	}
+	else
+	if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
+		if (file_copy(".avdl_cache/icon_cropped_512x512.png", "avdl_build_quest2/app/src/main/res/drawable/icon.png", 0) != 0) {
+			avdl_log_error("could not create backwards compatibility icon for Quest 2 using ImageMagick");
+			return -1;
+		}
+	}
+
+	// create ico for windows
+	if (avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
+
+		if (system("convert -quiet .avdl_cache/icon_cropped_256x256.png \\( -clone 0 -resize 16 \\) \\( -clone 0 -resize 24 \\) \\( -clone 0 -resize 32 \\) \\( -clone 0 -resize 48 \\) \\( -clone 0 -resize 64 \\) metadata/icon.ico") != 0) {
+			avdl_log_error("could not create ICO for Windows using ImageMagick");
+			return -1;
+		}
+
+		// resource file for windows
+		struct avdl_string rcGenCmd;
+		avdl_string_create(&rcGenCmd, 1024);
+		avdl_string_cat(&rcGenCmd, "echo 'IDI_ICON1 ICON DISCARDABLE \"metadata/icon.ico\"' > ");
+		avdl_string_cat(&rcGenCmd, avdl_settings->project_name_code);
+		avdl_string_cat(&rcGenCmd, ".rc");
+		if ( !avdl_string_isValid(&rcGenCmd) ) {
+			avdl_log_error("could not create command to generate resource file for Windows");
+			return -1;
+		}
+
+		if (system(avdl_string_toCharPtr(&rcGenCmd)) != 0) {
+			avdl_log_error("could not create resource file for Windows");
+			return -1;
+		}
+	}
+
 	/*
 	int outDir = open("avdl_build_d3d11/", O_DIRECTORY);
 	if (!outDir) {
@@ -1811,6 +1865,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 		file_write("avdl_build_android/app/build.gradle", "}\n", 1);
 	}
 
+	/*
 	// backwards compatible icon
 	struct avdl_string iconPath;
 	avdl_string_create(&iconPath, 1024);
@@ -1823,6 +1878,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	}
 	file_copy(avdl_settings->icon_path, avdl_string_toCharPtr(&iconPath), 0);
 	avdl_string_clean(&iconPath);
+	*/
 
 	// adaptable icon foreground
 	struct avdl_string foregroundPath;
@@ -2390,6 +2446,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 		dir_create("avdl_build_quest2/res/drawable/");
 	}
 
+	/*
 	struct avdl_string iconPath;
 	avdl_string_create(&iconPath, 1024);
 	avdl_string_cat(&iconPath, "avdl_build_quest2/");
@@ -2401,6 +2458,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	}
 	file_copy(avdl_settings->icon_path, avdl_string_toCharPtr(&iconPath), 0);
 	avdl_string_clean(&iconPath);
+	*/
 
 	struct avdl_string foregroundPath;
 	avdl_string_create(&foregroundPath, 1024);

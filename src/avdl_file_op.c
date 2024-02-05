@@ -59,7 +59,7 @@ int file_copy(const char *src, const char *dest, int append) {
 
 	return 0;
 	#else
-	file_copy_at(0, src, 0, dest, append);
+	return file_copy_at(0, src, 0, dest, append);
 	#endif
 	return 0;
 }
