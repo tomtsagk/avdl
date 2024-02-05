@@ -1244,9 +1244,17 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
 		return -1;
 	}
+	if (system("magick.exe convert -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
+		avdl_log_error("could not create cropped icon 256x256 using ImageMagick");
+		return -1;
+	}
 	#else
 	if (system("convert -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
 		avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
+		return -1;
+	}
+	if (system("convert -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
+		avdl_log_error("could not create cropped icon 256x256 using ImageMagick");
 		return -1;
 	}
 	#endif
