@@ -536,7 +536,6 @@ jobs:
       if: ${{ matrix.build_type == 'windows-x86_64' }}
       shell: bash
       run: |
-        refreshenv
         mkdir cengine
         cp -r AVDL_BUILD/share/avdl/cengine/*.c AVDL_BUILD/share/avdl/cengine/*.cpp AVDL_BUILD/include/*.h cengine
         mkdir build
