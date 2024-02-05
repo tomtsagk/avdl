@@ -1212,6 +1212,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 // handle assets and put them in the final build
 int avdl_assets(struct AvdlSettings *avdl_settings) {
 
+	avdl_log("about to do assets");
 	if (avdl_settings->target_platform == AVDL_PLATFORM_LINUX) {
 		if (!is_dir("avdl_build")) {
 			dir_create("avdl_build");
@@ -1630,6 +1631,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 	printf("avdl: assets - " GRN "100%%" RESET "\n");
 	fflush(stdout);
+	avdl_log("assets done");
 
 	return 0;
 }
