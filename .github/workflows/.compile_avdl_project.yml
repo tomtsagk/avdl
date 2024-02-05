@@ -460,6 +460,9 @@ jobs:
       run: |
         git clone https://github.com/${{ inputs.github_project }} .
         git checkout ${{ inputs.github_branch }}
+    - name: install imagemagick
+      run: |
+        choco install imagemagick.app
     - name: prepare_libraries
       shell: bash
       run: |
