@@ -540,6 +540,7 @@ jobs:
         mkdir cengine
         cp -r AVDL_BUILD/share/avdl/cengine/*.c AVDL_BUILD/share/avdl/cengine/*.cpp AVDL_BUILD/include/*.h cengine
         mkdir build
+        ls
         AVDL_BUILD/bin/avdl.exe --cmake
         cd build
         cmake ../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD"
