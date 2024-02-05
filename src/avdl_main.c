@@ -20,7 +20,9 @@
 #include "avdl_arguments.h"
 #include "avdl_time.h"
 
-#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
+#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+#include <Windows.h>
+#else
 #include <unistd.h>
 #endif
 
@@ -1228,10 +1230,18 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 	// create big icon
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
-	if (system("magick.exe composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
+	avdl_log("about to process");
+	STARTUPINFO si = { 0 };
+	PROCESS_INFORMATION pi;
+	si.cb = sizeof(si);
+	if (!CreateProcess(TEXT("magick.exe"), TEXT("composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png"), 0, 0, 0, 0, 0, 0, &si, &pi)) {
+	//if (system("magick.exe composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
 		avdl_log_error("could not create icon 768x768 using ImageMagick");
 		return -1;
 	}
+	CloseHandle(pi.hThread);
+	CloseHandle(pi.hProcess);
+	avdl_log("done process");
 	#else
 	if (system("composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
 		avdl_log_error("could not create icon 768x768 using ImageMagick");
