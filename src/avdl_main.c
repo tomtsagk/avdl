@@ -254,11 +254,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 			avdl_log_error("failed to generate " BLU "makefile" RESET " for " BLU "%s" RESET, avdl_settings.project_name);
 			return -1;
 		}
-
-		// report results
-		avdl_time_end(&clock);
-		avdl_log("avdl: " BLU "./makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
-		return 0;
 	}
 
 	// from `.dd` to `.c` inside `.avdl_cache`
@@ -269,14 +264,10 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// cmake generation
 	if (avdl_settings.cmake_mode) {
-
 		if (avdl_cmake(&avdl_settings) != 0) {
 			avdl_log_error("failed to generate " BLU "cmake" RESET " for " BLU "%s" RESET, avdl_settings.project_name);
 			return -1;
 		}
-		avdl_time_end(&clock);
-		avdl_log("avdl: " BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
-		return 0;
 	}
 
 	// translate only (-t)
@@ -470,6 +461,10 @@ int create_d3d11_directory(const char *dirName) {
 
 int avdl_transpile(struct AvdlSettings *avdl_settings) {
 
+	if (avdl_settings->makefile_mode) {
+		return 0;
+	}
+
 	// cache directory
 	if (!is_dir(".avdl_cache")) {
 		dir_create(".avdl_cache");
@@ -599,6 +594,10 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 }
 
 int avdl_compile(struct AvdlSettings *avdl_settings) {
+
+	if (avdl_settings->makefile_mode || avdl_settings->cmake_mode) {
+		return 0;
+	}
 
 	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
 		avdl_android_object(avdl_settings);
@@ -782,6 +781,10 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 
 int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
+	if (avdl_settings->makefile_mode || avdl_settings->cmake_mode) {
+		return 0;
+	}
+
 	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
 		return 0;
 	}
@@ -936,6 +939,10 @@ static int create_executable_file(const char *filename, const char *content) {
 }
 
 int avdl_link(struct AvdlSettings *avdl_settings) {
+
+	if (avdl_settings->makefile_mode || avdl_settings->cmake_mode) {
+		return 0;
+	}
 
 	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
 		return 0;
@@ -1577,27 +1584,36 @@ int avdl_directories(struct AvdlSettings *avdl_settings) {
 int avdl_metadata(struct AvdlSettings *avdl_settings) {
 
 	// create big icon
-	if (system(IMAGEMAGICK_COMPOSITE " -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
-		avdl_log_error("could not create icon 768x768 using ImageMagick");
-		return -1;
+	if (Avdl_FileOp_IsFileOlderThan(".avdl_cache/icon_768x768.png", "metadata/icon_background.png")) {
+		if (system(IMAGEMAGICK_COMPOSITE " -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
+			avdl_log_error("could not create icon 768x768 using ImageMagick");
+			return -1;
+		}
 	}
 
 	// create cropped icon
-	if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
-		avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
-		return -1;
+	if (Avdl_FileOp_IsFileOlderThan(".avdl_cache/icon_cropped_512x512.png", ".avdl_cache/icon_768x768.png")) {
+		if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
+			avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
+			return -1;
+		}
 	}
-	if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
-		avdl_log_error("could not create cropped icon 256x256 using ImageMagick");
-		return -1;
+	if (Avdl_FileOp_IsFileOlderThan(".avdl_cache/icon_cropped_256x256.png", ".avdl_cache/icon_cropped_512x512.png")) {
+		if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
+			avdl_log_error("could not create cropped icon 256x256 using ImageMagick");
+			return -1;
+		}
 	}
 
 	// create small icon - Linux and Windows
 	if (avdl_settings->target_platform == AVDL_PLATFORM_LINUX
 	||  avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
-		if (system(IMAGEMAGICK_COMPOSITE " -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 64 assets/icon_64x64.png") != 0) {
-			avdl_log_error("could not create icon 64x64 using ImageMagick");
-			return -1;
+		if (Avdl_FileOp_IsFileOlderThan("assets/icon_64x64.png", "metadata/icon_foreground.png")
+		||  Avdl_FileOp_IsFileOlderThan("assets/icon_64x64.png", "metadata/icon_background.png")) {
+			if (system(IMAGEMAGICK_COMPOSITE " -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 64 assets/icon_64x64.png") != 0) {
+				avdl_log_error("could not create icon 64x64 using ImageMagick");
+				return -1;
+			}
 		}
 	}
 
