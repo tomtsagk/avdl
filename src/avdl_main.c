@@ -242,6 +242,12 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		return -1;
 	}
 
+	// handle assets
+	if ( avdl_assets(&avdl_settings) != 0) {
+		avdl_log_error("could not handle project assets for cmake\n");
+		return -1;
+	}
+
 	// makefile generation
 	if (avdl_settings.makefile_mode) {
 		if (avdl_makefile(&avdl_settings) != 0) {
@@ -253,12 +259,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		avdl_time_end(&clock);
 		avdl_log("avdl: " BLU "./makefile" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
 		return 0;
-	}
-
-	// handle assets
-	if ( avdl_assets(&avdl_settings) != 0) {
-		avdl_log_error("could not handle project assets for cmake\n");
-		return -1;
 	}
 
 	// from `.dd` to `.c` inside `.avdl_cache`
@@ -276,41 +276,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		}
 		avdl_time_end(&clock);
 		avdl_log("avdl: " BLU "cmake" RESET " for avdl project " BLU "%s" RESET " successfully generated in " BLU "%.3f" RESET " seconds" RESET, avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
-		return 0;
-	}
-
-	// android
-	if (avdl_settings.target_platform == AVDL_PLATFORM_ANDROID) {
-
-		avdl_android_object(&avdl_settings);
-
-		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for android at " BLU "./avdl_build_android/" RESET, avdl_settings.project_name);
-
-		return 0;
-	}
-	// quest2
-	else if (avdl_settings.target_platform == AVDL_PLATFORM_QUEST2) {
-
-		avdl_quest2_object(&avdl_settings);
-
-		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for quest2 at " BLU "./avdl_build_quest2/" RESET, avdl_settings.project_name);
-
-		return 0;
-	}
-	// d3d11
-	else if (avdl_settings.target_platform == AVDL_PLATFORM_D3D11) {
-
-		avdl_d3d11_object(&avdl_settings);
-
-		/*
-		 * instructions after build is complete:
-		 * * git clone https://github.com/ubawurinna/freetype-windows-binaries
-		 * * cp include/<everything> avdl_build_d3d11/dependencies
-		 * * cp "release dll"/<everything> avdl_build_d3d11/dependencies
-		 */
-
-		avdl_log("avdl project " BLU "%s" RESET " prepared successfully for d3d11 at " BLU "./avdl_build_d3d11/" RESET, avdl_settings.project_name);
-
 		return 0;
 	}
 
@@ -635,6 +600,25 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 
 int avdl_compile(struct AvdlSettings *avdl_settings) {
 
+	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
+		avdl_android_object(avdl_settings);
+		return 0;
+	}
+	else if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
+		avdl_quest2_object(avdl_settings);
+		return 0;
+	}
+	else if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
+		avdl_d3d11_object(avdl_settings);
+		/*
+		 * instructions after build is complete:
+		 * * git clone https://github.com/ubawurinna/freetype-windows-binaries
+		 * * cp include/<everything> avdl_build_d3d11/dependencies
+		 * * cp "release dll"/<everything> avdl_build_d3d11/dependencies
+		 */
+		return 0;
+	}
+
 	printf("avdl: compiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
 
@@ -798,6 +782,16 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 
 int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
+	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
+		return 0;
+	}
+	else if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
+		return 0;
+	}
+	else if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
+		return 0;
+	}
+
 	/*
 	 * if not available, compile `cengine` and cache it
 	 */
@@ -942,6 +936,16 @@ static int create_executable_file(const char *filename, const char *content) {
 }
 
 int avdl_link(struct AvdlSettings *avdl_settings) {
+
+	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
+		return 0;
+	}
+	else if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
+		return 0;
+	}
+	else if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
+		return 0;
+	}
 
 	printf("avdl: creating executable - " YEL "..." RESET "\r");
 
@@ -1211,7 +1215,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 // handle assets and put them in the final build
 int avdl_assets(struct AvdlSettings *avdl_settings) {
 
-	if (avdl_settings->cmake_mode) {
+	if (avdl_settings->makefile_mode && avdl_settings->cmake_mode) {
 		return 0;
 	}
 
