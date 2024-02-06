@@ -149,6 +149,7 @@ int avdl_compile(struct AvdlSettings *);
 int avdl_compile_cengine(struct AvdlSettings *);
 int avdl_link(struct AvdlSettings *);
 int avdl_assets(struct AvdlSettings *);
+int avdl_directories(struct AvdlSettings *);
 int avdl_metadata(struct AvdlSettings *);
 int avdl_android_object(struct AvdlSettings *);
 int avdl_quest2_object(struct AvdlSettings *);
@@ -216,6 +217,18 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	avdl_log("~ Project Details end ~");
 	avdl_log("");
 
+	// create directories
+	if ( avdl_directories(&avdl_settings) != 0) {
+		avdl_log_error("could not create avdl directories\n");
+		return -1;
+	}
+
+	// metadata
+	if ( avdl_metadata(&avdl_settings) != 0) {
+		avdl_log_error("could not create metadata\n");
+		return -1;
+	}
+
 	// makefile generation
 	if (avdl_settings.makefile_mode) {
 		if (avdl_makefile(&avdl_settings) != 0) {
@@ -229,6 +242,12 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		return 0;
 	}
 
+	// handle assets
+	if ( avdl_assets(&avdl_settings) != 0) {
+		avdl_log_error("could not handle project assets for cmake\n");
+		return -1;
+	}
+
 	// from `.dd` to `.c` inside `.avdl_cache`
 	if ( avdl_transpile(&avdl_settings) != 0) {
 		avdl_log_error("failed to transpile project\n");
@@ -237,12 +256,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// cmake generation
 	if (avdl_settings.cmake_mode) {
-
-		// handle assets
-		if ( avdl_assets(&avdl_settings) != 0) {
-			avdl_log_error("could not handle project assets for cmake\n");
-			return -1;
-		}
 
 		if (avdl_cmake(&avdl_settings) != 0) {
 			avdl_log_error("failed to generate " BLU "cmake" RESET " for " BLU "%s" RESET, avdl_settings.project_name);
@@ -255,13 +268,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// android
 	if (avdl_settings.target_platform == AVDL_PLATFORM_ANDROID) {
-		create_android_directory("avdl_build_android");
-
-		// handle assets
-		if ( avdl_assets(&avdl_settings) != 0) {
-			avdl_log_error("could not handle project assets for android\n");
-			return -1;
-		}
 
 		avdl_android_object(&avdl_settings);
 
@@ -271,13 +277,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	}
 	// quest2
 	else if (avdl_settings.target_platform == AVDL_PLATFORM_QUEST2) {
-		create_quest2_directory("avdl_build_quest2");
-
-		// handle assets
-		if ( avdl_assets(&avdl_settings) != 0) {
-			avdl_log_error("could not handle project assets for quest2\n");
-			return -1;
-		}
 
 		avdl_quest2_object(&avdl_settings);
 
@@ -287,21 +286,8 @@ int AVDL_MAIN(int argc, char *argv[]) {
 	}
 	// d3d11
 	else if (avdl_settings.target_platform == AVDL_PLATFORM_D3D11) {
-		create_d3d11_directory("avdl_build_d3d11");
-
-		// handle assets
-		if ( avdl_assets(&avdl_settings) != 0) {
-			avdl_log_error("could not handle project assets for d3d11\n");
-			return -1;
-		}
 
 		avdl_d3d11_object(&avdl_settings);
-
-		// metadata
-		if ( avdl_metadata(&avdl_settings) != 0) {
-			avdl_log_error("could not create metadata for d3d11\n");
-			return -1;
-		}
 
 		/*
 		 * instructions after build is complete:
@@ -1212,6 +1198,10 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 // handle assets and put them in the final build
 int avdl_assets(struct AvdlSettings *avdl_settings) {
 
+	if (avdl_settings->cmake_mode) {
+		return 0;
+	}
+
 	if (avdl_settings->target_platform == AVDL_PLATFORM_LINUX) {
 		if (!is_dir("avdl_build")) {
 			dir_create("avdl_build");
@@ -1224,107 +1214,6 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 	printf("avdl: assets - " RED "0%%" RESET "\r");
 	fflush(stdout);
-
-	// create big icon
-	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
-	if (system("magick.exe composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
-		avdl_log_error("could not create icon 768x768 using ImageMagick");
-		return -1;
-	}
-	#else
-	if (system("composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
-		avdl_log_error("could not create icon 768x768 using ImageMagick");
-		return -1;
-	}
-	#endif
-
-	// create cropped icon
-	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
-	if (system("magick.exe convert -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
-		avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
-		return -1;
-	}
-	if (system("magick.exe convert -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
-		avdl_log_error("could not create cropped icon 256x256 using ImageMagick");
-		return -1;
-	}
-	#else
-	if (system("convert -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
-		avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
-		return -1;
-	}
-	if (system("convert -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
-		avdl_log_error("could not create cropped icon 256x256 using ImageMagick");
-		return -1;
-	}
-	#endif
-
-	// create small icon - Linux and Windows
-	if (avdl_settings->target_platform == AVDL_PLATFORM_LINUX
-	||  avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
-		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
-		if (system("magick.exe composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 64 assets/icon_64x64.png") != 0) {
-			avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
-			return -1;
-		}
-		#else
-		if (system("composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 64 assets/icon_64x64.png") != 0) {
-			avdl_log_error("could not create icon 64x64 using ImageMagick");
-			return -1;
-		}
-		#endif
-	}
-
-	// create backwards compatibility icon for android
-	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
-		if (file_copy(".avdl_cache/icon_cropped_512x512.png", "avdl_build_android/app/src/main/res/drawable/icon.png", 0) != 0) {
-			avdl_log_error("could not create backwards compatibility icon for Android using ImageMagick");
-			return -1;
-		}
-	}
-	else
-	if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
-		if (file_copy(".avdl_cache/icon_cropped_512x512.png", "avdl_build_quest2/app/src/main/res/drawable/icon.png", 0) != 0) {
-			avdl_log_error("could not create backwards compatibility icon for Quest 2 using ImageMagick");
-			return -1;
-		}
-	}
-
-	// create ico for windows
-	if (avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
-
-		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
-		if (system("magick.exe convert -quiet .avdl_cache/icon_cropped_256x256.png ( -clone 0 -resize 16 ) ( -clone 0 -resize 24 ) ( -clone 0 -resize 32 ) ( -clone 0 -resize 48 ) ( -clone 0 -resize 64 ) metadata/icon.ico") != 0) {
-			avdl_log_error("could not create ICO for Windows using ImageMagick");
-			return -1;
-		}
-		#else
-		if (system("convert -quiet .avdl_cache/icon_cropped_256x256.png \\( -clone 0 -resize 16 \\) \\( -clone 0 -resize 24 \\) \\( -clone 0 -resize 32 \\) \\( -clone 0 -resize 48 \\) \\( -clone 0 -resize 64 \\) metadata/icon.ico") != 0) {
-			avdl_log_error("could not create ICO for Windows using ImageMagick");
-			return -1;
-		}
-		#endif
-
-		// resource file for windows
-		struct avdl_string rcGenCmd;
-		avdl_string_create(&rcGenCmd, 1024);
-		avdl_string_cat(&rcGenCmd, "echo 'IDI_ICON1 ICON DISCARDABLE \"metadata/icon.ico\"' > ");
-		avdl_string_cat(&rcGenCmd, avdl_settings->project_name_code);
-		avdl_string_cat(&rcGenCmd, ".rc");
-		if ( !avdl_string_isValid(&rcGenCmd) ) {
-			avdl_log_error("could not create command to generate resource file for Windows");
-			return -1;
-		}
-
-		if (system(avdl_string_toCharPtr(&rcGenCmd)) != 0) {
-			avdl_log_error("could not create resource file for Windows");
-			return -1;
-		}
-	}
-
-	if (avdl_settings->cmake_mode) {
-		return 0;
-	}
 
 	/*
 	int outDir = open("avdl_build_d3d11/", O_DIRECTORY);
@@ -1649,7 +1538,119 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	return 0;
 }
 
+int avdl_directories(struct AvdlSettings *avdl_settings) {
+
+	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
+		create_android_directory("avdl_build_android");
+	}
+	else if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
+		create_quest2_directory("avdl_build_quest2");
+	}
+	else if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
+		create_d3d11_directory("avdl_build_d3d11");
+	}
+
+	return 0;
+
+}
 int avdl_metadata(struct AvdlSettings *avdl_settings) {
+
+	// create big icon
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	if (system("magick.exe composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
+		avdl_log_error("could not create icon 768x768 using ImageMagick");
+		return -1;
+	}
+	#else
+	if (system("composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 768 .avdl_cache/icon_768x768.png") != 0) {
+		avdl_log_error("could not create icon 768x768 using ImageMagick");
+		return -1;
+	}
+	#endif
+
+	// create cropped icon
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	if (system("magick.exe convert -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
+		avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
+		return -1;
+	}
+	if (system("magick.exe convert -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
+		avdl_log_error("could not create cropped icon 256x256 using ImageMagick");
+		return -1;
+	}
+	#else
+	if (system("convert -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
+		avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
+		return -1;
+	}
+	if (system("convert -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
+		avdl_log_error("could not create cropped icon 256x256 using ImageMagick");
+		return -1;
+	}
+	#endif
+
+	// create small icon - Linux and Windows
+	if (avdl_settings->target_platform == AVDL_PLATFORM_LINUX
+	||  avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
+		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+		if (system("magick.exe composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 64 assets/icon_64x64.png") != 0) {
+			avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
+			return -1;
+		}
+		#else
+		if (system("composite -quiet metadata/icon_foreground.png metadata/icon_background.png -resize 64 assets/icon_64x64.png") != 0) {
+			avdl_log_error("could not create icon 64x64 using ImageMagick");
+			return -1;
+		}
+		#endif
+	}
+
+	// create backwards compatibility icon for android
+	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
+		if (file_copy(".avdl_cache/icon_cropped_512x512.png", "avdl_build_android/app/src/main/res/drawable/icon.png", 0) != 0) {
+			avdl_log_error("could not create backwards compatibility icon for Android using ImageMagick");
+			return -1;
+		}
+	}
+	else
+	if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
+		if (file_copy(".avdl_cache/icon_cropped_512x512.png", "avdl_build_quest2/app/src/main/res/drawable/icon.png", 0) != 0) {
+			avdl_log_error("could not create backwards compatibility icon for Quest 2 using ImageMagick");
+			return -1;
+		}
+	}
+
+	// create ico for windows
+	if (avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
+
+		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+		if (system("magick.exe convert -quiet .avdl_cache/icon_cropped_256x256.png ( -clone 0 -resize 16 ) ( -clone 0 -resize 24 ) ( -clone 0 -resize 32 ) ( -clone 0 -resize 48 ) ( -clone 0 -resize 64 ) metadata/icon.ico") != 0) {
+			avdl_log_error("could not create ICO for Windows using ImageMagick");
+			return -1;
+		}
+		#else
+		if (system("convert -quiet .avdl_cache/icon_cropped_256x256.png \\( -clone 0 -resize 16 \\) \\( -clone 0 -resize 24 \\) \\( -clone 0 -resize 32 \\) \\( -clone 0 -resize 48 \\) \\( -clone 0 -resize 64 \\) metadata/icon.ico") != 0) {
+			avdl_log_error("could not create ICO for Windows using ImageMagick");
+			return -1;
+		}
+		#endif
+
+		// resource file for windows
+		struct avdl_string rcGenCmd;
+		avdl_string_create(&rcGenCmd, 1024);
+		avdl_string_cat(&rcGenCmd, "echo 'IDI_ICON1 ICON DISCARDABLE \"metadata/icon.ico\"' > ");
+		avdl_string_cat(&rcGenCmd, avdl_settings->project_name_code);
+		avdl_string_cat(&rcGenCmd, ".rc");
+		if ( !avdl_string_isValid(&rcGenCmd) ) {
+			avdl_log_error("could not create command to generate resource file for Windows");
+			return -1;
+		}
+
+		if (system(avdl_string_toCharPtr(&rcGenCmd)) != 0) {
+			avdl_log_error("could not create resource file for Windows");
+			return -1;
+		}
+	}
 
 	// Direct3D11
 	if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
