@@ -244,7 +244,7 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// handle assets
 	if ( avdl_assets(&avdl_settings) != 0) {
-		avdl_log_error("could not handle project assets for cmake\n");
+		avdl_log_error("could not create assets\n");
 		return -1;
 	}
 
@@ -1215,7 +1215,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 // handle assets and put them in the final build
 int avdl_assets(struct AvdlSettings *avdl_settings) {
 
-	if (avdl_settings->makefile_mode && avdl_settings->cmake_mode) {
+	if (avdl_settings->makefile_mode || avdl_settings->cmake_mode) {
 		return 0;
 	}
 
