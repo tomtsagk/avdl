@@ -28,9 +28,13 @@
 #if AVDL_IS_OS(AVDL_OS_WINDOWS)
 #define IMAGEMAGICK_COMPOSITE "magick.exe composite"
 #define IMAGEMAGICK_CONVERT "magick.exe convert"
+#define IMAGEMAGICK_PAREN_OPEN "("
+#define IMAGEMAGICK_PAREN_CLOSE ")"
 #else
 #define IMAGEMAGICK_COMPOSITE "composite"
 #define IMAGEMAGICK_CONVERT "convert"
+#define IMAGEMAGICK_PAREN_OPEN "\\("
+#define IMAGEMAGICK_PAREN_CLOSE "\\)"
 #endif
 
 extern enum AVDL_PLATFORM avdl_platform_temp;
@@ -1611,7 +1615,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 	// create ico for windows
 	if (avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
 
-		if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_cropped_256x256.png \\( -clone 0 -resize 16 \\) \\( -clone 0 -resize 24 \\) \\( -clone 0 -resize 32 \\) \\( -clone 0 -resize 48 \\) \\( -clone 0 -resize 64 \\) metadata/icon.ico") != 0) {
+		if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_cropped_256x256.png " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 16 " IMAGEMAGICK_PAREN_CLOSE " " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 24 " IMAGEMAGICK_PAREN_CLOSE " " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 32 " IMAGEMAGICK_PAREN_CLOSE " " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 48 " IMAGEMAGICK_PAREN_CLOSE " "IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 64 " IMAGEMAGICK_PAREN_CLOSE " metadata/icon.ico") != 0) {
 			avdl_log_error("could not create ICO for Windows using ImageMagick");
 			return -1;
 		}
