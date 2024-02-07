@@ -1,0 +1,6 @@
+.avdl_cache
+avdl_build
+avdl_build_android
+
+# runtime icon is automatically generated
+assets/icon_64x64.png

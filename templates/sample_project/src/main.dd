@@ -1,0 +1,16 @@
+#
+# include the default world
+#
+(include "world.ddh")
+
+#
+# Initialise the game and its stats
+#
+(function void dd_gameInit ()
+	(group
+
+	(dd_setGameTitle (multistring "Avdl Project - v" AVDL_GAME_VERSION))
+	(dd_world_set_default world_sample)
+
+	)
+)

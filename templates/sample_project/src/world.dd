@@ -1,0 +1,45 @@
+(include "world.ddh")
+
+(class_function world_sample void create ()
+	(group
+
+	(avdl_engine_setFPS 120)
+	(avdl_engine_setVSync 1)
+
+	)
+)
+
+(class_function world_sample void onload ()
+	(group
+	)
+)
+
+(class_function world_sample void resize ()
+	(group
+	)
+)
+
+(class_function world_sample void update (group float dt)
+	(group
+	)
+) # update
+
+(class_function world_sample void draw ()
+	(group
+	)
+)
+
+(class_function world_sample void key_input (group char key)
+	(group
+	)
+)
+
+(class_function world_sample void clean ()
+	(group
+	)
+)
+
+(class_function world_sample void mouse_input (group int button int type)
+	(group
+	)
+) # mouse input

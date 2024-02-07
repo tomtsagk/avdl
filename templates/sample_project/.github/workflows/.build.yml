@@ -1,0 +1,40 @@
+name: Build Project
+
+on:
+  push:
+    branches:
+      - master
+      - develop
+    tags:
+      "v[0-9]+.[0-9]+.[0-9]+*"
+
+jobs:
+  avdl:
+    uses: tomtsagk/avdl/.github/workflows/.compile_avdl_project.yml@814e7da99e803e438f1d1dd6f707e2c44eb0584b
+    with:
+        project_name: avdl_editor
+        build_android: true
+        build_android_googleplay: false
+        build_ads: false
+        build_steam: false
+        build_linux: true
+        build_windows: true
+        build_quest2: true
+        build_quest2_oculus: false
+        #itchio_user: afloofdev
+        #itchio_project: test_project
+    secrets:
+        # required for android
+        ANDROID_KEYSTORE: ${{ secrets.KEYSTORE }}
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        # required for quest 2
+        OCULUS_API_LINK: ${{ secrets.OCULUS_API_LINK }}
+        # required for oculus
+        #OCULUS_PROJECT_ID: ${{ secrets.OCULUS_PROJECT_ID }}
+        # required for itchio release
+        #BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        # required for google play
+        #GOOGLE_PLAY_ID: ${{ secrets.GOOGLE_PLAY_ID }}
+        #AVDL_GOOGLE_PLAY_ACHIEVEMENTS:
+        #ADMOB_PROJECT_ID: ${{ secrets.ADMOB_PROJECT_ID }}
+        #ADMOB_INTERSTITIAL_AD_ID: ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }}
