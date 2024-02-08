@@ -189,6 +189,9 @@ void avdl_mesh_create(struct avdl_mesh *m) {
 	m->hasTexture = avdl_mesh_hasTexture;
 	m->setTransparency = avdl_mesh_setTransparency;
 
+	m->setWireframe = avdl_mesh_setWireframe;
+	m->setSolid = avdl_mesh_setSolid;
+
 	m->vertexBuffer = 0;
 }
 
@@ -677,4 +680,12 @@ void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct dd_image *tex) {
 
 int avdl_mesh_hasTexture(struct avdl_mesh *o) {
 	return o->img != 0;
+}
+
+void avdl_mesh_setWireframe(struct avdl_mesh *o) {
+	o->draw_type = 1;
+}
+
+void avdl_mesh_setSolid(struct avdl_mesh *o) {
+	o->draw_type = 0;
 }

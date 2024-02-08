@@ -81,6 +81,9 @@ struct avdl_mesh {
 	int (*hasTexture)(struct avdl_mesh *o);
 	void (*setTransparency)(struct avdl_mesh *o, int transparency);
 
+	void (*setWireframe)(struct avdl_mesh *o);
+	void (*setSolid)(struct avdl_mesh *o);
+
 	avdl_graphics_mesh* vertexBuffer;
 };
 
@@ -107,6 +110,9 @@ void avdl_mesh_setTexture(struct avdl_mesh *o, struct dd_image *tex);
 void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct dd_image *tex);
 void avdl_mesh_setTransparency(struct avdl_mesh *o, int transparency);
 void avdl_mesh_set_primitive_texcoords(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY);
+
+void avdl_mesh_setWireframe(struct avdl_mesh *o);
+void avdl_mesh_setSolid(struct avdl_mesh *o);
 
 int avdl_mesh_hasTexture(struct avdl_mesh *o);
 
