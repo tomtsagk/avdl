@@ -965,7 +965,6 @@ char *skip_to_whitespace(char *str) {
 	return str;
 }
 
-
 int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int settings) {
 
 	#if defined( AVDL_DIRECT3D11 )
@@ -1008,7 +1007,8 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 		int amount;
 	};
 
-	struct avdl_ply_element elements[100];
+	// maximum number of elements reduced as it was causing memory issues on android
+	struct avdl_ply_element elements[10];
 	int elementTotal = 0;
 
 	int vertex_count = 0;
@@ -1046,8 +1046,8 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 			p += strlen("element");
 
 			// element limit
-			if (elementTotal >= 100) {
-				dd_log("avdl: avdl_load_ply_string: too many elements, max is 100");
+			if (elementTotal >= 10) {
+				dd_log("avdl: avdl_load_ply_string: too many elements, max is 10");
 				return -1;
 			}
 
@@ -1593,4 +1593,3 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 
 	#endif
 }
-
