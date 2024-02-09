@@ -1937,8 +1937,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	struct avdl_string foregroundPath;
 	avdl_string_create(&foregroundPath, 1024);
 	avdl_string_cat(&foregroundPath, "avdl_build_android/");
-	avdl_string_cat(&foregroundPath, "/app/src/main/res/drawable/");
-	avdl_string_cat(&foregroundPath, avdl_settings->icon_foreground_path);
+	avdl_string_cat(&foregroundPath, "/app/src/main/res/drawable/icon_foreground.png");
 	if (!avdl_string_isValid(&foregroundPath)) {
 		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&foregroundPath));
 		return -1;
@@ -1950,8 +1949,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	struct avdl_string backgroundPath;
 	avdl_string_create(&backgroundPath, 1024);
 	avdl_string_cat(&backgroundPath, "avdl_build_android/");
-	avdl_string_cat(&backgroundPath, "/app/src/main/res/drawable/");
-	avdl_string_cat(&backgroundPath, avdl_settings->icon_background_path);
+	avdl_string_cat(&backgroundPath, "/app/src/main/res/drawable/icon_background.png");
 	if (!avdl_string_isValid(&backgroundPath)) {
 		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&backgroundPath));
 		return -1;
