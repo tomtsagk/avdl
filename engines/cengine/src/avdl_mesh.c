@@ -491,11 +491,12 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 
 	// draw arrays
 	if (m->draw_type) {
-		GL(glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ));
+		// not possible on OpenGL ES
+		//GL(glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ));
+		GL(glDrawArrays(GL_LINES, 0, m->vcount));
 	}
-	GL(glDrawArrays(GL_TRIANGLES, 0, m->vcount));
-	if (m->draw_type) {
-		GL(glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ));
+	else {
+		GL(glDrawArrays(GL_TRIANGLES, 0, m->vcount));
 	}
 	GL(glBindVertexArray(0));
 
