@@ -491,10 +491,11 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 
 	// draw arrays
 	if (m->draw_type) {
-		GL(glDrawArrays(GL_LINES, 0, m->vcount));
+		GL(glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ));
 	}
-	else {
-		GL(glDrawArrays(GL_TRIANGLES, 0, m->vcount));
+	GL(glDrawArrays(GL_TRIANGLES, 0, m->vcount));
+	if (m->draw_type) {
+		GL(glPolygonMode( GL_FRONT_AND_BACK, GL_FILL ));
 	}
 	GL(glBindVertexArray(0));
 
@@ -532,19 +533,14 @@ void avdl_mesh_copy(struct avdl_mesh *dest, struct avdl_mesh *src) {
 	memcpy(dest->v, src->v, sizeof(float) *src->vcount *3);
 	dest->dirtyVertices = 1;
 
+	// optional colours
 	if (src->c) {
-		/*
-		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-		dest->c = malloc(sizeof(float) *src->vcount *4);
-		memcpy(dest->c, src->c, sizeof(float) *src->vcount *4);
-		#else
-		*/
 		dest->c = malloc(sizeof(float) *src->vcount *3);
 		memcpy(dest->c, src->c, sizeof(float) *src->vcount *3);
-		//#endif
 		dest->dirtyColours = 1;
 	}
 
+	// optional texture coordinates
 	if (src->t) {
 		dest->t = malloc(sizeof(float) *(dest->vcount*2));
 		memcpy(dest->t, src->t, sizeof(float) *(dest->vcount*2));
