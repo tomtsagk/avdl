@@ -35,12 +35,16 @@ void dd_string3d_create(struct dd_string3d *o) {
 	o->clean = dd_string3d_clean;
 	o->draw = dd_string3d_draw;
 	o->drawInt = dd_string3d_drawInt;
+	o->drawIntPadded = dd_string3d_drawIntPadded;
 	o->drawLimit = dd_string3d_drawLimit;
 	o->drawLimitTypewriter = dd_string3d_drawLimitTypewriter;
 	o->drawTypewriter = dd_string3d_drawTypewriter;
 	o->setText = dd_string3d_setText;
 	o->setTextInt = dd_string3d_setTextInt;
 	o->setFont = dd_string3d_setFont;
+
+	o->getWidth = dd_string3d_getWidth;
+	o->getWidthInt = dd_string3d_getWidthInt;
 
 }
 
@@ -97,6 +101,9 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 		struct dd_word_mesh *m = dd_da_get(&o->textMeshes, numberString[i] -'0');
 		lineWidth += m->widthf;
 	}
+	// add `.` every 3 digits
+	struct dd_word_mesh *mDot = dd_da_get(&o->textMeshes, 10);
+	lineWidth += (mDot->widthf *(num_len /3));
 
 	switch (o->align) {
 	case DD_STRING3D_ALIGN_LEFT:
@@ -127,9 +134,102 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 
 		dd_meshTexture_draw(m);
 
+		dd_translatef(m->widthf, 0, 0);
+
+		// draw `.` every 3 digits
+		if ((num_len -i -1) %3 == 0 && (num_len -i -1) != 0) {
+			dd_meshTexture_draw(mDot);
+			dd_translatef(mDot->widthf, 0, 0);
+		}
+
 		avdl_graphics_UseProgram(previousProgram);
+	}
+
+	dd_matrix_pop();
+	#endif
+}
+
+void dd_string3d_drawIntPadded(struct dd_string3d *o, int num, int digits) {
+	#ifndef AVDL_DIRECT3D11
+
+	// drawing ints is special
+	if (!o->is_int) {
+		dd_log("string3d configured as text, but trying to draw int");
+		return;
+	}
+
+	// no negatives yet!
+	if (num < 0) {
+		return;
+	}
+
+	char numberString[11];
+	snprintf(numberString, 11, "%d", num);
+	numberString[10] = '\0';
+	dd_matrix_push();
+
+	int num_len = strlen(numberString);
+	int padding = dd_math_max(digits -num_len, 0);
+	float lineWidth = 0;
+	for (int i = 0; i < num_len +padding; i++) {
+		if (i < padding) {
+			struct dd_word_mesh *m = dd_da_get(&o->textMeshes, 0);
+			lineWidth += m->widthf;
+		}
+		else {
+			struct dd_word_mesh *m = dd_da_get(&o->textMeshes, numberString[i -padding] -'0');
+			lineWidth += m->widthf;
+		}
+	}
+	// add `.` every 3 digits
+	struct dd_word_mesh *mDot = dd_da_get(&o->textMeshes, 10);
+	lineWidth += (mDot->widthf *(num_len /3));
+
+	switch (o->align) {
+	case DD_STRING3D_ALIGN_LEFT:
+		break;
+	case DD_STRING3D_ALIGN_CENTER:
+		dd_translatef(-lineWidth *0.5, 0, 0);
+		break;
+	case DD_STRING3D_ALIGN_RIGHT:
+		dd_translatef(-lineWidth, 0, 0);
+		break;
+	}
+
+	if (o->font && (avdl_font_needsRefresh(o->font) || o->openglContextId != o->font->openglContextId)) {
+		if (o->is_int) {
+			dd_string3d_setTextInt(o);
+		}
+		o->openglContextId = o->font->openglContextId;
+	}
+
+	for (int i = 0; i < num_len +padding; i++) {
+
+		struct dd_word_mesh *m;
+		if (i < padding) {
+			m = dd_da_get(&o->textMeshes, 0);
+		}
+		else {
+			m = dd_da_get(&o->textMeshes, numberString[i -padding] -'0');
+		}
+
+		int previousProgram;
+		previousProgram = avdl_graphics_GetCurrentProgram();
+		avdl_graphics_UseProgram(defaultProgram);
+		GLint MatrixID = avdl_graphics_GetUniformLocation(defaultProgram, "matrix");
+		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
+
+		dd_meshTexture_draw(m);
 
 		dd_translatef(m->widthf, 0, 0);
+
+		// draw `.` every 3 digits
+		if ((num_len -i -1) %3 == 0 && (num_len -i -1) != 0) {
+			dd_meshTexture_draw(mDot);
+			dd_translatef(mDot->widthf, 0, 0);
+		}
+
+		avdl_graphics_UseProgram(previousProgram);
 	}
 
 	dd_matrix_pop();
@@ -481,7 +581,7 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 
 void dd_string3d_setTextInt(struct dd_string3d *o) {
 	o->is_int = 1;
-	dd_string3d_setText(o, "0 1 2 3 4 5 6 7 8 9");
+	dd_string3d_setText(o, "0 1 2 3 4 5 6 7 8 9 .");
 }
 
 
@@ -492,4 +592,53 @@ void dd_string3d_setFont(struct dd_string3d *o, struct avdl_font *font) {
 	if (o->text) {
 		dd_string3d_setText(o, o->text);
 	}
+}
+
+float dd_string3d_getWidth(struct dd_string3d *o) {
+	int wordsTotal = 0;
+	int linesTotal = 0;
+	int drawnWords = 0;
+
+	float biggestLineWidth = 0;
+
+	int lineWords = 0;
+	float lineWidth = 0;
+	linesTotal++;
+
+	for (int i = 0; i < o->textMeshes.elements; i++) {
+		struct dd_word_mesh *m = dd_da_get(&o->textMeshes, i);
+
+		// is newline character - stop parsing line
+		if (m->is_newline) {
+			lineWords++;
+			break;
+		}
+		// in line
+		else {
+			// not first word, add space
+			if (lineWords != 0) {
+				lineWidth += m->space_size;
+			}
+			lineWidth += m->widthf;
+			lineWords++;
+		}
+	}
+
+	return lineWidth;
+}
+
+float dd_string3d_getWidthInt(struct dd_string3d *o, int num) {
+
+	char numberString[11];
+	snprintf(numberString, 11, "%d", num);
+	numberString[10] = '\0';
+
+	int num_len = strlen(numberString);
+	float lineWidth = 0;
+	for (int i = 0; i < num_len; i++) {
+		struct dd_word_mesh *m = dd_da_get(&o->textMeshes, numberString[i] -'0');
+		lineWidth += m->widthf;
+	}
+
+	return lineWidth;
 }

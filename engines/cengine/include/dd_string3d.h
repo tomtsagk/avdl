@@ -59,9 +59,13 @@ struct dd_string3d {
 	void (*setAlignVertical)(struct dd_string3d *, enum dd_string3d_align_vertical);
 	void (*draw)(struct dd_string3d *);
 	void (*drawInt)(struct dd_string3d *, int num);
+	void (*drawIntPadded)(struct dd_string3d *, int num, int digits);
 	void (*drawLimit)(struct dd_string3d *, int limit);
 	void (*drawLimitTypewriter)(struct dd_string3d *, int limit, int words);
 	void (*drawTypewriter)(struct dd_string3d *, int words);
+
+	float (*getWidth)(struct dd_string3d *);
+	float (*getWidthInt)(struct dd_string3d *, int);
 
 	void (*setFont)(struct dd_string3d *, struct avdl_font *);
 
@@ -74,6 +78,7 @@ void dd_string3d_setAlignVertical(struct dd_string3d *o, enum dd_string3d_align_
 
 void dd_string3d_draw(struct dd_string3d *o);
 void dd_string3d_drawInt(struct dd_string3d *o, int num);
+void dd_string3d_drawIntPadded(struct dd_string3d *o, int num, int digits);
 void dd_string3d_drawLimit(struct dd_string3d *o, int limit);
 void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int wordsToDraw);
 void dd_string3d_drawTypewriter(struct dd_string3d *o, int wordsToDraw);
@@ -84,6 +89,9 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text);
 void dd_string3d_setTextInt(struct dd_string3d *o);
 
 void dd_string3d_setFont(struct dd_string3d *, struct avdl_font *);
+
+float dd_string3d_getWidth(struct dd_string3d *);
+float dd_string3d_getWidthInt(struct dd_string3d *, int);
 
 #ifdef __cplusplus
 }
