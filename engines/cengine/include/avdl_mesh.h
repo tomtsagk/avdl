@@ -9,6 +9,7 @@ enum avdl_primitives {
 	AVDL_PRIMITIVE_TRIANGLE,
 	AVDL_PRIMITIVE_RECTANGLE,
 	AVDL_PRIMITIVE_BOX,
+	AVDL_PRIMITIVE_BOX_FLIP,
 };
 
 #include "avdl_graphics.h"

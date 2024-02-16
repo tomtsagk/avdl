@@ -19,6 +19,7 @@ install(FILES
 	engines/cengine/src/dd_game.c
 	engines/cengine/src/dd_gamejolt.c
 	engines/cengine/src/dd_image.c
+	engines/cengine/src/avdl_skybox.c
 	engines/cengine/src/dd_json.c
 	engines/cengine/src/dd_log.c
 	engines/cengine/src/dd_log_cpp.cpp
@@ -73,6 +74,7 @@ install(FILES
 	engines/cengine/include/dd_game.h
 	engines/cengine/include/dd_gamejolt.h
 	engines/cengine/include/dd_image.h
+	engines/cengine/include/avdl_skybox.h
 	engines/cengine/include/dd_json.h
 	engines/cengine/include/dd_log.h
 	engines/cengine/include/dd_math.h

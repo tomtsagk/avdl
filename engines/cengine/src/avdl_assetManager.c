@@ -241,7 +241,9 @@ void avdl_assetManager_loadAssets() {
 			}
 			else
 			if (m->type == AVDL_IMAGETYPE_PNG) {
-				dd_image_load_png(mesh, m->filename);
+				if (dd_image_load_png(mesh, m->filename) != 0) {
+					dd_log("avdl: error loading texture %s", m->filename);
+				}
 			}
 			#endif
 		}

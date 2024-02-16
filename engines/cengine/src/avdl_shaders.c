@@ -392,6 +392,44 @@ const char *avdl_shaderDefault_fragment_q2 =
 "}\n"
 ;
 
+const char *avdl_shaderSkybox_vertex =
+"AVDL_OUT vec3 outTexCoord;\n"
+
+"void main() {\n"
+"	gl_Position = final_position();\n"
+"	outTexCoord = position.xyz;\n"
+"}\n"
+;
+
+const char *avdl_shaderSkybox_fragment =
+"AVDL_IN vec3 outTexCoord;\n"
+
+"uniform samplerCube skybox;\n"
+
+"void main() {\n"
+"	avdl_frag_color = texture(skybox, outTexCoord);\n"
+"}\n"
+;
+
+const char *avdl_shaderSkybox_vertex_q2 =
+"AVDL_OUT vec3 outTexCoord;\n"
+
+"void main() {\n"
+"	gl_Position = final_position();\n"
+"	outTexCoord = position.xyz;\n"
+"}\n"
+;
+
+const char *avdl_shaderSkybox_fragment_q2 =
+"AVDL_IN vec3 outTexCoord;\n"
+
+"uniform samplerCube skybox;\n"
+
+"void main() {\n"
+"	avdl_frag_color = texture(skybox, outTexCoord);\n"
+"}\n"
+;
+
 void avdl_program_create(struct avdl_program *o) {
 	o->sdrVertexSrc = 0;
 	o->sdrFragmentSrc = 0;

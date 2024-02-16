@@ -234,6 +234,7 @@ int avdl_graphics_getContextId() {
 // shaders
 GLuint defaultProgram;
 GLuint currentProgram;
+GLuint skyboxProgram;
 
 int avdl_graphics_Init() {
 
@@ -305,6 +306,40 @@ avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int wid
 
 }
 
+avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], int width[], int height[]) {
+
+	GLuint tex;
+	GL(glGenTextures(1, &tex));
+	GL(glBindTexture(GL_TEXTURE_CUBE_MAP, tex));
+
+	GL(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+	GL(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GL(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+	GL(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+	GL(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
+
+	for(int i = 0; i < 6; i++) {
+		GL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+			0, GL_RGB, width[i], height[i], 0, pixel_format[i], GL_FLOAT, pixels[i]
+		));
+	}
+
+	GL(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
+	/*
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	GL(glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_FLOAT, pixels));
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	GL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+	GL(glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_UNSIGNED_BYTE, pixels));
+	#endif
+
+	GL(glBindTexture(GL_TEXTURE_2D, 0));
+	*/
+
+	return tex;
+
+}
+
 void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, int pixel_format, int x, int y, int width, int height) {
 
 	GL(glBindTexture(GL_TEXTURE_2D, texture_id));
@@ -347,6 +382,11 @@ void avdl_graphics_BindTexture(avdl_texture_id tex) {
 void avdl_graphics_BindTextureIndex(avdl_texture_id tex, int index) {
 	GL(glActiveTexture(GL_TEXTURE0 +index));
 	GL(glBindTexture(GL_TEXTURE_2D, tex));
+}
+
+void avdl_graphics_BindTextureSkybox(avdl_texture_id tex) {
+	GL(glActiveTexture(GL_TEXTURE0));
+	GL(glBindTexture(GL_TEXTURE_CUBE_MAP, tex));
 }
 
 void avdl_graphics_EnableBlend() {
@@ -395,6 +435,7 @@ int avdl_graphics_generateContext() {
 	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex_q2, avdl_shaderDefault_fragment_q2);
 	#else
 	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
+	skyboxProgram = avdl_loadProgram(avdl_shaderSkybox_vertex, avdl_shaderSkybox_fragment);
 	#endif
 	if (!defaultProgram) {
 		dd_log("avdl: error loading shaders");

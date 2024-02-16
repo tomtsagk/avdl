@@ -171,9 +171,11 @@ typedef int avdl_texture_id;
 void avdl_graphics_DeleteTexture(avdl_texture_id tex);
 void avdl_graphics_BindTexture(avdl_texture_id tex);
 void avdl_graphics_BindTextureIndex(avdl_texture_id tex, int index);
+void avdl_graphics_BindTextureSkybox(avdl_texture_id tex);
 
 avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height);
 void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, int pixel_format, int x, int y, int width, int height);
+avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], int width[], int height[]);
 
 #if AVDL_DIRECT3D11
 void avdl_graphics_d3d11_SetWindow();

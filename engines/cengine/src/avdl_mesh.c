@@ -86,6 +86,62 @@ static float shape_box[] = {
 	 0.5, -0.5,  0.5,
 };
 
+static float shape_box_flipped[] = {
+	// front side
+	-0.5, 0.5, 0.5,
+	0.5, -0.5, 0.5,
+	-0.5, -0.5, 0.5,
+
+	0.5, -0.5, 0.5,
+	-0.5, 0.5, 0.5,
+	0.5, 0.5, 0.5,
+
+	// back side
+	-0.5, 0.5, -0.5,
+	-0.5, -0.5, -0.5,
+	0.5, 0.5, -0.5,
+
+	0.5, -0.5, -0.5,
+	0.5, 0.5, -0.5,
+	-0.5, -0.5, -0.5,
+
+	// top side
+	-0.5,  0.5, -0.5,
+	 0.5,  0.5, -0.5,
+	-0.5,  0.5,  0.5,
+
+	 0.5,  0.5, -0.5,
+	 0.5,  0.5,  0.5,
+	-0.5,  0.5,  0.5,
+
+	// bottom side
+	-0.5, -0.5, -0.5,
+	-0.5, -0.5,  0.5,
+	 0.5, -0.5, -0.5,
+
+	 0.5, -0.5, -0.5,
+	-0.5, -0.5,  0.5,
+	 0.5, -0.5,  0.5,
+
+	// left side
+	-0.5, -0.5, -0.5,
+	-0.5,  0.5, -0.5,
+	-0.5, -0.5,  0.5,
+
+	-0.5,  0.5, -0.5,
+	-0.5,  0.5,  0.5,
+	-0.5, -0.5,  0.5,
+
+	// right side
+	 0.5, -0.5, -0.5,
+	 0.5, -0.5,  0.5,
+	 0.5,  0.5, -0.5,
+
+	 0.5,  0.5, -0.5,
+	 0.5, -0.5,  0.5,
+	 0.5,  0.5,  0.5,
+};
+
 static void clean_position(struct avdl_mesh *m) {
 	if (m->v && m->dirtyVertices) {
 		free(m->v);
@@ -223,6 +279,11 @@ void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
 		case AVDL_PRIMITIVE_BOX:
 			m->v = shape_box;
 			m->vcount = sizeof(shape_box) /sizeof(float) /3;
+			break;
+
+		case AVDL_PRIMITIVE_BOX_FLIP:
+			m->v = shape_box_flipped;
+			m->vcount = sizeof(shape_box_flipped) /sizeof(float) /3;
 			break;
 	}
 

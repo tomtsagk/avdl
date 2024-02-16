@@ -61,6 +61,14 @@ extern const char *avdl_shaderFont_fragment;
 extern const char *avdl_shaderFont_vertex_q2;
 extern const char *avdl_shaderFont_fragment_q2;
 
+/*
+ * skybox shaders
+ */
+extern const char *avdl_shaderSkybox_vertex;
+extern const char *avdl_shaderSkybox_fragment;
+extern const char *avdl_shaderSkybox_vertex_q2;
+extern const char *avdl_shaderSkybox_fragment_q2;
+
 #ifdef __cplusplus
 }
 #endif

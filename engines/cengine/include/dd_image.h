@@ -37,6 +37,8 @@ struct dd_image {
 	void (*set)(struct dd_image *o, const char *filename, int type);
 
 	void (*addSubpixels)(struct dd_image *o, void *pixels, int pixel_format, int x, int y, int w, int h);
+
+	int (*isLoaded)(struct dd_image *o);
 };
 
 void dd_image_create(struct dd_image *o);
@@ -48,7 +50,7 @@ void dd_image_load_bmp(struct dd_image *img, const wchar_t *filename);
 #else
 void dd_image_load_bmp(struct dd_image *img, const char *filename);
 #endif
-void dd_image_load_png(struct dd_image *img, const char *filename);
+int dd_image_load_png(struct dd_image *img, const char *filename);
 
 void dd_image_bind(struct dd_image *o);
 void dd_image_bindIndex(struct dd_image *o, int index);
@@ -58,6 +60,10 @@ void dd_image_set(struct dd_image *o, const char *filename, int type);
 void dd_image_clean(struct dd_image *o);
 
 void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, int x, int y, int w, int h);
+
+int dd_image_isLoaded(struct dd_image *o);
+
+void dd_image_cleanNonGpuData(struct dd_image *o);
 
 #ifdef __cplusplus
 }

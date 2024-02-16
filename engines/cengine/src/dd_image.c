@@ -39,6 +39,7 @@ void dd_image_create(struct dd_image *o) {
 	o->unbind = dd_image_unbind;
 	o->clean = dd_image_clean;
 	o->set = dd_image_set;
+	o->isLoaded = dd_image_isLoaded;
 
 	#if !defined( AVDL_DIRECT3D11 )
 	dd_da_init(&o->subpixels, sizeof(struct Subpixel));
@@ -50,7 +51,7 @@ extern avdl_texture_id avdl_graphics_loadDDS(char *filename);
 extern FILE* avdl_filetomesh_openFile(char* filename);
 #endif
 
-void dd_image_load_png(struct dd_image *img, const char *filename) {
+int dd_image_load_png(struct dd_image *img, const char *filename) {
 
 	dd_image_clean(img);
 
@@ -82,8 +83,8 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	FILE* fp = fopen(filename, "rb");
 	#endif;
 	if (!fp) {
-		//dd_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
-		return;
+		dd_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
+		return -1;
 	}
 	char header[9];
 	fread(header, 1, 8, fp);
@@ -93,7 +94,7 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	{
 		dd_log("avdl: error reading asset file signature '%s'", filename);
 		fclose(fp);
-		return;
+		return -1;
 	}
 
 	//png_set_sig_bytes_read();
@@ -104,7 +105,7 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	if (!png_ptr) {
 		dd_log("avdl: error while parsing '%s'", filename);
 		fclose(fp);
-		return;
+		return -1;
 	}
 
 	// create info pointer
@@ -113,7 +114,7 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 		png_destroy_read_struct(&png_ptr, 0, 0);
 		fclose(fp);
 		dd_log("avdl: error while parsing '%s'", filename);
-		return;
+		return -1;
 	}
 
 	png_init_io(png_ptr, fp);
@@ -199,7 +200,7 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 		fclose(fp);
 		png_destroy_read_struct(&png_ptr, &info_ptr, 0);
 		dd_log("avdl: error while parsing '%s': unsupported format", filename);
-		return;
+		return -1;
 	}
 
 	// clean-up
@@ -207,6 +208,8 @@ void dd_image_load_png(struct dd_image *img, const char *filename) {
 	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
 
 	#endif
+
+	return 0;
 
 }
 
@@ -465,4 +468,15 @@ void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, i
 
 	#endif
 
+}
+
+int dd_image_isLoaded(struct dd_image *o) {
+	return o->pixels || o->pixelsb;
+}
+
+void dd_image_cleanNonGpuData(struct dd_image *o) {
+	if (o->pixels) {
+		free(o->pixels);
+		o->pixels = 0;
+	}
 }

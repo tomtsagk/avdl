@@ -61,6 +61,12 @@ void struct_table_init() {
 	struct_table_push_member("bindIndex", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("unbind", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("avdl_skybox", 0);
+	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("bind", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("unbind", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_sound", 0);
 	struct_table_push_member("load", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
