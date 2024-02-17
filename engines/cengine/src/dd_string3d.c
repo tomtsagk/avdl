@@ -77,6 +77,12 @@ static void clean_words(struct dd_string3d *o) {
 }
 
 void dd_string3d_drawInt(struct dd_string3d *o, int num) {
+
+	if (!o->font) {
+		dd_log("avdl: dd_string3d_drawInt: no font");
+		return;
+	}
+
 	#ifndef AVDL_DIRECT3D11
 
 	// drawing ints is special
@@ -245,6 +251,11 @@ void dd_string3d_drawTypewriter(struct dd_string3d *o, int wordsToDraw) {
 }
 
 void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int wordsToDraw) {
+
+	if (!o->font) {
+		dd_log("avdl: dd_string3d_drawLimitTypewriter: no font");
+		return;
+	}
 
 	if (o->is_int) {
 		dd_log("string3d configured as int, but trying to draw text");

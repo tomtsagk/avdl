@@ -8,6 +8,22 @@ float dd_math_dec2rad(float dec) { return dec *3.14 /180; }
 int dd_math_rand(int to) { return rand() %to; }
 float dd_math_randf(float to) { return ((float) rand() /(float) RAND_MAX) *to; }
 
+int dd_math_removeTrailingZeroes(int num) {
+
+	// special case for 0
+	if (num == 0) {
+		return 0;
+	}
+
+	// remove trailing zeroes
+	while (num %10 == 0) {
+		num /= 10;
+	}
+
+	// return result
+	return num;
+}
+
 static unsigned int pseudo_seed = 100;
 
 int dd_math_randPseudoSetSeed(int seed) {

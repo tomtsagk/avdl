@@ -61,6 +61,8 @@ void dd_math_ease_catmullrom2d(struct dd_vec2 *point, float t, struct dd_vec2 p0
 float dd_math_rad2dec(float rad);
 float dd_math_dec2rad(float dec);
 
+int dd_math_removeTrailingZeroes(int num);
+
 // vector math
 float dd_math_dot2(struct dd_vec2 *v1, struct dd_vec2 *v2);
 float dd_math_dot3(struct dd_vec3 *v1, struct dd_vec3 *v2);
