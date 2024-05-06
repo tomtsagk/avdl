@@ -369,7 +369,6 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 	}
 
 	symtable_push();
-	struct ast_node *definitions = expect_command(l);
 
 	// add new struct to the struct table
 	int structIndex;
@@ -379,6 +378,8 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 	else {
 		structIndex = struct_table_push(ast_getLex(classname), 0);
 	}
+
+	struct ast_node *definitions = expect_command(l);
 
 	for (int i = 0; i < definitions->children.elements; i++) {
 		struct ast_node *child = avdl_da_get(&definitions->children, i);
