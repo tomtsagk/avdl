@@ -351,7 +351,7 @@ static struct ast_node *getIdentifierArrayNode(struct ast_node *n) {
 static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 
 	struct ast_node *classname = expect_identifier(l);
-	symtable_insert(ast_getLex(classname), DD_VARIABLE_TYPE_STRUCT);
+	symtable_insert(ast_getLex(classname), DD_VARIABLE_TYPE_VOID);
 
 	// subclass can be an identifier (name of the class) or `0` (no parent class)
 	struct ast_node *subclassname;
