@@ -369,7 +369,7 @@ static int parent_level;
 static int parent_level_current;
 static int struct_table_is_member_parent_search(int structIndex, const char *membername) {
 	if (structIndex < 0 || structIndex > struct_table_current) {
-		printf("error: struct_table_is_member_parent: index out of bounds: %d\n", structIndex);
+		printf("error: struct_table_is_member_parent: index out of bounds: %d %s\n", structIndex, membername);
 		exit(-1);
 	}
 

@@ -272,6 +272,11 @@ static struct ast_node *expect_command_classFunction(struct avdl_lexer *l) {
 	struct ast_node *classname = expect_identifier(l);
 	struct ast_node *function = expect_command_functionDefinition(l);
 
+	struct entry *classnameEntry = symtable_lookupEntry(ast_getLex(classname));
+	if (!classnameEntry) {
+		semantic_error(l, "cannot find class '%s' in symbol table.", ast_getLex(classname));
+	}
+
 	symtable_push();
 	struct entry *e = symtable_entryat(symtable_insert("this", DD_VARIABLE_TYPE_STRUCT));
 	e->isRef = 1;
@@ -346,6 +351,7 @@ static struct ast_node *getIdentifierArrayNode(struct ast_node *n) {
 static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 
 	struct ast_node *classname = expect_identifier(l);
+	symtable_insert(ast_getLex(classname), DD_VARIABLE_TYPE_STRUCT);
 
 	// subclass can be an identifier (name of the class) or `0` (no parent class)
 	struct ast_node *subclassname;
