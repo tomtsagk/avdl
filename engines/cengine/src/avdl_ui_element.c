@@ -142,7 +142,7 @@ int avdl_ui_element_hasMouseCollided(struct avdl_ui_element *o) {
 }
 
 void avdl_ui_element_resize(struct avdl_ui_element *o) {
-	o->x = dd_screen_width_get (5) *(o->anchorX -0.5) *-1 +o->offsetX;
+	o->x = (dd_screen_width_get (5) *(o->anchorX -0.5) *1) +o->offsetX;
 	o->y = dd_screen_height_get(5) *(o->anchorY -0.5) *-1 +o->offsetY;
 }
 
@@ -151,8 +151,9 @@ void avdl_ui_element_disable(struct avdl_ui_element *o) {
 }
 
 void avdl_ui_element_SetAnchor(struct avdl_ui_element *o, float x, float y) {
-	o->x = x;
-	o->y = y;
+	o->anchorX = x;
+	o->anchorY = y;
+	o->resize(o);
 }
 
 void avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type) {
