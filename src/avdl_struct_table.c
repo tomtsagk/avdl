@@ -171,6 +171,19 @@ void struct_table_init() {
 	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("addCustomIcon", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_dynamic_array", 0);
+	struct_table_push("avdl_ui_element", 0);
+	struct_table_push_member("SetSize", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetPosition", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetAnchor", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("applyTransform", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("drawDebug", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("resize", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("mouse_input", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("hasMouseCollided", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("disable", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetOnClick", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

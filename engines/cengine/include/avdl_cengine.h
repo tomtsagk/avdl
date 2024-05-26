@@ -44,7 +44,7 @@
 #include "avdl_webapi.h"
 #include "avdl_ads.h"
 #include "avdl_font.h"
-
+#include "avdl_ui_element.h"
 
 #ifdef __cplusplus
 extern "C" {
