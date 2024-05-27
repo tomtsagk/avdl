@@ -53,6 +53,7 @@ install(FILES
 	engines/cengine/src/avdl_webapi_cpp.cpp
 	engines/cengine/src/avdl_ads.c
 	engines/cengine/src/avdl_font.c
+	engines/cengine/src/avdl_ui_element.c
 	DESTINATION
 	share/avdl/cengine
 )
@@ -102,6 +103,7 @@ install(FILES
 	engines/cengine/include/avdl_webapi.h
 	engines/cengine/include/avdl_ads.h
 	engines/cengine/include/avdl_font.h
+	engines/cengine/include/avdl_ui_element.h
 	DESTINATION
 	include
 )

@@ -22,7 +22,8 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 	o->disable = avdl_ui_element_disable;
 
 	o->SetOnClick = avdl_ui_element_SetOnClick;
-	o->OnClick = 0;
+	o->onClick = 0;
+	o->onClickData = 0;
 
 	// screen anchors
 	o->anchorX = 0.5;
@@ -51,6 +52,7 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 
 	avdl_mesh_create(&o->mesh_debug);
 	o->mesh_debug.set_primitive(&o->mesh_debug, AVDL_PRIMITIVE_RECTANGLE);
+	//o->mesh_debug.setWireframe(&o->mesh_debug);
 }
 
 void avdl_ui_element_SetSize(struct avdl_ui_element *o, float width, float height) {
@@ -170,8 +172,8 @@ void avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type
 	
 		if (o->isSelectedClicked && o->hasMouseCollided(o)) {
 			// onclick
-			if (o->OnClick) {
-				o->OnClick();
+			if (o->onClick) {
+				o->onClick(o->onClickData);
 			}
 		}
 		o->isSelectedClicked = 0;
@@ -179,6 +181,7 @@ void avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type
 
 }
 
-void avdl_ui_element_SetOnClick(struct avdl_ui_element *o, void (*func)()) {
-	o->OnClick = func;
+void avdl_ui_element_SetOnClick(struct avdl_ui_element *o, void (*func)(), void *data) {
+	o->onClick = func;
+	o->onClickData = data;
 }

@@ -39,8 +39,9 @@ struct avdl_ui_element {
 	int isSelectedClicked;
 
 	// onclick variable
-	void (*OnClick)();
-	void (*SetOnClick)(struct avdl_ui_element *, void (*)());
+	void (*onClick)();
+	void (*SetOnClick)(struct avdl_ui_element *, void (*func)(), void *data);
+	void *onClickData;
 
 	// ui positional functions
 	void (*SetSize)(struct avdl_ui_element *, float, float);
@@ -77,7 +78,7 @@ void avdl_ui_element_mouse_input(struct avdl_ui_element *, int, int);
 int avdl_ui_element_hasMouseCollided(struct avdl_ui_element *);
 
 void avdl_ui_element_disable(struct avdl_ui_element *);
-void avdl_ui_element_SetOnClick(struct avdl_ui_element *, void (*)());
+void avdl_ui_element_SetOnClick(struct avdl_ui_element *, void (*func)(), void *data);
 
 #ifdef __cplusplus
 }
