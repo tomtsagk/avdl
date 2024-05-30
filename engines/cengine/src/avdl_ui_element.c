@@ -21,6 +21,9 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 
 	o->disable = avdl_ui_element_disable;
 
+	o->IsSelected = avdl_ui_element_IsSelected;
+	o->IsClicked = avdl_ui_element_IsClicked;
+
 	o->SetOnClick = avdl_ui_element_SetOnClick;
 	o->onClick = 0;
 	o->onClickData = 0;
@@ -51,8 +54,8 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 	o->isSelectedClicked = 0;
 
 	avdl_mesh_create(&o->mesh_debug);
-	o->mesh_debug.set_primitive(&o->mesh_debug, AVDL_PRIMITIVE_RECTANGLE);
-	//o->mesh_debug.setWireframe(&o->mesh_debug);
+	o->mesh_debug.set_primitive(&o->mesh_debug, AVDL_PRIMITIVE_BOX);
+	o->mesh_debug.setWireframe(&o->mesh_debug);
 }
 
 void avdl_ui_element_SetSize(struct avdl_ui_element *o, float width, float height) {
@@ -94,7 +97,7 @@ void avdl_ui_element_drawDebug(struct avdl_ui_element *o) {
 	// debug
 	dd_pushMatrix();
 	o->applyTransform(o);
-	dd_scalef(o->sizeW, o->sizeH, 1.0);
+	dd_scalef(o->sizeW, o->sizeH, 0.01);
 	if (o->isSelected) {
 		dd_scalef(1.2, 1.2, 1.2);
 	}
@@ -184,4 +187,12 @@ void avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type
 void avdl_ui_element_SetOnClick(struct avdl_ui_element *o, void (*func)(), void *data) {
 	o->onClick = func;
 	o->onClickData = data;
+}
+
+int avdl_ui_element_IsSelected(struct avdl_ui_element *o) {
+	return o->isSelected;
+}
+
+int avdl_ui_element_IsClicked(struct avdl_ui_element *o) {
+	return o->isSelectedClicked;
 }

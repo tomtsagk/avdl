@@ -184,6 +184,8 @@ void struct_table_init() {
 	struct_table_push_member("hasMouseCollided", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("disable", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetOnClick", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("IsSelected", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("IsClicked", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 
