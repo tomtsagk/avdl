@@ -12,6 +12,7 @@
 char *skip_whitespace(char *str);
 char *skip_to_whitespace(char *str);
 int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int settings);
+int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings);
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 

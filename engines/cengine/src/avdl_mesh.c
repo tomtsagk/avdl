@@ -439,7 +439,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 		int pos = glGetAttribLocation(currentProgram, "position");
 		// program has `position`
 		if (pos != -1) {
-			GL(glVertexAttribPointer(pos, 3, GL_FLOAT, 0, 0, posOffset));
+			GL(glVertexAttribPointer(pos, 3, GL_FLOAT, 0, 0, (void *) posOffset));
 			GL(glEnableVertexAttribArray(pos));
 		}
 
@@ -448,7 +448,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 			int col = glGetAttribLocation(currentProgram, "colour");
 			// program has colours
 			if (col != -1) {
-				GL(glVertexAttribPointer(col, 3, GL_FLOAT, 0, 0, colOffset));
+				GL(glVertexAttribPointer(col, 3, GL_FLOAT, 0, 0, (void *) colOffset));
 				GL(glEnableVertexAttribArray(col));
 			}
 		}
@@ -458,7 +458,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 			int tex = glGetAttribLocation(currentProgram, "texCoord");
 			// program has texCoord
 			if (tex != -1) {
-				GL(glVertexAttribPointer(tex, 2, GL_FLOAT, 0, 0, texOffset));
+				GL(glVertexAttribPointer(tex, 2, GL_FLOAT, 0, 0, (void *) texOffset));
 				GL(glEnableVertexAttribArray(tex));
 			}
 		}
@@ -468,7 +468,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 			int nor = glGetAttribLocation(currentProgram, "normal");
 			// program has normal
 			if (nor != -1) {
-				GL(glVertexAttribPointer(nor, 3, GL_FLOAT, 0, 0, norOffset));
+				GL(glVertexAttribPointer(nor, 3, GL_FLOAT, 0, 0, (void *) norOffset));
 				GL(glEnableVertexAttribArray(nor));
 			}
 		}
@@ -478,7 +478,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 			int tanLoc = glGetAttribLocation(currentProgram, "tangent");
 			// program has tan
 			if (tanLoc != -1) {
-				GL(glVertexAttribPointer(tanLoc, 3, GL_FLOAT, 0, 0, tanOffset));
+				GL(glVertexAttribPointer(tanLoc, 3, GL_FLOAT, 0, 0, (void *) tanOffset));
 				GL(glEnableVertexAttribArray(tanLoc));
 			}
 		}
@@ -488,7 +488,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 			int bitanLoc = glGetAttribLocation(currentProgram, "bitangent");
 			// program has bitan
 			if (bitanLoc != -1) {
-				GL(glVertexAttribPointer(bitanLoc, 3, GL_FLOAT, 0, 0, bitanOffset));
+				GL(glVertexAttribPointer(bitanLoc, 3, GL_FLOAT, 0, 0, (void *) bitanOffset));
 				GL(glEnableVertexAttribArray(bitanLoc));
 			}
 		}

@@ -27,12 +27,12 @@
 // prepare imagemagick commands
 #if AVDL_IS_OS(AVDL_OS_WINDOWS)
 #define IMAGEMAGICK_COMPOSITE "magick.exe composite"
-#define IMAGEMAGICK_CONVERT "magick.exe convert"
+#define IMAGEMAGICK_CONVERT "magick.exe"
 #define IMAGEMAGICK_PAREN_OPEN "("
 #define IMAGEMAGICK_PAREN_CLOSE ")"
 #else
 #define IMAGEMAGICK_COMPOSITE "composite"
-#define IMAGEMAGICK_CONVERT "convert"
+#define IMAGEMAGICK_CONVERT "magick"
 #define IMAGEMAGICK_PAREN_OPEN "\\("
 #define IMAGEMAGICK_PAREN_CLOSE "\\)"
 #endif
@@ -725,7 +725,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		// command string
 		struct avdl_string commandString;
 		avdl_string_create(&commandString, 1024);
-		avdl_string_cat(&commandString, "gcc -O3 -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
+		avdl_string_cat(&commandString, "gcc -O3 -Wno-incompatible-pointer-types -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
 		avdl_string_cat(&commandString, avdl_settings->version_name);
 		avdl_string_cat(&commandString, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
 		avdl_string_cat(&commandString, "0");
@@ -830,7 +830,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			strcpy(compile_command, "g++ -w -c -DGLEW_NO_GLU ");
 		}
 		else {
-			strcpy(compile_command, "gcc -w -c -DGLEW_NO_GLU ");
+			strcpy(compile_command, "gcc -w -Wno-incompatible-pointer-types -c -DGLEW_NO_GLU ");
 		}
 		avdl_string_clean(&cEngFile);
 
@@ -1670,7 +1670,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		fflush(stdout);
 
 		// check imagemagick is present
-		if (system("convert --version > /dev/null")) {
+		if (system("magick --version > /dev/null")) {
 			avdl_log_error("could not use imagemagick's `convert`");
 			return -1;
 		}
@@ -1688,12 +1688,12 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 
 		// create store logo
 		/*
-		if (system("convert xc:red -resize 200x200 avdl_build_d3d11/assets/avdl_logo_store.scale-400.png")) {
+		if (system("magick xc:red -resize 200x200 avdl_build_d3d11/assets/avdl_logo_store.scale-400.png")) {
 			avdl_log_error("could not create store logo");
 			return -1;
 		}
 		*/
-		if (system("convert xc:red -resize 50x50 avdl_build_d3d11/metadata/avdl_logo_store.png")) {
+		if (system("magick xc:red -resize 50x50 avdl_build_d3d11/metadata/avdl_logo_store.png")) {
 			avdl_log_error("could not create store logo");
 			return -1;
 		}
@@ -1702,12 +1702,12 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		fflush(stdout);
 
 		// logo square 150x150
-		if (system("convert xc:red -resize 150x150 avdl_build_d3d11/metadata/avdl_logo_square_150x150.png")) {
+		if (system("magick xc:red -resize 150x150 avdl_build_d3d11/metadata/avdl_logo_square_150x150.png")) {
 			avdl_log_error("could not create square logo 150x150");
 			return -1;
 		}
 		/*
-		if (system("convert xc:red -resize 600x600 avdl_build_d3d11/metadata/avdl_logo_square_150x150.scale-400.png")) {
+		if (system("magick xc:red -resize 600x600 avdl_build_d3d11/metadata/avdl_logo_square_150x150.scale-400.png")) {
 			avdl_log_error("could not create square logo 150x150");
 			return -1;
 		}
@@ -1717,12 +1717,12 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		fflush(stdout);
 
 		// logo square 44x44
-		if (system("convert xc:red -resize 44x44 avdl_build_d3d11/metadata/avdl_logo_square_44x44.png")) {
+		if (system("magick xc:red -resize 44x44 avdl_build_d3d11/metadata/avdl_logo_square_44x44.png")) {
 			avdl_log_error("could not create square logo 150x150");
 			return -1;
 		}
 		/*
-		if (system("convert xc:red -resize 256x256 avdl_build_d3d11/metadata/avdl_logo_square_44x44.scale-400.png")) {
+		if (system("magick xc:red -resize 256x256 avdl_build_d3d11/metadata/avdl_logo_square_44x44.scale-400.png")) {
 			avdl_log_error("could not create square logo 150x150");
 			return -1;
 		}
@@ -1733,12 +1733,12 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 
 		// logo wide 310x150
 		/*
-		if (system("convert xc:red -resize 1240x600 avdl_build_d3d11/metadata/avdl_logo_wide_310x150.scale-400.png")) {
+		if (system("magick xc:red -resize 1240x600 avdl_build_d3d11/metadata/avdl_logo_wide_310x150.scale-400.png")) {
 			avdl_log_error("could not create wide logo 310x150");
 			return -1;
 		}
 		*/
-		if (system("convert xc:red -resize 310x150! avdl_build_d3d11/metadata/avdl_logo_wide_310x150.png")) {
+		if (system("magick xc:red -resize 310x150! avdl_build_d3d11/metadata/avdl_logo_wide_310x150.png")) {
 			avdl_log_error("could not create wide logo 310x150");
 			return -1;
 		}
@@ -1747,12 +1747,12 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		fflush(stdout);
 
 		// splash screen
-		if (system("convert xc:red -resize 620x300! avdl_build_d3d11/metadata/avdl_splash_screen.png")) {
+		if (system("magick xc:red -resize 620x300! avdl_build_d3d11/metadata/avdl_splash_screen.png")) {
 			avdl_log_error("could not create splash screen");
 			return -1;
 		}
 		/*
-		if (system("convert xc:red -resize 2480x1200 avdl_build_d3d11/metadata/avdl_splash_screen.scale-400.png")) {
+		if (system("magick xc:red -resize 2480x1200 avdl_build_d3d11/metadata/avdl_splash_screen.scale-400.png")) {
 			avdl_log_error("could not create splash screen");
 			return -1;
 		}
@@ -1762,12 +1762,12 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 		fflush(stdout);
 
 		// lock screen logo
-		if (system("convert xc:red -resize 24x24 avdl_build_d3d11/metadata/avdl_logo_lockscreen.png")) {
+		if (system("magick xc:red -resize 24x24 avdl_build_d3d11/metadata/avdl_logo_lockscreen.png")) {
 			avdl_log_error("could not create lockscreen logo");
 			return -1;
 		}
 		/*
-		if (system("convert xc:red -resize 96x96 avdl_build_d3d11/metadata/avdl_logo_lockscreen.scale-400.png")) {
+		if (system("magick xc:red -resize 96x96 avdl_build_d3d11/metadata/avdl_logo_lockscreen.scale-400.png")) {
 			avdl_log_error("could not create lockscreen logo");
 			return -1;
 		}

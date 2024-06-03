@@ -189,7 +189,7 @@ void avdl_graphics_Refresh() {
 	GLenum glewError = glewInit();
 	if (glewError != GLEW_OK) {
 		dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
-		return -1;
+		return;
 	}
 
 	// re-generate context
