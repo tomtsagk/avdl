@@ -377,7 +377,7 @@ jobs:
     steps:
     - name: update packages
       run: |
-         sudo apt update && sudo apt install -y gcc libgl1-mesa-dev
+         sudo apt update && sudo apt install -y gcc libgl1-mesa-dev imagemagick
     - name: init_project
       if: ${{ inputs.github_project == '' }}
       uses: actions/checkout@v3
