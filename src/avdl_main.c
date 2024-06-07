@@ -1608,7 +1608,7 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 	if (Avdl_FileOp_IsFileOlderThan(".avdl_cache/icon_cropped_256x256.png", ".avdl_cache/icon_cropped_512x512.png")) {
 		if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
 			avdl_log_error("could not create cropped icon 256x256 using ImageMagick, retrying with `convert`");
-			if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
+			if (system("convert -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
 				avdl_log_error("could not create cropped icon 256x256 using ImageMagick again");
 				return -1;
 			}
