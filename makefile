@@ -2,7 +2,7 @@
 # package data
 #
 PACKAGE_NAME=avdl
-PACKAGE_VERSION=0.18.5
+PACKAGE_VERSION=0.18.6
 
 #
 # system data
