@@ -65,9 +65,6 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	// anti-aliasing
-	opengl_antialias(o);
-
 	Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_FULLSCREEN_DESKTOP;
 	int width = dd_gameInitWindowWidth;
 	int height = dd_gameInitWindowHeight;
@@ -88,6 +85,9 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 	if (o->gl_context == NULL) {
 		dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
 	}
+
+	// anti-aliasing
+	opengl_antialias(o);
 
 	// init glew
 	GLenum glewError = glewInit();
@@ -256,10 +256,10 @@ void avdl_graphics_Viewport(int x, int y, int w, int h) {
 }
 
 void avdl_graphics_PrintInfo() {
-	dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
-	dd_log("Renderer: %s", glGetString(GL_RENDERER));
-	dd_log("Version GL: %s", glGetString(GL_VERSION));
-	dd_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	//dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
+	//dd_log("Renderer: %s", glGetString(GL_RENDERER));
+	//dd_log("Version GL: %s", glGetString(GL_VERSION));
+	//dd_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
 int avdl_graphics_GetCurrentProgram() {

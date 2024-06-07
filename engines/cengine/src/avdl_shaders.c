@@ -80,19 +80,19 @@ static char *avsl_shader_fragment =
  */
 const char *shader_glsl_versions[] = {
 	// GLSL
-	"110",
-	"120",
-	"130",
-	"140",
-	"150",
 	"330",
+	"150",
+	"140",
+	"130",
+	"120",
+	"110",
 
 	// GLSL ES
-	"100",
-	"101",
-	"300 es",
-	"310 es",
 	"320 es",
+	"310 es",
+	"300 es",
+	"101",
+	"100",
 
 	/* Future versions to potentially support
 	"400",
