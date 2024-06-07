@@ -1,2 +1,1 @@
-* Initial implementation of Skybox
-* Add `removeTrailingZeroes`
+* Remove some dev logs when running the game
