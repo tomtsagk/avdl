@@ -184,7 +184,7 @@ jobs:
         java-version: '17'
     - name: apt packages
       run: |
-         sudo apt update && sudo apt install -y zipalign apksigner
+         sudo apt update && sudo apt install -y zipalign apksigner imagemagick
     - name: get_avdl
       if: ${{ inputs.avdl_linux_artifact == '' }}
       run: |
@@ -282,7 +282,7 @@ jobs:
         git checkout ${{ inputs.github_branch }}
     - name: apt packages
       run: |
-         sudo apt update && sudo apt install -y zipalign apksigner
+         sudo apt update && sudo apt install -y zipalign apksigner imagemagick
     - name: get_avdl
       if: ${{ inputs.avdl_linux_artifact == '' }}
       run: |

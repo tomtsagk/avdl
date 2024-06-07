@@ -1598,14 +1598,20 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 	// create cropped icon
 	if (Avdl_FileOp_IsFileOlderThan(".avdl_cache/icon_cropped_512x512.png", ".avdl_cache/icon_768x768.png")) {
 		if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
-			avdl_log_error("could not create cropped icon 512x512 using ImageMagick");
-			return -1;
+			avdl_log_error("could not create cropped icon 512x512 using ImageMagick, retrying with `convert`");
+			if (system("convert -quiet .avdl_cache/icon_768x768.png -gravity center -crop 512x512+0+0 +repage .avdl_cache/icon_cropped_512x512.png") != 0) {
+				avdl_log_error("could not create cropped icon 512x512 using ImageMagick again");
+				return -1;
+			}
 		}
 	}
 	if (Avdl_FileOp_IsFileOlderThan(".avdl_cache/icon_cropped_256x256.png", ".avdl_cache/icon_cropped_512x512.png")) {
 		if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
-			avdl_log_error("could not create cropped icon 256x256 using ImageMagick");
-			return -1;
+			avdl_log_error("could not create cropped icon 256x256 using ImageMagick, retrying with `convert`");
+			if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_cropped_512x512.png -resize 256 .avdl_cache/icon_cropped_256x256.png") != 0) {
+				avdl_log_error("could not create cropped icon 256x256 using ImageMagick again");
+				return -1;
+			}
 		}
 	}
 
@@ -1640,8 +1646,11 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 	if (avdl_settings->target_platform == AVDL_PLATFORM_WINDOWS) {
 
 		if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_cropped_256x256.png " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 16 " IMAGEMAGICK_PAREN_CLOSE " " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 24 " IMAGEMAGICK_PAREN_CLOSE " " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 32 " IMAGEMAGICK_PAREN_CLOSE " " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 48 " IMAGEMAGICK_PAREN_CLOSE " "IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 64 " IMAGEMAGICK_PAREN_CLOSE " metadata/icon.ico") != 0) {
-			avdl_log_error("could not create ICO for Windows using ImageMagick");
-			return -1;
+			avdl_log_error("could not create ICO for Windows using ImageMagick, retring with `convert`");
+			if (system(IMAGEMAGICK_CONVERT " -quiet .avdl_cache/icon_cropped_256x256.png " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 16 " IMAGEMAGICK_PAREN_CLOSE " " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 24 " IMAGEMAGICK_PAREN_CLOSE " " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 32 " IMAGEMAGICK_PAREN_CLOSE " " IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 48 " IMAGEMAGICK_PAREN_CLOSE " "IMAGEMAGICK_PAREN_OPEN " -clone 0 -resize 64 " IMAGEMAGICK_PAREN_CLOSE " metadata/icon.ico") != 0) {
+				avdl_log_error("could not create ICO for Windows using ImageMagick again");
+				return -1;
+			}
 		}
 
 		// resource file for windows
