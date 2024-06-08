@@ -28,6 +28,9 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 	o->onClick = 0;
 	o->onClickData = 0;
 
+	o->GetPositionX = avdl_ui_element_GetPositionX;
+	o->GetPositionY = avdl_ui_element_GetPositionY;
+
 	// screen anchors
 	o->anchorX = 0.5;
 	o->anchorY = 0.5;
@@ -195,4 +198,12 @@ int avdl_ui_element_IsSelected(struct avdl_ui_element *o) {
 
 int avdl_ui_element_IsClicked(struct avdl_ui_element *o) {
 	return o->isSelectedClicked;
+}
+
+float avdl_ui_element_GetPositionX(struct avdl_ui_element *o) {
+	return o->offsetX;
+}
+
+float avdl_ui_element_GetPositionY(struct avdl_ui_element *o) {
+	return o->offsetY;
 }

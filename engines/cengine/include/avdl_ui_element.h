@@ -63,6 +63,9 @@ struct avdl_ui_element {
 	int (*IsSelected)(struct avdl_ui_element *);
 	int (*IsClicked)(struct avdl_ui_element *);
 
+	float (*GetPositionX)(struct avdl_ui_element *);
+	float (*GetPositionY)(struct avdl_ui_element *);
+
 };
 
 // ui positional functions
@@ -85,6 +88,9 @@ void avdl_ui_element_SetOnClick(struct avdl_ui_element *, void (*func)(), void *
 
 int avdl_ui_element_IsSelected(struct avdl_ui_element *);
 int avdl_ui_element_IsClicked(struct avdl_ui_element *);
+
+float avdl_ui_element_GetPositionX(struct avdl_ui_element *);
+float avdl_ui_element_GetPositionY(struct avdl_ui_element *);
 
 #ifdef __cplusplus
 }

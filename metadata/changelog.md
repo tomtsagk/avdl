@@ -1,1 +1,1 @@
-* Remove some dev logs when running the game
+* Add getters for the position of UI elements
