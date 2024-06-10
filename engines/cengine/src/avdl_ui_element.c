@@ -7,6 +7,7 @@
 void avdl_ui_element_create(struct avdl_ui_element *o) {
 	o->SetSize = avdl_ui_element_SetSize;
 	o->SetPosition = avdl_ui_element_SetPosition;
+	o->SetPositionZ = avdl_ui_element_SetPositionZ;
 	o->SetAnchor = avdl_ui_element_SetAnchor;
 
 	o->create = avdl_ui_element_create;
@@ -30,6 +31,7 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 
 	o->GetPositionX = avdl_ui_element_GetPositionX;
 	o->GetPositionY = avdl_ui_element_GetPositionY;
+	o->GetPositionZ = avdl_ui_element_GetPositionZ;
 
 	// screen anchors
 	o->anchorX = 0.5;
@@ -38,6 +40,7 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 	// offset
 	o->offsetX = 0;
 	o->offsetY = 0;
+	o->offsetZ = 0;
 
 	// anchor parent ?
 	//#(def ref Button2 anchorFrom)
@@ -72,6 +75,11 @@ void avdl_ui_element_SetPosition(struct avdl_ui_element *o, float x, float y) {
 	avdl_ui_element_resize(o);
 }
 
+void avdl_ui_element_SetPositionZ(struct avdl_ui_element *o, float z) {
+	o->offsetZ = z;
+	avdl_ui_element_resize(o);
+}
+
 void avdl_ui_element_update(struct avdl_ui_element *o, float dt) {
 //	(if (== this.isVisible 0)
 //		(return)
@@ -86,7 +94,7 @@ void avdl_ui_element_update(struct avdl_ui_element *o, float dt) {
 }
 
 void avdl_ui_element_applyTransform(struct avdl_ui_element *o) {
-	dd_translatef(o->x, o->y, -5.0);
+	dd_translatef(o->x, o->y, -5.0 +o->offsetZ);
 }
 
 void avdl_ui_element_drawDebug(struct avdl_ui_element *o) {
@@ -150,7 +158,7 @@ int avdl_ui_element_hasMouseCollided(struct avdl_ui_element *o) {
 }
 
 void avdl_ui_element_resize(struct avdl_ui_element *o) {
-	o->x = (dd_screen_width_get (5) *(o->anchorX -0.5) *1) +o->offsetX;
+	o->x = dd_screen_width_get (5) *(o->anchorX -0.5) * 1 +o->offsetX;
 	o->y = dd_screen_height_get(5) *(o->anchorY -0.5) *-1 +o->offsetY;
 }
 
@@ -206,4 +214,8 @@ float avdl_ui_element_GetPositionX(struct avdl_ui_element *o) {
 
 float avdl_ui_element_GetPositionY(struct avdl_ui_element *o) {
 	return o->offsetY;
+}
+
+float avdl_ui_element_GetPositionZ(struct avdl_ui_element *o) {
+	return o->offsetZ;
 }

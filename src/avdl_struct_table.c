@@ -174,6 +174,7 @@ void struct_table_init() {
 	struct_table_push("avdl_ui_element", 0);
 	struct_table_push_member("SetSize", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetPosition", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetPositionZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetAnchor", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("applyTransform", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -188,6 +189,7 @@ void struct_table_init() {
 	struct_table_push_member("IsClicked", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetPositionX", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetPositionY", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetPositionZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

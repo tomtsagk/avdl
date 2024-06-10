@@ -19,6 +19,7 @@ struct avdl_ui_element {
 	// offset
 	float offsetX;
 	float offsetY;
+	float offsetZ;
 
 	// anchor parent ?
 	//#(def ref Button2 anchorFrom)
@@ -46,6 +47,7 @@ struct avdl_ui_element {
 	// ui positional functions
 	void (*SetSize)(struct avdl_ui_element *, float, float);
 	void (*SetPosition)(struct avdl_ui_element *, float, float);
+	void (*SetPositionZ)(struct avdl_ui_element *, float);
 	void (*SetAnchor)(struct avdl_ui_element *, float, float);
 
 	void (*create)(struct avdl_ui_element *);
@@ -65,12 +67,14 @@ struct avdl_ui_element {
 
 	float (*GetPositionX)(struct avdl_ui_element *);
 	float (*GetPositionY)(struct avdl_ui_element *);
+	float (*GetPositionZ)(struct avdl_ui_element *);
 
 };
 
 // ui positional functions
 void avdl_ui_element_SetSize(struct avdl_ui_element *, float, float);
 void avdl_ui_element_SetPosition(struct avdl_ui_element *, float, float);
+void avdl_ui_element_SetPositionZ(struct avdl_ui_element *, float);
 void avdl_ui_element_SetAnchor(struct avdl_ui_element *, float, float);
 
 void avdl_ui_element_create(struct avdl_ui_element *);
@@ -91,6 +95,7 @@ int avdl_ui_element_IsClicked(struct avdl_ui_element *);
 
 float avdl_ui_element_GetPositionX(struct avdl_ui_element *);
 float avdl_ui_element_GetPositionY(struct avdl_ui_element *);
+float avdl_ui_element_GetPositionZ(struct avdl_ui_element *);
 
 #ifdef __cplusplus
 }
