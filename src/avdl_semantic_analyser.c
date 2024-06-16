@@ -312,7 +312,16 @@ static struct ast_node *expect_command_functionDefinition(struct avdl_lexer *l) 
 	ast_setValuei(function, 0);
 	ast_setLex(function, "function");
 
-	struct ast_node *returnType = expect_identifier(l);
+	struct ast_node *potentialRef = expect_identifier(l);
+	struct ast_node *returnType;
+	if (strcmp(ast_getLex(potentialRef), "ref") == 0) {
+		function->isRef = 1;
+		returnType = expect_identifier(l);
+	}
+	else {
+		returnType = potentialRef;
+	}
+
 	struct ast_node *functionName = expect_identifier(l);
 	struct ast_node *args = expect_command(l);
 
@@ -424,9 +433,12 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 					child->value = 1;
 				}
 			}
+			if (child->isRef) {
+				//avdl_log("is ref: %s %d", ast_getLex(child), child->isRef);
+			}
 
 			// add function to struct table
-			struct_table_push_member(ast_getLex(name), DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+			struct_table_push_member(ast_getLex(name), DD_VARIABLE_TYPE_FUNCTION, 0, child->isRef);
 		}
 	}
 	symtable_pop();
