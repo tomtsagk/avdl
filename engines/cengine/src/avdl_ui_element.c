@@ -67,6 +67,7 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 void avdl_ui_element_SetSize(struct avdl_ui_element *o, float width, float height) {
 	o->sizeW = width;
 	o->sizeH = height;
+	avdl_ui_element_resize(o);
 }
 
 void avdl_ui_element_SetPosition(struct avdl_ui_element *o, float x, float y) {
