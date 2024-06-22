@@ -325,12 +325,22 @@ static void print_command_classFunction(FILE *fd, struct ast_node *n) {
 	int structIndex = struct_table_get_index(classname->lex);
 
 	// print function signature and args
-	fprintf(fd, "%s %s_%s(struct %s *this",
-		dd_variable_type_getString(dd_variable_type_convert(functype->lex)),
-		classname->lex,
-		funcname->lex,
-		classname->lex
-	);
+	if (dd_variable_type_convert(functype->lex) == DD_VARIABLE_TYPE_STRUCT) {
+		fprintf(fd, "struct %s *%s_%s(struct %s *this",
+			functype->lex,
+			classname->lex,
+			funcname->lex,
+			classname->lex
+		);
+	}
+	else {
+		fprintf(fd, "%s %s_%s(struct %s *this",
+			dd_variable_type_getString(dd_variable_type_convert(functype->lex)),
+			classname->lex,
+			funcname->lex,
+			classname->lex
+		);
+	}
 	print_command_functionArguments(fd, funcargs, 1);
 	fprintf(fd, ") {\n");
 
@@ -525,11 +535,19 @@ static void print_command_definitionClassFunction(FILE *fd, struct ast_node *n, 
 	struct ast_node *name = avdl_da_get(&n->children, 1);
 	struct ast_node *args = avdl_da_get(&n->children, 2);
 	int hasArgs = 0;
-	fprintf(fd, "%s (*%s)(",
-		//type->lex,
-		dd_variable_type_getString(dd_variable_type_convert(type->lex)),
-		name->lex
-	);
+	enum dd_variable_type returnType = dd_variable_type_convert(type->lex);
+	if (returnType == DD_VARIABLE_TYPE_STRUCT) {
+		fprintf(fd, "struct %s *(*%s)(",
+			type->lex,
+			name->lex
+		);
+	}
+	else {
+		fprintf(fd, "%s (*%s)(",
+			dd_variable_type_getString(dd_variable_type_convert(type->lex)),
+			name->lex
+		);
+	}
 	if (!n->isRef) {
 		fprintf(fd, "struct %s *",
 			classname
@@ -626,12 +644,22 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 		struct ast_node *funcname = avdl_da_get(&child->children, 1);
 
 		// print the function signature
-		fprintf(fd, "%s %s_%s(struct %s *this",
-			dd_variable_type_getString(dd_variable_type_convert(functype->lex)),
-			classname->lex,
-			funcname->lex,
-			classname->lex
-		);
+		if (dd_variable_type_convert(functype->lex) == DD_VARIABLE_TYPE_STRUCT) {
+			fprintf(fd, "struct %s *%s_%s(struct %s *this",
+				functype->lex,
+				classname->lex,
+				funcname->lex,
+				classname->lex
+			);
+		}
+		else {
+			fprintf(fd, "%s %s_%s(struct %s *this",
+				dd_variable_type_getString(dd_variable_type_convert(functype->lex)),
+				classname->lex,
+				funcname->lex,
+				classname->lex
+			);
+		}
 		struct ast_node *args = avdl_da_get(&child->children, 2);
 		print_command_functionArguments(fd, args, 1);
 		fprintf(fd, ");\n");
