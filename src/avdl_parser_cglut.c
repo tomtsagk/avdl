@@ -11,6 +11,7 @@
 #include "avdl_log.h"
 
 static void print_command_definition(FILE *fd, struct ast_node *n);
+static void print_command_definitionInClass(FILE *fd, struct ast_node *n);
 static void print_command_definitionClassFunction(FILE *fd, struct ast_node *n, const char *classname);
 static void print_command_functionArguments(FILE *fd, struct ast_node *n, int beginWithSemicolon);
 static void print_command_class(FILE *fd, struct ast_node *n);
@@ -595,6 +596,32 @@ static void print_command_definition(FILE *fd, struct ast_node *n) {
 		print_node(fd, initValue);
 	}
 	fprintf(fd, ";\n");
+
+	// initialise local variable
+	if (!dd_variable_type_isPrimitiveType(type->lex)) {
+		fprintf(fd, "%s_create(%s", type->lex, n->isRef ? "" : "&");
+		print_identifier(fd, defname, 0);
+		fprintf(fd, ");\n");
+	}
+}
+
+static void print_command_definitionInClass(FILE *fd, struct ast_node *n) {
+	struct ast_node *type = avdl_da_get(&n->children, 0);
+	struct ast_node *defname = avdl_da_get(&n->children, 1);
+
+	if (!dd_variable_type_isPrimitiveType(type->lex)) {
+		fprintf(fd, "struct ");
+		fprintf(fd, "%s ", type->lex);
+	}
+	else {
+		fprintf(fd, "%s ", dd_variable_type_getString(dd_variable_type_convert(type->lex)));
+	}
+	if (n->isRef) {
+		fprintf(fd, "*");
+	}
+	print_identifier(fd, defname, 0);
+
+	fprintf(fd, ";\n");
 }
 
 static void print_command_class(FILE *fd, struct ast_node *n) {
@@ -615,7 +642,7 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 
 		// definition of variable
 		if (strcmp(child->lex, "def") == 0) {
-			print_command_definition(fd, child);
+			print_command_definitionInClass(fd, child);
 		}
 		// definition of function
 		else {
