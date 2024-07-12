@@ -187,6 +187,8 @@ void struct_table_init() {
 	struct_table_push_member("SetOnClick", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("IsSelected", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("IsClicked", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("IsVisible", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetVisible", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetPositionX", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetPositionY", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetPositionZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

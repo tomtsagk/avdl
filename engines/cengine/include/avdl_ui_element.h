@@ -34,7 +34,7 @@ struct avdl_ui_element {
 	float z;
 
 	//int isDisabled;
-	//int isVisible;
+	int isVisible;
 
 	int isSelected;
 	int isSelectedClicked;
@@ -69,6 +69,9 @@ struct avdl_ui_element {
 	float (*GetPositionY)(struct avdl_ui_element *);
 	float (*GetPositionZ)(struct avdl_ui_element *);
 
+	int (*IsVisible)(struct avdl_ui_element *);
+	void (*SetVisible)(struct avdl_ui_element *, int value);
+
 };
 
 // ui positional functions
@@ -96,6 +99,9 @@ int avdl_ui_element_IsClicked(struct avdl_ui_element *);
 float avdl_ui_element_GetPositionX(struct avdl_ui_element *);
 float avdl_ui_element_GetPositionY(struct avdl_ui_element *);
 float avdl_ui_element_GetPositionZ(struct avdl_ui_element *);
+
+int avdl_ui_element_IsVisible(struct avdl_ui_element *);
+void avdl_ui_element_SetVisible(struct avdl_ui_element *, int value);
 
 #ifdef __cplusplus
 }

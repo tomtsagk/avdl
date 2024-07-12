@@ -33,6 +33,9 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 	o->GetPositionY = avdl_ui_element_GetPositionY;
 	o->GetPositionZ = avdl_ui_element_GetPositionZ;
 
+	o->IsVisible = avdl_ui_element_IsVisible;
+	o->SetVisible = avdl_ui_element_SetVisible;
+
 	// screen anchors
 	o->anchorX = 0.5;
 	o->anchorY = 0.5;
@@ -54,7 +57,7 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 	o->y = 0;
 
 	//int isDisabled;
-	//int isVisible;
+	o->isVisible = 1;
 
 	o->isSelected = 0;
 	o->isSelectedClicked = 0;
@@ -82,10 +85,10 @@ void avdl_ui_element_SetPositionZ(struct avdl_ui_element *o, float z) {
 }
 
 void avdl_ui_element_update(struct avdl_ui_element *o, float dt) {
-//	(if (== this.isVisible 0)
-//		(return)
-//	)
-//
+	if (o->isVisible == 0) {
+		return;
+	}
+
 	if (o->hasMouseCollided(o)) {
 		o->isSelected = 1;
 	}
@@ -100,11 +103,9 @@ void avdl_ui_element_applyTransform(struct avdl_ui_element *o) {
 
 void avdl_ui_element_drawDebug(struct avdl_ui_element *o) {
 
-	/*
-	if (== o->isVisible 0) {
+	if (o->isVisible == 0) {
 		return;
 	}
-	*/
 
 	// debug
 	dd_pushMatrix();
@@ -126,11 +127,9 @@ void avdl_ui_element_clean(struct avdl_ui_element *o) {
 
 int avdl_ui_element_hasMouseCollided(struct avdl_ui_element *o) {
 
-	/*
-	(if (|| (== this.isVisible 0) this.isDisabled)
-		(return 0)
-	)
-	*/
+	if (o->isVisible == 0) {
+		return 0;
+	}
 
 	// get mouse's proportioned position
 	float screenProportionX;
@@ -219,4 +218,12 @@ float avdl_ui_element_GetPositionY(struct avdl_ui_element *o) {
 
 float avdl_ui_element_GetPositionZ(struct avdl_ui_element *o) {
 	return o->offsetZ;
+}
+
+int avdl_ui_element_IsVisible(struct avdl_ui_element *o) {
+	return o->isVisible;
+}
+
+void avdl_ui_element_SetVisible(struct avdl_ui_element *o, int value) {
+	o->isVisible = value;
 }
