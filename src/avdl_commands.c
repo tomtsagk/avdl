@@ -3,15 +3,7 @@
 #include <stdio.h>
 
 #include "avdl_commands.h"
-
-// keywords for primitive data
-const char *primitive_keywords[] = {
-	"int",
-	"float",
-	"char",
-	"string",
-};
-unsigned int primitive_keywords_count = sizeof(primitive_keywords) /sizeof(char *);
+#include "avdl_variable_type.h"
 
 // native keywords
 const char *keywords[] = {
@@ -57,5 +49,7 @@ int agc_commands_isNative(const char *cmdname) {
 			return 1;
 		}
 	}
-	return 0;
+
+	// primitive types are all commands
+	return dd_variable_type_isPrimitiveType(cmdname);
 }

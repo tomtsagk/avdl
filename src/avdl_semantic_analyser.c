@@ -19,6 +19,7 @@ extern struct AvdlSettings *avdl_settings_ptr;
 extern const char *avdl_project_path;
 
 static struct ast_node *expect_command_definition(struct avdl_lexer *l);
+static struct ast_node *expect_command_definitionShort(struct avdl_lexer *l, struct ast_node *n);
 static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l);
 static struct ast_node *expect_command_group(struct avdl_lexer *l);
 static struct ast_node *expect_command_functionDefinition(struct avdl_lexer *l);
@@ -525,6 +526,45 @@ static struct ast_node *expect_command_definition(struct avdl_lexer *l) {
 	return definition;
 }
 
+static struct ast_node *expect_command_definitionShort(struct avdl_lexer *l, struct ast_node *n) {
+
+	struct ast_node *definition = ast_create(AST_COMMAND_NATIVE);
+	ast_setValuei(definition, 0);
+	ast_setLex(definition, "def");
+	definition->isExtern = 0;
+
+	// get type
+	struct ast_node *type = n;
+
+	// check if primitive or struct
+	if (!dd_variable_type_isPrimitiveType(ast_getLex(type))
+	&&  !struct_table_exists(ast_getLex(type))) {
+		semantic_error(l, "unrecognized type '%s'", ast_getLex(type));
+	}
+
+	// get variable name
+	struct ast_node *varname = expect_identifier(l);
+
+	// add newly defined variable to symbol table
+	struct entry *e = symtable_entryat(symtable_insert(ast_getLex(varname), dd_variable_type_convert(ast_getLex(type))));
+	e->value = 0;
+	if (struct_table_exists(ast_getLex(type))) {
+		e->value = struct_table_get_index(ast_getLex(type));
+	}
+	e->isRef = 0;
+	definition->isRef = 0;
+
+	ast_addChild(definition, type);
+	ast_addChild(definition, varname);
+
+	if (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
+		struct ast_node *initialValue = expect_command_arg(l);
+		ast_addChild(definition, initialValue);
+	}
+
+	return definition;
+}
+
 static struct ast_node *expect_int(struct avdl_lexer *l) {
 
 	// confirm it's an integer
@@ -773,6 +813,10 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		// based on the command, expect different data
 		if (strcmp(ast_getLex(cmdname), "def") == 0) {
 			cmd = expect_command_definition(l);
+		}
+		else
+		if (dd_variable_type_isPrimitiveType(ast_getLex(cmdname))) {
+			cmd = expect_command_definitionShort(l, cmdname);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "class") == 0) {
