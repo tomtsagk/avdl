@@ -28,6 +28,8 @@ syntax match avdlKeywords '>'
 syntax match avdlKeywords "this"
 syntax match avdlKeywords '('
 syntax match avdlKeywords ')'
+syntax match avdlKeywords '{'
+syntax match avdlKeywords '}'
 syntax match avdlKeywords '\.'
 syntax match avdlKeywords '\['
 syntax match avdlKeywords ']'

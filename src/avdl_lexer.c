@@ -134,6 +134,17 @@ int avdl_lexer_getNextToken(struct avdl_lexer *o) {
 		returnToken = LEXER_TOKEN_COMMANDEND;
 	}
 	else
+	// start of group bracket command
+	if (buffer[0] == '{') {
+		returnToken =  LEXER_TOKEN_COMMANDSTART_BRACKET;
+	}
+	else
+	// end of group bracket command
+	if (buffer[0] == '}') {
+		//printf("command end: %s\n", buffer);
+		returnToken = LEXER_TOKEN_COMMANDEND_BRACKET;
+	}
+	else
 	// string
 	if (buffer[0] == '\"') {
 		fscanf(o->files[o->currentFile].f, "%499[^\"]", buffer);

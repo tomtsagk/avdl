@@ -48,6 +48,10 @@ enum lexer_tokens {
 	LEXER_TOKEN_IDENTIFIER,
 	LEXER_TOKEN_INT,
 	LEXER_TOKEN_FLOAT,
+
+	// luxury tokens
+	LEXER_TOKEN_COMMANDSTART_BRACKET,
+	LEXER_TOKEN_COMMANDEND_BRACKET,
 };
 
 struct avdl_lexer {

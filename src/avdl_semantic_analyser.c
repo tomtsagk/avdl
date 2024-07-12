@@ -339,7 +339,8 @@ static struct ast_node *expect_command_group(struct avdl_lexer *l) {
 	ast_setValuei(group, 0);
 	ast_setLex(group, "group");
 
-	while (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
+	while (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND
+	&&     avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND_BRACKET) {
 		ast_addChild(group, expect_command_arg(l));
 	}
 
@@ -783,7 +784,9 @@ static struct ast_node *expect_command_arg(struct avdl_lexer *l) {
 static struct ast_node *expect_command(struct avdl_lexer *l) {
 
 	// confirm that a command is expected
-	if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_COMMANDSTART) {
+	int commandStartToken = avdl_lexer_getNextToken(l);
+	if (commandStartToken != LEXER_TOKEN_COMMANDSTART
+	&&  commandStartToken != LEXER_TOKEN_COMMANDSTART_BRACKET) {
 		semantic_error(l, "expected the start of a command '(', instead of '%s'", avdl_lexer_getLexToken(l));
 	}
 
@@ -793,6 +796,13 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 
 	// empty command is equivalent to `(group)`
 	if (avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDEND) {
+		cmdname = ast_create(AST_IDENTIFIER);
+		ast_setValuei(cmdname, 0);
+		ast_setLex(cmdname, "group");
+	}
+	else
+	// group bracket command
+	if (commandStartToken == LEXER_TOKEN_COMMANDSTART_BRACKET) {
 		cmdname = ast_create(AST_IDENTIFIER);
 		ast_setValuei(cmdname, 0);
 		ast_setLex(cmdname, "group");
@@ -921,8 +931,17 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 	}
 
 	// get the command's children
-	if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_COMMANDEND) {
-		semantic_error(l, "expected command end ')'");
+	int commandEndToken = avdl_lexer_getNextToken(l);
+	if (commandStartToken == LEXER_TOKEN_COMMANDSTART) {
+		if (commandEndToken != LEXER_TOKEN_COMMANDEND) {
+			semantic_error(l, "expected command end ')'");
+		}
+	}
+	else
+	if (commandStartToken == LEXER_TOKEN_COMMANDSTART_BRACKET) {
+		if (commandEndToken != LEXER_TOKEN_COMMANDEND_BRACKET) {
+			semantic_error(l, "expected command end '}'");
+		}
 	}
 
 	return cmd;
