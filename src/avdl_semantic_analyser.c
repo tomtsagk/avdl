@@ -765,7 +765,8 @@ static struct ast_node *expect_command_arg(struct avdl_lexer *l) {
 		return expect_string(l);
 	}
 	else
-	if (token == LEXER_TOKEN_COMMANDSTART) {
+	if (token == LEXER_TOKEN_COMMANDSTART
+	||  token == LEXER_TOKEN_COMMANDSTART_BRACKET) {
 		return expect_command(l);
 	}
 	else
@@ -840,7 +841,8 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		if (strcmp(ast_getLex(cmdname), "function") == 0) {
 			cmd = expect_command_functionDefinition(l);
 
-			if (avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDSTART) {
+			if (avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDSTART
+			||  avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDSTART_BRACKET) {
 				// function statements
 				ast_addChild(cmd, expect_command(l));
 			}
@@ -956,7 +958,8 @@ int semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) {
 	avdl_lexer_create(&l, filename);
 
 	struct ast_node *cmd;
-	while (avdl_lexer_peek(&l) == LEXER_TOKEN_COMMANDSTART) {
+	while (avdl_lexer_peek(&l) == LEXER_TOKEN_COMMANDSTART
+	||     avdl_lexer_peek(&l) == LEXER_TOKEN_COMMANDEND_BRACKET) {
 		cmd = expect_command(&l);
 
 		if (cmd->node_type == AST_INCLUDE) {

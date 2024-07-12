@@ -598,7 +598,7 @@ static void print_command_definition(FILE *fd, struct ast_node *n) {
 	fprintf(fd, ";\n");
 
 	// initialise local variable
-	if (!dd_variable_type_isPrimitiveType(type->lex)) {
+	if (!dd_variable_type_isPrimitiveType(type->lex) && !n->isExtern && !n->isRef) {
 		fprintf(fd, "%s_create(%s", type->lex, n->isRef ? "" : "&");
 		print_identifier(fd, defname, 0);
 		fprintf(fd, ");\n");
