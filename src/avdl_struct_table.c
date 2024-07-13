@@ -213,6 +213,7 @@ int struct_table_push(const char *structname, const char *parentname) {
 	newStruct->name[DD_STRUCT_TABLE_NAME_SIZE-1] = '\0';
 	newStruct->member_total = 0;
 	newStruct->parent = -1;
+	newStruct->isStruct = 0;
 
 	// if a parent name was given, check if it exists, and assign as parent of the new struct
 	if (parentname) {
@@ -501,4 +502,12 @@ int struct_table_exists(const char *structname) {
 	}
 
 	return 0;
+}
+
+void struct_table_SetStruct(int structIndex) {
+	struct_table[structIndex].isStruct = 1;
+}
+
+int struct_table_IsStruct(int structIndex) {
+	return struct_table[structIndex].isStruct;
 }

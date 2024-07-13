@@ -9,7 +9,7 @@ endif
 
 " keywords
 syntax keyword avdlKeywords if echo def group savefile
-	\ class class_function function return
+	\ struct class class_function function return
 	\ for asset extern multistring include
 
 syntax match avdlKeywords '='

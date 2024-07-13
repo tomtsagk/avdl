@@ -23,6 +23,7 @@ struct struct_table_entry {
 	struct struct_table_entry_member members[DD_STRUCT_TABLE_MEMBER_TOTAL];
 	int member_total;
 	int parent;
+	int isStruct;
 };
 
 // struct table
@@ -39,6 +40,10 @@ int struct_table_push(const char *structname, const char *parentname);
 void struct_table_pop();
 struct struct_table_entry_member *struct_table_push_member(const char *name, enum dd_variable_type type, const char *nametype, int isRef);
 void struct_table_push_member_array(const char *name, enum dd_variable_type type, const char *nametype, int arrayCount, int isRef);
+
+// struct getter/setter
+void struct_table_SetStruct(int structIndex);
+int struct_table_IsStruct(int structIndex);
 
 // print all structs and their members -- this is meant for debug only
 void struct_table_print();

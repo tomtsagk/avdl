@@ -20,6 +20,7 @@ extern const char *avdl_project_path;
 
 static struct ast_node *expect_command_definition(struct avdl_lexer *l);
 static struct ast_node *expect_command_definitionShort(struct avdl_lexer *l, struct ast_node *n);
+static struct ast_node *expect_command_struct(struct avdl_lexer *l);
 static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l);
 static struct ast_node *expect_command_group(struct avdl_lexer *l);
 static struct ast_node *expect_command_functionDefinition(struct avdl_lexer *l);
@@ -459,6 +460,81 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 	return classDefinition;
 }
 
+static struct ast_node *expect_command_struct(struct avdl_lexer *l) {
+
+	struct ast_node *classname = expect_identifier(l);
+	symtable_insert(ast_getLex(classname), DD_VARIABLE_TYPE_VOID);
+
+	// subclass can be an identifier (name of the class) or `0` (no parent class)
+	struct ast_node *subclassname;
+	if (avdl_lexer_peek(l) == LEXER_TOKEN_IDENTIFIER) {
+		subclassname = expect_identifier(l);
+	}
+	// no subclass for this class
+	else {
+		struct ast_node *n = expect_int(l);
+		if (n->value != 0) {
+			semantic_error(l, "subclass can either be an identifier or '0'");
+		}
+		subclassname = ast_create(AST_EMPTY);
+		ast_setValuei(subclassname, 0);
+	}
+
+	symtable_push();
+
+	// add new struct to the struct table
+	int structIndex;
+	structIndex = struct_table_push(ast_getLex(classname), 0);
+	struct_table_SetStruct(structIndex);
+
+	struct ast_node *definitions = expect_command(l);
+
+	for (int i = 0; i < definitions->children.elements; i++) {
+		struct ast_node *child = avdl_da_get(&definitions->children, i);
+		struct ast_node *type = avdl_da_get(&child->children, 0);
+		struct ast_node *name = avdl_da_get(&child->children, 1);
+
+		// new variable
+		if (strcmp(ast_getLex(child), "def") == 0) {
+
+			struct entry *e = symtable_entryat(symtable_lookup(ast_getLex(name)));
+
+			struct ast_node *arrayNode = getIdentifierArrayNode(name);
+			//printf("variable: %s %s\n", ast_getLex(type), ast_getLex(name));
+			if (arrayNode) {
+
+				if (arrayNode->children.elements == 0) {
+					semantic_error(l, "array definition should have a value");
+				}
+
+				struct ast_node *arrayNum = avdl_da_get(&arrayNode->children, 0);
+
+				if (arrayNum->node_type != AST_NUMBER) {
+					semantic_error(l, "array definition should only be a number");
+				}
+				struct_table_push_member_array(ast_getLex(name), dd_variable_type_convert(ast_getLex(type)), ast_getLex(type), arrayNum->value, e->isRef);
+			}
+			else {
+				struct_table_push_member(ast_getLex(name), dd_variable_type_convert(ast_getLex(type)), ast_getLex(type), e->isRef);
+			}
+		}
+	}
+	symtable_pop();
+
+	/* scan definitions
+	 * if a function was defined in any of the subclasses, mark is
+	 * 	as an override
+	 */
+
+	struct ast_node *classDefinition = ast_create(AST_COMMAND_NATIVE);
+	ast_setValuei(classDefinition, 0);
+	ast_setLex(classDefinition, "struct");
+	ast_addChild(classDefinition, classname);
+	ast_addChild(classDefinition, subclassname);
+	ast_addChild(classDefinition, definitions);
+	return classDefinition;
+}
+
 static struct ast_node *expect_command_definition(struct avdl_lexer *l) {
 
 	struct ast_node *definition = ast_create(AST_COMMAND_NATIVE);
@@ -510,8 +586,10 @@ static struct ast_node *expect_command_definition(struct avdl_lexer *l) {
 	// add newly defined variable to symbol table
 	struct entry *e = symtable_entryat(symtable_insert(ast_getLex(varname), dd_variable_type_convert(ast_getLex(type))));
 	e->value = 0;
+	definition->isStruct = 0;
 	if (struct_table_exists(ast_getLex(type))) {
 		e->value = struct_table_get_index(ast_getLex(type));
+		definition->isStruct = struct_table_IsStruct(struct_table_get_index(ast_getLex(type)));;
 	}
 	e->isRef = isRef;
 	definition->isRef = isRef;
@@ -828,6 +906,10 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		else
 		if (dd_variable_type_isPrimitiveType(ast_getLex(cmdname))) {
 			cmd = expect_command_definitionShort(l, cmdname);
+		}
+		else
+		if (strcmp(ast_getLex(cmdname), "struct") == 0) {
+			cmd = expect_command_struct(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "class") == 0) {

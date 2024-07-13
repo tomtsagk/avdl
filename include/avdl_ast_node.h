@@ -57,6 +57,7 @@ struct ast_node {
 	int isRef;
 	int isExtern;
 	int isIncluded;
+	int isStruct;
 
 	// node may have a parent, and any number of children
 	struct avdl_dynamic_array children;

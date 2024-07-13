@@ -14,6 +14,7 @@ static void print_command_definition(FILE *fd, struct ast_node *n);
 static void print_command_definitionInClass(FILE *fd, struct ast_node *n);
 static void print_command_definitionClassFunction(FILE *fd, struct ast_node *n, const char *classname);
 static void print_command_functionArguments(FILE *fd, struct ast_node *n, int beginWithSemicolon);
+static void print_command_struct(FILE *fd, struct ast_node *n);
 static void print_command_class(FILE *fd, struct ast_node *n);
 static void print_command_native(FILE *fd, struct ast_node *n);
 static void print_command_classFunction(FILE *fd, struct ast_node *n);
@@ -598,7 +599,7 @@ static void print_command_definition(FILE *fd, struct ast_node *n) {
 	fprintf(fd, ";\n");
 
 	// initialise local variable
-	if (!dd_variable_type_isPrimitiveType(type->lex) && !n->isExtern && !n->isRef) {
+	if (!dd_variable_type_isPrimitiveType(type->lex) && !n->isExtern && !n->isRef && !n->isStruct) {
 		fprintf(fd, "%s_create(%s", type->lex, n->isRef ? "" : "&");
 		print_identifier(fd, defname, 0);
 		fprintf(fd, ");\n");
@@ -694,7 +695,37 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 
 } // print class definition
 
+static void print_command_struct(FILE *fd, struct ast_node *n) {
+	struct ast_node *classname = avdl_da_get(&n->children, 0);
+	struct ast_node *subclassname = avdl_da_get(&n->children, 1);
+	struct ast_node *definitions = avdl_da_get(&n->children, 2);
+
+	fprintf(fd, "struct %s {\n", classname->lex);
+
+	// subclass
+	if (subclassname->node_type == AST_IDENTIFIER) {
+		fprintf(fd, "struct %s parent;\n", subclassname->lex);
+	}
+
+	// definitions in struct
+	for (unsigned int i = 0; i < definitions->children.elements; i++) {
+		struct ast_node *child = avdl_da_get(&definitions->children, i);
+
+		// definition of variable
+		if (strcmp(child->lex, "def") == 0) {
+			print_command_definitionInClass(fd, child);
+		}
+	}
+
+	fprintf(fd, "};\n");
+
+} // print struct definition
+
 static void print_command_native(FILE *fd, struct ast_node *n) {
+	if (strcmp(n->lex, "struct") == 0) {
+		print_command_struct(fd, n);
+	}
+	else
 	if (strcmp(n->lex, "class") == 0) {
 		print_command_class(fd, n);
 	}

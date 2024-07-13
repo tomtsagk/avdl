@@ -27,6 +27,7 @@ struct ast_node *ast_create(enum AST_NODE_TYPE node_type) {
 	new_node->arraySize = -1;
 	new_node->isRef = 0;
 	new_node->isIncluded = 0;
+	new_node->isStruct = 0;
 
 	// initialise children and parents
 	avdl_da_init(&new_node->children, sizeof(struct ast_node));

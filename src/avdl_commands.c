@@ -26,6 +26,7 @@ const char *keywords[] = {
 	">",
 
 	"group",
+	"struct",
 	"class",
 	"class_function",
 	"function",
