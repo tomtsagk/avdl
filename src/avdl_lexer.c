@@ -262,12 +262,17 @@ int avdl_lexer_getNextToken(struct avdl_lexer *o) {
 				}
 			}
 		}
-		else
+
 		// check if some symbols come with "="
 		if (buffer[0] == '='
 		||  buffer[0] == '<'
 		||  buffer[0] == '>'
-		||  buffer[0] == '!') {
+		||  buffer[0] == '!'
+		||  buffer[0] == '+'
+		||  buffer[0] == '-'
+		||  buffer[0] == '*'
+		||  buffer[0] == '/'
+		) {
 			char restId;
 			if (fscanf(o->files[o->currentFile].f, "%1[=]", &restId)) {
 				buffer[1] = restId;

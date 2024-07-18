@@ -9,6 +9,7 @@
 const char *keywords[] = {
 	"echo",
 	"log",
+	"log_error",
 	"def",
 
 	"=",
@@ -24,6 +25,10 @@ const char *keywords[] = {
 	"||",
 	"<",
 	">",
+	"+=",
+	"-=",
+	"*=",
+	"/=",
 
 	"group",
 	"struct",

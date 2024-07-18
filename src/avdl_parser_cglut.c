@@ -22,6 +22,7 @@ static void print_command_function(FILE *fd, struct ast_node *n);
 static void print_command_custom(FILE *fd, struct ast_node *n);
 static void print_command_echo(FILE *fd, struct ast_node *n);
 static void print_command_log(FILE *fd, struct ast_node *n);
+static void print_command_logError(FILE *fd, struct ast_node *n);
 static void print_command_if(FILE *fd, struct ast_node *n);
 static void print_command_for(FILE *fd, struct ast_node *n);
 static void print_command_multistring(FILE *fd, struct ast_node *n);
@@ -218,7 +219,21 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 
 static void print_command_log(FILE *fd, struct ast_node *n) {
 
-	fprintf(fd, "dd_log(");
+	fprintf(fd, "avdl_log(");
+	for (int i = 0; i < n->children.elements; i++) {
+
+		if (i > 0) {
+			fprintf(fd, ", ");
+		}
+		struct ast_node *child = avdl_da_get(&n->children, i);
+		print_node(fd, child);
+	}
+	fprintf(fd, ");\n");
+}
+
+static void print_command_logError(FILE *fd, struct ast_node *n) {
+
+	fprintf(fd, "avdl_logError(");
 	for (int i = 0; i < n->children.elements; i++) {
 
 		if (i > 0) {
@@ -760,7 +775,12 @@ static void print_command_native(FILE *fd, struct ast_node *n) {
 	||  strcmp(n->lex, ">=") == 0
 	||  strcmp(n->lex, "<=") == 0
 	||  strcmp(n->lex, ">") == 0
-	||  strcmp(n->lex, "<") == 0) {
+	||  strcmp(n->lex, "<") == 0
+	||  strcmp(n->lex, "+=") == 0
+	||  strcmp(n->lex, "-=") == 0
+	||  strcmp(n->lex, "*=") == 0
+	||  strcmp(n->lex, "/=") == 0
+	) {
 		print_binaryOperation(fd, n);
 	}
 	else
@@ -770,6 +790,10 @@ static void print_command_native(FILE *fd, struct ast_node *n) {
 	else
 	if (strcmp(n->lex, "log") == 0) {
 		print_command_log(fd, n);
+	}
+	else
+	if (strcmp(n->lex, "log_error") == 0) {
+		print_command_logError(fd, n);
 	}
 	else
 	if (strcmp(n->lex, "if") == 0) {

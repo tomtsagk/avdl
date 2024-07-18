@@ -947,7 +947,12 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		||  strcmp(ast_getLex(cmdname), ">=") == 0
 		||  strcmp(ast_getLex(cmdname), "<=") == 0
 		||  strcmp(ast_getLex(cmdname), ">") == 0
-		||  strcmp(ast_getLex(cmdname), "<") == 0) {
+		||  strcmp(ast_getLex(cmdname), "<") == 0
+		||  strcmp(ast_getLex(cmdname), "+=") == 0
+		||  strcmp(ast_getLex(cmdname), "-=") == 0
+		||  strcmp(ast_getLex(cmdname), "*=") == 0
+		||  strcmp(ast_getLex(cmdname), "/=") == 0
+		) {
 			cmd = expect_command_binaryOperation(l, ast_getLex(cmdname));
 		}
 		else
@@ -959,6 +964,11 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		if (strcmp(ast_getLex(cmdname), "log") == 0) {
 			cmd = expect_command_group(l);
 			ast_setLex(cmd, "log");
+		}
+		else
+		if (strcmp(ast_getLex(cmdname), "log_error") == 0) {
+			cmd = expect_command_group(l);
+			ast_setLex(cmd, "log_error");
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "if") == 0) {
