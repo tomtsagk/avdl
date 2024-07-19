@@ -25,6 +25,8 @@ static void print_command_log(FILE *fd, struct ast_node *n);
 static void print_command_logError(FILE *fd, struct ast_node *n);
 static void print_command_if(FILE *fd, struct ast_node *n);
 static void print_command_for(FILE *fd, struct ast_node *n);
+static void print_command_break(FILE *fd, struct ast_node *n);
+static void print_command_continue(FILE *fd, struct ast_node *n);
 static void print_command_multistring(FILE *fd, struct ast_node *n);
 static void print_command_unicode(FILE *fd, struct ast_node *n);
 static void print_command_return(FILE *fd, struct ast_node *n);
@@ -119,6 +121,14 @@ static void print_command_for(FILE *fd, struct ast_node *n) {
 	fprintf(fd, ") {\n");
 	print_command_groupStatements(fd, statements);
 	fprintf(fd, "}");
+}
+
+static void print_command_break(FILE *fd, struct ast_node *n) {
+	fprintf(fd, "break");
+}
+
+static void print_command_continue(FILE *fd, struct ast_node *n) {
+	fprintf(fd, "continue");
 }
 
 static void print_command_if(FILE *fd, struct ast_node *n) {
@@ -814,6 +824,14 @@ static void print_command_native(FILE *fd, struct ast_node *n) {
 	else
 	if (strcmp(n->lex, "return") == 0) {
 		print_command_return(fd, n);
+	}
+	else
+	if (strcmp(n->lex, "break") == 0) {
+		print_command_break(fd, n);
+	}
+	else
+	if (strcmp(n->lex, "continue") == 0) {
+		print_command_continue(fd, n);
 	}
 	else {
 		printf("unable to parse command '%s': no parsing rule\n", n->lex);

@@ -36,6 +36,8 @@ static struct ast_node *expect_command_if(struct avdl_lexer *l);
 static struct ast_node *expect_command_include(struct avdl_lexer *l);
 static struct ast_node *expect_command_asset(struct avdl_lexer *l);
 static struct ast_node *expect_command_for(struct avdl_lexer *l);
+static struct ast_node *expect_command_break(struct avdl_lexer *l);
+static struct ast_node *expect_command_continue(struct avdl_lexer *l);
 static struct ast_node *expect_command_multistring(struct avdl_lexer *l);
 static struct ast_node *expect_command_unicode(struct avdl_lexer *l);
 static struct ast_node *expect_command_return(struct avdl_lexer *l);
@@ -97,6 +99,20 @@ static struct ast_node *expect_command_for(struct avdl_lexer *l) {
 	ast_addChild(forcmd, statements);
 
 	return forcmd;
+}
+
+static struct ast_node *expect_command_break(struct avdl_lexer *l) {
+	struct ast_node *returncmd = ast_create(AST_COMMAND_NATIVE);
+	ast_setValuei(returncmd, 0);
+	ast_setLex(returncmd, "break");
+	return returncmd;
+}
+
+static struct ast_node *expect_command_continue(struct avdl_lexer *l) {
+	struct ast_node *returncmd = ast_create(AST_COMMAND_NATIVE);
+	ast_setValuei(returncmd, 0);
+	ast_setLex(returncmd, "continue");
+	return returncmd;
 }
 
 extern char *installLocation;
@@ -989,6 +1005,14 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		else
 		if (strcmp(ast_getLex(cmdname), "for") == 0) {
 			cmd = expect_command_for(l);
+		}
+		else
+		if (strcmp(ast_getLex(cmdname), "break") == 0) {
+			cmd = expect_command_break(l);
+		}
+		else
+		if (strcmp(ast_getLex(cmdname), "continue") == 0) {
+			cmd = expect_command_continue(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "multistring") == 0) {

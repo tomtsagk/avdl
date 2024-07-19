@@ -39,6 +39,8 @@ const char *keywords[] = {
 
 	"if",
 	"for",
+	"break",
+	"continue",
 	"asset",
 	"savefile",
 
