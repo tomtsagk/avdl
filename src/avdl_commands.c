@@ -48,6 +48,8 @@ const char *keywords[] = {
 	"multistring",
 	"unicode",
 	"include",
+
+	"enum",
 };
 unsigned int keywords_total = sizeof(keywords) /sizeof(char *);
 

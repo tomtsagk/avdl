@@ -14,6 +14,7 @@ static void print_command_definition(FILE *fd, struct ast_node *n);
 static void print_command_definitionInClass(FILE *fd, struct ast_node *n);
 static void print_command_definitionClassFunction(FILE *fd, struct ast_node *n, const char *classname);
 static void print_command_functionArguments(FILE *fd, struct ast_node *n, int beginWithSemicolon);
+static void print_command_enum(FILE *fd, struct ast_node *n);
 static void print_command_struct(FILE *fd, struct ast_node *n);
 static void print_command_class(FILE *fd, struct ast_node *n);
 static void print_command_native(FILE *fd, struct ast_node *n);
@@ -720,6 +721,22 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 
 } // print class definition
 
+static void print_command_enum(FILE *fd, struct ast_node *n) {
+	struct ast_node *enumname = avdl_da_get(&n->children, 0);
+
+	fprintf(fd, "enum %s {\n", enumname->lex);
+
+	int i = 1;
+	struct ast_node *enumvalue = 0;
+	while (enumvalue = avdl_da_get(&n->children, i)) {
+		fprintf(fd, "%s,\n", enumvalue->lex);
+		i++;
+	}
+
+	fprintf(fd, "};\n");
+
+} // print struct definition
+
 static void print_command_struct(FILE *fd, struct ast_node *n) {
 	struct ast_node *classname = avdl_da_get(&n->children, 0);
 	struct ast_node *subclassname = avdl_da_get(&n->children, 1);
@@ -747,6 +764,10 @@ static void print_command_struct(FILE *fd, struct ast_node *n) {
 } // print struct definition
 
 static void print_command_native(FILE *fd, struct ast_node *n) {
+	if (strcmp(n->lex, "enum") == 0) {
+		print_command_enum(fd, n);
+	}
+	else
 	if (strcmp(n->lex, "struct") == 0) {
 		print_command_struct(fd, n);
 	}

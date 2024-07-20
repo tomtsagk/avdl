@@ -20,6 +20,7 @@ extern const char *avdl_project_path;
 
 static struct ast_node *expect_command_definition(struct avdl_lexer *l);
 static struct ast_node *expect_command_definitionShort(struct avdl_lexer *l, struct ast_node *n);
+static struct ast_node *expect_command_enum(struct avdl_lexer *l);
 static struct ast_node *expect_command_struct(struct avdl_lexer *l);
 static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l);
 static struct ast_node *expect_command_group(struct avdl_lexer *l);
@@ -476,6 +477,23 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 	return classDefinition;
 }
 
+static struct ast_node *expect_command_enum(struct avdl_lexer *l) {
+
+	struct ast_node *enumname = expect_identifier(l);
+	//symtable_insert(ast_getLex(classname), DD_VARIABLE_TYPE_VOID);
+
+	struct ast_node *enumDefinition = ast_create(AST_COMMAND_NATIVE);
+	ast_setValuei(enumDefinition, 0);
+	ast_setLex(enumDefinition, "enum");
+	ast_addChild(enumDefinition, enumname);
+	while (avdl_lexer_peek(l) == LEXER_TOKEN_IDENTIFIER) {
+		struct ast_node *child = expect_identifier(l);
+		ast_addChild(enumDefinition, child);
+	}
+
+	return enumDefinition;
+}
+
 static struct ast_node *expect_command_struct(struct avdl_lexer *l) {
 
 	struct ast_node *classname = expect_identifier(l);
@@ -922,6 +940,10 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		else
 		if (dd_variable_type_isPrimitiveType(ast_getLex(cmdname))) {
 			cmd = expect_command_definitionShort(l, cmdname);
+		}
+		else
+		if (strcmp(ast_getLex(cmdname), "enum") == 0) {
+			cmd = expect_command_enum(l);
 		}
 		else
 		if (strcmp(ast_getLex(cmdname), "struct") == 0) {
