@@ -13,6 +13,8 @@ install(FILES
 	engines/cengine/src/avdl_shaders.c
 	engines/cengine/src/avdl_steam.c
 	engines/cengine/src/avdl_mesh.c
+	engines/cengine/src/avdl_skinned_mesh.c
+	engines/cengine/src/avdl_skeleton.c
 	engines/cengine/src/dd_dynamic_array.c
 	engines/cengine/src/dd_filetomesh.c
 	engines/cengine/src/dd_fov.c
@@ -68,6 +70,8 @@ install(FILES
 	engines/cengine/include/avdl_shaders.h
 	engines/cengine/include/avdl_steam.h
 	engines/cengine/include/avdl_mesh.h
+	engines/cengine/include/avdl_skinned_mesh.h
+	engines/cengine/include/avdl_skeleton.h
 	engines/cengine/include/dd_async_call.h
 	engines/cengine/include/dd_dynamic_array.h
 	engines/cengine/include/dd_filetomesh.h
@@ -104,6 +108,7 @@ install(FILES
 	engines/cengine/include/avdl_ads.h
 	engines/cengine/include/avdl_font.h
 	engines/cengine/include/avdl_ui_element.h
+	engines/cengine/include/cgltf.h
 	DESTINATION
 	include
 )

@@ -182,7 +182,7 @@ static void clean_tan(struct avdl_mesh *m) {
 	m->tan = 0;
 }
 static void clean_bitan(struct avdl_mesh *m) {
-	if (m->bitan && m->dirtyTan) {
+	if (m->bitan && m->dirtyBitan) {
 		free(m->bitan);
 		m->dirtyTan = 0;
 	}
@@ -249,6 +249,7 @@ void avdl_mesh_create(struct avdl_mesh *m) {
 	m->setSolid = avdl_mesh_setSolid;
 
 	m->vertexBuffer = 0;
+	m->LoadFromLoadedMesh = avdl_mesh_LoadFromLoadedMesh;
 }
 
 void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
@@ -316,7 +317,6 @@ void avdl_mesh_clean(struct avdl_mesh *m) {
 		m->verticesCol = 0;
 		m->dirtyColourArrayObject = 0;
 	}
-
 }
 
 extern struct dd_matrix matPerspective;
@@ -343,7 +343,6 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	avdl_graphics_direct3d11_drawMeshTexture(m, dd_matrix_globalGet());
 	*/
 	#else
-
 	if (!m->v) {
 		return;
 	}
@@ -746,4 +745,43 @@ void avdl_mesh_setWireframe(struct avdl_mesh *o) {
 
 void avdl_mesh_setSolid(struct avdl_mesh *o) {
 	o->draw_type = 0;
+}
+
+void avdl_mesh_LoadFromLoadedMesh(struct avdl_mesh *o, struct dd_loaded_mesh *lm) {
+	avdl_mesh_clean(o);
+	o->vcount = lm->vcount;
+	if (lm->v) {
+		o->v = lm->v;
+		o->dirtyVertices = 1;
+	}
+	if (lm->c) {
+		o->c = lm->c;
+		o->dirtyColours = 1;
+	}
+	if (lm->t) {
+		o->t = lm->t;
+		o->dirtyTextures = 1;
+	}
+	if (lm->n) {
+		o->n = lm->n;
+		o->dirtyNormals = 1;
+	}
+	if (lm->tan) {
+		if (o->img_normal) {
+			o->tan = lm->tan;
+			o->dirtyTan = 1;
+		}
+		else {
+			free(lm->tan);
+		}
+	}
+	if (lm->bitan) {
+		if (o->img_normal) {
+			o->bitan = lm->bitan;
+			o->dirtyBitan = 1;
+		}
+		else {
+			free(lm->bitan);
+		}
+	}
 }

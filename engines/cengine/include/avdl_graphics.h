@@ -113,6 +113,7 @@ int avdl_graphics_generateContext();
 #else
 
 #define avdl_graphics_SetUniformMatrix4f(uniform, matrix) glUniformMatrix4fv(uniform, 1, GL_FALSE, matrix)
+#define avdl_graphics_SetUniformMatrix4fMultiple(uniform, count, matrix) glUniformMatrix4fv(uniform, count, GL_FALSE, matrix)
 
 #define avdl_graphics_SetUniform1f(uniform, f1)             glUniform1f(uniform, f1)
 #define avdl_graphics_SetUniform2f(uniform, f1, f2)         glUniform2f(uniform, f1, f2)

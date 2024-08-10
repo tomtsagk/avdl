@@ -10,6 +10,7 @@
 #include "dd_matrix.h"
 #include "dd_mesh.h"
 #include "avdl_mesh.h"
+#include "avdl_skinned_mesh.h"
 #include "dd_meshColour.h"
 #include "dd_meshTexture.h"
 #include "dd_sound.h"

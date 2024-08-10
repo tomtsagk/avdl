@@ -123,6 +123,7 @@ void avdl_ui_element_drawDebug(struct avdl_ui_element *o) {
 }
 
 void avdl_ui_element_clean(struct avdl_ui_element *o) {
+	avdl_mesh_clean(&o->mesh_debug);
 }
 
 int avdl_ui_element_hasMouseCollided(struct avdl_ui_element *o) {

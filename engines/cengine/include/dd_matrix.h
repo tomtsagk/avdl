@@ -22,6 +22,7 @@ void dd_matrix_clean(struct dd_matrix *m);
 void dd_matrix_identity(struct dd_matrix *m);
 void dd_matrix_copy(struct dd_matrix *m1, struct dd_matrix *m2);
 void dd_matrix_mult(struct dd_matrix *m1, struct dd_matrix *m2);
+int dd_matrix_inverse(struct dd_matrix *m);
 
 /*
  * matrix transformations: translate, scale, rotate, approach
@@ -102,6 +103,8 @@ void dd_matrix_approach_rs(struct dd_matrix *m1, struct dd_matrix *m2, float cou
 float dd_matrix_x(struct dd_matrix *m);
 float dd_matrix_y(struct dd_matrix *m);
 float dd_matrix_z(struct dd_matrix *m);
+
+void dd_matrix_quaternion_to_rotation_matrix(struct dd_vec4 *q, struct dd_matrix *output);
 
 #ifdef __cplusplus
 }

@@ -74,6 +74,8 @@ char *cengine_files[] = {
 	"dd_matrix.c",
 	"dd_mesh.c",
 	"avdl_mesh.c",
+	"avdl_skinned_mesh.c",
+	"avdl_skeleton.c",
 	"dd_meshColour.c",
 	"dd_meshTexture.c",
 	"dd_mouse.c",
@@ -132,6 +134,8 @@ char *cengine_headers[] = {
 	"dd_matrix.h",
 	"dd_mesh.h",
 	"avdl_mesh.h",
+	"avdl_skinned_mesh.h",
+	"avdl_skeleton.h",
 	"dd_meshColour.h",
 	"dd_meshTexture.h",
 	"dd_mouse.h",
@@ -157,6 +161,7 @@ char *cengine_headers[] = {
 	"avdl_ads.h",
 	"avdl_font.h",
 	"avdl_ui_element.h",
+	"cgltf.h",
 };
 unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
 
@@ -730,6 +735,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		avdl_string_cat(&commandString, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
 		avdl_string_cat(&commandString, "0");
 		avdl_string_cat(&commandString, "\\\"\" -c -w ");
+		//avdl_string_cat(&commandString, " -g -fsanitize=leak ");
 		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 		avdl_string_cat(&commandString, " -DAVDL_WINDOWS ");
 		#elif AVDL_IS_OS(AVDL_OS_LINUX)
@@ -833,6 +839,8 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			strcpy(compile_command, "gcc -w -Wno-incompatible-pointer-types -c -DGLEW_NO_GLU ");
 		}
 		avdl_string_clean(&cEngFile);
+
+		//strcat(compile_command, " -g -fsanitize=leak ");
 
 		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 		strcat(compile_command, " -DAVDL_WINDOWS ");
@@ -978,6 +986,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 	else {
 		avdl_string_cat(&link_cmd, "gcc -DGLEW_NO_GLU ");
+		//avdl_string_cat(&link_cmd, " -g -fsanitize=leak ");
 	}
 
 	// possibly not needed when linking

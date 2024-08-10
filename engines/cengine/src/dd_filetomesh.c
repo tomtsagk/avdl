@@ -13,6 +13,7 @@ char *skip_whitespace(char *str);
 char *skip_to_whitespace(char *str);
 int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int settings);
 int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings);
+int avdl_load_gltf(struct dd_loaded_mesh *m, const char *path, int settings);
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 
@@ -27,6 +28,7 @@ int dd_filetomesh(struct dd_loaded_mesh *m, const char *asset, int settings, int
 
 	switch (file_type) {
 		case DD_PLY: return dd_load_ply(m, asset, settings);
+		default: dd_log("dd_filetomesh: unsupported file format with id: %d", file_type);
 	}
 
 	return -1;
@@ -73,6 +75,7 @@ int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int 
 
 	switch (file_type) {
 		//case DD_PLY: return dd_load_ply(m, path, settings);
+		case AVDL_GLTF: return avdl_load_gltf(m, path, settings);
 		case DD_PLY: return avdl_load_ply(m, path, settings);
 		case DD_OBJ: return dd_load_obj(m, path, settings);
 	}
@@ -147,6 +150,726 @@ int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	return 0;
 	#endif
+}
+
+#define CGLTF_IMPLEMENTATION
+#include "cgltf.h"
+
+int avdl_load_gltf(struct dd_loaded_mesh *m, const char *path, int settings) {
+
+	// initialise cgltf
+	cgltf_options options = {0};
+	cgltf_data *data = 0;
+	cgltf_result result = cgltf_parse_file(&options, path, &data);
+	if (result != cgltf_result_success) {
+		dd_log("avdl: %s: error loading gtlf file", path);
+		return -1;
+	}
+
+	// load cgltf buffers
+	result = cgltf_load_buffers(&options, data, path);
+	if (result != cgltf_result_success) {
+		dd_log("avdl %s: error loading gtlf buffers", path);
+		cgltf_free(data);
+		return -1;
+	}
+
+	m->vcount = 0;
+	m->v = 0;
+	m->c = 0;
+	m->t = 0;
+	m->n = 0;
+	m->tan = 0;
+	m->bitan = 0;
+	m->boneIds = 0;
+	m->weights = 0;
+
+	if (data->meshes_count > 1) {
+		dd_log("%s: can only load one mesh at a time, found %d meshes", path, data->meshes_count);
+		cgltf_free(data);
+		return -1;
+	}
+	//dd_log("meshes: %d", data->meshes_count);
+	for (int i = 0; i < data->meshes_count; i++) {
+		cgltf_mesh *mesh = &data->meshes[i];
+		if (mesh->primitives_count > 1) {
+			dd_log("%s: only supporting one mesh primitive for now, found %d", path, mesh->primitives_count);
+		}
+		for (int j = 0; j < mesh->primitives_count; j++) {
+			cgltf_primitive *primitive = &mesh->primitives[j];
+			unsigned int *indices = 0;
+			int indices_count = 0;
+			if (primitive->type != cgltf_primitive_type_triangles) {
+				dd_log("%s: primitives can only contain triangles for now, not %d", primitive->type);
+				cgltf_free(data);
+				return -1;
+			}
+			//dd_log("    primitive compression: %d", primitive->has_draco_mesh_compression);
+			if (primitive->indices) {
+				cgltf_accessor *indice_data = primitive->indices;
+				if (indice_data->type != cgltf_type_scalar) {
+					dd_log("%s: only supporting scalar for indices for now, not %d", path, indice_data->type);
+					cgltf_free(data);
+					return -1;
+				}
+				size_t attribute_value_dimension_count = cgltf_num_components(indice_data->type);
+				if (attribute_value_dimension_count != 1) {
+					dd_log("%s: indices should only have 1 dimension, they instead have %d", path, attribute_value_dimension_count);
+					cgltf_free(data);
+					return -1;
+				}
+				indices_count = primitive->indices->count;
+				indices = malloc(sizeof(unsigned int) *primitive->indices->count);
+				m->vcount = indices_count;
+				cgltf_accessor_unpack_indices(primitive->indices, indices, sizeof(unsigned int), primitive->indices->count);
+			}
+			else {
+				dd_log("%s: only supporting meshes with indices for now", path);
+				cgltf_free(data);
+				return -1;
+			}
+			for (int z = 0; z < primitive->attributes_count; z++) {
+				cgltf_attribute *attribute = &primitive->attributes[z];
+				if (attribute->data) {
+					cgltf_accessor *attribute_data = attribute->data;
+					size_t attribute_value_dimension_count = cgltf_num_components(attribute_data->type);
+					if (attribute->type == cgltf_attribute_type_position) {
+						if (attribute_data->type != cgltf_type_vec3) {
+							dd_log("%s: only supporting vec3 for vertex positions for now", path);
+							cgltf_free(data);
+							return -1;
+						}
+						if (attribute_value_dimension_count != 3) {
+							dd_log("%s: vertex position should only have 3 dimensions, they instead have %d", path, attribute_value_dimension_count);
+							cgltf_free(data);
+							return -1;
+						}
+						/* cgltf parses other formats to floats
+						if (attribute_data->component_type != cgltf_component_type_r_32f) {
+							dd_log("%s: vertex position should only be float, it instead is %d", path, attribute_data->component_type);
+							cgltf_free(data);
+							return -1;
+						}
+						*/
+						float *vertices = malloc(sizeof(float) *attribute_data->count *3);
+						for (int ind = 0; ind < attribute_data->count; ind++) {
+							cgltf_accessor_read_float(attribute_data, ind, &vertices[ind *3], 3);
+						}
+						if (indices) {
+							m->v = malloc(sizeof(float) *m->vcount *3);
+							for (int ind = 0; ind < m->vcount; ind++) {
+								m->v[ind*3 +0] = vertices[indices[ind]*3 +0];
+								m->v[ind*3 +1] = vertices[indices[ind]*3 +1];
+								m->v[ind*3 +2] = vertices[indices[ind]*3 +2];
+							}
+						}
+						free(vertices);
+					}
+					else
+					if (attribute->type == cgltf_attribute_type_color) {
+						if (attribute_data->type != cgltf_type_vec4) {
+							dd_log("%s: only supporting vec4 for vertex colours for now", path);
+							cgltf_free(data);
+							return -1;
+						}
+						if (attribute_value_dimension_count != 4) {
+							dd_log("%s: vertex colours should only have 4 dimensions, they instead have %d", path, attribute_value_dimension_count);
+							cgltf_free(data);
+							return -1;
+						}
+						/* cgltf parses other formats to floats
+						if (attribute_data->component_type != cgltf_component_type_r_32f) {
+							dd_log("%s: vertex colours should only be float, it instead is %d", path, attribute_data->component_type);
+							cgltf_free(data);
+							return -1;
+						}
+						*/
+						float *colours = malloc(sizeof(float) *attribute_data->count *4);
+						for (int ind = 0; ind < attribute_data->count; ind++) {
+							cgltf_accessor_read_float(attribute_data, ind, &colours[ind *attribute_value_dimension_count], 4);
+						}
+						if (indices) {
+							m->c = malloc(sizeof(float) *m->vcount *4);
+							for (int ind = 0; ind < indices_count; ind++) {
+								m->c[ind*3 +0] = colours[indices[ind]*4 +0];
+								m->c[ind*3 +1] = colours[indices[ind]*4 +1];
+								m->c[ind*3 +2] = colours[indices[ind]*4 +2];
+							}
+						}
+						free(colours);
+					}
+					else
+					if (attribute->type == cgltf_attribute_type_normal) {
+						if (attribute_data->type != cgltf_type_vec3) {
+							dd_log("%s: only supporting vec3 for vertex normals for now", path);
+							cgltf_free(data);
+							return -1;
+						}
+						if (attribute_value_dimension_count != 3) {
+							dd_log("%s: vertex normals should only have 3 dimensions, they instead have %d", path, attribute_value_dimension_count);
+							cgltf_free(data);
+							return -1;
+						}
+						float *normals = malloc(sizeof(float) *attribute_data->count *3);
+						for (int ind = 0; ind < attribute_data->count; ind++) {
+							cgltf_accessor_read_float(attribute_data, ind, &normals[ind *attribute_value_dimension_count], 3);
+						}
+						if (indices) {
+							m->n = malloc(sizeof(float) *m->vcount *3);
+							for (int ind = 0; ind < indices_count; ind++) {
+								m->n[ind*3 +0] = normals[indices[ind]*3 +0];
+								m->n[ind*3 +1] = normals[indices[ind]*3 +1];
+								m->n[ind*3 +2] = normals[indices[ind]*3 +2];
+							}
+						}
+						free(normals);
+					}
+					else
+					if (attribute->type == cgltf_attribute_type_texcoord) {
+						if (attribute_data->type != cgltf_type_vec2) {
+							dd_log("%s: only supporting vec2 for texture coordinates for now", path);
+							cgltf_free(data);
+							return -1;
+						}
+						if (attribute_value_dimension_count != 2) {
+							dd_log("%s: texture coordinates should only have 2 dimensions, they instead have %d", path, attribute_value_dimension_count);
+							cgltf_free(data);
+							return -1;
+						}
+						/* cgltf parses other formats to floats
+						if (attribute_data->component_type != cgltf_component_type_r_32f) {
+							dd_log("%s: texture coordinates should only be float, it instead is %d", path, attribute_data->component_type);
+							cgltf_free(data);
+							return -1;
+						}
+						*/
+						float *texcoord = malloc(sizeof(float) *attribute_data->count *2);
+						for (int ind = 0; ind < attribute_data->count; ind++) {
+							cgltf_accessor_read_float(attribute_data, ind, &texcoord[ind *2], 2);
+						}
+						if (indices) {
+							m->t = malloc(sizeof(float) *m->vcount *2);
+							for (int ind = 0; ind < m->vcount; ind++) {
+								m->t[ind*2 +0] = texcoord[indices[ind]*2 +0];
+								m->t[ind*2 +1] = 1 -texcoord[indices[ind]*2 +1];
+							}
+						}
+						free(texcoord);
+					}
+					else
+					if (attribute->type == cgltf_attribute_type_joints) {
+						if (attribute_data->type != cgltf_type_vec4) {
+							dd_log("%s: only supporting vec4 for vertex joints", path);
+							cgltf_free(data);
+							return -1;
+						}
+						if (attribute_value_dimension_count != 4) {
+							dd_log("%s: vertex joints should only have 4 dimensions, they instead have %d", path, attribute_value_dimension_count);
+							cgltf_free(data);
+							return -1;
+						}
+						/* cgltf parses other formats to floats
+						if (attribute_data->component_type != cgltf_component_type_r_32u) {
+							dd_log("%s: vertex joints should only be unsigned int, it instead is %d", path, attribute_data->component_type);
+							cgltf_free(data);
+							return -1;
+						}
+						*/
+						int *bones = malloc(sizeof(int) *attribute_data->count *4);
+						for (int ind = 0; ind < attribute_data->count; ind++) {
+							cgltf_accessor_read_uint(attribute_data, ind, &bones[ind *attribute_value_dimension_count], 4);
+						}
+						if (indices) {
+							m->boneIds = malloc(sizeof(int) *m->vcount *4);
+							for (int ind = 0; ind < indices_count; ind++) {
+								m->boneIds[ind*4 +0] = bones[indices[ind]*4 +0];
+								m->boneIds[ind*4 +1] = bones[indices[ind]*4 +1];
+								m->boneIds[ind*4 +2] = bones[indices[ind]*4 +2];
+								m->boneIds[ind*4 +3] = bones[indices[ind]*4 +3];
+							}
+						}
+						free(bones);
+					}
+					else
+					if (attribute->type == cgltf_attribute_type_weights) {
+						if (attribute_data->type != cgltf_type_vec4) {
+							dd_log("%s: only supporting vec4 for vertex weights", path);
+							cgltf_free(data);
+							return -1;
+						}
+						if (attribute_value_dimension_count != 4) {
+							dd_log("%s: vertex weights should only have 4 dimensions, they instead have %d", path, attribute_value_dimension_count);
+							cgltf_free(data);
+							return -1;
+						}
+						/* cgltf parses other formats to floats
+						if (attribute_data->component_type != cgltf_component_type_r_32f) {
+							dd_log("%s: vertex weights should only be float, it instead is %d", path, attribute_data->component_type);
+							cgltf_free(data);
+							return -1;
+						}
+						*/
+						float *weights = malloc(sizeof(float) *attribute_data->count *4);
+						for (int ind = 0; ind < attribute_data->count; ind++) {
+							cgltf_accessor_read_float(attribute_data, ind, &weights[ind *attribute_value_dimension_count], 4);
+						}
+						if (indices) {
+							m->weights = malloc(sizeof(float) *m->vcount *4);
+							for (int ind = 0; ind < indices_count; ind++) {
+								m->weights[ind*4 +0] = weights[indices[ind]*4 +0];
+								m->weights[ind*4 +1] = weights[indices[ind]*4 +1];
+								m->weights[ind*4 +2] = weights[indices[ind]*4 +2];
+								m->weights[ind*4 +3] = weights[indices[ind]*4 +3];
+							}
+						}
+						free(weights);
+					}
+					else {
+						//dd_log("avdl: %s: vertex attribute not handled: %s", path, attribute->name);
+					}
+				}
+			}
+			if (indices) {
+				free(indices);
+			}
+			break; // only one mesh primitive for now
+		}
+		break; // only one mesh for now
+	}
+	cgltf_node **joints = 0;
+	if (data->skins_count > 1) {
+		dd_log("%s: only supporting one skin at a time for now", path);
+	}
+	for (int i = 0; i < data->skins_count; i++) {
+		cgltf_skin *skin = &data->skins[i];
+		//dd_log("	skin name: %s", skin->name);
+		//dd_log("	skin joints: %d", skin->joints_count);
+		if (skin->joints_count < 1) {
+			dd_log("%s: skin should have at least one joint", path);
+			cgltf_free(data);
+			return -1;
+		}
+		joints = skin->joints;
+		m->boneCount = skin->joints_count;
+		m->inverseBindMatrices = malloc(sizeof(struct dd_matrix) *skin->joints_count);
+		m->rootIndex = -1;
+		m->children_indices = malloc(sizeof(int *) *skin->joints_count);
+		m->children_indices_count = malloc(sizeof(int) *skin->joints_count);
+		dd_matrix_create(&m->rootMatrix);
+		dd_matrix_identity(&m->rootMatrix);
+		for (int j = 0; j < skin->joints_count; j++) {
+			struct dd_matrix *inverse_matrix = &m->inverseBindMatrices[j];
+			dd_matrix_create(inverse_matrix);
+			dd_matrix_identity(inverse_matrix);
+			cgltf_node *joint = skin->joints[j];
+			//dd_log("	    joint i: %d", j);
+			//dd_log("	    joint name: %s", joint->name);
+			m->children_indices[j] = 0;
+			m->children_indices_count[j] = 0;
+			if (joint->children && joint->children_count > 0) {
+				//dd_log("	    joint has children: %d", joint->children_count);
+				m->children_indices_count[j] = joint->children_count;
+				m->children_indices[j] = malloc(sizeof(int) *joint->children_count);
+				for (int zz = 0; zz < joint->children_count; zz++) {
+					m->children_indices[j][zz] = -1;
+					for (int z = 0; z < skin->joints_count; z++) {
+						if (skin->joints[z] == joint->children[zz]) {
+							m->children_indices[j][zz] = z;
+							break;
+						}
+					}
+					if (m->children_indices[j][zz] != -1) {
+						//dd_log("	    joint child: %d", m->children_indices[j][zz]);
+					}
+					else {
+						dd_log("%s: joint child: COULD NOT FIND CHILD INDEX", path);
+						cgltf_free(data);
+						return -1;
+					}
+				}
+			}
+			if (joint->parent) {
+				//dd_log("	    joint parent: %s", joint->parent->name);
+				int isRoot = 1;
+				for (int z = 0; z < skin->joints_count; z++) {
+					if (skin->joints[z] == joint->parent) {
+						isRoot = 0;
+						break;
+					}
+				}
+				if (isRoot) {
+					//dd_log("	    joint root: IS ROOT");
+					if (m->rootIndex != -1) {
+						dd_log("%s: multiple root joints detected - confused", path);
+						cgltf_free(data);
+						return -1;
+					}
+					m->rootIndex = j;
+					cgltf_node *parentJoint = joint->parent;
+					//dd_log("parent node name: %s", parentJoint->name);
+					if (parentJoint->has_translation) {
+						/*
+						dd_log("	    parentJoint translation: %f %f %f",
+							parentJoint->translation[0],
+							parentJoint->translation[1],
+							parentJoint->translation[2]
+						);
+						*/
+						dd_matrix_translate(&m->rootMatrix, parentJoint->translation[0], parentJoint->translation[1], parentJoint->translation[2]);
+					}
+					else {
+						//dd_log("	    parentJoint translation: no translation");
+					}
+					if (parentJoint->has_rotation) {
+						/*
+						dd_log("	    parentJoint rotation: %f %f %f %f",
+							parentJoint->rotation[0],
+							parentJoint->rotation[1],
+							parentJoint->rotation[2],
+							parentJoint->rotation[3]
+						);
+						*/
+						struct dd_matrix mat;
+						dd_matrix_quaternion_to_rotation_matrix(parentJoint->rotation, &mat);
+						dd_matrix_mult(&m->rootMatrix, &mat);
+					}
+					else {
+						//dd_log("	    parentJoint rotation: no rotation");
+					}
+					if (parentJoint->has_scale) {
+						/*
+						dd_log("	    parentJoint scale: %f %f %f",
+							parentJoint->scale[0],
+							parentJoint->scale[1],
+							parentJoint->scale[2]
+						);
+						*/
+						dd_matrix_scale(&m->rootMatrix, parentJoint->scale[0], parentJoint->scale[1], parentJoint->scale[2]);
+					}
+					else {
+						//dd_log("	    parentJoint scale: no scale");
+					}
+					/*
+					*/
+					if (parentJoint->has_matrix) {
+						/*
+						dd_log("	    parentJoint matrix:\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f",
+							parentJoint->matrix[0],
+							parentJoint->matrix[1],
+							parentJoint->matrix[2],
+							parentJoint->matrix[3],
+
+							parentJoint->matrix[4],
+							parentJoint->matrix[5],
+							parentJoint->matrix[6],
+							parentJoint->matrix[7],
+
+							parentJoint->matrix[8],
+							parentJoint->matrix[9],
+							parentJoint->matrix[10],
+							parentJoint->matrix[11],
+
+							parentJoint->matrix[12],
+							parentJoint->matrix[13],
+							parentJoint->matrix[14],
+							parentJoint->matrix[15]
+						);
+						*/
+					}
+				}
+				/*
+				else {
+					dd_log("	    joint root: NOT ROOT");
+				}
+				*/
+			}
+			else {
+				// doesn't happen
+				//dd_log("	    joint parent: NO PARENT");
+			}
+			if (joint->has_translation) {
+				/*
+				dd_log("	    joint translation: %f %f %f",
+					joint->translation[0],
+					joint->translation[1],
+					joint->translation[2]
+				);
+				*/
+			}
+			else {
+				//dd_log("	    joint translation: no translation");
+			}
+			if (joint->has_rotation) {
+				/*
+				dd_log("	    joint rotation: %f %f %f %f",
+					joint->rotation[0],
+					joint->rotation[1],
+					joint->rotation[2],
+					joint->rotation[3]
+				);
+				*/
+			}
+			else {
+				//dd_log("	    joint rotation: no rotation");
+			}
+			if (joint->has_scale) {
+				/*
+				dd_log("	    joint scale: %f %f %f",
+					joint->scale[0],
+					joint->scale[1],
+					joint->scale[2]
+				);
+				*/
+			}
+			else {
+				//dd_log("	    joint scale: no scale");
+			}
+			if (joint->has_matrix) {
+				/*
+				dd_log("	    joint matrix:\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f",
+					joint->matrix[0],
+					joint->matrix[1],
+					joint->matrix[2],
+					joint->matrix[3],
+
+					joint->matrix[4],
+					joint->matrix[5],
+					joint->matrix[6],
+					joint->matrix[7],
+
+					joint->matrix[8],
+					joint->matrix[9],
+					joint->matrix[10],
+					joint->matrix[11],
+
+					joint->matrix[12],
+					joint->matrix[13],
+					joint->matrix[14],
+					joint->matrix[15]
+				);
+				*/
+			}
+			/*
+			else {
+				dd_log("	    joint matrix: no matrix");
+			}
+			*/
+			if (skin->inverse_bind_matrices) {
+				cgltf_accessor *inverse = skin->inverse_bind_matrices;
+				size_t attribute_value_dimension_count = cgltf_num_components(inverse->type);
+				//dd_log("	    joint inverse bind matrix components: %d", attribute_value_dimension_count);
+				//dd_log("	    joint inverse bind matrix count: %d", inverse->count);
+				if (inverse->type != cgltf_type_mat4) {
+					dd_log("%s: inverse bind matrix can only be mat4", path);
+					cgltf_free(data);
+					return -1;
+				}
+				if (attribute_value_dimension_count != 16) {
+					dd_log("%s: inverse bind matrix can have 16 components, found %d", path, attribute_value_dimension_count);
+					cgltf_free(data);
+					return -1;
+				}
+				cgltf_accessor_read_float(inverse, j, inverse_matrix, 16);
+				/*
+				dd_log("	    joint inverse bind matrix:\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f",
+					inverse_matrix->cell[0],
+					inverse_matrix->cell[1],
+					inverse_matrix->cell[2],
+					inverse_matrix->cell[3],
+
+					inverse_matrix->cell[4],
+					inverse_matrix->cell[5],
+					inverse_matrix->cell[6],
+					inverse_matrix->cell[7],
+
+					inverse_matrix->cell[8],
+					inverse_matrix->cell[9],
+					inverse_matrix->cell[10],
+					inverse_matrix->cell[11],
+
+					inverse_matrix->cell[12],
+					inverse_matrix->cell[13],
+					inverse_matrix->cell[14],
+					inverse_matrix->cell[15]
+				);
+				*/
+			}
+			else {
+				// only does local transform
+				// inverse_matrix = parent transform + matrix, then inverse
+				//dd_matrix_copy(inverse_matrix, matrix);
+				//dd_matrix_inverse(inverse_matrix);
+				dd_log("%s: does not support files without inverse matrix for now", path);
+			}
+			//dd_log("matrix:");
+			//dd_matrix_print(matrix);
+			//dd_matrix_print(inverse_matrix);
+		}
+		/*
+		if (skin->inverse_bind_matrices) {
+			cgltf_accessor *accessor = skin->inverse_bind_matrices;
+			dd_log("	skin inverse bind matrices: %d", accessor->count);
+			//float *matrices = malloc(sizeof(float) *16 *skin->inverse_bind_matrices);
+			size_t attribute_value_dimension_count = cgltf_num_components(accessor->type);
+			//cgltf_accessor_read_float(accessor, ind, &weights[ind *attribute_value_dimension_count], attribute_value_dimension_count);
+			dd_log("        num of components: %d", attribute_value_dimension_count);
+		}
+		*/
+		/*
+		if (skin->skeleton) {
+			dd_log("	skin skeleton: %s", skin->skeleton->name);
+		}
+		else {
+			dd_log("	skin skeleton: NO SKELETON");
+		}
+		*/
+		break;
+	}
+
+	if (data->animations_count == 0) {
+		dd_log("%s: not sure how to handle file without animations", path);
+		cgltf_free(data);
+		return -1;
+	}
+	// animations
+	m->animationsCount = data->animations_count;
+	m->animations = malloc(sizeof(struct dd_animation) *data->animations_count);
+	for (int i = 0; i < data->animations_count; i++) {
+		cgltf_animation *animation = &data->animations[i];
+		struct dd_animation *anim = &m->animations[i];
+
+		// animation name
+		anim->name = malloc(sizeof(char) *strlen(animation->name) +1);
+		strcpy(anim->name, animation->name);
+
+		// animation bones
+		anim->animatedBones = malloc(sizeof(struct dd_animated_bone) *m->boneCount);
+		anim->animatedBonesCount = m->boneCount;
+		for (int j = 0; j < m->boneCount; j++) {
+			struct dd_animated_bone *animBone = &anim->animatedBones[j];
+			dd_da_init(&animBone->keyframes_position, sizeof(struct dd_keyframe_vec3));
+			dd_da_init(&animBone->keyframes_rotation, sizeof(struct dd_keyframe_vec4));
+			dd_da_init(&animBone->keyframes_scale, sizeof(struct dd_keyframe_vec3));
+		}
+
+		if (animation->channels_count <= 0) {
+			dd_log("%s: animation has no channel, not supported", path);
+			cgltf_free(data);
+			return -1;
+		}
+		for (int j = 0; j < animation->channels_count; j++) {
+			cgltf_animation_channel *channel = &animation->channels[j];
+
+			// find target bone
+			struct dd_animated_bone *animBone = 0;
+			for (int node_index = 0; node_index < m->boneCount; node_index++) {
+				if (joints[node_index] == channel->target_node) {
+					animBone = &anim->animatedBones[node_index];
+					break;
+				}
+			}
+
+			// didn't find target
+			if (!animBone) {
+				dd_log("%s: bone targeted by channel cannot be found", path);
+				cgltf_free(data);
+				return -1;
+			}
+
+			if (channel->target_path == cgltf_animation_path_type_translation) {
+
+				if (!channel->sampler) {
+					dd_log("%s: channel without sampler - not supported", path);
+					cgltf_free(data);
+					return -1;
+				}
+
+				// add new position keyframe into `animBone`
+				cgltf_animation_sampler *sampler = channel->sampler;
+				cgltf_accessor* input = sampler->input;
+				cgltf_accessor* output = sampler->output;
+				size_t input_dimensions = cgltf_num_components(input->type);
+				if (input_dimensions != 1) {
+					dd_log("%s: channel input position should have 1 dimension, it instead has %d", path, input_dimensions);
+					cgltf_free(data);
+					return -1;
+				}
+				size_t output_dimensions = cgltf_num_components(output->type);
+				if (output_dimensions != 3) {
+					dd_log("%s: channel output position should have 3 dimensions, it instead has %d", path, output_dimensions);
+					cgltf_free(data);
+					return -1;
+				}
+				if (input->count != output->count) {
+					dd_log("%s: channel input and output position should have the same number of values %d/%d", path, input->count, output->count);
+					cgltf_free(data);
+					return -1;
+				}
+				for (int z = 0; z < input->count; z++) {
+					struct dd_keyframe_vec3 keyframe;
+					cgltf_accessor_read_float(input, z, &keyframe.time, 1);
+					cgltf_accessor_read_float(output, z, &keyframe.value, 3);
+					dd_da_push(&animBone->keyframes_position, &keyframe);
+				}
+			}
+			else
+			if (channel->target_path == cgltf_animation_path_type_rotation) {
+
+				if (!channel->sampler) {
+					dd_log("%s: channel without sampler - not supported", path);
+					cgltf_free(data);
+					return -1;
+				}
+
+				// add new rotation keyframe into `animBone`
+				cgltf_animation_sampler *sampler = channel->sampler;
+				cgltf_accessor* input = sampler->input;
+				cgltf_accessor* output = sampler->output;
+				size_t input_dimensions = cgltf_num_components(input->type);
+				if (input_dimensions != 1) {
+					dd_log("%s: channel input rotation should have 1 dimension, it instead has %d", path, input_dimensions);
+					cgltf_free(data);
+					return -1;
+				}
+				size_t output_dimensions = cgltf_num_components(output->type);
+				if (output_dimensions != 4) {
+					dd_log("%s: channel output rotation should have 4 dimensions, it instead has %d", path, output_dimensions);
+					cgltf_free(data);
+					return -1;
+				}
+				if (input->count != output->count) {
+					dd_log("%s: channel input and output rotation should have the same number of values %d/%d", path, input->count, output->count);
+					cgltf_free(data);
+					return -1;
+				}
+				for (int z = 0; z < input->count; z++) {
+					struct dd_keyframe_vec4 keyframe;
+					cgltf_accessor_read_float(input, z, &keyframe.time, 1);
+					cgltf_accessor_read_float(output, z, &keyframe.value, 4);
+					dd_da_push(&animBone->keyframes_rotation, &keyframe);
+				}
+
+			}
+			else
+			if (channel->target_path == cgltf_animation_path_type_scale) {
+				//dd_log("%s: unsupported animation type: scale", path);
+			}
+			else
+			if (channel->target_path == cgltf_animation_path_type_weights) {
+				//dd_log("%s: unsupported animation type: weights", path);
+			}
+			else
+			if (channel->target_path == cgltf_animation_path_type_max_enum) {
+				//dd_log("%s: unsupported animation type: max enum", path);
+			}
+			else
+			if (channel->target_path == cgltf_animation_path_type_invalid) {
+				//dd_log("%s: invalid animation type", path);
+			}
+		}
+	}
+	cgltf_free(data);
+	return 0;
 }
 
 /* Parse PLY - STILL WORKING ON IT */
@@ -1454,6 +2177,8 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 	m->n = 0;
 	m->tan = 0;
 	m->bitan = 0;
+	m->boneIds = 0;
+	m->weights = 0;
 	if (has_colours) {
 		m->c = malloc(sizeof(float) *m->vcount *3);
 	}

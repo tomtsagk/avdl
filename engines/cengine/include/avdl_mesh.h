@@ -15,6 +15,7 @@ enum avdl_primitives {
 #include "avdl_graphics.h"
 #include "dd_matrix.h"
 #include "dd_image.h"
+#include "dd_filetomesh.h"
 
 struct avdl_mesh {
 
@@ -85,6 +86,8 @@ struct avdl_mesh {
 	void (*setWireframe)(struct avdl_mesh *o);
 	void (*setSolid)(struct avdl_mesh *o);
 
+	void (*LoadFromLoadedMesh)(struct avdl_mesh *o, struct dd_loaded_mesh *lm);
+
 	avdl_graphics_mesh* vertexBuffer;
 };
 
@@ -116,6 +119,8 @@ void avdl_mesh_setWireframe(struct avdl_mesh *o);
 void avdl_mesh_setSolid(struct avdl_mesh *o);
 
 int avdl_mesh_hasTexture(struct avdl_mesh *o);
+
+void avdl_mesh_LoadFromLoadedMesh(struct avdl_mesh *o, struct dd_loaded_mesh *loadedMesh);
 
 #ifdef __cplusplus
 }

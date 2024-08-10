@@ -252,10 +252,11 @@ void avdl_assetManager_loadAssets() {
 			// mesh
 			if (m->meshType == AVDL_ASSETMANAGER_MESH2) {
 				struct avdl_mesh *mesh = m->object;
-				struct dd_loaded_mesh lm;
+				struct dd_loaded_mesh lm = {0};
 				if (dd_filetomesh(&lm, m->filename,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY) == -1) {
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, m->type) == -1) {
 					// error loading file
+					dd_log("avdl: error loading mesh2: %s", m->filename);
 				}
 				else {
 					#if defined( AVDL_DIRECT3D11 )
@@ -264,42 +265,7 @@ void avdl_assetManager_loadAssets() {
 					#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 					pthread_mutex_lock(&updateDrawMutex);
 					#endif
-					avdl_mesh_clean(mesh);
-					mesh->vcount = lm.vcount;
-					if (lm.v) {
-						mesh->v = lm.v;
-						mesh->dirtyVertices = 1;
-					}
-					if (lm.c) {
-						mesh->c = lm.c;
-						mesh->dirtyColours = 1;
-					}
-					if (lm.t) {
-						mesh->t = lm.t;
-						mesh->dirtyTextures = 1;
-					}
-					if (lm.n) {
-						mesh->n = lm.n;
-						mesh->dirtyNormals = 1;
-					}
-					if (lm.tan) {
-						if (mesh->img_normal) {
-							mesh->tan = lm.tan;
-							mesh->dirtyTan = 1;
-						}
-						else {
-							free(lm.tan);
-						}
-					}
-					if (lm.bitan) {
-						if (mesh->img_normal) {
-							mesh->bitan = lm.bitan;
-							mesh->dirtyBitan = 1;
-						}
-						else {
-							free(lm.bitan);
-						}
-					}
+					mesh->LoadFromLoadedMesh(mesh, &lm);
 					#if defined( AVDL_DIRECT3D11 )
 					#elif defined( AVDL_WINDOWS )
 					ReleaseMutex(updateDrawMutex);

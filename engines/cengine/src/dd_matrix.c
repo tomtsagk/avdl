@@ -235,6 +235,139 @@ void dd_matrix_mult(struct dd_matrix *m1, struct dd_matrix *m2) {
 	}
 }
 
+int dd_matrix_inverse(struct dd_matrix *m) {
+
+	struct dd_matrix m2;
+	dd_matrix_create(&m2);
+	dd_matrix_identity(&m2);
+
+	m2.cell[0] = m->cell[5]  * m->cell[10] * m->cell[15] -
+		m->cell[5]  * m->cell[11] * m->cell[14] -
+		m->cell[9]  * m->cell[6]  * m->cell[15] +
+		m->cell[9]  * m->cell[7]  * m->cell[14] +
+		m->cell[13] * m->cell[6]  * m->cell[11] -
+		m->cell[13] * m->cell[7]  * m->cell[10];
+
+	m2.cell[4] = -m->cell[4]  * m->cell[10] * m->cell[15] +
+		m->cell[4]  * m->cell[11] * m->cell[14] +
+		m->cell[8]  * m->cell[6]  * m->cell[15] -
+		m->cell[8]  * m->cell[7]  * m->cell[14] -
+		m->cell[12] * m->cell[6]  * m->cell[11] +
+		m->cell[12] * m->cell[7]  * m->cell[10];
+
+	m2.cell[8] = m->cell[4]  * m->cell[9] * m->cell[15] -
+		m->cell[4]  * m->cell[11] * m->cell[13] -
+		m->cell[8]  * m->cell[5] * m->cell[15] +
+		m->cell[8]  * m->cell[7] * m->cell[13] +
+		m->cell[12] * m->cell[5] * m->cell[11] -
+		m->cell[12] * m->cell[7] * m->cell[9];
+
+	m2.cell[12] = -m->cell[4]  * m->cell[9] * m->cell[14] +
+		m->cell[4]  * m->cell[10] * m->cell[13] +
+		m->cell[8]  * m->cell[5] * m->cell[14] -
+		m->cell[8]  * m->cell[6] * m->cell[13] -
+		m->cell[12] * m->cell[5] * m->cell[10] +
+		m->cell[12] * m->cell[6] * m->cell[9];
+
+	m2.cell[1] = -m->cell[1]  * m->cell[10] * m->cell[15] +
+		m->cell[1]  * m->cell[11] * m->cell[14] +
+		m->cell[9]  * m->cell[2] * m->cell[15] -
+		m->cell[9]  * m->cell[3] * m->cell[14] -
+		m->cell[13] * m->cell[2] * m->cell[11] +
+		m->cell[13] * m->cell[3] * m->cell[10];
+
+	m2.cell[5] = m->cell[0]  * m->cell[10] * m->cell[15] -
+		m->cell[0]  * m->cell[11] * m->cell[14] -
+		m->cell[8]  * m->cell[2] * m->cell[15] +
+		m->cell[8]  * m->cell[3] * m->cell[14] +
+		m->cell[12] * m->cell[2] * m->cell[11] -
+		m->cell[12] * m->cell[3] * m->cell[10];
+
+	m2.cell[9] = -m->cell[0]  * m->cell[9] * m->cell[15] +
+		m->cell[0]  * m->cell[11] * m->cell[13] +
+		m->cell[8]  * m->cell[1] * m->cell[15] -
+		m->cell[8]  * m->cell[3] * m->cell[13] -
+		m->cell[12] * m->cell[1] * m->cell[11] +
+		m->cell[12] * m->cell[3] * m->cell[9];
+
+	m2.cell[13] = m->cell[0]  * m->cell[9] * m->cell[14] -
+		m->cell[0]  * m->cell[10] * m->cell[13] -
+		m->cell[8]  * m->cell[1] * m->cell[14] +
+		m->cell[8]  * m->cell[2] * m->cell[13] +
+		m->cell[12] * m->cell[1] * m->cell[10] -
+		m->cell[12] * m->cell[2] * m->cell[9];
+
+	m2.cell[2] = m->cell[1]  * m->cell[6] * m->cell[15] -
+		m->cell[1]  * m->cell[7] * m->cell[14] -
+		m->cell[5]  * m->cell[2] * m->cell[15] +
+		m->cell[5]  * m->cell[3] * m->cell[14] +
+		m->cell[13] * m->cell[2] * m->cell[7] -
+		m->cell[13] * m->cell[3] * m->cell[6];
+
+	m2.cell[6] = -m->cell[0]  * m->cell[6] * m->cell[15] +
+		m->cell[0]  * m->cell[7] * m->cell[14] +
+		m->cell[4]  * m->cell[2] * m->cell[15] -
+		m->cell[4]  * m->cell[3] * m->cell[14] -
+		m->cell[12] * m->cell[2] * m->cell[7] +
+		m->cell[12] * m->cell[3] * m->cell[6];
+
+	m2.cell[10] = m->cell[0]  * m->cell[5] * m->cell[15] -
+		m->cell[0]  * m->cell[7] * m->cell[13] -
+		m->cell[4]  * m->cell[1] * m->cell[15] +
+		m->cell[4]  * m->cell[3] * m->cell[13] +
+		m->cell[12] * m->cell[1] * m->cell[7] -
+		m->cell[12] * m->cell[3] * m->cell[5];
+
+	m2.cell[14] = -m->cell[0]  * m->cell[5] * m->cell[14] +
+		m->cell[0]  * m->cell[6] * m->cell[13] +
+		m->cell[4]  * m->cell[1] * m->cell[14] -
+		m->cell[4]  * m->cell[2] * m->cell[13] -
+		m->cell[12] * m->cell[1] * m->cell[6] +
+		m->cell[12] * m->cell[2] * m->cell[5];
+
+	m2.cell[3] = -m->cell[1] * m->cell[6] * m->cell[11] +
+		m->cell[1] * m->cell[7] * m->cell[10] +
+		m->cell[5] * m->cell[2] * m->cell[11] -
+		m->cell[5] * m->cell[3] * m->cell[10] -
+		m->cell[9] * m->cell[2] * m->cell[7] +
+		m->cell[9] * m->cell[3] * m->cell[6];
+
+	m2.cell[7] = m->cell[0] * m->cell[6] * m->cell[11] -
+		m->cell[0] * m->cell[7] * m->cell[10] -
+		m->cell[4] * m->cell[2] * m->cell[11] +
+		m->cell[4] * m->cell[3] * m->cell[10] +
+		m->cell[8] * m->cell[2] * m->cell[7] -
+		m->cell[8] * m->cell[3] * m->cell[6];
+
+	m2.cell[11] = -m->cell[0] * m->cell[5] * m->cell[11] +
+		m->cell[0] * m->cell[7] * m->cell[9] +
+		m->cell[4] * m->cell[1] * m->cell[11] -
+		m->cell[4] * m->cell[3] * m->cell[9] -
+		m->cell[8] * m->cell[1] * m->cell[7] +
+		m->cell[8] * m->cell[3] * m->cell[5];
+
+	m2.cell[15] = m->cell[0] * m->cell[5] * m->cell[10] -
+		m->cell[0] * m->cell[6] * m->cell[9] -
+		m->cell[4] * m->cell[1] * m->cell[10] +
+		m->cell[4] * m->cell[2] * m->cell[9] +
+		m->cell[8] * m->cell[1] * m->cell[6] -
+		m->cell[8] * m->cell[2] * m->cell[5];
+
+	float det = m->cell[0] * m2.cell[0] + m->cell[1] * m2.cell[4] + m->cell[2] * m2.cell[8] + m->cell[3] * m2.cell[12];
+
+	// can't inverse
+	if (det == 0) {
+		return 0;
+	}
+
+	// inversed
+	det = 1.0 / det;
+	for (int i = 0; i < 16; i++) {
+		m->cell[i] = m2.cell[i] * det;
+	}
+	return 1;
+}
+
 void dd_matrix_copy(struct dd_matrix *m1, struct dd_matrix *m2) {
 	memcpy(m1->cell, m2->cell, sizeof(float) *16);
 }
@@ -562,4 +695,32 @@ struct dd_vec4 *dd_matrix_getControllerDirection(int index) {
 #else
 	return 0;
 #endif
+}
+
+void dd_matrix_quaternion_to_rotation_matrix(struct dd_vec4 *q, struct dd_matrix *output) {
+
+	// First row of the rotation matrix
+	output->cell[0] = 1 -(2 * (q->cell[1] * q->cell[1])) -(2 * (q->cell[2] * q->cell[2]));
+	output->cell[4] = 2 * (q->cell[0] * q->cell[1]) -(2 * (q->cell[3] * q->cell[2]));
+	output->cell[8] = 2 * (q->cell[0] * q->cell[2]) +(2 * (q->cell[3] * q->cell[1]));
+	output->cell[12] = 0;
+
+	// Second row of the rotation matrix
+	output->cell[1] = 2 * (q->cell[0] * q->cell[1]) +(2 * (q->cell[3] * q->cell[2]));
+	output->cell[5] = 1 -(2 * (q->cell[0] * q->cell[0])) -(2 * (q->cell[2] * q->cell[2]));
+	output->cell[9] = 2 * (q->cell[1] * q->cell[2]) -(2 * (q->cell[3] * q->cell[0]));
+	output->cell[13] = 0;
+
+	// Third row of the rotation matrix
+	output->cell[2] = 2 * (q->cell[0] * q->cell[2]) -(2 * (q->cell[3] * q->cell[1]));
+	output->cell[6] = 2 * (q->cell[1] * q->cell[2]) +(2 * (q->cell[3] * q->cell[0]));
+	output->cell[10] = 1 -(2 * (q->cell[0] * q->cell[0])) -(2 * (q->cell[1] * q->cell[1]));
+	output->cell[14] = 0;
+
+	// last
+	output->cell[3] = 0;
+	output->cell[7] = 0;
+	output->cell[11] = 0;
+	output->cell[15] = 1;
+
 }
