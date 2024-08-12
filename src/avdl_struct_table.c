@@ -39,6 +39,7 @@ void struct_table_init() {
 	struct_table_push("avdl_skinned_mesh", "avdl_mesh");
 	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("PlayAnimation", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("PlayAnimationInstant", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetOnAnimationDone", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_mesh", 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

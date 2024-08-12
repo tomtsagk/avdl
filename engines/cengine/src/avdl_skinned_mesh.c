@@ -38,6 +38,7 @@ void avdl_skinned_mesh_create(struct avdl_skinned_mesh *m) {
 	// animations
 	m->update = avdl_skinned_mesh_update;
 	m->PlayAnimation = avdl_skinned_mesh_PlayAnimation;
+	m->PlayAnimationInstant = avdl_skinned_mesh_PlayAnimationInstant;
 	m->SetOnAnimationDone = avdl_skinned_mesh_SetOnAnimationDone;
 
 	avdl_skeleton_create(&m->skeleton);
@@ -352,7 +353,11 @@ void avdl_skinned_mesh_update(struct avdl_skinned_mesh *o, float dt) {
 }
 
 void avdl_skinned_mesh_PlayAnimation(struct avdl_skinned_mesh *o, const char *animName) {
-	avdl_skeleton_PlayAnimation(&o->skeleton, animName);
+	avdl_skeleton_PlayAnimation(&o->skeleton, animName, 0);
+}
+
+void avdl_skinned_mesh_PlayAnimationInstant(struct avdl_skinned_mesh *o, const char *animName) {
+	avdl_skeleton_PlayAnimation(&o->skeleton, animName, 1);
 }
 
 void avdl_skinned_mesh_PrintAnimations(struct avdl_skinned_mesh *o) {

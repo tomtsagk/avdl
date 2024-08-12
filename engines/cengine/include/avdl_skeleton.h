@@ -4,6 +4,12 @@
 #include "dd_matrix.h"
 #include "dd_filetomesh.h"
 
+struct avdl_mix_animated_bone {
+	struct dd_vec3 position;
+	struct dd_vec4 rotation;
+	struct dd_vec3 scale;
+};
+
 struct avdl_animated_bone {
 	struct dd_vec3 *positions;
 	struct dd_vec4 *rotations;
@@ -32,9 +38,14 @@ struct avdl_skeleton {
 	int currentAnimationIndex;
 	struct avdl_animation *animations;
 	int animations_count;
+
+	// animation callback
 	void (*OnAnimationDone)();
 	void (*SetOnAnimationDone)(struct avdl_skeleton *, void (*func)(void *ctx), void *context);
 	void *OnAnimationContext;
+
+	// mix animation
+	struct avdl_mix_animated_bone *mixBones;
 
 	int boneCount;
 	struct dd_matrix *inverseBindMatrices;
@@ -49,12 +60,13 @@ struct avdl_skeleton {
 	int isActive;
 
 	const char *queuedAnimation;
+	int queuedAnimationInstant;
 };
 
 void avdl_skeleton_create(struct avdl_skeleton *o);
 void avdl_skeleton_clean(struct avdl_skeleton *o);
 void avdl_skeleton_update(struct avdl_skeleton *o, float dt);
-void avdl_skeleton_PlayAnimation(struct avdl_skeleton *o, const char *animName);
+void avdl_skeleton_PlayAnimation(struct avdl_skeleton *o, const char *animName, int instant);
 struct dd_matrix *avdl_skeleton_GetFinalMatrices(struct avdl_skeleton *o);
 
 void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, struct dd_animation *animations);
