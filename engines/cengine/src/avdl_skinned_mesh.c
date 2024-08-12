@@ -38,6 +38,7 @@ void avdl_skinned_mesh_create(struct avdl_skinned_mesh *m) {
 	// animations
 	m->update = avdl_skinned_mesh_update;
 	m->PlayAnimation = avdl_skinned_mesh_PlayAnimation;
+	m->SetOnAnimationDone = avdl_skinned_mesh_SetOnAnimationDone;
 
 	avdl_skeleton_create(&m->skeleton);
 }
@@ -387,4 +388,8 @@ void avdl_skinned_mesh_LoadFromLoadedMesh(struct avdl_skinned_mesh *o, struct dd
 
 		avdl_skeleton_SetAnimations(&o->skeleton, lm->animationsCount, lm->animations);
 	}
+}
+
+void avdl_skinned_mesh_SetOnAnimationDone(struct avdl_skinned_mesh *o, void (*func)(void *ctx), void *context) {
+	o->skeleton.SetOnAnimationDone(&o->skeleton, func, context);
 }

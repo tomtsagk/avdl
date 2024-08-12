@@ -186,8 +186,6 @@ int avdl_load_gltf(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	if (data->meshes_count > 1) {
 		dd_log("%s: can only load one mesh at a time, found %d meshes", path, data->meshes_count);
-		cgltf_free(data);
-		return -1;
 	}
 	//dd_log("meshes: %d", data->meshes_count);
 	for (int i = 0; i < data->meshes_count; i++) {

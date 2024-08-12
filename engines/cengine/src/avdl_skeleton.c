@@ -20,6 +20,10 @@ void avdl_skeleton_create(struct avdl_skeleton *o) {
 	o->isActive = 0;
 
 	o->queuedAnimation = 0;
+
+	o->OnAnimationDone = 0;
+	o->SetOnAnimationDone = avdl_skeleton_SetOnAnimationDone;
+	o->OnAnimationContext = 0;
 }
 
 void avdl_skeleton_clean(struct avdl_skeleton *o) {
@@ -145,11 +149,6 @@ static void interpolate_position(struct avdl_skeleton *o, int index, struct dd_m
 		if (keyframe_index == -2) {
 			// keyframe before animation
 			keyframe_index = 0;
-		}
-		if (keyframe_index == -1) {
-			// keyframe above animation - animation ended
-			keyframe_index = 0;
-			o->currentTime = 0;
 		}
 		struct dd_vec3 *pos = &o->animations[o->currentAnimationIndex].animatedBones[i].positions[keyframe_index];
 		struct dd_vec3 *pos2 = &o->animations[o->currentAnimationIndex].animatedBones[i].positions[keyframe_index+1];
@@ -302,6 +301,13 @@ void avdl_skeleton_update(struct avdl_skeleton *o, float dt) {
 		o->queuedAnimation = 0;
 	}
 	o->currentTime += 1.0 *dt;
+	if (o->currentTime > o->animations[o->currentAnimationIndex].duration) {
+		dd_log("animation ended");
+		o->currentTime -= o->animations[o->currentAnimationIndex].duration;
+		if (o->OnAnimationDone) {
+			o->OnAnimationDone(o->OnAnimationContext);
+		}
+	}
 	interpolate_position(o, o->rootIndex, 0);
 }
 
@@ -338,6 +344,7 @@ void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, s
 		anim->name = animations[i].name;
 		anim->animatedBonesCount = animations[i].animatedBonesCount;
 		anim->animatedBones = malloc(sizeof(struct avdl_animated_bone) *animations[i].animatedBonesCount);
+		anim->duration = 0;
 		for (int j = 0; j < o->boneCount; j++) {
 			struct avdl_animated_bone *animBone = &anim->animatedBones[j];
 			struct dd_animated_bone *animBoneSrc = &animations[i].animatedBones[j];
@@ -353,6 +360,9 @@ void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, s
 				pos->x = target->value.x;
 				pos->y = target->value.y;
 				pos->z = target->value.z;
+				if (anim->duration < target->time) {
+					anim->duration = target->time;
+				}
 			}
 	
 			// rotations
@@ -367,6 +377,9 @@ void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, s
 				rot->cell[1] = target->value.cell[1];
 				rot->cell[2] = target->value.cell[2];
 				rot->cell[3] = target->value.cell[3];
+				if (anim->duration < target->time) {
+					anim->duration = target->time;
+				}
 			}
 			dd_da_free(&animBoneSrc->keyframes_position);
 			dd_da_free(&animBoneSrc->keyframes_rotation);
@@ -382,4 +395,9 @@ int avdl_skeleton_IsActive(struct avdl_skeleton *o) {
 
 void avdl_skeleton_Activate(struct avdl_skeleton *o) {
 	o->isActive = 1;
+}
+
+void avdl_skeleton_SetOnAnimationDone(struct avdl_skeleton *o, void (*func)(void *ctx), void *context) {
+	o->OnAnimationDone = func;
+	o->OnAnimationContext = context;
 }

@@ -20,6 +20,7 @@ struct avdl_animation {
 	char *name;
 	struct avdl_animated_bone *animatedBones;
 	int animatedBonesCount;
+	float duration;
 };
 
 #define AVDL_SKELETON_NUMBER_OF_BONES 100
@@ -31,6 +32,9 @@ struct avdl_skeleton {
 	int currentAnimationIndex;
 	struct avdl_animation *animations;
 	int animations_count;
+	void (*OnAnimationDone)();
+	void (*SetOnAnimationDone)(struct avdl_skeleton *, void (*func)(void *ctx), void *context);
+	void *OnAnimationContext;
 
 	int boneCount;
 	struct dd_matrix *inverseBindMatrices;
@@ -56,5 +60,7 @@ struct dd_matrix *avdl_skeleton_GetFinalMatrices(struct avdl_skeleton *o);
 void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, struct dd_animation *animations);
 int avdl_skeleton_IsActive(struct avdl_skeleton *o);
 void avdl_skeleton_Activate(struct avdl_skeleton *o);
+
+void avdl_skeleton_SetOnAnimationDone(struct avdl_skeleton *o, void (*func)(void *ctx), void *context);
 
 #endif
