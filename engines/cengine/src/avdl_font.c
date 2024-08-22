@@ -1,6 +1,8 @@
 #include "avdl_font.h"
 #include "dd_math.h"
 #include "dd_log.h"
+#include "dd_game.h"
+#include "avdl_assetManager.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -554,7 +556,17 @@ void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outl
 	strcat_s(buffer, 10000, name);
 	assetName = buffer;
 	#else
+	#if defined(_WIN32) || defined(WIN32)
 	assetName = name;
+	#else
+	char buffer[10000];
+	strcpy(buffer, avdl_getProjectLocation());
+	strcat(buffer, "/");
+	strcat(buffer, GAME_ASSET_PREFIX);
+	strcat(buffer, name);
+	assetName = buffer;
+	#endif
+
 	#endif
 
 	// native
