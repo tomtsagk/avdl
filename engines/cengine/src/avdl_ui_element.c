@@ -227,4 +227,8 @@ int avdl_ui_element_IsVisible(struct avdl_ui_element *o) {
 
 void avdl_ui_element_SetVisible(struct avdl_ui_element *o, int value) {
 	o->isVisible = value;
+	if (!o->isVisible) {
+		o->isSelected = 0;
+		o->isSelectedClicked = 0;
+	}
 }

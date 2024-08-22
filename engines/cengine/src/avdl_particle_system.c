@@ -62,7 +62,7 @@ void avdl_particle_system_create(struct avdl_particle_system *o) {
 void avdl_particle_system_clean(struct avdl_particle_system *o) {
 }
 
-void avdl_particle_system_assignAsset(struct avdl_particle_system *o, struct dd_mesh *mesh) {
+void avdl_particle_system_assignAsset(struct avdl_particle_system *o, struct avdl_mesh *mesh) {
 	o->particleMesh = mesh;
 }
 

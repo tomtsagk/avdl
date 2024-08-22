@@ -13,7 +13,7 @@
  * their animated transformations.
  */
 
-#include "dd_mesh.h"
+#include "avdl_mesh.h"
 #include "dd_vec3.h"
 
 /*
@@ -33,7 +33,7 @@ struct avdl_particle {
 
 	// particles location and mesh
 	struct dd_matrix matrix;
-	struct dd_mesh *mesh;
+	struct avdl_mesh *mesh;
 
 	// current life of particle
 	float life;
@@ -59,7 +59,7 @@ struct avdl_particle_system {
 	float delayCurrent;
 
 	// values to be given to each new particle
-	struct dd_mesh *particleMesh;
+	struct avdl_mesh *particleMesh;
 	float particleLife;
 	struct dd_vec3 particlePosition;
 	struct dd_vec3 particlePositionFuzz;
@@ -86,7 +86,7 @@ struct avdl_particle_system {
 	/*
 	 * setters for particle data
 	 */
-	void (*assignAsset)(struct avdl_particle_system *, struct dd_mesh *);
+	void (*assignAsset)(struct avdl_particle_system *, struct avdl_mesh *);
 	void (*setDelay)(struct avdl_particle_system *, float);
 	void (*setParticleLife)(struct avdl_particle_system *, float);
 	void (*setParticlePositionXFunc)(struct avdl_particle_system *, float (*)(float));
@@ -108,7 +108,7 @@ struct avdl_particle_system {
 void avdl_particle_system_create(struct avdl_particle_system *);
 void avdl_particle_system_clean(struct avdl_particle_system *);
 
-void avdl_particle_system_assignAsset(struct avdl_particle_system *, struct dd_mesh *);
+void avdl_particle_system_assignAsset(struct avdl_particle_system *, struct avdl_mesh *);
 void avdl_particle_system_update(struct avdl_particle_system *, float dt);
 void avdl_particle_system_draw(struct avdl_particle_system *);
 
