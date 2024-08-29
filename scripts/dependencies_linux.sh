@@ -59,7 +59,7 @@ git clone https://gitlab.freedesktop.org/freetype/freetype freetype
 cd freetype
 git checkout ${FREETYPE_VERSION_LINUX}
 sh autogen.sh
-./configure --prefix=./dependency_freetype/
+./configure --prefix=$(pwd)/dependency_freetype/
 make -j6
 make -j6 install
 ./configure
