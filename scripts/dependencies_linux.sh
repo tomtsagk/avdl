@@ -67,3 +67,5 @@ make -j6
 make -j6 install
 cd ..
 cp freetype/dependency_freetype/freetype/lib/${FREETYPE_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${FREETYPE_VERSION_LINUX_SONAME}
+
+cd ..
