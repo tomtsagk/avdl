@@ -471,6 +471,7 @@ int avdl_graphics_setVSync(int flag) {
 		}
 	}
 	#endif
+	return -1;
 }
 
 void avdl_graphics_SetMSAntiAlias(int samples) {

@@ -1,5 +1,7 @@
 #include "avdl_skinned_mesh.h"
 #include "dd_log.h"
+#include <string.h>
+#include <stdlib.h>
 
 #ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;

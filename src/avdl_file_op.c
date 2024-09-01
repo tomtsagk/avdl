@@ -34,7 +34,7 @@ int file_copy(const char *src, const char *dest, int append) {
 		return -1;
 	}
 
-	int dest_flags = _O_WRONLY | _O_CREAT;
+	int dest_flags = _O_WRONLY | _O_CREAT | O_TRUNC;
 	if (append) dest_flags |= _O_APPEND;
 	int d = AVDL_FILE_OPEN_MODE(dest, dest_flags, _S_IREAD | _S_IWRITE);
 	if (!d) {
@@ -49,7 +49,7 @@ int file_copy(const char *src, const char *dest, int append) {
 	long int nread;
 	while (nread = read(s, buffer, 1024), nread > 0) {
 		if (write(d, buffer, nread) == -1) {
-			printf("avdl error: %s\n", strerror(errno));
+			printf("file_copy: cannot write to file %s: %s\n", dest, strerror(errno));
 		}
 		i++;
 	}
@@ -74,12 +74,12 @@ int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int
 	else {
 		s = open(src, O_RDONLY);
 	}
-	if (!s) {
-		printf("can't open %s: %s\n", src, strerror(errno));
+	if (s == -1) {
+		printf("file_copy_at: can't open source %s: %s\n", src, strerror(errno));
 		return -1;
 	}
 
-	int dest_flags = O_WRONLY | O_CREAT;
+	int dest_flags = O_WRONLY | O_CREAT | O_TRUNC;
 	if (append) dest_flags |= O_APPEND;
 	int d;
 	if (dest_at) {
@@ -88,8 +88,8 @@ int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int
 	else {
 		d = open(dest, dest_flags, S_IRUSR | S_IWUSR);
 	}
-	if (!d) {
-		printf("can't open %s: %s\n", dest, strerror(errno));
+	if (d == -1) {
+		printf("file_copy_at: can't open destination %s: %s\n", dest, strerror(errno));
 		return -1;
 	}
 
@@ -99,7 +99,7 @@ int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int
 	ssize_t nread;
 	while (nread = read(s, buffer, 1024), nread > 0) {
 		if (write(d, buffer, nread) == -1) {
-			printf("avdl error: %s\n", strerror(errno));
+			printf("file_copy_at: cannot write to file %s: %s\n", dest, strerror(errno));
 		}
 		i++;
 	}
@@ -124,12 +124,12 @@ int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 	else {
 		s = open(src, O_RDONLY);
 	}
-	if (!s) {
-		printf("can't open %s: %s\n", src, strerror(errno));
+	if (s == -1) {
+		printf("file_replace: can't open source %s: %s\n", src, strerror(errno));
 		return -1;
 	}
 
-	int dest_flags = O_WRONLY | O_CREAT;
+	int dest_flags = O_WRONLY | O_CREAT | O_TRUNC;
 	int d;
 	if (dst_at) {
 		d = openat(dst_at, dst, dest_flags, S_IRUSR | S_IWUSR);
@@ -137,8 +137,8 @@ int file_replace(int src_at, const char *src, int dst_at, const char *dst,
 	else {
 		d = open(dst, dest_flags, S_IRUSR | S_IWUSR);
 	}
-	if (!d) {
-		printf("can't open %s: %s\n", dst, strerror(errno));
+	if (d == -1) {
+		printf("file_replace: can't open destination %s: %s\n", src, strerror(errno));
 		return -1;
 	}
 
@@ -215,8 +215,8 @@ int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst)
 		src_dir = open(src, O_DIRECTORY);
 	}
 
-	if (!src_dir) {
-		printf("avdl error: Unable to open '%s': %s\n", src, strerror(errno));
+	if (src_dir == -1) {
+		printf("dir_copy_recursive: can't open source %s: %s\n", src, strerror(errno));
 		return -1;
 	}
 
@@ -229,8 +229,8 @@ int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst)
 		dst_dir = open(dst, O_DIRECTORY);
 	}
 
-	if (!dst_dir) {
-		printf("avdl error: Unable to open '%s': %s\n", dst, strerror(errno));
+	if (dst_dir == -1) {
+		printf("dir_copy_recursive: can't open destination %s: %s\n", src, strerror(errno));
 		close(src_dir);
 		return -1;
 	}
@@ -369,8 +369,8 @@ int Avdl_FileOp_GetNumberOfFiles(const char *directory) {
 
 	// open source directory
 	int src_dir = open(directory, O_DIRECTORY);
-	if (!src_dir) {
-		printf("avdl error: Unable to open '%s': %s\n", directory, strerror(errno));
+	if (src_dir == -1) {
+		printf("dir_copy_recursive: can't open source %s: %s\n", directory, strerror(errno));
 		return -1;
 	}
 
@@ -690,19 +690,19 @@ int file_write(const char *filename, const char *content, int append) {
 
 	return 0;
 	#else
-	int flags = O_WRONLY | O_CREAT;
+	int flags = O_WRONLY | O_CREAT | O_TRUNC;
 	if (append) {
 		flags |= O_APPEND;
 	}
 	int d;
 	d = open(filename, flags, S_IRUSR | S_IWUSR);
-	if (!d) {
-		printf("can't open %s: %s\n", filename, strerror(errno));
+	if (d == -1) {
+		printf("avdl error: Unable to open directory '%s': %s\n", filename, strerror(errno));
 		return -1;
 	}
 
 	if (write(d, content, strlen(content)) == -1) {
-		printf("avdl error: %s\n", strerror(errno));
+		printf("file_write: cannot write to file %s: %s\n", filename, strerror(errno));
 	}
 
 	close(d);

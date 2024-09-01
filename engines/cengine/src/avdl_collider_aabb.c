@@ -7,7 +7,7 @@ void avdl_collider_aabb_create(struct avdl_collider_aabb *o) {
 	dd_vec3_setf(&o->max,  0.5,  0.5,  0.5);
 
 	avdl_mesh_create(&o->mesh);
-	avdl_mesh_set_primitive(&o->mesh, DD_PRIMITIVE_BOX);
+	avdl_mesh_set_primitive(&o->mesh, AVDL_PRIMITIVE_BOX);
 	avdl_mesh_set_colour(&o->mesh, 0, 0, 0);
 	o->mesh.draw_type = 1;
 

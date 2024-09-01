@@ -1645,7 +1645,10 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 	}
 	else
 	if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
-		if (file_copy(".avdl_cache/icon_cropped_512x512.png", "avdl_build_quest2/app/src/main/res/drawable/icon.png", 0) != 0) {
+		if (!is_dir("avdl_build_quest2/res/drawable")) {
+			dir_create("avdl_build_quest2/res/drawable");
+		}
+		if (file_copy(".avdl_cache/icon_cropped_512x512.png", "avdl_build_quest2/res/drawable/icon.png", 0) != 0) {
 			avdl_log_error("could not create backwards compatibility icon for Quest 2 using ImageMagick");
 			return -1;
 		}
@@ -2408,6 +2411,12 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
 	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&objFiles, i);
+
+		if (strcmp(avdl_string_toCharPtr(str), "..") == 0
+		||  strcmp(avdl_string_toCharPtr(str), "." ) == 0) {
+			continue;
+		}
+
 		if (!avdl_string_endsIn(str, ".c")) {
 			avdl_da_remove(&objFiles, 1, i);
 			i--;
@@ -2536,8 +2545,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	struct avdl_string foregroundPath;
 	avdl_string_create(&foregroundPath, 1024);
 	avdl_string_cat(&foregroundPath, "avdl_build_quest2/");
-	avdl_string_cat(&foregroundPath, "/res/drawable/");
-	avdl_string_cat(&foregroundPath, avdl_settings->icon_foreground_path);
+	avdl_string_cat(&foregroundPath, "/res/drawable/icon_foreground.png");
 	if (!avdl_string_isValid(&foregroundPath)) {
 		avdl_log_error("unable to construct foreground path: %s", avdl_string_getError(&foregroundPath));
 		return -1;
@@ -2548,13 +2556,12 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	struct avdl_string backgroundPath;
 	avdl_string_create(&backgroundPath, 1024);
 	avdl_string_cat(&backgroundPath, "avdl_build_quest2/");
-	avdl_string_cat(&backgroundPath, "/res/drawable/");
-	avdl_string_cat(&backgroundPath, avdl_settings->icon_foreground_path);
+	avdl_string_cat(&backgroundPath, "/res/drawable/icon_background.png");
 	if (!avdl_string_isValid(&backgroundPath)) {
 		avdl_log_error("unable to construct background path: %s", avdl_string_getError(&foregroundPath));
 		return -1;
 	}
-	file_copy(avdl_settings->icon_background_path, avdl_string_toCharPtr(&foregroundPath), 0);
+	file_copy(avdl_settings->icon_background_path, avdl_string_toCharPtr(&backgroundPath), 0);
 	avdl_string_clean(&backgroundPath);
 
 	if (!is_dir("avdl_build_quest2/res/values/")) {
