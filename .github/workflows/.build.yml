@@ -71,7 +71,7 @@ jobs:
       uses: actions/checkout@v1
     - name: ubuntu_dependencies
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: ./scripts/install_dependencies_ubuntu.sh
+      run: sudo ./scripts/install_dependencies_ubuntu.sh
     - name: prepare directories
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: |
