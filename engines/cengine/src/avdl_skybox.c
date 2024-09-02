@@ -48,7 +48,7 @@ void avdl_skybox_set(struct avdl_skybox *o, const char *assetname[]) {
 
 	// load textures
 	for (int i = 0; i < 6; i++) {
-		o->img[i].set(&o->img[i], assetname[i], 0);
+		o->img[i].set(&o->img[i], assetname[i], AVDL_IMAGETYPE_PNG);
 	}
 
 }
@@ -71,6 +71,16 @@ void avdl_skybox_bind(struct avdl_skybox *o) {
 
 		// images loaded - move to gpu
 		o->graphics_contextid = avdl_graphics_getContextId();
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+		void *pixels[] = {
+			o->img[0].pixelsb,
+			o->img[1].pixelsb,
+			o->img[2].pixelsb,
+			o->img[3].pixelsb,
+			o->img[4].pixelsb,
+			o->img[5].pixelsb,
+		};
+		#else
 		void *pixels[] = {
 			o->img[0].pixels,
 			o->img[1].pixels,
@@ -79,6 +89,7 @@ void avdl_skybox_bind(struct avdl_skybox *o) {
 			o->img[4].pixels,
 			o->img[5].pixels,
 		};
+		#endif
 		int pixelFormat[] = {
 			o->img[0].pixelFormat,
 			o->img[1].pixelFormat,

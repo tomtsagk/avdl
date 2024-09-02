@@ -319,22 +319,19 @@ avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], in
 	GL(glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
 
 	for(int i = 0; i < 6; i++) {
+		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+		GL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
+		GL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+			0, GL_RGBA, width[i], height[i], 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels[i]
+		));
+		#else
 		GL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
 			0, GL_RGB, width[i], height[i], 0, pixel_format[i], GL_FLOAT, pixels[i]
 		));
+		#endif
 	}
 
 	GL(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
-	/*
-	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-	GL(glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_FLOAT, pixels));
-	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	GL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
-	GL(glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_UNSIGNED_BYTE, pixels));
-	#endif
-
-	GL(glBindTexture(GL_TEXTURE_2D, 0));
-	*/
 
 	return tex;
 
