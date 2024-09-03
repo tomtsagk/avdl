@@ -833,10 +833,10 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		avdl_string_create(&cEngFile, 1024);
 		avdl_string_cat(&cEngFile, cengine_files[i]);
 		if (avdl_string_endsIn(&cEngFile, ".cpp")) {
-			strcpy(compile_command, "g++ -w -c -DGLEW_NO_GLU ");
+			strcpy(compile_command, "g++ -c -DGLEW_NO_GLU ");
 		}
 		else {
-			strcpy(compile_command, "gcc -w -Wno-incompatible-pointer-types -c -DGLEW_NO_GLU ");
+			strcpy(compile_command, "gcc -Wno-incompatible-pointer-types -c -DGLEW_NO_GLU ");
 		}
 		avdl_string_clean(&cEngFile);
 
