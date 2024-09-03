@@ -444,7 +444,7 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 	m.is_newline = 0;
 	struct dd_word_mesh *p;
 
-	char *t = text;
+	const char *t = text;
 
 	float space_size = SPACE_SIZE;
 

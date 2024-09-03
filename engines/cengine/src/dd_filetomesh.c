@@ -12,8 +12,8 @@
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
 
-char *skip_whitespace(char *str);
-char *skip_to_whitespace(char *str);
+const char *skip_whitespace(const char *str);
+const char *skip_to_whitespace(const char *str);
 int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int settings);
 int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings);
 int avdl_load_gltf(struct dd_loaded_mesh *m, const char *path, int settings);
@@ -696,7 +696,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		if ( strcmp(buff, "format") == 0 ) {
 			// Get format/list
 			buff[1023] = '\0';
-			if ( fscanf(f, "%*[ \t]%1022[a-zA-Z0-9 \.]", buff) == EOF )
+			if ( fscanf(f, "%*[ \t]%1022[a-zA-Z0-9 .]", buff) == EOF )
 				goto error;
 			if ( strcmp(buff, "ascii 1.0") != 0 ) {
 				dd_log("unsupported format: %s", buff);
@@ -1002,7 +1002,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 #endif
 
-char *skip_whitespace(char *str) {
+const char *skip_whitespace(const char *str) {
 	while (str[0] == ' '
 	||     str[0] == '\t'
 	||     str[0] == '\n'
@@ -1013,7 +1013,7 @@ char *skip_whitespace(char *str) {
 	return str;
 }
 
-char *skip_to_whitespace(char *str) {
+const char *skip_to_whitespace(const char *str) {
 	while (str[0] != ' '
 	&&     str[0] != '\t'
 	&&     str[0] != '\n'
@@ -1032,7 +1032,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 	#else
 
 	// main pointer
-	char *p = string;
+	const char *p = string;
 
 	// verify ply signature
 	if ( strncmp(p, "ply", strlen("ply")) != 0) {
@@ -1116,7 +1116,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 
 			// get element name
 			p = skip_whitespace(p);
-			char *p2 = p;
+			const char *p2 = p;
 			p2 = skip_to_whitespace(p2);
 			if (p2 -p >= 100) {
 				dd_log("avdl: avdl_load_ply_string: element name has to be smaller than 100 characters");
@@ -1169,7 +1169,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 				p = skip_whitespace(p);
 
 				// get list type
-				char *p2 = p;
+				const char *p2 = p;
 				p2 = skip_to_whitespace(p2);
 				if (p2 -p >= 100) {
 					dd_log("avdl: avdl_load_ply_string: property list type has to be smaller than 100 characters");
@@ -1189,7 +1189,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 			}
 
 			// get property type
-			char *p2 = p;
+			const char *p2 = p;
 			p2 = skip_to_whitespace(p2);
 			if (p2 -p >= 100) {
 				dd_log("avdl: avdl_load_ply_string: property type has to be smaller than 100 characters");
@@ -1231,7 +1231,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 		}
 		// unrecognised word
 		else {
-			char *p2 = p;
+			const char *p2 = p;
 			p2 = skip_to_whitespace(p2);
 
 			char temp[100];

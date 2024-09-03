@@ -81,7 +81,7 @@ int dd_image_load_png(struct dd_image *img, const char *filename) {
 	//FILE* fp = avdl_filetomesh_openFile("assets/button.ply");
 	#else
 	FILE* fp = fopen(filename, "rb");
-	#endif;
+	#endif
 	if (!fp) {
 		dd_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
 		return -1;
