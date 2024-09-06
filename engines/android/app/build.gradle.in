@@ -5,13 +5,13 @@ ext.versionCodes = ['armeabi-v7a':1, 'arm64-v8a':2, 'mips':3, 'x86':4, 'x86_64':
 
 android {
 	namespace 'org.darkdimension.avdl'
-	compileSdkVersion 33
+	compileSdkVersion 34
 	ndkVersion '27.1.12297006'
 
 	defaultConfig {
 		applicationId '%AVDL_PACKAGE_NAME%'
 		minSdkVersion 19
-		targetSdkVersion 33
+		targetSdkVersion 34
 		versionCode  %AVDL_VERSION_CODE%
 		versionName  "%AVDL_VERSION_NAME%"
 	}

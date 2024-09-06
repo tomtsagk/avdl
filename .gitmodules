@@ -1,0 +1,3 @@
+[submodule "engines/android/app/src/main/cpp/freetype"]
+	path = engines/android/app/src/main/cpp/freetype
+	url = https://gitlab.freedesktop.org/freetype/freetype
