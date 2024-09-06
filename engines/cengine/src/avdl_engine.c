@@ -62,14 +62,14 @@ typedef void(GL_APIENTRY* PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(
 #endif
 
 struct OpenGLExtensions_t {
-	int multi_view; // GL_OVR_multiview, GL_OVR_multiview2
-	int EXT_texture_border_clamp; // GL_EXT_texture_border_clamp, GL_OES_texture_border_clamp
-	int EXT_sRGB_write_control;
+	char *multi_view; // GL_OVR_multiview, GL_OVR_multiview2
+	char *EXT_texture_border_clamp; // GL_EXT_texture_border_clamp, GL_OES_texture_border_clamp
+	char *EXT_sRGB_write_control;
 };
 struct OpenGLExtensions_t glExtensions;
 
 static void EglInitExtensions() {
-	//glExtensions = {};
+	glExtensions = {0};
 	const char* allExtensions = (const char*)glGetString(GL_EXTENSIONS);
 	if (allExtensions != 0) {
 		glExtensions.multi_view = strstr(allExtensions, "GL_OVR_multiview2") &&
@@ -266,7 +266,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	// opengl extensions
 	EglInitExtensions();
-	if (glExtensions.EXT_sRGB_write_control) {
+	if (!glExtensions.EXT_sRGB_write_control) {
 		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 	}
 
