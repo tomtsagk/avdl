@@ -62,8 +62,8 @@ typedef void(GL_APIENTRY* PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(
 #endif
 
 struct OpenGLExtensions_t {
-	char *multi_view; // GL_OVR_multiview, GL_OVR_multiview2
-	char *EXT_texture_border_clamp; // GL_EXT_texture_border_clamp, GL_OES_texture_border_clamp
+	int multi_view; // GL_OVR_multiview, GL_OVR_multiview2
+	int EXT_texture_border_clamp; // GL_EXT_texture_border_clamp, GL_OES_texture_border_clamp
 	char *EXT_sRGB_write_control;
 };
 struct OpenGLExtensions_t glExtensions;
