@@ -17,10 +17,11 @@ const char *skip_to_whitespace(const char *str);
 int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int settings);
 int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings);
 int avdl_load_gltf(struct dd_loaded_mesh *m, const char *path, int settings);
-int avdl_load_gltf_string(struct dd_loaded_mesh *m, void *data, off_t size, int settings);
 int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cgltf_data *data, int settings);
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+
+int avdl_load_gltf_string(struct dd_loaded_mesh *m, void *data, off_t size, int settings);
 
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
@@ -1656,6 +1657,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 	#endif
 }
 
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 int avdl_load_gltf_string(struct dd_loaded_mesh *m, void *file_data, off_t size, int settings) {
 
 	// initialise cgltf
@@ -1684,6 +1686,7 @@ int avdl_load_gltf_string(struct dd_loaded_mesh *m, void *file_data, off_t size,
 	cgltf_free(data);
 	return 0;
 }
+#endif
 
 int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cgltf_data *data, int settings) {
 
