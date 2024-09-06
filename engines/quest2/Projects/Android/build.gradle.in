@@ -5,7 +5,7 @@ apply from: "${rootProject.projectDir}/VrApp.gradle"
 android {
 	namespace 'dev.afloof.avdl'
 	compileSdkVersion 32
-	ndkVersion '25.1.8937393'
+	ndkVersion '27.1.12297006'
 
 	defaultConfig {
 		// Gradle replaces the manifest package with this value, which must
