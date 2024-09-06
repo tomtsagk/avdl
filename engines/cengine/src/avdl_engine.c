@@ -69,7 +69,7 @@ struct OpenGLExtensions_t {
 struct OpenGLExtensions_t glExtensions;
 
 static void EglInitExtensions() {
-	glExtensions = {0};
+	//glExtensions = {};
 	const char* allExtensions = (const char*)glGetString(GL_EXTENSIONS);
 	if (allExtensions != 0) {
 		glExtensions.multi_view = strstr(allExtensions, "GL_OVR_multiview2") &&
@@ -79,6 +79,11 @@ static void EglInitExtensions() {
 			strstr(allExtensions, "GL_EXT_texture_border_clamp") ||
 			strstr(allExtensions, "GL_OES_texture_border_clamp");
 		glExtensions.EXT_sRGB_write_control = strstr(allExtensions, "GL_EXT_sRGB_write_control");
+	}
+	else {
+		glExtensions.multi_view = 0;
+		glExtensions.EXT_texture_border_clamp = 0;
+		glExtensions.EXT_sRGB_write_control = 0;
 	}
 }
 #endif
