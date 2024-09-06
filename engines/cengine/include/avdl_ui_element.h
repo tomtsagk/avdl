@@ -40,7 +40,7 @@ struct avdl_ui_element {
 	int isSelectedClicked;
 
 	// onclick variable
-	void (*onClick)();
+	void (*onClick)(void *ctx);
 	void (*SetOnClick)(struct avdl_ui_element *, void (*func)(), void *data);
 	void *onClickData;
 

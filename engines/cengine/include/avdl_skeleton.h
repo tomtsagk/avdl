@@ -40,7 +40,7 @@ struct avdl_skeleton {
 	int animations_count;
 
 	// animation callback
-	void (*OnAnimationDone)();
+	void (*OnAnimationDone)(void *ctx);
 	void (*SetOnAnimationDone)(struct avdl_skeleton *, void (*func)(void *ctx), void *context);
 	void *OnAnimationContext;
 

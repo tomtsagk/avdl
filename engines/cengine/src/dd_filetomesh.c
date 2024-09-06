@@ -1889,7 +1889,7 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 							return -1;
 						}
 						*/
-						int *bones = malloc(sizeof(int) *attribute_data->count *4);
+						unsigned int *bones = malloc(sizeof(unsigned int) *attribute_data->count *4);
 						for (int ind = 0; ind < attribute_data->count; ind++) {
 							cgltf_accessor_read_uint(attribute_data, ind, &bones[ind *attribute_value_dimension_count], 4);
 						}

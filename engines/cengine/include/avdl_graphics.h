@@ -166,7 +166,7 @@ void avdl_graphics_DrawArrays(int vcount);
 //typedef ID3D11ShaderResourceView avdl_texture_id;
 typedef void* avdl_texture_id;
 #else
-typedef int avdl_texture_id;
+typedef unsigned int avdl_texture_id;
 #endif
 
 void avdl_graphics_DeleteTexture(avdl_texture_id tex);
