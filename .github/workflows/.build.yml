@@ -67,14 +67,14 @@ jobs:
       id: cache
       uses: actions/cache@v3
       with:
-        key: avdl_dependencies_linux_v11
+        key: avdl_dependencies_linux_v12
         path: avdl_dependencies_linux
     - name: ubuntu_dependencies
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: sudo ./scripts/install_dependencies_ubuntu.sh
+      run: ./scripts/install_dependencies_ubuntu.sh
     - name: avdl_dependencies
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: sudo ./scripts/dependencies_linux.sh avdl_dependencies_linux
+      run: ./scripts/dependencies_linux.sh avdl_dependencies_linux
     - name: steamworks
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       env:
