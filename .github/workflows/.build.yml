@@ -65,7 +65,7 @@ jobs:
       id: cache
       uses: actions/cache@v3
       with:
-        key: avdl_dependencies_windows_v13
+        key: avdl_dependencies_windows_v14
         path: avdl_dependencies_windows
     - name: dependencies_windows
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
