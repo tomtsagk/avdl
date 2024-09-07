@@ -5,6 +5,8 @@ if "%1"=="" (
 	exit
 )
 
+start_directory=%cd%
+
 :: get into the cache directory
 if not exist ".avdl_cache" mkdir ".avdl_cache"
 cd ".avdl_cache"
@@ -52,7 +54,7 @@ if exist build (
 )
 mkdir build
 cd build
-cmake ../ . -DCMAKE_INSTALL_PREFIX="../../dependencies/zlib"
+cmake ../ . -DCMAKE_INSTALL_PREFIX="%start_directory%/dependencies/zlib"
 cmake --build . --config Release
 cmake --install .
 cd ../../
@@ -66,7 +68,7 @@ if exist build (
 )
 mkdir build
 cd build
-cmake ../ . -DCMAKE_INSTALL_PREFIX="../../dependencies/libpng" -DZLIB_LIBRARY="../../dependencies/zlib/lib/zlib.obj" -DZLIB_INCLUDE_DIR="../../dependencies/zlib/include"
+cmake ../ . -DCMAKE_INSTALL_PREFIX="%start_directory%/dependencies/libpng" -DZLIB_LIBRARY="%start_directory%/dependencies/zlib/lib/zlib.obj" -DZLIB_INCLUDE_DIR="%start_directory%/dependencies/zlib/include"
 cmake --build . --config Release
 cmake --install .
 cd ../../
@@ -81,7 +83,7 @@ if exist build (
 )
 mkdir build
 cd build
-cmake ../ . -DCMAKE_INSTALL_PREFIX="../../dependencies/freetype" -DBUILD_SHARED_LIBS=true -DCMAKE_BUILD_TYPE=Release
+cmake ../ . -DCMAKE_INSTALL_PREFIX="%start_directory%/dependencies/freetype" -DBUILD_SHARED_LIBS=true -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release
 cmake --install .
 cd ../../
