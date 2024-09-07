@@ -68,7 +68,7 @@ if exist build (
 )
 mkdir build
 cd build
-cmake ../ . -DCMAKE_INSTALL_PREFIX="%start_directory%/dependencies/libpng" -DZLIB_LIBRARY="%start_directory%/dependencies/zlib/lib/zlib.obj" -DZLIB_INCLUDE_DIR="%start_directory%/dependencies/zlib/include"
+cmake ../ . -DCMAKE_INSTALL_PREFIX="%start_directory%/dependencies/libpng" -DZLIB_LIBRARY="%start_directory%/dependencies/zlib/lib/zlib.lib" -DZLIB_INCLUDE_DIR="%start_directory%/dependencies/zlib/include"
 cmake --build . --config Release
 cmake --install .
 cd ../../
