@@ -5,7 +5,7 @@ if "%1"=="" (
 	exit
 )
 
-start_directory=%cd%
+set start_directory=%cd%
 
 :: get into the cache directory
 if not exist ".avdl_cache" mkdir ".avdl_cache"
