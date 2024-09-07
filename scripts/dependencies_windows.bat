@@ -6,6 +6,7 @@ if "%1"=="" (
 )
 
 set start_directory=%cd%
+set cache_directory=%cd%\.avdl_cache\avdl_build_dependencies_windows
 
 :: get into the cache directory
 if not exist ".avdl_cache" mkdir ".avdl_cache"
@@ -54,7 +55,7 @@ if exist build (
 )
 mkdir build
 cd build
-cmake ../ . -DCMAKE_INSTALL_PREFIX="%start_directory%/dependencies/zlib"
+cmake ../ . -DCMAKE_INSTALL_PREFIX="%cache_directory%/dependencies/zlib"
 cmake --build . --config Release
 cmake --install .
 cd ../../
@@ -68,7 +69,7 @@ if exist build (
 )
 mkdir build
 cd build
-cmake ../ . -DCMAKE_INSTALL_PREFIX="%start_directory%/dependencies/libpng" -DZLIB_LIBRARY="%start_directory%/dependencies/zlib/lib/zlib.lib" -DZLIB_INCLUDE_DIR="%start_directory%/dependencies/zlib/include"
+cmake ../ . -DCMAKE_INSTALL_PREFIX="%cache_directory%/dependencies/libpng" -DZLIB_LIBRARY="%cache_directory%/dependencies/zlib/lib/zlib.lib" -DZLIB_INCLUDE_DIR="%cache_directory%/dependencies/zlib/include"
 cmake --build . --config Release
 cmake --install .
 cd ../../
@@ -83,7 +84,7 @@ if exist build (
 )
 mkdir build
 cd build
-cmake ../ . -DCMAKE_INSTALL_PREFIX="%start_directory%/dependencies/freetype" -DBUILD_SHARED_LIBS=true -DCMAKE_BUILD_TYPE=Release
+cmake ../ . -DCMAKE_INSTALL_PREFIX="%cache_directory%/dependencies/freetype" -DBUILD_SHARED_LIBS=true -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release
 cmake --install .
 cd ../../
@@ -94,7 +95,7 @@ mkdir "%out_directory%"
 mkdir "%out_directory%\windows"
 mkdir "%out_directory%\windows\include"
 mkdir "%out_directory%\windows\lib"
-xcopy /e ".\dependencies" "%out_directory%\windows"
+xcopy /e "%cache_directory%\dependencies" "%out_directory%\windows"
 xcopy /e ".\avdl_sdl2\SDL2-%SDL_VERSION_WINDOWS%\include\" "%out_directory%\windows\include"
 xcopy /e ".\avdl_sdl2\SDL2-%SDL_VERSION_WINDOWS%\lib\" "%out_directory%\windows\lib"
 xcopy /e ".\avdl_sdl2_mixer\SDL2_mixer-%SDL_MIXER_VERSION_WINDOWS%\include\" "%out_directory%\windows\include"
