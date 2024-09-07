@@ -1,3 +1,15 @@
+
+# output directory
+if [ -z "$1" ]
+then
+        echo "avdl: dependencies_linux.sh: first argument is required as the output folder"
+	exit
+fi
+
+# get inside cache directory
+mkdir .avdl_cache
+cd .avdl_cache
+
 # temp directory
 mkdir avdl_build_dependencies
 cd avdl_build_dependencies
@@ -47,22 +59,23 @@ FREETYPE_VERSION_LINUX_LINKER_NAME="libfreetype.so"
 FREETYPE_VERSION_LINUX_SONAME="libfreetype.so.6"
 FREETYPE_VERSION_LINUX_REAL_NAME="libfreetype.so.6.20.0"
 
+out_directory="../../$1"
+
 # prepare directories
-mkdir avdl_dependencies_linux
-mkdir avdl_dependencies_linux/linux
-mkdir avdl_dependencies_linux/linux/lib
-mkdir avdl_dependencies_linux/linux/include
-mkdir avdl_dependencies_linux/windows
-mkdir avdl_dependencies_linux/windows/lib
-mkdir avdl_dependencies_linux/windows/include
+mkdir ${out_directory}
+mkdir ${out_directory}/linux
+mkdir ${out_directory}/linux/lib
+mkdir ${out_directory}/linux/include
+mkdir ${out_directory}/windows
+mkdir ${out_directory}/windows/lib
+mkdir ${out_directory}/windows/include
 
 # freetype
 git clone https://gitlab.freedesktop.org/freetype/freetype freetype
-cp -r freetype ../
 cd freetype
 git checkout ${FREETYPE_VERSION_LINUX}
 sh autogen.sh
-./configure --prefix=$(pwd)/dependency_freetype/
+./configure --prefix=$(pwd)/../dependencies/
 make -j6
 make -j6 install
 make clean
@@ -70,27 +83,27 @@ make clean
 make -j6
 make -j6 install
 cd ..
-cp freetype/dependency_freetype/lib/${FREETYPE_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${FREETYPE_VERSION_LINUX_SONAME}
+cp dependencies/lib/${FREETYPE_VERSION_LINUX_REAL_NAME} ${out_directory}/linux/lib/${FREETYPE_VERSION_LINUX_SONAME}
 
 # libpng
 git clone git://git.code.sf.net/p/libpng/code libpng
 cd libpng
 git checkout v${PNG_VERSION_LINUX}
-./configure --prefix=$(pwd)/dependency_libpng
+./configure --prefix=$(pwd)/../dependencies
 make -j6
 make -j6 install
 ./configure
 make -j6
 make -j6 install
 cd ..
-cp libpng/dependency_libpng/lib/${PNG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${PNG_VERSION_LINUX_SONAME}
+cp dependencies/lib/${PNG_VERSION_LINUX_REAL_NAME} ${out_directory}/linux/lib/${PNG_VERSION_LINUX_SONAME}
 
 # ogg
 git clone https://gitlab.xiph.org/xiph/ogg.git ogg
 cd ogg
 git checkout v${OGG_VERSION_LINUX}
 ./autogen.sh
-./configure --prefix=$(pwd)/dependency_ogg
+./configure --prefix=$(pwd)/../dependencies
 make -j6
 make -j6 install
 ./autogen.sh
@@ -98,18 +111,18 @@ make -j6 install
 make -j6
 make -j6 install
 cd ..
-cp ogg/dependency_ogg/lib/${OGG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OGG_VERSION_LINUX_SONAME}
+cp dependencies/lib/${OGG_VERSION_LINUX_REAL_NAME} ${out_directory}/linux/lib/${OGG_VERSION_LINUX_SONAME}
 
 # vorbis
 git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis
 cd vorbis
 git checkout v${VORBIS_VERSION_LINUX}
 ./autogen.sh
-./configure --prefix=$(pwd)/dependency_vorbis
+./configure --prefix=$(pwd)/../dependencies
 make
 make install
 cd ..
-cp vorbis/dependency_vorbis/lib/${VORBIS_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${VORBIS_VERSION_LINUX_SONAME}
+cp dependencies/lib/${VORBIS_VERSION_LINUX_REAL_NAME} ${out_directory}/linux/lib/${VORBIS_VERSION_LINUX_SONAME}
 
 # vorbis system
 git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis2
@@ -122,21 +135,21 @@ make install
 cd ..
 
 # sdl
-export C_INCLUDE_PATH=$(pwd)/avdl_dependencies_linux/linux/include
-export LIBRARY_PATH=$(pwd)/avdl_dependencies_linux/lib:$(pwd)/avdl_dependencies_linux/lib64
+export C_INCLUDE_PATH=$(pwd)/${out_directory}/linux/include
+export LIBRARY_PATH=$(pwd)/${out_directory}/lib:$(pwd)/${out_directory}/lib64
 git clone https://github.com/libsdl-org/SDL SDL
 cd SDL
 git checkout release-$SDL_VERSION_LINUX
 mkdir build
 cd build
-../configure --prefix=$(pwd)/dependency_sdl
+../configure --prefix=$(pwd)/../../dependencies
 make -j6
 make -j6 install
 ../configure
 make -j6
 make -j6 install
 cd ../..
-cp SDL/build/dependency_sdl/lib/${SDL_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_VERSION_LINUX_SONAME}
+cp dependencies/lib/${SDL_VERSION_LINUX_REAL_NAME} ${out_directory}/linux/lib/${SDL_VERSION_LINUX_SONAME}
 
 # sdl_mixer
 git clone https://github.com/libsdl-org/SDL_mixer SDL_mixer
@@ -144,26 +157,26 @@ cd SDL_mixer
 git checkout release-$SDL_MIXER_VERSION_LINUX
 mkdir build
 cd build
-../configure --prefix=$(pwd)/dependency_sdl_mixer --enable-music-ogg-vorbis
+../configure --prefix=$(pwd)/../../dependencies --enable-music-ogg-vorbis
 make -j6
 make -j6 install
 ../configure --enable-music-ogg-vorbis
 make -j6
 make -j6 install
 cd ../..
-cp SDL_mixer/build/dependency_sdl_mixer/lib/${SDL_MIXER_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_MIXER_VERSION_LINUX_SONAME}
+cp dependencies/lib/${SDL_MIXER_VERSION_LINUX_REAL_NAME} ${out_directory}/linux/lib/${SDL_MIXER_VERSION_LINUX_SONAME}
 
 # glew
 wget https://github.com/nigels-com/glew/releases/download/glew-${GLEW_VERSION_LINUX}/glew-${GLEW_VERSION_LINUX}.tgz
 tar xf glew-${GLEW_VERSION_LINUX}.tgz
 cd glew-${GLEW_VERSION_LINUX}
-make GLEW_DEST=$(pwd)/dependency_glew
-make GLEW_DEST=$(pwd)/dependency_glew install
+make GLEW_DEST=$(pwd)/../dependencies
+make GLEW_DEST=$(pwd)/../dependencies install
 make clean
 make
 make install
 cd ..
-cp glew-${GLEW_VERSION_LINUX}/dependency_glew/lib64/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
+cp dependencies/lib64/${GLEW_VERSION_LINUX_REAL_NAME} ${out_directory}/linux/lib/${GLEW_VERSION_LINUX_SONAME}
 
 #    - name: steamworks
 #      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -172,21 +185,19 @@ cp glew-${GLEW_VERSION_LINUX}/dependency_glew/lib64/${GLEW_VERSION_LINUX_REAL_NA
 #      run: |
 #        wget ${steamworks_api_link} --quiet
 #        unzip steamworks_sdk.zip
-#        mv sdk/redistributable_bin/linux64/libsteam_api.so avdl_dependencies_linux/linux/lib
-#        mv sdk/redistributable_bin/steam_api.dll avdl_dependencies_linux/windows/lib
-#        mv sdk/redistributable_bin/steam_api.lib avdl_dependencies_linux/windows/lib
-#        mv sdk/redistributable_bin/win64/steam_api64.dll avdl_dependencies_linux/windows/lib
-#        mv sdk/redistributable_bin/win64/steam_api64.lib avdl_dependencies_linux/windows/lib
-#        cp sdk/public/steam/*.h avdl_dependencies_linux/linux/include
-#        cp sdk/public/steam/*.h avdl_dependencies_linux/windows/include
+#        mv sdk/redistributable_bin/linux64/libsteam_api.so ${out_directory}/linux/lib
+#        mv sdk/redistributable_bin/steam_api.dll ${out_directory}/windows/lib
+#        mv sdk/redistributable_bin/steam_api.lib ${out_directory}/windows/lib
+#        mv sdk/redistributable_bin/win64/steam_api64.dll ${out_directory}/windows/lib
+#        mv sdk/redistributable_bin/win64/steam_api64.lib ${out_directory}/windows/lib
+#        cp sdk/public/steam/*.h ${out_directory}/linux/include
+#        cp sdk/public/steam/*.h ${out_directory}/windows/include
 
-#    - name: collect_dependencies
-#      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-#      run: |
-#        cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/linux/include
-#    - uses: actions/upload-artifact@v3
-#      with:
-#        name: avdl_dependencies_linux
-#        path: avdl_dependencies_linux
+# collect headers
+cp -d -r dependencies/include/* ${out_directory}/linux/include
 
+# temp directory
+cd ..
+
+# avdl cache
 cd ..

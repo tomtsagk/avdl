@@ -72,122 +72,9 @@ jobs:
     - name: ubuntu_dependencies
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: sudo ./scripts/install_dependencies_ubuntu.sh
-    - name: prepare directories
+    - name: avdl_dependencies
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        mkdir avdl_dependencies_linux
-        mkdir avdl_dependencies_linux/linux
-        mkdir avdl_dependencies_linux/linux/lib
-        mkdir avdl_dependencies_linux/linux/include
-        mkdir avdl_dependencies_linux/windows
-        mkdir avdl_dependencies_linux/windows/lib
-        mkdir avdl_dependencies_linux/windows/include
-    - name: freetype - linux
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        git clone https://gitlab.freedesktop.org/freetype/freetype freetype
-        cd freetype
-        git checkout ${FREETYPE_VERSION_LINUX}
-        sh autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES/freetype
-        make -j6
-        make -j6 install
-        ./configure
-        make -j6
-        sudo make -j6 install
-        cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/freetype/lib/${FREETYPE_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${FREETYPE_VERSION_LINUX_SONAME}
-    - name: libpng - linux
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        git clone git://git.code.sf.net/p/libpng/code libpng
-        cd libpng
-        git checkout v${PNG_VERSION_LINUX}
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make -j6
-        make -j6 install
-        ./configure
-        make -j6
-        sudo make -j6 install
-        cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/${PNG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${PNG_VERSION_LINUX_SONAME}
-    - name: ogg - linux
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        git clone https://gitlab.xiph.org/xiph/ogg.git ogg
-        cd ogg
-        git checkout v${OGG_VERSION_LINUX}
-        ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make -j6
-        make -j6 install
-        ./autogen.sh
-        ./configure
-        make -j6
-        sudo make -j6 install
-        cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/${OGG_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${OGG_VERSION_LINUX_SONAME}
-    - name: vorbis - linux
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis
-        cd vorbis
-        git checkout v${VORBIS_VERSION_LINUX}
-        ./autogen.sh
-        ./configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make
-        make install
-        cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/${VORBIS_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${VORBIS_VERSION_LINUX_SONAME}
-    - name: vorbis2 - linux
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        git clone https://gitlab.xiph.org/xiph/vorbis.git vorbis2
-        cd vorbis2
-        git checkout v${VORBIS_VERSION_LINUX}
-        ./autogen.sh
-        ./configure
-        make
-        sudo make install
-        cd ..
-    - name: sdl - linux
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        export C_INCLUDE_PATH=${HOME}/AVDL_DEPENDENCIES/include
-        export LIBRARY_PATH=${HOME}/AVDL_DEPENDENCIES/lib:${HOME}/AVDL_DEPENDENCIES/lib64
-        git clone https://github.com/libsdl-org/SDL SDL
-        cd SDL
-        git checkout release-$SDL_VERSION_LINUX
-        mkdir build
-        cd build
-        ../configure --prefix=${HOME}/AVDL_DEPENDENCIES
-        make -j6
-        make -j6 install
-        cd ../..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/${SDL_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_VERSION_LINUX_SONAME}
-    - name: sdl_mixer - linux
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        git clone https://github.com/libsdl-org/SDL_mixer SDL_mixer
-        cd SDL_mixer
-        git checkout release-$SDL_MIXER_VERSION_LINUX
-        mkdir build
-        cd build
-        ../configure --prefix=${HOME}/AVDL_DEPENDENCIES --enable-music-ogg-vorbis
-        make -j6
-        make -j6 install
-        cd ../..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib/${SDL_MIXER_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${SDL_MIXER_VERSION_LINUX_SONAME}
-    - name: glew - linux
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        wget https://github.com/nigels-com/glew/releases/download/glew-${GLEW_VERSION_LINUX}/glew-${GLEW_VERSION_LINUX}.tgz
-        tar xf glew-${GLEW_VERSION_LINUX}.tgz
-        cd glew-${GLEW_VERSION_LINUX}
-        make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES
-        make GLEW_DEST=${HOME}/AVDL_DEPENDENCIES install
-        cd ..
-        cp ${HOME}/AVDL_DEPENDENCIES/lib64/${GLEW_VERSION_LINUX_REAL_NAME} avdl_dependencies_linux/linux/lib/${GLEW_VERSION_LINUX_SONAME}
+      run: sudo ./scripts/dependencies_linux.sh avdl_dependencies_linux
     - name: steamworks
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       env:
@@ -202,11 +89,8 @@ jobs:
         mv sdk/redistributable_bin/win64/steam_api64.lib avdl_dependencies_linux/windows/lib
         cp sdk/public/steam/*.h avdl_dependencies_linux/linux/include
         cp sdk/public/steam/*.h avdl_dependencies_linux/windows/include
-    - name: collect_dependencies
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
-      run: |
-        cp -d -r ${HOME}/AVDL_DEPENDENCIES/include/* avdl_dependencies_linux/linux/include
     - uses: actions/upload-artifact@v3
+      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       with:
         name: avdl_dependencies_linux
         path: avdl_dependencies_linux
