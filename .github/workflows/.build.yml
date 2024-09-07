@@ -67,7 +67,7 @@ jobs:
       id: cache
       uses: actions/cache@v3
       with:
-        key: avdl_dependencies_linux_v10
+        key: avdl_dependencies_linux_v11
         path: avdl_dependencies_linux
     - name: ubuntu_dependencies
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
@@ -90,7 +90,6 @@ jobs:
         cp sdk/public/steam/*.h avdl_dependencies_linux/linux/include
         cp sdk/public/steam/*.h avdl_dependencies_linux/windows/include
     - uses: actions/upload-artifact@v3
-      if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       with:
         name: avdl_dependencies_linux
         path: avdl_dependencies_linux
