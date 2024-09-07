@@ -52,7 +52,7 @@ if exist build (
 )
 mkdir build
 cd build
-cmake ../ . -DCMAKE_INSTALL_PREFIX="../../dependencies"
+cmake ../ . -DCMAKE_INSTALL_PREFIX="../../dependencies/zlib"
 cmake --build . --config Release
 cmake --install .
 cd ../../
@@ -66,7 +66,7 @@ if exist build (
 )
 mkdir build
 cd build
-cmake ../ . -DCMAKE_INSTALL_PREFIX="../../dependencies"
+cmake ../ . -DCMAKE_INSTALL_PREFIX="../../dependencies/libpng"
 cmake --build . --config Release
 cmake --install .
 cd ../../
@@ -81,7 +81,7 @@ if exist build (
 )
 mkdir build
 cd build
-cmake ../ . -DCMAKE_INSTALL_PREFIX="../../dependencies" -DBUILD_SHARED_LIBS=true -DCMAKE_BUILD_TYPE=Release
+cmake ../ . -DCMAKE_INSTALL_PREFIX="../../dependencies/freetype" -DBUILD_SHARED_LIBS=true -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release
 cmake --install .
 cd ../../
