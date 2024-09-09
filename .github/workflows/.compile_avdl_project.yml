@@ -178,8 +178,6 @@ jobs:
       run: |
         git clone https://github.com/${{ inputs.github_project }} .
         git checkout ${{ inputs.github_branch }}
-    - name: update submodules
-      run: git submodule update --recursive --init
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
@@ -226,7 +224,6 @@ jobs:
         rm keystore
     - name: upload_artifacts
       uses: actions/upload-artifact@v3
-      if: ${{ inputs.include_unsigned }}
       with:
         name: "${{ inputs.project_name }}_${{ matrix.build_type }}"
         path: avdl_build_android
