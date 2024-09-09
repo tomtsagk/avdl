@@ -178,6 +178,8 @@ jobs:
       run: |
         git clone https://github.com/${{ inputs.github_project }} .
         git checkout ${{ inputs.github_branch }}
+    - name: update submodules
+      run: git submodule update --recursive --init
     - uses: actions/setup-java@v3
       with:
         distribution: 'oracle'
