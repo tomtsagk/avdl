@@ -1256,6 +1256,48 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 
 int avdl_link_android(struct AvdlSettings *avdl_settings) {
 
+	// check java requirements
+	FILE *f = popen("java -version 2>&1", "r");
+	if (!f) {
+		avdl_log_error("can't find java using `java --version`");
+		return -1;
+	}
+
+	char buffer[128];
+	char buffer2[128];
+	buffer2[0] = '\0';
+	char *p;
+	while (fgets(buffer, 128, f)) {
+		if (strstr(buffer, " version ")) {
+			p = strstr(buffer, "\"");
+			if (!p) {
+				continue;
+			}
+			if ((p+1)[0] == '\0') {
+				continue;
+			}
+			p++;
+			char *l = p;
+			while (l[0] != '"' && l[0] != '\0') l++;
+			if (l[0] == '\0') {
+				continue;
+			}
+			strncpy(buffer2, p, (l-p));
+			break;
+		}
+	}
+	pclose(f);
+	if (strlen(buffer2) <= 0) {
+		avdl_log_error("unable to parse java version:");
+		system("java -version");
+		return -1;
+	}
+
+	if (strncmp(buffer2, "17", 2) != 0) {
+		avdl_log_error("could not detect Java 17, android builds can only be made with Java 17");
+		return -1;
+	}
+
 	// get initial directory
 	struct avdl_string initialDirectory;
 	avdl_string_create(&initialDirectory, 1024);
