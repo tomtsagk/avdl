@@ -194,7 +194,7 @@ jobs:
         unzip avdl_linux.zip
         cd ..
         chmod +x avdl_linux/bin/avdl
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       if: ${{ inputs.avdl_linux_artifact != '' }}
       with:
         name: ${{ inputs.avdl_linux_artifact }}
@@ -265,7 +265,7 @@ jobs:
         unzip avdl_linux.zip
         cd ..
         chmod +x avdl_linux/bin/avdl
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       if: ${{ inputs.avdl_linux_artifact != '' }}
       with:
         name: ${{ inputs.avdl_linux_artifact }}
@@ -368,7 +368,7 @@ jobs:
         unzip avdl_linux.zip
         cd ..
         chmod +x avdl_linux/bin/avdl
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       if: ${{ inputs.avdl_linux_artifact != '' }}
       with:
         name: ${{ inputs.avdl_linux_artifact }}
@@ -454,7 +454,7 @@ jobs:
         mv avdl_windows AVDL_BUILD
         cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
         cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       if: ${{ inputs.avdl_windows_artifact != '' }}
       with:
         name: ${{ inputs.avdl_windows_artifact }}
@@ -573,7 +573,7 @@ jobs:
         rm avdl_linux.zip
         cd ..
         mv avdl_linux AVDL_BUILD
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       if: ${{ inputs.avdl_linux_artifact != '' }}
       with:
         name: ${{ inputs.avdl_linux_artifact }}
@@ -607,7 +607,7 @@ jobs:
     runs-on: windows-latest
     needs: [windows_d3d11_prepare]
     steps:
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.project_name }}_windows-d3d11_prepare
         path: avdl_project
@@ -663,7 +663,7 @@ jobs:
             build_quest2: false
     steps:
     # get build
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}
         path: ${{ inputs.project_name }}_${{ matrix.build_type }}
@@ -710,7 +710,7 @@ jobs:
     needs: [quest2]
     steps:
     # get build
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.project_name }}_quest2_oculus
         path: ${{ inputs.project_name }}_quest2_oculus
@@ -731,12 +731,12 @@ jobs:
     needs: [linux-x86_64, windows-x86_64]
     steps:
     # get build linux
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.project_name }}_linux_steam-x86_64
         path: ${{ inputs.project_name }}_linux_steam-x86_64
     # get build windows
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.project_name }}_windows_steam-x86_64
         path: ${{ inputs.project_name }}_windows_steam-x86_64
@@ -873,7 +873,7 @@ jobs:
         git clone https://github.com/${{ inputs.github_project }} .
         git checkout ${{ inputs.github_branch }}
     # get build
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}
         path: ${{ inputs.project_name }}_${{ matrix.build_type }}
