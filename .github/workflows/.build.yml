@@ -54,7 +54,7 @@ jobs:
         mv sdk/redistributable_bin/win64/steam_api64.lib avdl_dependencies_linux/windows/lib
         cp sdk/public/steam/*.h avdl_dependencies_linux/linux/include
         cp sdk/public/steam/*.h avdl_dependencies_linux/windows/include
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: avdl_dependencies_linux
         path: avdl_dependencies_linux
@@ -74,7 +74,7 @@ jobs:
     - name: dependencies_windows
       if: ${{ steps.cache.outputs.cache-hit != 'true' }}
       run: ./scripts/dependencies_windows.bat avdl_dependencies_windows
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: avdl_dependencies_windows
         path: avdl_dependencies_windows
@@ -101,7 +101,7 @@ jobs:
       run: |
         make -j6 prefix=AVDL_BUILD/ CC=gcc
         make -j6 prefix=AVDL_BUILD/ CC=gcc install
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: avdl_linux
         path: AVDL_BUILD
@@ -130,7 +130,7 @@ jobs:
       with:
         name: avdl_dependencies_windows
         path: build/AVDL_BUILD/dependencies
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: avdl_windows
         path: build/AVDL_BUILD

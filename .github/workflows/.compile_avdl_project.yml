@@ -223,7 +223,7 @@ jobs:
         apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' "avdl_build_android/${{ inputs.project_name }}-release-signed.apk"
         rm keystore
     - name: upload_artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: "${{ inputs.project_name }}_${{ matrix.build_type }}"
         path: avdl_build_android
@@ -314,19 +314,19 @@ jobs:
         apksigner sign --ks keystore --ks-pass 'pass:${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' ../../../../../${{ inputs.project_name }}_quest2.apk
         rm keystore
     - name: upload_artifact_debug
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}_debug
         path: ${{ inputs.project_name }}_quest2_debug.apk
     - name: upload_artifact_unsigned
       if: ${{ inputs.include_unsigned }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}_unsigned
         path: ${{ inputs.project_name }}_quest2_unsigned.apk
     - name: upload_artifact
       if: ${{ inputs.include_signed }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}
         path: ${{ inputs.project_name }}_quest2.apk
@@ -403,7 +403,7 @@ jobs:
         cd avdl_build
         tar czf ../${{ inputs.project_name }}_${{ matrix.build_type }}.tar.gz *
     - name: upload_artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}
         path: ${{ inputs.project_name }}_${{ matrix.build_type }}.tar.gz
@@ -531,13 +531,13 @@ jobs:
         cmake --build . --config Release
         cmake --install .
     - name: upload_artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}
         path: build/GAME_BUILD
     - name: upload_artifact_vs
       if: ${{ false }}
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}_vs
         path: build/
