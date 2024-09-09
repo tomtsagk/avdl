@@ -25,7 +25,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: init_avdl
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
     - name: cache
       id: cache
       uses: actions/cache@v3
@@ -60,7 +62,9 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: init_avdl
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
     - name: cache
       id: cache
       uses: actions/cache@v3
@@ -82,7 +86,9 @@ jobs:
       run: |
          sudo apt update && sudo apt install -y gcc pkg-config libgl1-mesa-dev unzip imagemagick
     - name: init_avdl
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
     - uses: actions/download-artifact@v3
       with:
         name: avdl_dependencies_linux
@@ -104,7 +110,9 @@ jobs:
     needs: [dependencies_windows, dependencies_linux]
     steps:
     - name: init_avdl
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
     - name: compile
       shell: bash
       run: |
@@ -134,7 +142,9 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: init_project
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
     - name: Create release
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -152,7 +162,9 @@ jobs:
     steps:
     # possibly needs this ?
     - name: init_project
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
     # get build
     - uses: actions/download-artifact@v3
       with:
