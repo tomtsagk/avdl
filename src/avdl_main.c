@@ -2430,35 +2430,35 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	if (avdl_settings->googleplay_mode) {
 		file_replace(0,
-			android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in.googleplay", 0,
-			android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2",
+			android_cache_dir "/app/src/main/java/dev/afloof/avdl/AvdlActivity.java.in.googleplay", 0,
+			android_cache_dir "/app/src/main/java/dev/afloof/avdl/AvdlActivity.java.in2",
 			"%AVDL_ADS_IMPORT%",
 			avdl_string_toCharPtr(&ads_imports)
 		);
 	}
 	else {
 		file_replace(0,
-			android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in", 0,
-			android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2",
+			android_cache_dir "/app/src/main/java/dev/afloof/avdl/AvdlActivity.java.in", 0,
+			android_cache_dir "/app/src/main/java/dev/afloof/avdl/AvdlActivity.java.in2",
 			"%AVDL_ADS_IMPORT%",
 			avdl_string_toCharPtr(&ads_imports)
 		);
 	}
 	file_replace(0,
-		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2", 0,
-		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in3",
+		android_cache_dir "/app/src/main/java/dev/afloof/avdl/AvdlActivity.java.in2", 0,
+		android_cache_dir "/app/src/main/java/dev/afloof/avdl/AvdlActivity.java.in3",
 		"%AVDL_ADS_DECLARATIONS%",
 		avdl_string_toCharPtr(&ads_declarations)
 	);
 	file_replace(0,
-		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in3", 0,
-		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in4",
+		android_cache_dir "/app/src/main/java/dev/afloof/avdl/AvdlActivity.java.in3", 0,
+		android_cache_dir "/app/src/main/java/dev/afloof/avdl/AvdlActivity.java.in4",
 		"%AVDL_ADS_INIT%",
 		avdl_string_toCharPtr(&ads_init)
 	);
 	file_replace(0,
-		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in4", 0,
-		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java",
+		android_cache_dir "/app/src/main/java/dev/afloof/avdl/AvdlActivity.java.in4", 0,
+		android_cache_dir "/app/src/main/java/dev/afloof/avdl/AvdlActivity.java",
 		"%AVDL_ADS_FUNCTIONS%",
 		avdl_string_toCharPtr(&ads_functions)
 	);
