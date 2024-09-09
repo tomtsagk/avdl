@@ -1256,6 +1256,8 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 
 int avdl_link_android(struct AvdlSettings *avdl_settings) {
 
+
+	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 	// check java requirements
 	FILE *f = popen("java -version 2>&1", "r");
 	if (!f) {
@@ -1297,6 +1299,7 @@ int avdl_link_android(struct AvdlSettings *avdl_settings) {
 		avdl_log_error("could not detect Java 17, android builds can only be made with Java 17");
 		return -1;
 	}
+	#endif
 
 	// get initial directory
 	struct avdl_string initialDirectory;
