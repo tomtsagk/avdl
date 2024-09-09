@@ -307,6 +307,113 @@ int dir_copy_recursive(int src_at, const char *src, int dst_at, const char *dst)
 	return 0;
 }
 
+int dir_copy_recursive_ifNewer(int src_at, const char *src, int dst_at, const char *dst) {
+
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	#else
+	// open source directory
+	int src_dir;
+	if (src_at) {
+		src_dir = openat(src_at, src, O_DIRECTORY);
+	}
+	else {
+		src_dir = open(src, O_DIRECTORY);
+	}
+
+	if (src_dir == -1) {
+		printf("dir_copy_recursive_ifNewer: can't open source %s: %s\n", src, strerror(errno));
+		return -1;
+	}
+
+	// open destination directory
+	int dst_dir;
+	if (dst_at) {
+		dst_dir = openat(dst_at, dst, O_DIRECTORY);
+	}
+	else {
+		dst_dir = open(dst, O_DIRECTORY);
+	}
+
+	if (dst_dir == -1) {
+		printf("dir_copy_recursive: can't open destination %s: %s\n", src, strerror(errno));
+		close(src_dir);
+		return -1;
+	}
+
+	/*
+	 * start reading all files from source directory
+	 */
+	DIR *d = fdopendir(src_dir);
+	if (!d) {
+		printf("avdl error: Unable to open dir '%s': %s\n", src, strerror(errno));
+		close(src_dir);
+		close(dst_dir);
+		return -1;
+	}
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+
+		// ignore `.` and `..`
+		if (strcmp(dir->d_name, ".") == 0
+		||  strcmp(dir->d_name, "..") == 0) {
+			continue;
+		}
+
+		// check file type
+		struct stat statbuf;
+		if (fstatat(src_dir, dir->d_name, &statbuf, 0) != 0) {
+			printf("avdl error: Unable to stat file '%s': %s\n", dir->d_name, strerror(errno));
+			close(src_dir);
+			close(dst_dir);
+			closedir(d);
+			return -1;
+		}
+
+		// is directory - copy everything recursively
+		if (S_ISDIR(statbuf.st_mode)) {
+			if (dir_createat(dst_dir, dir->d_name) != 0) {
+				printf("avdl error: Unable to create directory '%s'\n", dir->d_name);
+				close(src_dir);
+				close(dst_dir);
+				closedir(d);
+				return -1;
+			}
+
+			if (dir_copy_recursive_ifNewer(src_dir, dir->d_name, dst_dir, dir->d_name) != 0) {
+				printf("avdl error: Unable to copy directory '%s'\n", dir->d_name);
+				close(src_dir);
+				close(dst_dir);
+				closedir(d);
+				return -1;
+			}
+		}
+		else
+		// is regular file - copy it
+		if (S_ISREG(statbuf.st_mode)) {
+			if (Avdl_FileOp_IsFileOlderThanAt(dst_dir, dir->d_name, src_dir, dir->d_name)) {
+				if (file_copy_at(src_dir, dir->d_name, dst_dir, dir->d_name, 0) != 0) {
+					printf("avdl error: Unable to copy file '%s'\n", dir->d_name);
+					close(src_dir);
+					close(dst_dir);
+					closedir(d);
+					return -1;
+				}
+			}
+		}
+		// not supporting other file types
+		else {
+			printf("avdl error: Unable to determine type of file '%s' - skip\n", dir->d_name);
+			continue;
+		}
+	}
+	close(src_dir);
+	close(dst_dir);
+	closedir(d);
+	#endif
+	return 0;
+}
+
 int dir_create(const char *filename) {
 	return dir_createat(0, filename);
 }
@@ -333,22 +440,34 @@ int dir_createat(int dir_at, const char *filename) {
 }
 
 int is_dir(const char *filename) {
+	return is_dir_at(0, filename);
+}
+
+int is_dir_at(int dir_at, const char *filename) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	#else
 
 	// doesn't exist - not directory
-	if ( !Avdl_FileOp_DoesFileExist(filename) ) {
+	if ( !Avdl_FileOp_DoesFileExistAt(dir_at, filename) ) {
 		return 0;
 	}
 
 	// check file type
 	struct stat statbuf;
-	if ( stat(filename, &statbuf) != 0 ) {
-		printf("avdl error: Unable to stat file '%s': %s\n", filename, strerror(errno));
-		return -1;
+	if (dir_at) {
+		if ( fstatat(dir_at, filename, &statbuf, 0) != 0 ) {
+			printf("avdl error: Unable to fstatat file '%s': %s\n", filename, strerror(errno));
+			return -1;
+		}
+	}
+	else {
+		if ( stat(filename, &statbuf) != 0 ) {
+			printf("avdl error: Unable to stat file '%s': %s\n", filename, strerror(errno));
+			return -1;
+		}
 	}
 
-	// is directory - copy everything recursively
+	// is directory
 	if (S_ISDIR(statbuf.st_mode)) {
 		return 1;
 	}
@@ -370,7 +489,7 @@ int Avdl_FileOp_GetNumberOfFiles(const char *directory) {
 	// open source directory
 	int src_dir = open(directory, O_DIRECTORY);
 	if (src_dir == -1) {
-		printf("dir_copy_recursive: can't open source %s: %s\n", directory, strerror(errno));
+		printf("avdl error: can't open source %s: %s\n", directory, strerror(errno));
 		return -1;
 	}
 
@@ -578,10 +697,19 @@ int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_arr
 }
 
 int Avdl_FileOp_DoesFileExist(const char *filename) {
+	return Avdl_FileOp_DoesFileExistAt(0, filename);
+}
+
+int Avdl_FileOp_DoesFileExistAt(int filename_at, const char *filename) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	return 0;
 	#else
-	return access(filename, F_OK) == 0;
+	if (filename_at == 0) {
+		return access(filename, F_OK) == 0;
+	}
+	else {
+		return faccessat(filename_at, filename, F_OK, 0) == 0;
+	}
 	#endif
 }
 
@@ -675,6 +803,92 @@ int Avdl_FileOp_IsFileOlderThan(const char *source, const char *target) {
 	#endif
 }
 
+int Avdl_FileOp_IsFileOlderThanAt(int src_at, const char *src, int target_at, const char *target) {
+
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	return 1;
+	#else
+
+	// source file doesn't exist - target is newer by default
+	if ( !Avdl_FileOp_DoesFileExistAt(src_at, src) ) {
+		return 1;
+	}
+
+	// target is a directory - go recursive
+	if ( is_dir_at(target_at, target) ) {
+		int isNewer = 0;
+
+		int t;
+		if (target_at) {
+			t = openat(target_at, target, O_RDONLY);
+		}
+		else {
+			t = open(target, O_RDONLY);
+		}
+		if (t == -1) {
+			printf("IsFileOlderThanAt: can't open target %s: %s\n", target, strerror(errno));
+			return -1;
+		}
+
+		/*
+		 * start reading all files from source directory
+		 */
+		DIR *d = fdopendir(t);
+		if (!d) {
+			printf("avdl error: Unable to open directory '%s': %s\n", target, strerror(errno));
+			return -1;
+		}
+
+		struct dirent *dir;
+		while ((dir = readdir(d)) != NULL) {
+
+			// ignore `.` and `..`
+			if(strcmp(dir->d_name, ".") == 0
+			|| strcmp(dir->d_name, "..") == 0) {
+				continue;
+			}
+
+			struct avdl_string target_path;
+			avdl_string_create(&target_path, 1024);
+			avdl_string_cat(&target_path, target);
+			avdl_string_cat(&target_path, "/");
+			avdl_string_cat(&target_path, dir->d_name);
+			if ( !avdl_string_isValid(&target_path) ) {
+				avdl_log_error("IsOlderThan: cannot construct target path: %s", avdl_string_getError(&target_path));
+				avdl_string_clean(&target_path);
+				return -1;
+			}
+			if ( Avdl_FileOp_IsFileOlderThanAt(src_at, src, target_at, avdl_string_toCharPtr(&target_path)) ) {
+				isNewer = 1;
+				break;
+			}
+			avdl_string_clean(&target_path);
+		}
+		closedir(d);
+		close(t);
+		return isNewer;
+	}
+
+	struct stat statbuffer;
+	if (fstatat(src_at, src, &statbuffer, 0) != 0) {
+		printf("avdl error: Unable to stat file '%s': %s\n", src, strerror(errno));
+		return -1;
+	}
+
+	struct stat statbuffer2;
+	if (fstatat(target_at, target, &statbuffer2, 0) != 0) {
+		printf("avdl error: Unable to stat second file '%s': %s\n", target, strerror(errno));
+		return -1;
+	}
+
+	if (difftime(statbuffer2.st_mtime, statbuffer.st_mtime) >= 0) {
+		return 1;
+	}
+	return 0;
+
+	#endif
+}
+
 int file_write(const char *filename, const char *content, int append) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	FILE *f = fopen(filename, "w");
@@ -707,5 +921,15 @@ int file_write(const char *filename, const char *content, int append) {
 
 	close(d);
 	#endif
+	return 0;
+}
+
+int Avdl_FileOp_GetCurrentDirectory(struct avdl_string *str) {
+	char buffer[1024];
+	if (getcwd(buffer, 1024) == 0) {
+		avdl_log_error("GetCurrentDirectory: unable to get current working directory: %s", strerror(errno));
+		return -1;
+	}
+	avdl_string_cat(str, buffer);
 	return 0;
 }

@@ -40,6 +40,7 @@
 extern enum AVDL_PLATFORM avdl_platform_temp;
 
 const char cache_dir[] = ".avdl_cache/";
+#define android_cache_dir ".avdl_cache/android"
 
 extern float parsing_float;
 
@@ -170,6 +171,7 @@ int avdl_transpile(struct AvdlSettings *);
 int avdl_compile(struct AvdlSettings *);
 int avdl_compile_cengine(struct AvdlSettings *);
 int avdl_link(struct AvdlSettings *);
+int avdl_link_android(struct AvdlSettings *);
 int avdl_assets(struct AvdlSettings *);
 int avdl_directories(struct AvdlSettings *);
 int avdl_metadata(struct AvdlSettings *);
@@ -285,11 +287,6 @@ int AVDL_MAIN(int argc, char *argv[]) {
 		return 0;
 	}
 
-	// normal directories
-	if (!is_dir("avdl_build")) {
-		dir_create("avdl_build");
-	}
-
 	// from `.c` to `.o`
 	if ( avdl_compile(&avdl_settings) != 0) {
 		avdl_log_error("failed to compile '" BLU "%s" RESET "'", avdl_settings.project_name);
@@ -322,21 +319,28 @@ int create_android_directory(const char *androidDirName) {
 	int isDir = is_dir(androidDirName);
 	if (isDir == 0) {
 		dir_create(androidDirName);
-		struct avdl_string cenginePath;
-		avdl_string_create(&cenginePath, 1024);
-		avdl_string_cat(&cenginePath, avdl_pkg_GetProjectPath());
-		avdl_string_cat(&cenginePath, "/share/avdl/android");
-		if ( !avdl_string_isValid(&cenginePath) ) {
-			avdl_log_error("cannot construct path of cengine: %s", avdl_string_getError(&cenginePath));
-			avdl_string_clean(&cenginePath);
-			return -1;
-		}
-		dir_copy_recursive(0, avdl_string_toCharPtr(&cenginePath), 0, androidDirName);
-		avdl_string_clean(&cenginePath);
 	}
 	else
 	if (isDir < 0) {
 		avdl_log_error("file '%s' not a directory", androidDirName);
+		return -1;
+	}
+
+	// copy any needed files from template
+	struct avdl_string cenginePath;
+	avdl_string_create(&cenginePath, 1024);
+	avdl_string_cat(&cenginePath, avdl_pkg_GetProjectPath());
+	avdl_string_cat(&cenginePath, "/share/avdl/android");
+	if ( !avdl_string_isValid(&cenginePath) ) {
+		avdl_log_error("cannot construct path of cengine: %s", avdl_string_getError(&cenginePath));
+		avdl_string_clean(&cenginePath);
+		return -1;
+	}
+	dir_copy_recursive_ifNewer(0, avdl_string_toCharPtr(&cenginePath), 0, androidDirName);
+	avdl_string_clean(&cenginePath);
+
+	if (chmod(android_cache_dir "/gradlew", S_IXUSR | S_IWUSR | S_IRUSR) != 0) {
+		avdl_log_error("cannot change mode of `gradlew`: %s", avdl_string_getError(&cenginePath));
 		return -1;
 	}
 	#endif
@@ -478,6 +482,11 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 	if (!is_dir(".avdl_cache")) {
 		dir_create(".avdl_cache");
 	}
+	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
+		if (!is_dir(android_cache_dir "/app/src/main/cpp/game/")) {
+			dir_create(android_cache_dir "/app/src/main/cpp/game/");
+		}
+	}
 
 	printf("avdl: transpiling - " RED "0%%" RESET "\r");
 	fflush(stdout);
@@ -514,7 +523,14 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 		// dst file full path
 		struct avdl_string dstFilePath;
 		avdl_string_create(&dstFilePath, 1024);
-		avdl_string_cat(&dstFilePath, cache_dir);
+		// android transpiles directly to the gradle directory
+		if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
+			avdl_string_cat(&dstFilePath, android_cache_dir);
+			avdl_string_cat(&dstFilePath, "/app/src/main/cpp/game/");
+		}
+		else {
+			avdl_string_cat(&dstFilePath, cache_dir);
+		}
 		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
 		avdl_string_cat(&dstFilePath, ".c");
 		if ( !avdl_string_isValid(&dstFilePath) ) {
@@ -560,7 +576,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 		if ( avdl_settings->use_cache
 		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
 		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
-			//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", buffer, buffer2);
+			//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath));
 			avdl_string_clean(&srcFilePath);
 			avdl_string_clean(&dstFilePath);
 			continue;
@@ -609,8 +625,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 	}
 
 	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
-		avdl_android_object(avdl_settings);
-		return 0;
+		return avdl_android_object(avdl_settings);
 	}
 	else if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
 		avdl_quest2_object(avdl_settings);
@@ -625,6 +640,11 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		 * * cp "release dll"/<everything> avdl_build_d3d11/dependencies
 		 */
 		return 0;
+	}
+
+	// normal directories
+	if (!is_dir("avdl_build")) {
+		dir_create("avdl_build");
 	}
 
 	printf("avdl: compiling - " RED "0%%" RESET "\r");
@@ -659,13 +679,14 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 
 		// on android just copy src file to its destination
 		if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
+		/*
 			struct avdl_string androidFilePath;
 			avdl_string_create(&androidFilePath, 1024);
-			avdl_string_cat(&androidFilePath, "avdl_build_android/app/src/main/cpp/engine/");
+			avdl_string_cat(&androidFilePath, android_cache_dir "/app/src/main/cpp/engine/");
 			avdl_string_cat(&androidFilePath, avdl_string_toCharPtr(str));
 			if ( !avdl_string_isValid(&androidFilePath) ) {
 				avdl_log_error("cannot construct path '%s%s': %s",
-					"avdl_build_android/app/src/main/cpp/engine/", avdl_string_toCharPtr(str),
+					android_cache_dir "/app/src/main/cpp/engine/", avdl_string_toCharPtr(str),
 					avdl_string_getError(&androidFilePath)
 				);
 				avdl_string_clean(&srcFilePath);
@@ -675,6 +696,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 			file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
 			avdl_string_clean(&srcFilePath);
 			avdl_string_clean(&androidFilePath);
+			*/
 			continue;
 		}
 
@@ -957,7 +979,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 
 	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
-		return 0;
+		return avdl_link_android(avdl_settings);
 	}
 	else if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
 		return 0;
@@ -1232,6 +1254,68 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	return 0;
 }
 
+int avdl_link_android(struct AvdlSettings *avdl_settings) {
+
+	// get initial directory
+	struct avdl_string initialDirectory;
+	avdl_string_create(&initialDirectory, 1024);
+	Avdl_FileOp_GetCurrentDirectory(&initialDirectory);
+	if ( !avdl_string_isValid(&initialDirectory) ) {
+		avdl_log_error("link_android: cannot construct current directory: %s", avdl_string_getError(&initialDirectory));
+		avdl_string_clean(&initialDirectory);
+		return -1;
+	}
+
+	if (chdir(android_cache_dir) != 0) {
+		avdl_log_error("unable to change to android directory");
+		return -1;
+	}
+
+	if (system("./gradlew build") != 0) {
+		avdl_log_error("error creating android apks");
+		return -1;
+	}
+
+	if (chdir(avdl_string_toCharPtr(&initialDirectory)) != 0) {
+		avdl_log_error("unable to change to default directory");
+		return -1;
+	}
+
+	// copy results to output
+	if (!is_dir("avdl_build_android")) {
+		dir_create("avdl_build_android");
+	}
+
+	struct avdl_string projectReleaseApk;
+	avdl_string_create(&projectReleaseApk, 1024);
+	avdl_string_cat(&projectReleaseApk, "avdl_build_android/");
+	avdl_string_cat(&projectReleaseApk, avdl_settings->project_name_code);
+	avdl_string_cat(&projectReleaseApk, "-release-unsigned.apk");
+	if ( !avdl_string_isValid(&projectReleaseApk) ) {
+		avdl_log_error("link_android: cannot construct release apk name: %s", avdl_string_getError(&projectReleaseApk));
+		avdl_string_clean(&projectReleaseApk);
+		return -1;
+	}
+
+	struct avdl_string projectDebugApk;
+	avdl_string_create(&projectDebugApk, 1024);
+	avdl_string_cat(&projectDebugApk, "avdl_build_android/");
+	avdl_string_cat(&projectDebugApk, avdl_settings->project_name_code);
+	avdl_string_cat(&projectDebugApk, "-debug.apk");
+	if ( !avdl_string_isValid(&projectDebugApk) ) {
+		avdl_log_error("link_android: cannot construct debug apk name: %s", avdl_string_getError(&projectDebugApk));
+		avdl_string_clean(&projectDebugApk);
+		return -1;
+	}
+
+	file_copy(android_cache_dir "/app/build/outputs/apk/release/app-universal-release-unsigned.apk", avdl_string_toCharPtr(&projectReleaseApk), 0);
+	file_copy(android_cache_dir "/app/build/outputs/apk/debug/app-universal-debug.apk", avdl_string_toCharPtr(&projectDebugApk), 0);
+	file_copy(android_cache_dir "/app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip", "avdl_build_android/native-debug-symbols.zip", 0);
+	file_copy(android_cache_dir "/app/build/outputs/mapping/release/mapping.txt", "avdl_build_android/mapping.txt", 0);
+
+	return 0;
+}
+
 // handle assets and put them in the final build
 int avdl_assets(struct AvdlSettings *avdl_settings) {
 
@@ -1313,8 +1397,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 			// android file full path
 			struct avdl_string androidFilePath;
 			avdl_string_create(&androidFilePath, 1024);
-			avdl_string_cat(&androidFilePath, "avdl_build_android/");
-			avdl_string_cat(&androidFilePath, "/app/src/main/");
+			avdl_string_cat(&androidFilePath, android_cache_dir "/app/src/main/");
 			avdl_string_cat(&androidFilePath, assetDir);
 			avdl_string_cat(&androidFilePath, "/");
 			if ( !avdl_string_isValid(&androidFilePath) ) {
@@ -1325,8 +1408,16 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 			}
 			dir_create(avdl_string_toCharPtr(&androidFilePath));
 			avdl_string_cat(&androidFilePath, avdl_string_toCharPtr(str));
+			if ( !avdl_string_isValid(&androidFilePath) ) {
+				avdl_log_error("cannot construct android file path #2: %s", avdl_string_getError(&androidFilePath));
+				avdl_string_clean(&srcFilePath);
+				avdl_string_clean(&androidFilePath);
+				return -1;
+			}
 
-			file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
+			if (Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&androidFilePath), avdl_string_toCharPtr(&srcFilePath)) ) {
+				file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&androidFilePath), 0);
+			}
 			avdl_string_clean(&androidFilePath);
 
 			avdl_string_clean(&srcFilePath);
@@ -1582,7 +1673,7 @@ int avdl_directories(struct AvdlSettings *avdl_settings) {
 	}
 
 	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
-		create_android_directory("avdl_build_android");
+		create_android_directory(android_cache_dir);
 	}
 	else if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
 		create_quest2_directory("avdl_build_quest2");
@@ -1638,9 +1729,11 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 
 	// create backwards compatibility icon for android
 	if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
-		if (file_copy(".avdl_cache/icon_cropped_512x512.png", "avdl_build_android/app/src/main/res/drawable/icon.png", 0) != 0) {
-			avdl_log_error("could not create backwards compatibility icon for Android using ImageMagick");
-			return -1;
+		if (Avdl_FileOp_IsFileOlderThan(android_cache_dir "/app/src/main/res/drawable/icon.png", ".avdl_cache/icon_cropped_512x512.png")) {
+			if (file_copy(".avdl_cache/icon_cropped_512x512.png", android_cache_dir "/app/src/main/res/drawable/icon.png", 0) != 0) {
+				avdl_log_error("could not create backwards compatibility icon for Android using ImageMagick");
+				return -1;
+			}
 		}
 	}
 	else
@@ -1809,13 +1902,13 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 	// put all object files to android
-	dir_create("avdl_build_android/app/src/main/cpp/game/");
+	dir_create(android_cache_dir "/app/src/main/cpp/game/");
 
 	// collect avdl android project source
 	struct avdl_string objFilesStr;
 	avdl_string_create(&objFilesStr, 100000);
 	struct avdl_dynamic_array objFiles;
-	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
+	Avdl_FileOp_GetFilesInDirectory(android_cache_dir "/app/src/main/cpp/game/", &objFiles);
 	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&objFiles, i);
 
@@ -1827,41 +1920,6 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 			avdl_string_cat(&objFilesStr, avdl_string_toCharPtr(str));
 			avdl_string_cat(&objFilesStr, " ");
 		}
-
-		#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
-		// src file full path
-		struct avdl_string srcFilePath;
-		avdl_string_create(&srcFilePath, 1024);
-		avdl_string_cat(&srcFilePath, ".avdl_cache/");
-		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
-		if ( !avdl_string_isValid(&srcFilePath) ) {
-			avdl_log_error("cannot construct path '%s%s': %s",
-				".avdl_cache", avdl_string_toCharPtr(str),
-				avdl_string_getError(&srcFilePath)
-			);
-			avdl_string_clean(&srcFilePath);
-			return -1;
-		}
-
-		// dst file full path
-		struct avdl_string dstFilePath;
-		avdl_string_create(&dstFilePath, 1024);
-		avdl_string_cat(&dstFilePath, "avdl_build_android/app/src/main/cpp/game/");
-		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
-		if ( !avdl_string_isValid(&dstFilePath) ) {
-			avdl_log_error("cannot construct path '%s%s': %s",
-				"avdl_build_android/app/src/main/cpp/game/", avdl_string_toCharPtr(str),
-				avdl_string_getError(&dstFilePath)
-			);
-			avdl_string_clean(&srcFilePath);
-			avdl_string_clean(&dstFilePath);
-			return -1;
-		}
-
-		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
-		avdl_string_clean(&srcFilePath);
-		avdl_string_clean(&dstFilePath);
-		#endif
 	}
 
 	if (!avdl_string_isValid(&objFilesStr)) {
@@ -1872,8 +1930,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	// cpp directory
 	struct avdl_string cppFilePath;
 	avdl_string_create(&cppFilePath, 1024);
-	avdl_string_cat(&cppFilePath, "avdl_build_android/");
-	avdl_string_cat(&cppFilePath, "/app/src/main/cpp/");
+	avdl_string_cat(&cppFilePath, android_cache_dir "/app/src/main/cpp/");
 	if ( !avdl_string_isValid(&cppFilePath) ) {
 		avdl_log_error("cannot construct android cpp path: %s", avdl_string_getError(&cppFilePath));
 		avdl_string_clean(&cppFilePath);
@@ -1920,35 +1977,34 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	close(outDir);
 
 	// handle versioning
-	outDir = open("avdl_build_android/app/", O_DIRECTORY);
+	outDir = open(android_cache_dir "/app/", O_DIRECTORY);
 	file_replace(outDir, "build.gradle.in", outDir, "build.gradle.in2", "%AVDL_PACKAGE_NAME%", avdl_settings->package);
 	file_replace(outDir, "build.gradle.in2", outDir, "build.gradle.in3", "%AVDL_VERSION_CODE%", avdl_settings->version_code_str);
 	file_replace(outDir, "build.gradle.in3", outDir, "build.gradle", "%AVDL_VERSION_NAME%", avdl_settings->version_name);
-	file_remove("avdl_build_android/app/build.gradle.in");
-	file_remove("avdl_build_android/app/build.gradle.in2");
-	file_remove("avdl_build_android/app/build.gradle.in3");
-	file_remove("avdl_build_android/app/build.gradle.in.googleplay");
+	file_remove(android_cache_dir "/app/build.gradle.in");
+	file_remove(android_cache_dir "/app/build.gradle.in2");
+	file_remove(android_cache_dir "/app/build.gradle.in3");
+	file_remove(android_cache_dir "/app/build.gradle.in.googleplay");
 	close(outDir);
 
 	// add dependencies if needed
 	if (avdl_settings->googleplay_mode || avdl_settings->admob_ads) {
-		file_write("avdl_build_android/app/build.gradle", "\ndependencies {\n", 1);
+		file_write(android_cache_dir "/app/build.gradle", "\ndependencies {\n", 1);
 		if (avdl_settings->googleplay_mode) {
-			file_write("avdl_build_android/app/build.gradle", "\timplementation 'com.google.android.gms:play-services-games-v2:17.0.0'\n", 1);
+			file_write(android_cache_dir "/app/build.gradle", "\timplementation 'com.google.android.gms:play-services-games-v2:17.0.0'\n", 1);
 		}
 
 		if (avdl_settings->admob_ads) {
-			file_write("avdl_build_android/app/build.gradle", "\timplementation 'com.google.android.gms:play-services-ads:22.1.0'\n", 1);
+			file_write(android_cache_dir "/app/build.gradle", "\timplementation 'com.google.android.gms:play-services-ads:22.1.0'\n", 1);
 		}
-		file_write("avdl_build_android/app/build.gradle", "}\n", 1);
+		file_write(android_cache_dir "/app/build.gradle", "}\n", 1);
 	}
 
 	/*
 	// backwards compatible icon
 	struct avdl_string iconPath;
 	avdl_string_create(&iconPath, 1024);
-	avdl_string_cat(&iconPath, "avdl_build_android/");
-	avdl_string_cat(&iconPath, "/app/src/main/res/drawable/");
+	avdl_string_cat(&iconPath, android_cache_dir "/app/src/main/res/drawable/");
 	avdl_string_cat(&iconPath, avdl_settings->icon_path);
 	if (!avdl_string_isValid(&iconPath)) {
 		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&iconPath));
@@ -1961,8 +2017,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	// adaptable icon foreground
 	struct avdl_string foregroundPath;
 	avdl_string_create(&foregroundPath, 1024);
-	avdl_string_cat(&foregroundPath, "avdl_build_android/");
-	avdl_string_cat(&foregroundPath, "/app/src/main/res/drawable/icon_foreground.png");
+	avdl_string_cat(&foregroundPath, android_cache_dir "/app/src/main/res/drawable/icon_foreground.png");
 	if (!avdl_string_isValid(&foregroundPath)) {
 		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&foregroundPath));
 		return -1;
@@ -1973,8 +2028,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	// adaptable icon background
 	struct avdl_string backgroundPath;
 	avdl_string_create(&backgroundPath, 1024);
-	avdl_string_cat(&backgroundPath, "avdl_build_android/");
-	avdl_string_cat(&backgroundPath, "/app/src/main/res/drawable/icon_background.png");
+	avdl_string_cat(&backgroundPath, android_cache_dir "/app/src/main/res/drawable/icon_background.png");
 	if (!avdl_string_isValid(&backgroundPath)) {
 		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&backgroundPath));
 		return -1;
@@ -2032,10 +2086,10 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 		avdl_log_error("was trying for %d", values_file.errorCharacters);
 		return -1;
 	}
-	if (!is_dir("avdl_build_android/app/src/main/res/values/")) {
-		dir_create("avdl_build_android/app/src/main/res/values/");
+	if (!is_dir(android_cache_dir "/app/src/main/res/values/")) {
+		dir_create(android_cache_dir "/app/src/main/res/values/");
 	}
-	file_write("avdl_build_android/app/src/main/res/values/strings.xml", avdl_string_toCharPtr(&values_file), 0);
+	file_write(android_cache_dir "/app/src/main/res/values/strings.xml", avdl_string_toCharPtr(&values_file), 0);
 	avdl_string_clean(&values_file);
 
 	// collect metadata and permissions
@@ -2331,58 +2385,58 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	if (avdl_settings->googleplay_mode) {
 		file_replace(0,
-			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in.googleplay", 0,
-			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2",
+			android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in.googleplay", 0,
+			android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2",
 			"%AVDL_ADS_IMPORT%",
 			avdl_string_toCharPtr(&ads_imports)
 		);
 	}
 	else {
 		file_replace(0,
-			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in", 0,
-			"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2",
+			android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in", 0,
+			android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2",
 			"%AVDL_ADS_IMPORT%",
 			avdl_string_toCharPtr(&ads_imports)
 		);
 	}
 	file_replace(0,
-		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2", 0,
-		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in3",
+		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in2", 0,
+		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in3",
 		"%AVDL_ADS_DECLARATIONS%",
 		avdl_string_toCharPtr(&ads_declarations)
 	);
 	file_replace(0,
-		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in3", 0,
-		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in4",
+		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in3", 0,
+		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in4",
 		"%AVDL_ADS_INIT%",
 		avdl_string_toCharPtr(&ads_init)
 	);
 	file_replace(0,
-		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in4", 0,
-		"avdl_build_android/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java",
+		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java.in4", 0,
+		android_cache_dir "/app/src/main/java/org/darkdimension/avdl/AvdlActivity.java",
 		"%AVDL_ADS_FUNCTIONS%",
 		avdl_string_toCharPtr(&ads_functions)
 	);
 
 	file_replace(0,
-		"avdl_build_android/app/src/main/AndroidManifest.xml.in", 0,
-		"avdl_build_android/app/src/main/AndroidManifest.xml.in2",
+		android_cache_dir "/app/src/main/AndroidManifest.xml.in", 0,
+		android_cache_dir "/app/src/main/AndroidManifest.xml.in2",
 		"%AVDL_METADATA%",
 		avdl_string_toCharPtr(&metadata)
 	);
 
 	file_replace(0,
-		"avdl_build_android/app/src/main/AndroidManifest.xml.in2", 0,
-		"avdl_build_android/app/src/main/AndroidManifest.xml",
+		android_cache_dir "/app/src/main/AndroidManifest.xml.in2", 0,
+		android_cache_dir "/app/src/main/AndroidManifest.xml",
 		"%AVDL_PERMISSIONS%",
 		avdl_string_toCharPtr(&permissions)
 	);
 
 	file_remove(
-		"avdl_build_android/app/src/main/AndroidManifest.xml.in2"
+		android_cache_dir "/app/src/main/AndroidManifest.xml.in2"
 	);
 	file_remove(
-		"avdl_build_android/app/src/main/AndroidManifest.xml.in"
+		android_cache_dir "/app/src/main/AndroidManifest.xml.in"
 	);
 
 	avdl_string_clean(&metadata);
@@ -2449,7 +2503,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&dstFilePath) ) {
 			avdl_log_error("cannot construct path '%s%s': %s",
-				"avdl_build_android/app/src/main/cpp/game/", avdl_string_toCharPtr(str),
+				android_cache_dir "/app/src/main/cpp/game/", avdl_string_toCharPtr(str),
 				avdl_string_getError(&dstFilePath)
 			);
 			avdl_string_clean(&srcFilePath);
