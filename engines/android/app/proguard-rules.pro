@@ -1,4 +1,4 @@
--keep class org.darkdimension.avdl.AvdlActivity {
+-keep class dev.afloof.avdl.AvdlActivity {
 	static int UnlockAchievement(java.lang.String);
 	static int OpenUrl(java.lang.String);
 	static java.lang.Object[] ReadBitmap(java.lang.String);
