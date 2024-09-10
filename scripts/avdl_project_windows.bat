@@ -5,8 +5,14 @@ if "%1"=="" (
 	exit
 )
 
+set start_directory=%cd%
+set "start_directory=%start_directory:\=/%"
+
 :: prepare avdl
-if not exist "avdl_windows.zip" powershell.exe -Command "Invoke-WebRequest https:\/github.com/tomtsagk/avdl/releases/download/v0.20.0/avdl_v0.20.0_windows.zip -OutFile avdl_windows.zip"
+if not exist "avdl_windows.zip" (
+	if "%2"=="" powershell.exe -Command "Invoke-WebRequest https://github.com/tomtsagk/avdl/releases/download/v0.21.0/avdl_v0.21.0_windows.zip -OutFile avdl_windows.zip"
+	else powershell.exe -Command "Invoke-WebRequest %2 -OutFile avdl_windows.zip"
+)
 if not exist AVDL_BUILD mkdir AVDL_BUILD
 unzip avdl_windows.zip -d AVDL_BUILD
 
@@ -19,29 +25,12 @@ cd ".avdl_cache"
 if not exist "avdl_project_windows" mkdir "avdl_project_windows"
 cd "avdl_project_windows"
 
-:: bring dependencies into avdl
-if not exist ..\..\libraries mkdir ..\..\libraries
-xcopy /e "..\..\AVDL_BUILD\dependencies\windows\libpng" "..\..\libraries"
-xcopy /e "..\..\AVDL_BUILD\dependencies\windows\zlib" "..\..\libraries"
-
-:: glew
-if not exist glew-win32.zip powershell.exe -Command "Invoke-WebRequest https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip -OutFile glew-win32.zip"
-unzip glew-win32.zip -d ..\..\libraries
-
-:: sdl2
-if not exist SDL2-devel-VC.zip powershell.exe -Command "Invoke-WebRequest https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip -OutFile SDL2-devel-VC.zip"
-unzip SDL2-devel-VC.zip -d ..\..\libraries
-
-:: sdl2_mixer
-if not exist SDL2_mixer-devel-VC.zip powershell.exe -Command "Invoke-WebRequest https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip -OutFile SDL2_mixer-devel-VC.zip"
-unzip SDL2_mixer-devel-VC.zip -d ..\..\libraries
-
 :: imagemagick ?
 
 mkdir ..\..\cengine
 xcopy /e "..\..\AVDL_BUILD\share\avdl\cengine\" "..\..\cengine"
 xcopy /e "..\..\AVDL_BUILD\include\" "..\..\cengine"
-cmake ../../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD"
+cmake ../../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD" -DAVDL_DIRECTORY="%start_directory%/AVDL_BUILD/"
 cmake --build . --config Release
 cmake --install .
 
