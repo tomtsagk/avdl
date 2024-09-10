@@ -95,6 +95,7 @@ mkdir "%out_directory%"
 mkdir "%out_directory%\windows"
 mkdir "%out_directory%\windows\include"
 mkdir "%out_directory%\windows\lib"
+mkdir "%out_directory%\windows\bin"
 xcopy /e "%cache_directory%\dependencies" "%out_directory%\windows"
 xcopy /e ".\avdl_sdl2\SDL2-%SDL_VERSION_WINDOWS%\include\" "%out_directory%\windows\include"
 xcopy /e ".\avdl_sdl2\SDL2-%SDL_VERSION_WINDOWS%\lib\" "%out_directory%\windows\lib"
@@ -102,6 +103,7 @@ xcopy /e ".\avdl_sdl2_mixer\SDL2_mixer-%SDL_MIXER_VERSION_WINDOWS%\include\" "%o
 xcopy /e ".\avdl_sdl2_mixer\SDL2_mixer-%SDL_MIXER_VERSION_WINDOWS%\lib\" "%out_directory%\windows\lib"
 xcopy /e ".\avdl_glew\glew-%GLEW_VERSION_WINDOWS%\include\" "%out_directory%\windows\include"
 xcopy /e ".\avdl_glew\glew-%GLEW_VERSION_WINDOWS%\lib\" "%out_directory%\windows\lib"
+xcopy /e ".\avdl_glew\glew-%GLEW_VERSION_WINDOWS%\bin\" "%out_directory%\windows\bin"
 
 :: avdl build dependencies windows
 cd ..
