@@ -10,7 +10,7 @@ set "start_directory=%start_directory:\=/%"
 
 :: prepare avdl
 if not exist "avdl_windows.zip" (
-	if "%2"!="" powershell.exe -Command "Invoke-WebRequest %2 -OutFile avdl_windows.zip"
+	if not "%2"=="" powershell.exe -Command "Invoke-WebRequest %2 -OutFile avdl_windows.zip"
 )
 if not exist AVDL_BUILD mkdir AVDL_BUILD
 unzip avdl_windows.zip -d AVDL_BUILD
