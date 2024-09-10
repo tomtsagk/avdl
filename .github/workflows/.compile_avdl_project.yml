@@ -433,6 +433,10 @@ jobs:
       run: |
         git clone https://github.com/${{ inputs.github_project }} .
         git checkout ${{ inputs.github_branch }}
+    - name: init_avdl_repo
+      uses: actions/checkout@v4
+      with:
+        path: avdl_repo
     - name: get_avdl
       if: ${{ inputs.avdl_windows_artifact == '' }}
       run: |
@@ -461,12 +465,12 @@ jobs:
       if: ${{ matrix.build_type == 'windows-x86_64' }}
       shell: bash
       run: |
-        scripts/avdl_project_windows.bat build_windows AVDL_BUILD
+        avdl_repo/scripts/avdl_project_windows.bat build_windows AVDL_BUILD
     - name: compile_project steam
       if: ${{ matrix.build_type == 'windows_steam-x86_64' }}
       shell: bash
       run: |
-        scripts/avdl_project_windows.bat build_windows AVDL_BUILD steam
+        avdl_repo/scripts/avdl_project_windows.bat build_windows AVDL_BUILD steam
     - name: upload_artifact
       uses: actions/upload-artifact@v4
       with:
