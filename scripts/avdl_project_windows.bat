@@ -32,9 +32,11 @@ xcopy /e "..\..\AVDL_BUILD\include\" "..\..\cengine"
 if "%3"=="" (
 	cmake ../../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD" -DAVDL_DIRECTORY="%start_directory%/AVDL_BUILD/"
 )
-else (
+
+if not "%3"=="" (
 	cmake ../../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD" -DAVDL_DIRECTORY="%start_directory%/AVDL_BUILD/" -DAVDL_STEAM=1
 )
+
 cmake --build . --config Release
 cmake --install .
 
