@@ -433,39 +433,17 @@ jobs:
       run: |
         git clone https://github.com/${{ inputs.github_project }} .
         git checkout ${{ inputs.github_branch }}
-    - name: prepare_libraries
-      shell: bash
-      run: |
-        mkdir libraries
     - name: get_avdl
       if: ${{ inputs.avdl_windows_artifact == '' }}
       run: |
         C:\msys64\usr\bin\wget.exe -q $Env:AVDL_BUILD_URL_WINDOWS -O avdl_windows.zip
-    - name: unpack_avdl
-      if: ${{ inputs.avdl_windows_artifact == '' }}
-      shell: bash
-      run: |
-        mkdir avdl_windows
-        mv avdl_windows.zip avdl_windows
-        cd avdl_windows
-        unzip avdl_windows.zip
-        rm avdl_windows.zip
-        cd ..
-        mv avdl_windows AVDL_BUILD
-        cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
-        cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
+        mkdir AVDL_BUILD
+        unzip avdl_windows.zip -d AVDL_BUILD
     - uses: actions/download-artifact@v4
       if: ${{ inputs.avdl_windows_artifact != '' }}
       with:
         name: ${{ inputs.avdl_windows_artifact }}
-        path: avdl_windows
-    - name: unpack_avdl
-      if: ${{ inputs.avdl_windows_artifact != '' }}
-      shell: bash
-      run: |
-        mv avdl_windows AVDL_BUILD
-        cp -r AVDL_BUILD/dependencies/windows/libpng ./libaries/
-        cp -r AVDL_BUILD/dependencies/windows/zlib ./libaries/
+        path: AVDL_BUILD
     - name: zlib
       shell: bash
       run: |
@@ -478,63 +456,22 @@ jobs:
       shell: bash
       run: |
         cp -r AVDL_BUILD/dependencies/windows/freetype "C:/Program Files (x86)/freetype"
-    - name: get_libraries
-      run: |
-        C:\msys64\usr\bin\wget.exe -q https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0-win32.zip
-        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL/releases/download/release-2.0.22/SDL2-devel-2.0.22-VC.zip
-        C:\msys64\usr\bin\wget.exe -q https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.6.0/SDL2_mixer-devel-2.6.0-VC.zip
-    - name: glew
-      shell: bash
-      run: |
-        mv glew-2.2.0-win32.zip libraries
-        cd libraries
-        unzip glew-2.2.0-win32.zip
-        cd ..
-    - name: sdl
-      shell: bash
-      run: |
-        mv SDL2-devel-2.0.22-VC.zip libraries
-        cd libraries
-        unzip SDL2-devel-2.0.22-VC.zip
-        cd ..
-    - name: sdl_mixer
-      shell: bash
-      run: |
-        mv SDL2_mixer-devel-2.6.0-VC.zip libraries
-        cd libraries
-        unzip SDL2_mixer-devel-2.6.0-VC.zip
-        cd ..
     - run: choco install -y imagemagick
     - name: compile_project
       if: ${{ matrix.build_type == 'windows-x86_64' }}
       shell: bash
       run: |
-        mkdir cengine
-        cp -r AVDL_BUILD/share/avdl/cengine/*.c AVDL_BUILD/share/avdl/cengine/*.cpp AVDL_BUILD/include/*.h cengine
-        mkdir build
-        ls
-        AVDL_BUILD/bin/avdl.exe --cmake
-        cd build
-        cmake ../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD"
-        cmake --build . --config Release
-        cmake --install .
+        scripts/avdl_project_windows.bat build_windows AVDL_BUILD
     - name: compile_project steam
       if: ${{ matrix.build_type == 'windows_steam-x86_64' }}
       shell: bash
       run: |
-        mkdir cengine
-        cp -r AVDL_BUILD/share/avdl/cengine/*.c AVDL_BUILD/share/avdl/cengine/*.cpp AVDL_BUILD/include/*.h cengine
-        mkdir build
-        AVDL_BUILD/bin/avdl.exe --cmake
-        cd build
-        cmake ../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD" -DAVDL_STEAM=1
-        cmake --build . --config Release
-        cmake --install .
+        scripts/avdl_project_windows.bat build_windows AVDL_BUILD steam
     - name: upload_artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.project_name }}_${{ matrix.build_type }}
-        path: build/GAME_BUILD
+        path: build_windows
     - name: upload_artifact_vs
       if: ${{ false }}
       uses: actions/upload-artifact@v4

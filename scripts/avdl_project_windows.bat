@@ -10,8 +10,7 @@ set "start_directory=%start_directory:\=/%"
 
 :: prepare avdl
 if not exist "avdl_windows.zip" (
-	if "%2"=="" powershell.exe -Command "Invoke-WebRequest https://github.com/tomtsagk/avdl/releases/download/v0.21.0/avdl_v0.21.0_windows.zip -OutFile avdl_windows.zip"
-	else powershell.exe -Command "Invoke-WebRequest %2 -OutFile avdl_windows.zip"
+	if "%2"!="" powershell.exe -Command "Invoke-WebRequest %2 -OutFile avdl_windows.zip"
 )
 if not exist AVDL_BUILD mkdir AVDL_BUILD
 unzip avdl_windows.zip -d AVDL_BUILD
@@ -30,7 +29,12 @@ cd "avdl_project_windows"
 mkdir ..\..\cengine
 xcopy /e "..\..\AVDL_BUILD\share\avdl\cengine\" "..\..\cengine"
 xcopy /e "..\..\AVDL_BUILD\include\" "..\..\cengine"
-cmake ../../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD" -DAVDL_DIRECTORY="%start_directory%/AVDL_BUILD/"
+if "%3"=="" (
+	cmake ../../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD" -DAVDL_DIRECTORY="%start_directory%/AVDL_BUILD/"
+)
+else (
+	cmake ../../ . -DCMAKE_INSTALL_PREFIX="GAME_BUILD" -DAVDL_DIRECTORY="%start_directory%/AVDL_BUILD/" -DAVDL_STEAM=1
+)
 cmake --build . --config Release
 cmake --install .
 
