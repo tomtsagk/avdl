@@ -113,6 +113,7 @@ INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/man/man1/ \
 	${DESTDIR}${prefix}/share/avdl/d3d11/avdl_src \
 	${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine \
 	${DESTDIR}${prefix}/share/avdl/templates \
+	${DESTDIR}${prefix}/share/avdl/scripts \
 	${DESTDIR}${prefix}/share/vim/vimfiles/syntax/ \
 	${DESTDIR}${prefix}/share/vim/vimfiles/ftdetect/ \
 	${DESTDIR}${prefix}/include
@@ -130,6 +131,8 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	@# templates
 	install -m644 templates/makefile ${DESTDIR}${prefix}/share/avdl/templates
 	install -m644 templates/CMakeLists.txt ${DESTDIR}${prefix}/share/avdl/templates
+	@# scripts
+	install -m644 scripts/* ${DESTDIR}${prefix}/share/avdl/scripts
 	@# c engine
 	install -m644 ${ENGINE_FILES_HEADERS} ${DESTDIR}${prefix}/include
 	install -m644 ${ENGINE_FILES_SRC} ${ENGINE_FILES_SRC_CPP} ${DESTDIR}${prefix}/share/avdl/cengine

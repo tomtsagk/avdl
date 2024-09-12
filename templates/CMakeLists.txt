@@ -26,149 +26,111 @@ add_executable("${CMAKE_PROJECT_NAME}" WIN32
 	${AVDL_SRC}
 )
 
-# SDL dependency
-#set(SDL2_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/libraries/SDL2-2.0.22"     )
+if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
+	set(AVDL_ARCH "x64")
+else()
+	set(AVDL_ARCH "x86")
+endif()
+message("avdl: arch: ${AVDL_ARCH}")
+
+if (NOT DEFINED AVDL_DIRECTORY)
+	message(FATAL_ERROR "No AVDL_DIRECTORY given.")
+endif()
+
+set(AVDL_DEPENDENCIES_DIRECTORY "${AVDL_DIRECTORY}/dependencies/windows/")
+
+# sdl2
+set(SDL2_INCLUDE_DIRS "${AVDL_DEPENDENCIES_DIRECTORY}/include")
+set(SDL2_LIBRARIES "${AVDL_DEPENDENCIES_DIRECTORY}/lib/${AVDL_ARCH}/SDL2.lib;${AVDL_DEPENDENCIES_DIRECTORY}/lib/${AVDL_ARCH}/SDL2main.lib")
+set(SDL2_DLL "${AVDL_DEPENDENCIES_DIRECTORY}/lib/${AVDL_ARCH}/SDL2.dll")
+message("avdl: SDL2_INCLUDE_DIRS: ${SDL2_INCLUDE_DIRS}")
+message("avdl: SDL2_LIBRARIES: ${SDL2_LIBRARIES}")
+message("avdl: SDL2_DLL: ${SDL2_DLL}")
+foreach(i ${SDL2_DLL})
+	install(FILES "${i}" DESTINATION bin/)
+	message("avdl: SDL2_DLL iterator: ${i}")
+endforeach()
+
+# sdl2_mixer
+set(SDL2_MIXER_INCLUDE_DIRS "${AVDL_DEPENDENCIES_DIRECTORY}/include")
+set(SDL2_MIXER_LIBRARIES "${AVDL_DEPENDENCIES_DIRECTORY}/lib/${AVDL_ARCH}/SDL2_mixer.lib")
+set(SDL2_MIXER_DLL
+	"${AVDL_DEPENDENCIES_DIRECTORY}/lib/x64/SDL2_mixer.dll"
+	"${AVDL_DEPENDENCIES_DIRECTORY}/lib/x64/optional/libogg-0.dll"
+)
+message("avdl: SDL2_MIXER_INCLUDE_DIRS: ${SDL2_MIXER_INCLUDE_DIRS}")
+message("avdl: SDL2_MIXER_LIBRARIES: ${SDL2_MIXER_LIBRARIES}")
+message("avdl: SDL2_MIXER_DLL: ${SDL2_MIXER_DLL}")
+foreach(i ${SDL2_MIXER_DLL})
+	install(FILES "${i}" DESTINATION bin/)
+	message("avdl: SDL2_MIXER_DLL iterator: ${i}")
+endforeach()
+
+# glew
+set(GLEW_INCLUDE_DIRS "${AVDL_DEPENDENCIES_DIRECTORY}/include")
+set(GLEW_LIBRARIES "${AVDL_DEPENDENCIES_DIRECTORY}/lib/Release/${AVDL_ARCH}/glew32.lib;${AVDL_DEPENDENCIES_DIRECTORY}/lib/Release/${AVDL_ARCH}/glew32s.lib")
+set(GLEW_DLL "${AVDL_DEPENDENCIES_DIRECTORY}/bin/Release/${AVDL_ARCH}/glew32.dll")
+message("avdl: GLEW_INCLUDE_DIRS: ${GLEW_INCLUDE_DIRS}")
+message("avdl: GLEW_LIBRARIES: ${GLEW_LIBRARIES}")
+message("avdl: GLEW_DLL: ${GLEW_DLL}")
+foreach(i ${GLEW_DLL})
+	install(FILES "${i}" DESTINATION bin/)
+	message("avdl: GLEW_DLL iterator: ${i}")
+endforeach()
+
+# zlib
+set(ZLIB_INCLUDE_DIR "${AVDL_DEPENDENCIES_DIRECTORY}/zlib/include")
+set(ZLIB_DLL "${AVDL_DEPENDENCIES_DIRECTORY}/zlib/bin/zlib.dll")
+install(FILES ZLIB_DLL DESTINATION bin/)
+message("avdl: ZLIB_INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
+message("avdl: ZLIB_DLL: ${ZLIB_DLL}")
+
+# freetype
+set(FREETYPE_INCLUDE_DIR "${AVDL_DEPENDENCIES_DIRECTORY}/freetype/include")
+set(FREETYPE_LIBRARY "${AVDL_DEPENDENCIES_DIRECTORY}/freetype/lib/freetype.lib")
+set(FREETYPE_DLL "${AVDL_DEPENDENCIES_DIRECTORY}/freetype/bin/freetype.dll")
+install(FILES FREETYPE_DLL DESTINATION bin/)
+message("avdl: FREETYPE_INCLUDE_DIR: ${FREETYPE_INCLUDE_DIR}")
+message("avdl: FREETYPE_LIBRARY: ${FREETYPE_LIBRARY}")
+message("avdl: FREETYPE_DLL: ${FREETYPE_DLL}")
+
+# png
+set(PNG_LIBRARY "${AVDL_DEPENDENCIES_DIRECTORY}/libpng/lib/libpng16.lib")
+set(PNG_INCLUDE_DIR "${AVDL_DEPENDENCIES_DIRECTORY}/libpng/include")
+set(PNG_DLL "${AVDL_DEPENDENCIES_DIRECTORY}/libpng/bin/libpng16.dll")
+install(FILES PNG_DLL DESTINATION bin/)
+message("avdl: PNG_LIBRARY: ${PNG_LIBRARY}")
+message("avdl: PNG_INCLUDE_DIR: ${PNG_INCLUDE_DIR}")
+message("avdl: PNG_DLL: ${PNG_DLL}")
+find_package(PNG REQUIRED)
+
+# opengl
 if (DEFINED AVDL_DIRECT3D11)
 else()
-	if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
-		set(AVDL_ARCH "x64")
-	else()
-		set(AVDL_ARCH "x86")
-	endif()
-	message("avdl: arch: ${AVDL_ARCH}")
-
-	if (AVDL_DIRECTORY)
-
-		set(AVDL_DEPENDENCIES_DIRECTORY "${AVDL_DIRECTORY}/dependencies/windows/")
-
-		# sdl2
-		set(SDL2_INCLUDE_DIRS "${AVDL_DEPENDENCIES_DIRECTORY}/include")
-		set(SDL2_LIBRARIES "${AVDL_DEPENDENCIES_DIRECTORY}/lib/${AVDL_ARCH}/SDL2.lib;${AVDL_DEPENDENCIES_DIRECTORY}/lib/${AVDL_ARCH}/SDL2main.lib")
-		set(SDL2_DLL "${AVDL_DEPENDENCIES_DIRECTORY}/lib/${AVDL_ARCH}/SDL2.dll")
-
-		# sdl2_mixer
-		set(SDL2_MIXER_INCLUDE_DIRS "${AVDL_DEPENDENCIES_DIRECTORY}/include")
-		set(SDL2_MIXER_LIBRARIES "${AVDL_DEPENDENCIES_DIRECTORY}/lib/${AVDL_ARCH}/SDL2_mixer.lib")
-		set(SDL2_MIXER_DLL
-			"${AVDL_DEPENDENCIES_DIRECTORY}/lib/x64/SDL2_mixer.dll"
-			"${AVDL_DEPENDENCIES_DIRECTORY}/lib/x64/optional/libogg-0.dll"
-		)
-
-		# glew
-		set(GLEW_INCLUDE_DIRS "${AVDL_DEPENDENCIES_DIRECTORY}/include")
-		set(GLEW_LIBRARIES "${AVDL_DEPENDENCIES_DIRECTORY}/lib/Release/${AVDL_ARCH}/glew32.lib;${AVDL_DEPENDENCIES_DIRECTORY}/lib/Release/${AVDL_ARCH}/glew32s.lib")
-		set(GLEW_DLL "${AVDL_DEPENDENCIES_DIRECTORY}/bin/Release/${AVDL_ARCH}/glew32.dll")
-
-	endif()
-
-	#
-	# SDL2 defaults
-	# required:
-	# * SDL2_INCLUDE_DIRS (headers)
-	# * SDL2_LIBRARIES (.lib file)
-	# * SDL2_DLL (.dll file to include in build)
-	#
-	if (NOT SDL2_INCLUDE_DIRS)
-		set(SDL2_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/libraries/SDL2-2.0.22/include")
-	endif()
-	message("avdl: SDL2_INCLUDE_DIRS: ${SDL2_INCLUDE_DIRS}")
-
-	if (NOT SDL2_LIBRARIES)
-		set(SDL2_LIBRARIES "${CMAKE_CURRENT_LIST_DIR}/libraries/SDL2-2.0.22/lib/${AVDL_ARCH}/SDL2.lib;${CMAKE_CURRENT_LIST_DIR}/libraries/SDL2-2.0.22/lib/${AVDL_ARCH}/SDL2main.lib")
-	endif()
-	message("avdl: SDL2_LIBRARIES: ${SDL2_LIBRARIES}")
-
-	if (NOT SDL2_DLL)
-		set(SDL2_DLL "${CMAKE_CURRENT_LIST_DIR}/libraries/SDL2-2.0.22/lib/${AVDL_ARCH}/SDL2.dll")
-	endif()
-	message("avdl: SDL2_DLL: ${SDL2_DLL}")
-	foreach(i ${SDL2_DLL})
-		install(FILES "${i}" DESTINATION bin/)
-		message("avdl: SDL2_DLL iterator: ${i}")
-	endforeach()
-
-	# SDL_mixer dependency
-	if (NOT SDL2_MIXER_INCLUDE_DIRS)
-		set(SDL2_MIXER_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/libraries/SDL2_mixer-2.6.0/include")
-	endif()
-	message("avdl: SDL2_MIXER_INCLUDE_DIRS: ${SDL2_MIXER_INCLUDE_DIRS}")
-	#set(SDL2_mixer_DIR "${CMAKE_CURRENT_SOURCE_DIR}/libraries/SDL2_mixer-2.6.0/cmake")
-
-	if (NOT SDL2_MIXER_LIBRARIES)
-		set(SDL2_MIXER_LIBRARIES "${CMAKE_CURRENT_LIST_DIR}/libraries/SDL2_mixer-2.6.0/lib/${AVDL_ARCH}/SDL2_mixer.lib")
-	endif()
-	message("avdl: SDL2_MIXER_LIBRARIES: ${SDL2_MIXER_LIBRARIES}")
-
-	if (NOT SDL2_MIXER_DLL)
-		set(SDL2_MIXER_DLL
-			"${CMAKE_CURRENT_LIST_DIR}/libraries/SDL2_mixer-2.6.0/lib/x64/SDL2_mixer.dll"
-			"${CMAKE_CURRENT_LIST_DIR}/libraries/SDL2_mixer-2.6.0/lib/x64/optional/libogg-0.dll"
-			#"${CMAKE_CURRENT_LIST_DIR}/libraries/SDL2_mixer-2.6.0/lib/x64/optional/libopus-0.dll"
-			#"${CMAKE_CURRENT_LIST_DIR}/libraries/SDL2_mixer-2.6.0/lib/x64/optional/libopusfile-0.dll"
-		)
-	endif()
-	message("avdl: SDL2_MIXER_DLL: ${SDL2_MIXER_DLL}")
-	foreach(i ${SDL2_MIXER_DLL})
-		install(FILES "${i}" DESTINATION bin/)
-		message("avdl: SDL2_MIXER_DLL iterator: ${i}")
-	endforeach()
-
-	# glew dependency
-	#set(GLEW_DIR       "${CMAKE_CURRENT_SOURCE_DIR}/libraries/glew-2.2.0"      )
-	if (NOT GLEW_INCLUDE_DIRS)
-		set(GLEW_INCLUDE_DIRS "${CMAKE_CURRENT_LIST_DIR}/libraries/glew-2.2.0/include")
-	endif()
-
-	if (NOT GLEW_LIBRARIES)
-		set(GLEW_LIBRARIES "${CMAKE_CURRENT_LIST_DIR}/libraries/glew-2.2.0/lib/Release/${AVDL_ARCH}/glew32.lib;${CMAKE_CURRENT_LIST_DIR}/libraries/glew-2.2.0/lib/Release/${AVDL_ARCH}/glew32s.lib")
-	endif()
-
-	if (NOT GLEW_DLL)
-		set(GLEW_DLL "${CMAKE_CURRENT_LIST_DIR}/libraries/glew-2.2.0/bin/Release/${AVDL_ARCH}/glew32.dll")
-	endif()
-	foreach(i ${GLEW_DLL})
-		install(FILES "${i}" DESTINATION bin/)
-		message("avdl: GLEW_DLL iterator: ${i}")
-	endforeach()
-
 	find_package(OpenGL     REQUIRED)
 endif()
 
-# dependency zlib
-install(FILES "C:/Program Files (x86)/zlib/bin/zlib.dll" DESTINATION bin/)
-
-# dependency freetype
-set(FREETYPE_LIBRARY "C:/Program Files (x86)/freetype/lib/freetype.lib")
-set(FREETYPE_INCLUDE_DIR "C:/Program Files (x86)/freetype/include/freetype2")
-install(FILES "C:/Program Files (x86)/freetype/bin/freetype.dll" DESTINATION bin/)
-
-# dependency png
-set(PNG_LIBRARY "C:/Program Files (x86)/libpng/lib/libpng16.lib")
-set(PNG_PNG_INCLUDE_DIR "C:/Program Files (x86)/libpng/include")
-install(FILES "C:/Program Files (x86)/libpng/bin/libpng16.dll" DESTINATION bin/)
-
-find_package(PNG	REQUIRED)
-
+# steam
 if (${AVDL_STEAM})
-	set(STEAM_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/AVDL_BUILD/dependencies/windows/include")
+	set(STEAM_INCLUDE_DIR "${AVDL_DEPENDENCIES_DIRECTORY}/include")
 	if (${CMAKE_SIZEOF_VOID_P} MATCHES 8)
-		set(STEAM_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/AVDL_BUILD/dependencies/windows/lib/steam_api64.lib")
-		install(FILES "${CMAKE_CURRENT_LIST_DIR}/AVDL_BUILD/dependencies/windows/lib/steam_api64.dll" DESTINATION bin/)
+		set(STEAM_LIBRARY "${AVDL_DEPENDENCIES_DIRECTORY}/lib/steam_api64.lib")
+		install(FILES "${AVDL_DEPENDENCIES_DIRECTORY}/lib/steam_api64.dll" DESTINATION bin/)
 	else()
-		set(STEAM_LIBRARY "${CMAKE_CURRENT_LIST_DIR}/AVDL_BUILD/dependencies/windows/lib/steam_api.lib")
-		install(FILES "${CMAKE_CURRENT_LIST_DIR}/AVDL_BUILD/dependencies/windows/lib/steam_api.dll" DESTINATION bin/)
+		set(STEAM_LIBRARY "${AVDL_DEPENDENCIES_DIRECTORY}/lib/steam_api.lib")
+		install(FILES "${AVDL_DEPENDENCIES_DIRECTORY}/lib/steam_api.dll" DESTINATION bin/)
 	endif()
 endif()
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${PNG_LIBRARY}         )
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${FREETYPE_LIBRARY}    )
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${STEAM_LIBRARY}       )
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${PNG_LIBRARY}     )
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${FREETYPE_LIBRARY})
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${STEAM_LIBRARY}   )
 
 # add include directory, for binary, including dependencies
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
 	cengine
 	include
-	${PNG_PNG_INCLUDE_DIR}
+	${PNG_INCLUDE_DIR}
 	${FREETYPE_INCLUDE_DIR}
 	${ZLIB_INCLUDE_DIR}
 	${STEAM_INCLUDE_DIR}

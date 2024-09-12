@@ -46,6 +46,9 @@ install(DIRECTORY engines/android DESTINATION share/avdl/)
 # templates
 install(DIRECTORY templates DESTINATION share/avdl/)
 
+# scripts
+install(DIRECTORY scripts DESTINATION share/avdl/)
+
 # packaging using `cpack`
 include(InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_VENDOR "Afloofdev")
