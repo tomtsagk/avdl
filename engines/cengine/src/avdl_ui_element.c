@@ -4,6 +4,15 @@
 #include "dd_mouse.h"
 #include "dd_game.h"
 
+static void CheckIsSelected(struct avdl_ui_element *o) {
+	if (o->hasMouseCollided(o)) {
+		o->isSelected = 1;
+	}
+	else {
+		o->isSelected = 0;
+	}
+}
+
 void avdl_ui_element_create(struct avdl_ui_element *o) {
 	o->SetSize = avdl_ui_element_SetSize;
 	o->SetPosition = avdl_ui_element_SetPosition;
@@ -89,12 +98,7 @@ void avdl_ui_element_update(struct avdl_ui_element *o, float dt) {
 		return;
 	}
 
-	if (o->hasMouseCollided(o)) {
-		o->isSelected = 1;
-	}
-	else {
-		o->isSelected = 0;
-	}
+	CheckIsSelected(o);
 }
 
 void avdl_ui_element_applyTransform(struct avdl_ui_element *o) {
@@ -174,6 +178,11 @@ void avdl_ui_element_SetAnchor(struct avdl_ui_element *o, float x, float y) {
 }
 
 void avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type) {
+	if (o->isVisible == 0) {
+		return;
+	}
+
+	CheckIsSelected(o);
 
 	// set click state on selected button
 	if (type == DD_INPUT_MOUSE_TYPE_PRESSED) {
