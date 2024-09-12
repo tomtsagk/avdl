@@ -11,6 +11,9 @@ if "%2"=="" (
 	exit
 )
 
+:: generate cmake
+%2\bin\avdl.exe --cmake
+
 set start_directory=%cd%
 set "start_directory=%start_directory:\=/%"
 

@@ -80,6 +80,7 @@ endforeach()
 
 # zlib
 set(ZLIB_INCLUDE_DIR "${AVDL_DEPENDENCIES_DIRECTORY}/zlib/include")
+set(ZLIB_LIBRARY "${AVDL_DEPENDENCIES_DIRECTORY}/zlib/zlib/lib/zlib.lib")
 set(ZLIB_DLL "${AVDL_DEPENDENCIES_DIRECTORY}/zlib/bin/zlib.dll")
 install(FILES ${ZLIB_DLL} DESTINATION bin/)
 message("avdl: ZLIB_INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
@@ -102,7 +103,7 @@ install(FILES ${PNG_DLL} DESTINATION bin/)
 message("avdl: PNG_LIBRARY: ${PNG_LIBRARY}")
 message("avdl: PNG_INCLUDE_DIR: ${PNG_INCLUDE_DIR}")
 message("avdl: PNG_DLL: ${PNG_DLL}")
-find_package(PNG REQUIRED)
+#find_package(PNG REQUIRED)
 
 # opengl
 if (DEFINED AVDL_DIRECT3D11)
