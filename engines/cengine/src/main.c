@@ -322,7 +322,7 @@ void updateThread() {
 /*
  * nativeInit : Called when the app is first created
  */
-void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject thiz, jobject mainActivity) {
+void Java_dev_afloof_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject thiz, jobject mainActivity) {
 
 	#if defined(AVDL_QUEST2)
 	// initialise pthread mutex for jni
@@ -337,7 +337,7 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 	// Global variables to access Java virtual machine and environment
 	(*env)->GetJavaVM(env, &jvm);
 	(*jvm)->GetEnv(jvm, &jniEnv, JNI_VERSION_1_6);
-	jclass classLocal = (*(*jniEnv)->FindClass)(jniEnv, "org/darkdimension/avdl/AvdlActivity");
+	jclass classLocal = (*(*jniEnv)->FindClass)(jniEnv, "dev/afloof/avdl/AvdlActivity");
 	clazz = (*jniEnv)->NewGlobalRef(jniEnv, classLocal);
 	mainActivityp = (*jniEnv)->NewGlobalRef(jniEnv, mainActivity);
 
@@ -378,7 +378,7 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject th
 /*
  * nativeDone : Called when closing the app
  */
-void Java_org_darkdimension_avdl_AvdlActivity_nativeDone(JNIEnv*  env) {
+void Java_dev_afloof_avdl_AvdlActivity_nativeDone(JNIEnv*  env) {
 	if (dd_flag_exit == 0) {
 		pthread_mutex_lock(&jniMutex);
 		jniEnv = 0;
@@ -390,7 +390,7 @@ void Java_org_darkdimension_avdl_AvdlActivity_nativeDone(JNIEnv*  env) {
 /*
  * nativeResize : Called when screen size changes
  */
-void Java_org_darkdimension_avdl_AvdlRenderer_nativeResize(JNIEnv* env, jobject thiz, jint w, jint h) {
+void Java_dev_afloof_avdl_AvdlRenderer_nativeResize(JNIEnv* env, jobject thiz, jint w, jint h) {
 	dd_width = w;
 	dd_height = h;
 
@@ -400,7 +400,7 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeResize(JNIEnv* env, jobject 
 /*
  * nativeRender : Called every so often to draw a frame
  */
-void Java_org_darkdimension_avdl_AvdlRenderer_nativeRender(JNIEnv* env) {
+void Java_dev_afloof_avdl_AvdlRenderer_nativeRender(JNIEnv* env) {
 	pthread_mutex_lock(&updateDrawMutex);
 	if (!dd_flag_exit) {
 		avdl_engine_draw(&engine);
@@ -412,34 +412,34 @@ void Java_org_darkdimension_avdl_AvdlRenderer_nativeRender(JNIEnv* env) {
  * nativeMouseInput* : Called when a mouse/touch event happens, this is asynchronous
  * 	but will set a flag that the engine can pick up when ready
  */
-void Java_org_darkdimension_avdl_AvdlGLSurfaceView_nativeMouseInputDown(JNIEnv*  env, jobject obj, jint mouseX, jint mouseY) {
+void Java_dev_afloof_avdl_AvdlGLSurfaceView_nativeMouseInputDown(JNIEnv*  env, jobject obj, jint mouseX, jint mouseY) {
 	avdl_input_AddInput(&engine.input, DD_INPUT_MOUSE_BUTTON_LEFT, DD_INPUT_MOUSE_TYPE_PRESSED, mouseX, mouseY);
 }
 
-void Java_org_darkdimension_avdl_AvdlGLSurfaceView_nativeMouseInputUp(JNIEnv*  env, jobject obj, jint mouseX, jint mouseY) {
+void Java_dev_afloof_avdl_AvdlGLSurfaceView_nativeMouseInputUp(JNIEnv*  env, jobject obj, jint mouseX, jint mouseY) {
 	avdl_input_AddInput(&engine.input, DD_INPUT_MOUSE_BUTTON_LEFT, DD_INPUT_MOUSE_TYPE_RELEASED, mouseX, mouseY);
 }
 
-void Java_org_darkdimension_avdl_AvdlGLSurfaceView_nativeMouseInputMove(JNIEnv*  env, jobject obj, jint mouseX, jint mouseY) {
+void Java_dev_afloof_avdl_AvdlGLSurfaceView_nativeMouseInputMove(JNIEnv*  env, jobject obj, jint mouseX, jint mouseY) {
 	avdl_input_AddInput(&engine.input, DD_INPUT_MOUSE_BUTTON_LEFT, DD_INPUT_MOUSE_TYPE_MOVE, mouseX, mouseY);
 }
 
-void Java_org_darkdimension_avdl_AvdlGLSurfaceView_nativeTogglePauseResume(JNIEnv* env) {
+void Java_dev_afloof_avdl_AvdlGLSurfaceView_nativeTogglePauseResume(JNIEnv* env) {
 }
 
-void Java_org_darkdimension_avdl_AvdlActivity_nativePause(JNIEnv* env) {
+void Java_dev_afloof_avdl_AvdlActivity_nativePause(JNIEnv* env) {
 	if (dd_flag_exit == 0) {
 		onPause();
 	}
 }
 
-void Java_org_darkdimension_avdl_AvdlActivity_nativeResume(JNIEnv* env) {
+void Java_dev_afloof_avdl_AvdlActivity_nativeResume(JNIEnv* env) {
 	if (dd_flag_exit == 0) {
 		onResume();
 	}
 }
 
-void Java_org_darkdimension_avdl_AvdlActivity_nativeKeyDown(JNIEnv*  env, jobject obj, jint key) {
+void Java_dev_afloof_avdl_AvdlActivity_nativeKeyDown(JNIEnv*  env, jobject obj, jint key) {
 	if (dd_flag_exit == 0) {
 		pthread_mutex_lock(&updateDrawMutex);
 		engine.input.input_key = key;
@@ -447,11 +447,11 @@ void Java_org_darkdimension_avdl_AvdlActivity_nativeKeyDown(JNIEnv*  env, jobjec
 	}
 }
 
-void Java_org_darkdimension_avdl_AvdlActivity_nativeSetAssetManager(JNIEnv* env, jobject thiz, jobject assetManager) {
+void Java_dev_afloof_avdl_AvdlActivity_nativeSetAssetManager(JNIEnv* env, jobject thiz, jobject assetManager) {
 	aassetManager = AAssetManager_fromJava(env, assetManager);
 }
 
-void Java_org_darkdimension_avdl_AvdlActivity_nativeSetLocale(JNIEnv* env, jobject thiz, jint locale) {
+void Java_dev_afloof_avdl_AvdlActivity_nativeSetLocale(JNIEnv* env, jobject thiz, jint locale) {
 	int loc = locale;
 	// for now, check languages manually
 	switch (loc) {
@@ -462,7 +462,7 @@ void Java_org_darkdimension_avdl_AvdlActivity_nativeSetLocale(JNIEnv* env, jobje
 	}
 }
 
-void Java_org_darkdimension_avdl_AvdlActivity_nativeOnRewardedAd(JNIEnv* env, jobject thiz, int reward_amount, jstring reward_type) {
+void Java_dev_afloof_avdl_AvdlActivity_nativeOnRewardedAd(JNIEnv* env, jobject thiz, int reward_amount, jstring reward_type) {
 	const char *nativeString = (*env)->GetStringUTFChars(env, reward_type, 0);
 	avdl_ads_onRewardedAd(reward_amount, nativeString);
 	(*env)->ReleaseStringUTFChars(env, reward_type, nativeString);
