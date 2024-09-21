@@ -747,8 +747,20 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 				return -1;
 			}
 
-			Avdl_FileOp_GetFilesInDirectoryRecursive_internal(0, avdl_string_toCharPtr(&prefixStr), array, avdl_string_toCharPtr(&prefixStr));
+			// new dirname
+			struct avdl_string newDirname;
+			avdl_string_create(&newDirname, 1024);
+			avdl_string_cat(&newDirname, dirname);
+			avdl_string_cat(&newDirname, "/");
+			avdl_string_cat(&newDirname, fdFile.cFileName);
+			avdl_string_cat(&newDirname, "/");
+			if ( !avdl_string_isValid(&newDirname) ) {
+				avdl_log_error("directory pathname too long: %s", newDirname);
+				return -1;
+			}
+			Avdl_FileOp_GetFilesInDirectoryRecursive_internal(0, avdl_string_toCharPtr(&newDirname), array, avdl_string_toCharPtr(&prefixStr));
 			avdl_string_clean(&prefixStr);
+			avdl_string_clean(&newDirname);
 		}
 		else{
 
@@ -785,7 +797,7 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 		src_dir = open(dirname, O_DIRECTORY);
 	}
 	if (src_dir == -1) {
-		printf("GetFilesInDirectoryRecursive: can't open directory %s: %s\n", dirname, strerror(errno));
+		avdl_log("GetFilesInDirectoryRecursive: can't open directory %s: %s", dirname, strerror(errno));
 		return -1;
 	}
 
@@ -830,8 +842,21 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 				avdl_log_error("directory pathname too long: %s", dirname);
 				return -1;
 			}
-			Avdl_FileOp_GetFilesInDirectoryRecursive_internal(src_dir, dir->d_name, array, avdl_string_toCharPtr(&prefixStr));
+
+			// new dirname
+			struct avdl_string newDirname;
+			avdl_string_create(&newDirname, 1024);
+			avdl_string_cat(&newDirname, dirname);
+			avdl_string_cat(&newDirname, "/");
+			avdl_string_cat(&newDirname, dir->d_name);
+			avdl_string_cat(&newDirname, "/");
+			if ( !avdl_string_isValid(&newDirname) ) {
+				avdl_log_error("directory pathname too long: %s", newDirname);
+				return -1;
+			}
+			Avdl_FileOp_GetFilesInDirectoryRecursive_internal(0, avdl_string_toCharPtr(&newDirname), array, avdl_string_toCharPtr(&prefixStr));
 			avdl_string_clean(&prefixStr);
+			avdl_string_clean(&newDirname);
 			continue;
 		}
 
@@ -873,6 +898,7 @@ int Avdl_FileOp_GetFilesInDirectoryClean(struct avdl_dynamic_array *array) {
 		avdl_string_clean(str);
 	}
 	avdl_da_free(array);
+	return 0;
 }
 
 int Avdl_FileOp_DoesFileExist(const char *filename) {
