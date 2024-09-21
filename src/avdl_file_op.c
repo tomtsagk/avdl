@@ -732,7 +732,6 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 		if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY)
 		{
 			//avdl_log("Directory: %s\n", sPath);
-			//ListDirectoryContents(sPath); //Recursion, I love it!
 
 			// add a string into the array and get a pointer to it
 			struct avdl_string prefixStr;
@@ -747,7 +746,8 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 				avdl_log_error("directory pathname too long: %s", fdFile.cFileName);
 				return -1;
 			}
-			Avdl_FileOp_GetFilesInDirectoryRecursive_internal(src_dir, fdFile.cFileName, array, avdl_string_toCharPtr(&prefixStr));
+
+			Avdl_FileOp_GetFilesInDirectoryRecursive_internal(0, avdl_string_toCharPtr(&prefixStr), array, avdl_string_toCharPtr(&prefixStr));
 			avdl_string_clean(&prefixStr);
 		}
 		else{

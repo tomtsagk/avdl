@@ -139,7 +139,7 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	cp -r ${CENGINE_PATH}/src/* ${DESTDIR}${prefix}/share/avdl/cengine
 	@# android engine
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
-	cp -r engines/cengine/src/*.c engines/cengine/src/*.cpp engines/cengine/include/*.h\
+	cp -r engines/cengine/src/* engines/cengine/include/*\
 		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine
 	sed -i '/%AVDL_ENGINE_FILES%/ s#%AVDL_ENGINE_FILES%#${ENGINE_FILES_ANDROID}#'\
 		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/CMakeLists.txt.in
