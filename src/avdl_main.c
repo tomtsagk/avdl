@@ -52,119 +52,7 @@ struct ast_node *game_node;
 
 int create_android_directory(const char *androidDirName);
 int create_quest2_directory(const char *dirName);
-int create_d3d11_directory(const char *dirName);
-
-char *cengine_files[] = {
-	"avdl_assetManager.c",
-	"avdl_data.c",
-	"avdl_localisation.c",
-	"avdl_localisation_cpp.cpp",
-	"avdl_particle_system.c",
-	"avdl_shaders.c",
-	"dd_dynamic_array.c",
-	"dd_filetomesh.c",
-	"dd_fov.c",
-	"dd_game.c",
-	"dd_gamejolt.c",
-	"dd_image.c",
-	"avdl_skybox.c",
-	"dd_json.c",
-	"dd_log.c",
-	"dd_log_cpp.cpp",
-	"dd_math.c",
-	"dd_matrix.c",
-	"dd_mesh.c",
-	"avdl_mesh.c",
-	"avdl_skinned_mesh.c",
-	"avdl_skeleton.c",
-	"dd_meshColour.c",
-	"dd_meshTexture.c",
-	"dd_mouse.c",
-	"dd_sound.c",
-	"avdl_whereami.c",
-	"dd_string3d.c",
-	"dd_vec3.c",
-	"dd_vec4.c",
-	"dd_world.c",
-	"avdl_input.c",
-	"avdl_physics.c",
-	"avdl_collider.c",
-	"avdl_collider_aabb.c",
-	"avdl_collider_sphere.c",
-	"avdl_rigidbody.c",
-	"avdl_graphics_opengl.c",
-	"avdl_graphics_direct3d11.cpp",
-	"avdl_engine.c",
-	"main.c",
-	"avdl_steam.c",
-	"avdl_steam_cpp.cpp",
-	"main_cpp.cpp",
-	"avdl_achievements.c",
-	"avdl_achievements_steam.cpp",
-	"avdl_multiplayer.c",
-	"avdl_multiplayer_steam.cpp",
-	"avdl_engine_cpp.cpp",
-	"avdl_time.c",
-	"avdl_webapi.c",
-	"avdl_webapi_cpp.cpp",
-	"avdl_ads.c",
-	"avdl_font.c",
-	"avdl_ui_element.c",
-};
-unsigned int cengine_files_total = sizeof(cengine_files) /sizeof(char *);
-
-char *cengine_headers[] = {
-	"avdl_steam.h",
-	"avdl_assetManager.h",
-	"avdl_cengine.h",
-	"avdl_data.h",
-	"avdl_localisation.h",
-	"avdl_particle_system.h",
-	"avdl_shaders.h",
-	"dd_async_call.h",
-	"dd_dynamic_array.h",
-	"dd_filetomesh.h",
-	"dd_fov.h",
-	"dd_game.h",
-	"dd_gamejolt.h",
-	"dd_image.h",
-	"avdl_skybox.h",
-	"dd_json.h",
-	"dd_log.h",
-	"dd_math.h",
-	"dd_matrix.h",
-	"dd_mesh.h",
-	"avdl_mesh.h",
-	"avdl_skinned_mesh.h",
-	"avdl_skeleton.h",
-	"dd_meshColour.h",
-	"dd_meshTexture.h",
-	"dd_mouse.h",
-	"dd_sound.h",
-	"avdl_whereami.h",
-	"dd_string3d.h",
-	"dd_vec2.h",
-	"dd_vec3.h",
-	"dd_vec4.h",
-	"dd_world.h",
-	"avdl_input.h",
-	"avdl_achievements.h",
-	"avdl_multiplayer.h",
-	"avdl_physics.h",
-	"avdl_collider.h",
-	"avdl_collider_aabb.h",
-	"avdl_collider_sphere.h",
-	"avdl_rigidbody.h",
-	"avdl_graphics.h",
-	"avdl_engine.h",
-	"avdl_time.h",
-	"avdl_webapi.h",
-	"avdl_ads.h",
-	"avdl_font.h",
-	"avdl_ui_element.h",
-	"cgltf.h",
-};
-unsigned int cengine_headers_total = sizeof(cengine_headers) /sizeof(char *);
+int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirName);
 
 // compiler steps
 int avdl_transpile(struct AvdlSettings *);
@@ -376,7 +264,7 @@ int create_quest2_directory(const char *dirName) {
 	return 0;
 }
 
-int create_d3d11_directory(const char *dirName) {
+int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirName) {
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 	#else
 	int isDir = is_dir(dirName);
@@ -419,13 +307,24 @@ int create_d3d11_directory(const char *dirName) {
 	}
 
 	// collect headers
+	struct avdl_dynamic_array cengineHeaders;
+	if (Avdl_FileOp_GetFilesInDirectory(avdl_settings->cengine_path, &cengineHeaders) != 0) {
+		avdl_log_error("Can't get cengine headers");
+		return -1;
+	}
+
 	struct avdl_string avdlHeaders;
 	avdl_string_create(&avdlHeaders, 4000);
-	for (int i = 0; i < cengine_headers_total; i++) {
+	for (int i = 0; i < avdl_da_count(&cengineHeaders); i++) {
+		struct avdl_string *str = avdl_da_get(&cengineHeaders, i);
+		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
+			continue;
+		}
 		avdl_string_cat(&avdlHeaders, "    <ClInclude Include=\"avdl_src/");
-		avdl_string_cat(&avdlHeaders, cengine_headers[i]);
+		avdl_string_cat(&avdlHeaders, avdl_string_toCharPtr(str));
 		avdl_string_cat(&avdlHeaders, "\"/>\n");
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&cengineHeaders);
 	if ( !avdl_string_isValid(&avdlHeaders) ) {
 		avdl_log_error("cannot construct path for d3d11 avdl headers: %s", avdl_string_getError(&avdlHeaders));
 		avdl_log_error("chars in string: %d/%d", avdlHeaders.errorCharacters, avdlHeaders.maxCharacters);
@@ -437,16 +336,28 @@ int create_d3d11_directory(const char *dirName) {
 		"%AVDL_HEADERS%", avdl_string_toCharPtr(&avdlHeaders)
 	);
 
+	// cengine files
+	struct avdl_dynamic_array cengineFiles;
+	if (Avdl_FileOp_GetFilesInDirectory(avdl_settings->cengine_path, &cengineFiles) != 0) {
+		avdl_log_error("Can't get cengine files");
+		return -1;
+	}
+
 	// collect src
 	struct avdl_string avdlSrc;
 	avdl_string_create(&avdlSrc, 10000);
-	for (int i = 0; i < cengine_files_total; i++) {
+	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
+
+		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
+			continue;
+		}
 		avdl_string_cat(&avdlSrc, "    <ClCompile Include=\"avdl_src/");
-		avdl_string_cat(&avdlSrc, cengine_files[i]);
+		avdl_string_cat(&avdlSrc, avdl_string_toCharPtr(str));
 		avdl_string_cat(&avdlSrc, "\">\n");
-		if (strcmp(cengine_files[i], "avdl_engine_cpp.cpp") == 0
-		||  strcmp(cengine_files[i], "avdl_graphics_direct3d11.cpp") == 0
-		||  strcmp(cengine_files[i], "dd_log_cpp.cpp") == 0
+		if (strcmp(avdl_string_toCharPtr(str), "avdl_engine_cpp.cpp") == 0
+		||  strcmp(avdl_string_toCharPtr(str), "avdl_graphics_direct3d11.cpp") == 0
+		||  strcmp(avdl_string_toCharPtr(str), "dd_log_cpp.cpp") == 0
 		) {
 			avdl_string_cat(&avdlSrc, "      <CompileAsWinRT>true</CompileAsWinRT>\n");
 		}
@@ -456,6 +367,7 @@ int create_d3d11_directory(const char *dirName) {
 		avdl_string_cat(&avdlSrc, "      <PrecompiledHeader>NotUsing</PrecompiledHeader>\n");
 		avdl_string_cat(&avdlSrc, "    </ClCompile>\n");
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&cengineFiles);
 	if ( !avdl_string_isValid(&avdlSrc) ) {
 		avdl_log_error("cannot construct path for d3d11 avdl src: %s", avdl_string_getError(&avdlSrc));
 		avdl_log_error("chars in string: %d/%d", avdlSrc.errorCharacters, avdlHeaders.maxCharacters);
@@ -611,6 +523,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 		avdl_string_clean(&dstFilePath);
 
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&srcFiles);
 
 	printf("avdl: transpiling - " GRN "100%%" RESET "\n");
 	fflush(stdout);
@@ -804,6 +717,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		avdl_string_clean(&dstFilePath);
 		avdl_string_clean(&commandString);
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&srcFiles);
 
 	printf("avdl: compiling - " GRN "100%%" RESET "\n");
 	fflush(stdout);
@@ -846,14 +760,26 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		dir_create(avdl_string_toCharPtr(&cenginePath));
 	}
 
-	printf("avdl: compiling cengine - " RED "0%%" RESET "\r");
+	
+	struct avdl_dynamic_array cengineFiles;
+	if (Avdl_FileOp_GetFilesInDirectory(avdl_settings->cengine_path, &cengineFiles) != 0) {
+		avdl_log_error("Can't get cengine files");
+		return -1;
+	}
+
+	printf("avdl: compiling avdl - " RED "0%%" RESET "\r");
 	fflush(stdout);
 	char compile_command[6000];
-	for (int i = 0; i < cengine_files_total; i++) {
+	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
+
+		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
+			continue;
+		}
 
 		struct avdl_string cEngFile;
 		avdl_string_create(&cEngFile, 1024);
-		avdl_string_cat(&cEngFile, cengine_files[i]);
+		avdl_string_cat(&cEngFile, avdl_string_toCharPtr(str));
 		if (avdl_string_endsIn(&cEngFile, ".cpp")) {
 			strcpy(compile_command, "g++ -c -DGLEW_NO_GLU ");
 		}
@@ -872,7 +798,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 		// include the source file
 		strcat(compile_command, avdl_settings->cengine_path);
-		strcat(compile_command, cengine_files[i]);
+		strcat(compile_command, avdl_string_toCharPtr(str));
 
 		strcat(compile_command, " -DPKG_NAME=\"\\\"");
 		strcat(compile_command, avdl_settings->project_name_code);
@@ -895,7 +821,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		avdl_string_create(&cenginePathOut, 1024);
 		avdl_string_cat(&cenginePathOut, outdir);
 		avdl_string_cat(&cenginePathOut, "cengine/");
-		avdl_string_cat(&cenginePathOut, cengine_files[i]);
+		avdl_string_cat(&cenginePathOut, avdl_string_toCharPtr(str));
 		if (avdl_string_endsIn(&cenginePathOut, ".cpp")) {
 			avdl_string_replaceEnding(&cenginePathOut, ".cpp", ".o");
 		}
@@ -904,7 +830,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		}
 
 		if ( !avdl_string_isValid(&cenginePathOut) ) {
-			avdl_log_error("cannot construct path '%s%s%s': %s", outdir, "cengine/", cengine_files[i], avdl_string_getError(&cenginePathOut));
+			avdl_log_error("cannot construct path '%s%s%s': %s", outdir, "cengine/", avdl_string_toCharPtr(str), avdl_string_getError(&cenginePathOut));
 			avdl_string_clean(&cenginePathOut);
 			return -1;
 		}
@@ -925,7 +851,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		// skip files already compiled
 		if ( avdl_settings->use_cache && Avdl_FileOp_DoesFileExist(avdl_string_toCharPtr(&cenginePathOut)) ) {
 			//printf("skipping: %s\n", buffer);
-			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(cengine_files_total+1) *100));
+			printf("avdl: compiling avdl - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&cengineFiles)+1) *100));
 			fflush(stdout);
 			continue;
 		}
@@ -937,12 +863,13 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 ////		if (!avdlQuietMode) {
-			printf("avdl: compiling cengine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(cengine_files_total+1) *100));
+			printf("avdl: compiling avdl - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&cengineFiles)+1) *100));
 			fflush(stdout);
 ////		}
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&cengineFiles);
 ////	if (!avdlQuietMode) {
-		printf("avdl: compiling cengine - " GRN "100%%" RESET "\n");
+		printf("avdl: compiling avdl - " GRN "100%%" RESET "\n");
 ////	}
 
 	avdl_string_clean(&cenginePath);
@@ -1040,14 +967,27 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		}
 
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&objFiles);
+
+	struct avdl_dynamic_array cengineFiles;
+	if (Avdl_FileOp_GetFilesInDirectory(avdl_settings->cengine_path, &cengineFiles) != 0) {
+		avdl_log_error("Can't get cengine files");
+		return -1;
+	}
 
 	// add cengine files to link
-	for (int i = 0; i < cengine_files_total; i++) {
+	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
+
+		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
+			continue;
+		}
+
 		avdl_string_cat(&link_cmd, ".avdl_cache/cengine/");
 
 		struct avdl_string tempfile;
 		avdl_string_create(&tempfile, 1024);
-		avdl_string_cat(&tempfile, cengine_files[i]);
+		avdl_string_cat(&tempfile, avdl_string_toCharPtr(str));
 		if (avdl_string_endsIn(&tempfile, ".cpp")) {
 			avdl_string_replaceEnding(&tempfile, ".cpp", ".o");
 		}
@@ -1059,6 +999,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		avdl_string_clean(&tempfile);
 		avdl_string_cat(&link_cmd, " ");
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&cengineFiles);
 
 	// output file
 	avdl_string_cat(&link_cmd, "-o ");
@@ -1082,7 +1023,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	if (avdl_settings->steam_mode) {
 		avdl_string_cat(&link_cmd, " -lsteam_api ");
 	}
-	//printf("link command: %s\n", buffer);
+	//printf("link command: %s\n", avdl_string_toCharPtr(&link_cmd));
 	if ( !avdl_string_isValid(&link_cmd) ) {
 		avdl_log_error("failed to construct link command");
 		avdl_string_clean(&link_cmd);
@@ -1606,6 +1547,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		avdl_string_clean(&srcFilePath);
 		avdl_string_clean(&dstFilePath);
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&assetFiles);
 
 	if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
 
@@ -1724,7 +1666,7 @@ int avdl_directories(struct AvdlSettings *avdl_settings) {
 		create_quest2_directory("avdl_build_quest2");
 	}
 	else if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
-		create_d3d11_directory("avdl_build_d3d11");
+		create_d3d11_directory(avdl_settings, "avdl_build_d3d11");
 	}
 
 	return 0;
@@ -1966,6 +1908,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 			avdl_string_cat(&objFilesStr, " ");
 		}
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&objFiles);
 
 	if (!avdl_string_isValid(&objFilesStr)) {
 		avdl_log_error("unable to construct obj files for android");
@@ -2561,6 +2504,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 		avdl_string_clean(&dstFilePath);
 		#endif
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&objFiles);
 
 	// Android.mk directory
 	struct avdl_string cppFilePath;
@@ -2738,6 +2682,7 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 		avdl_string_clean(&dstFilePath);
 		#endif
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&objFiles);
 
 	if (!avdl_string_isValid(&objFilesStr)) {
 		avdl_log_error("unable to collect d3d11 object files");
@@ -2872,14 +2817,26 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 	file_copy(avdl_string_toCharPtr(&path), "CMakeLists.txt", 0);
 	avdl_string_clean(&path);
 
+	// cengine files
+	struct avdl_dynamic_array cengineFiles;
+	if (Avdl_FileOp_GetFilesInDirectory(avdl_settings->cengine_path, &cengineFiles) != 0) {
+		avdl_log_error("Can't get cengine files");
+		return -1;
+	}
+
 	// collect avdl source
 	struct avdl_string avdl_src;
 	avdl_string_create(&avdl_src, 5024);
-	for (int i = 0; i < cengine_files_total; i++) {
+	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
+		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
+		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
+			continue;
+		}
 		avdl_string_cat(&avdl_src, "cengine/");
-		avdl_string_cat(&avdl_src, cengine_files[i]);
+		avdl_string_cat(&avdl_src, avdl_string_toCharPtr(str));
 		avdl_string_cat(&avdl_src, " ");
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&cengineFiles);
 	if ( !avdl_string_isValid(&avdl_src) ) {
 		avdl_log_error("could not construct avdl_src path");
 		avdl_string_clean(&avdl_src);
@@ -2896,6 +2853,7 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 			i--;
 		}
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&srcFiles);
 
 	// project data in cmake
 	struct avdl_string cmake_data;
@@ -2942,6 +2900,7 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 			avdl_string_cat(&cmake_data, " ");
 		}
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&assetFiles);
 
 	avdl_string_cat(&cmake_data, ")\n");
 	if ( !avdl_string_isValid(&cmake_data) ) {

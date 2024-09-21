@@ -696,6 +696,14 @@ int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_arr
 	return 0;
 }
 
+int Avdl_FileOp_GetFilesInDirectoryClean(struct avdl_dynamic_array *array) {
+	for (int i = 0; i < avdl_da_count(array); i++) {
+		struct avdl_string *str = avdl_da_get(array, i);
+		avdl_string_clean(str);
+	}
+	avdl_da_free(array);
+}
+
 int Avdl_FileOp_DoesFileExist(const char *filename) {
 	return Avdl_FileOp_DoesFileExistAt(0, filename);
 }
