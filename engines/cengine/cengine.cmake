@@ -1,6 +1,5 @@
 file(GLOB cengine_src CONFIGURE_DEPENDS
-	"engines/cengine/src/*.c"
-	"engines/cengine/src/*.cpp"
+	"engines/cengine/src/*"
 )
 
 file(GLOB cengine_headers CONFIGURE_DEPENDS
