@@ -197,24 +197,8 @@ int avdl_engine_init(struct avdl_engine *o) {
 	// audio is meant to be active
 	if (dd_hasAudio) {
 
-		/*
-		 * initialise audio, if it fails, don't play audio at all
-		 * during the game
-		 */
-		if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
-			dd_log("avdl: error initialising audio mixer");
-			dd_hasAudio = 0;
-		}
-		// audio initialisation succeeded
-		else {
-			Mix_Init(MIX_INIT_OGG);
-
-			// make sure there's at least 8 channels
-			dd_numberOfAudioChannels = Mix_AllocateChannels(-1);
-			if (dd_numberOfAudioChannels < 8) {
-				dd_numberOfAudioChannels = Mix_AllocateChannels(8);
-			}
-
+		if (avdl_audio_initialise() != 0) {
+			dd_log("avdl: error initialising audio");
 		}
 
 	} // init audio
@@ -224,6 +208,10 @@ int avdl_engine_init(struct avdl_engine *o) {
 		dd_log("avdl error: Game will play without audio");
 	}
 
+	#else
+	if (avdl_audio_initialise() != 0) {
+		dd_log("avdl: error initialising audio");
+	}
 	#endif
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
@@ -393,7 +381,7 @@ int avdl_engine_clean(struct avdl_engine *o) {
 	avdl_graphics_DestroyWindow(&o->graphics);
 
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-	Mix_Quit();
+	avdl_audio_deinitialise();
 	SDL_Quit();
 	#endif
 

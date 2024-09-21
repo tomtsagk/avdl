@@ -51,7 +51,8 @@ ENGINE_FILES_SRC=$(wildcard engines/cengine/src/*.c)
 ENGINE_FILES_SRC_CPP=$(wildcard engines/cengine/src/*.cpp)
 ENGINE_FILES_HEADERS=$(wildcard engines/cengine/include/*.h)
 ENGINE_FILES_ANDROID=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=engine/%.h)\
-	$(ENGINE_FILES_SRC:engines/cengine/src/%.c=engine/%.c)
+	$(ENGINE_FILES_SRC:engines/cengine/src/%.c=engine/%.c) \
+	$(ENGINE_FILES_SRC_CPP:engines/cengine/src/%.cpp=engine/%.cpp)
 ENGINE_FILES_QUEST2=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=../../../src/%.h)\
 	$(ENGINE_FILES_SRC:engines/cengine/src/%.c=../../../src/%.c) \
 	$(ENGINE_FILES_SRC_CPP:engines/cengine/src/%.cpp=../../../src/%.cpp)
@@ -138,7 +139,7 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	install -m644 ${ENGINE_FILES_SRC} ${ENGINE_FILES_SRC_CPP} ${DESTDIR}${prefix}/share/avdl/cengine
 	@# android engine
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
-	cp -r engines/cengine/src/*.c engines/cengine/include/*.h\
+	cp -r engines/cengine/src/*.c engines/cengine/src/*.cpp engines/cengine/include/*.h\
 		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine
 	sed -i '/%AVDL_ENGINE_FILES%/ s#%AVDL_ENGINE_FILES%#${ENGINE_FILES_ANDROID}#'\
 		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/CMakeLists.txt.in

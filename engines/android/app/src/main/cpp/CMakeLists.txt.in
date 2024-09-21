@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project(avdl_game)
 
+set(COMMON_COMPILER_FLAGS " -DAVDL_ANDROID -Wfatal-errors -fexceptions -Wno-incompatible-pointer-types -Wno-parentheses-equality")
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}  -Wall -Werror")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DAVDL_ANDROID -Wfatal-errors -fexceptions -Wno-incompatible-pointer-types -Wno-parentheses-equality")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_COMPILER_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_COMPILER_FLAGS}")
 add_definitions("-DANDROID_NDK -DDISABLE_IMPORTGL")
 
 # include directories for header files
@@ -20,7 +22,7 @@ add_library(avdl SHARED
 	%AVDL_GAME_FILES%
 )
 
-## freetype
+# freetype
 set(FT_DISABLE_ZLIB TRUE)
 set(FT_DISABLE_BZIP2 TRUE)
 set(FT_DISABLE_PNG TRUE)
