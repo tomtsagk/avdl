@@ -145,7 +145,7 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/CMakeLists.txt.in
 	@# quest2 engine
 	cp -r engines/quest2/* ${DESTDIR}${prefix}/share/avdl/quest2
-	cp -r engines/cengine/src/*.c engines/cengine/src/*.cpp engines/cengine/include/*.h\
+	cp -r engines/cengine/src/* engines/cengine/include/*.h\
 		${DESTDIR}${prefix}/share/avdl/quest2/src
 	sed -i '/%AVDL_ENGINE_FILES%/ s#%AVDL_ENGINE_FILES%#${ENGINE_FILES_QUEST2_SRC}#'\
 		${DESTDIR}${prefix}/share/avdl/quest2/Projects/Android/jni/Android.mk.in
