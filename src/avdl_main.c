@@ -2820,7 +2820,7 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 
 	// cengine files
 	struct avdl_dynamic_array cengineFiles;
-	if (Avdl_FileOp_GetFilesInDirectory(avdl_settings->cengine_path, &cengineFiles) != 0) {
+	if (Avdl_FileOp_GetFilesInDirectoryRecursive(avdl_settings->cengine_path, &cengineFiles) != 0) {
 		avdl_log_error("Can't get cengine files");
 		return -1;
 	}
