@@ -447,21 +447,6 @@ void Java_dev_afloof_avdl_AvdlActivity_nativeKeyDown(JNIEnv*  env, jobject obj, 
 	}
 }
 
-void Java_dev_afloof_avdl_AvdlActivity_nativeSetAssetManager(JNIEnv* env, jobject thiz, jobject assetManager) {
-	aassetManager = AAssetManager_fromJava(env, assetManager);
-}
-
-void Java_dev_afloof_avdl_AvdlActivity_nativeSetLocale(JNIEnv* env, jobject thiz, jint locale) {
-	int loc = locale;
-	// for now, check languages manually
-	switch (loc) {
-		case 0: avdl_locale_set("en"); break;
-		case 1: avdl_locale_set("de"); break;
-		case 2: avdl_locale_set("ja"); break;
-		case 3: avdl_locale_set("el"); break;
-	}
-}
-
 void Java_dev_afloof_avdl_AvdlActivity_nativeOnRewardedAd(JNIEnv* env, jobject thiz, int reward_amount, jstring reward_type) {
 	const char *nativeString = (*env)->GetStringUTFChars(env, reward_type, 0);
 	avdl_ads_onRewardedAd(reward_amount, nativeString);
@@ -502,6 +487,7 @@ void set_android_save_dir(jobject activity) {
 	//dd_log("save dir: %s", avdl_data_saveDirectory);
 	(*(*jniEnv)->ReleaseStringUTFChars)(jniEnv, path, pathstr);
 }
+#endif
 
 void Java_dev_afloof_avdl_AvdlActivity_nativeSetAssetManager(JNIEnv* env, jobject thiz, jobject assetManager) {
 	aassetManager = AAssetManager_fromJava(env, assetManager);
@@ -518,5 +504,4 @@ void Java_dev_afloof_avdl_AvdlActivity_nativeSetLocale(JNIEnv* env, jobject thiz
 	}
 }
 
-#endif
 #endif
