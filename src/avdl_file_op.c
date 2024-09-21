@@ -696,6 +696,177 @@ int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_arr
 	return 0;
 }
 
+static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const char *dirname, struct avdl_dynamic_array *array, char *prefix ) {
+
+	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+
+	WIN32_FIND_DATA fdFile;
+	HANDLE hFind = NULL;
+
+	char sPath[2048];
+
+	//Specify a file mask. *.* = We want everything!
+	sprintf(sPath, "%s\\*.*", dirname);
+
+	if((hFind = FindFirstFile(sPath, &fdFile)) == INVALID_HANDLE_VALUE)
+	{
+		avdl_log_error("Path not found: [%s]\n", dirname);
+		return -1;
+	}
+
+	do
+	{
+
+		//Find first file will always return "."
+		//    and ".." as the first two directories.
+		if(strcmp(fdFile.cFileName, ".") == 0
+		|| strcmp(fdFile.cFileName, "..") == 0) {
+			continue;
+		}
+
+		//Build up our file path using the passed in
+		//  [sDir] and the file/foldername we just found:
+		sprintf(sPath, "%s\\%s", dirname, fdFile.cFileName);
+
+		//Is the entity a File or Folder?
+		if(fdFile.dwFileAttributes &FILE_ATTRIBUTE_DIRECTORY)
+		{
+			//avdl_log("Directory: %s\n", sPath);
+			//ListDirectoryContents(sPath); //Recursion, I love it!
+
+			// add a string into the array and get a pointer to it
+			struct avdl_string prefixStr;
+			avdl_string_create(&prefixStr, 1024);
+			if (prefix) {
+				avdl_string_cat(&prefixStr, prefix);
+				avdl_string_cat(&prefixStr, "/");
+			}
+			avdl_string_cat(&prefixStr, fdFile.cFileName);
+			avdl_string_cat(&prefixStr, "/");
+			if ( !avdl_string_isValid(&prefixStr) ) {
+				avdl_log_error("directory pathname too long: %s", fdFile.cFileName);
+				return -1;
+			}
+			Avdl_FileOp_GetFilesInDirectoryRecursive_internal(src_dir, fdFile.cFileName, array, avdl_string_toCharPtr(&prefixStr));
+			avdl_string_clean(&prefixStr);
+		}
+		else{
+
+			// add a string into the array and get a pointer to it
+			struct avdl_string str;
+			avdl_da_push(array, &str);
+			struct avdl_string *str2 = avdl_da_get(array, -1);
+
+			// put filename into the string
+			avdl_string_create(str2, 1024);
+			if (prefix) {
+				avdl_string_cat(str2, prefix);
+				avdl_string_cat(str2, "/");
+			}
+			avdl_string_cat(str2, fdFile.cFileName);
+			if ( !avdl_string_isValid(str2) ) {
+				avdl_log_error("Unable to collect filename");
+				return -1;
+			}
+		}
+	}
+	while(FindNextFile(hFind, &fdFile)); //Find the next file.
+
+	FindClose(hFind); //Always, Always, clean things up!
+
+	return 0;
+	#else
+
+	int src_dir;
+	if (src_at) {
+		src_dir = openat(src_at, dirname, O_DIRECTORY);
+	}
+	else {
+		src_dir = open(dirname, O_DIRECTORY);
+	}
+	if (src_dir == -1) {
+		printf("GetFilesInDirectoryRecursive: can't open directory %s: %s\n", dirname, strerror(errno));
+		return -1;
+	}
+
+	/*
+	 * start reading all files from source directory
+	 */
+	DIR *d = fdopendir(src_dir);
+	if (!d) {
+		avdl_log_error("Unable to open directory '%s': %s\n", dirname, strerror(errno));
+		return -1;
+	}
+
+	struct dirent *dir;
+	while ((dir = readdir(d)) != NULL) {
+
+		if(strcmp(dir->d_name, ".") == 0
+		|| strcmp(dir->d_name, "..") == 0) {
+			continue;
+		}
+
+		// check file type
+		struct stat statbuf;
+		if (fstatat(src_dir, dir->d_name, &statbuf, 0) != 0) {
+			avdl_log_error("avdl error: Unable to stat file '%s': %s\n", dir->d_name, strerror(errno));
+			closedir(d);
+			return -1;
+		}
+
+		// is directory - add everything recursively
+		if (S_ISDIR(statbuf.st_mode)) {
+
+			// add a string into the array and get a pointer to it
+			struct avdl_string prefixStr;
+			avdl_string_create(&prefixStr, 1024);
+			if (prefix) {
+				avdl_string_cat(&prefixStr, prefix);
+				avdl_string_cat(&prefixStr, "/");
+			}
+			avdl_string_cat(&prefixStr, dir->d_name);
+			avdl_string_cat(&prefixStr, "/");
+			if ( !avdl_string_isValid(&prefixStr) ) {
+				avdl_log_error("directory pathname too long: %s", dirname);
+				return -1;
+			}
+			Avdl_FileOp_GetFilesInDirectoryRecursive_internal(src_dir, dir->d_name, array, avdl_string_toCharPtr(&prefixStr));
+			avdl_string_clean(&prefixStr);
+			continue;
+		}
+
+		// add a string into the array and get a pointer to it
+		struct avdl_string str;
+		avdl_da_push(array, &str);
+		struct avdl_string *str2 = avdl_da_get(array, -1);
+
+		// put filename into the string
+		avdl_string_create(str2, 1024);
+		if (prefix) {
+			avdl_string_cat(str2, prefix);
+			avdl_string_cat(str2, "/");
+		}
+		avdl_string_cat(str2, dir->d_name);
+		if ( !avdl_string_isValid(str2) ) {
+			avdl_log_error("Unable to collect filename");
+			return -1;
+		}
+
+	}
+
+	closedir(d);
+	return 0;
+	#endif
+	return 0;
+}
+
+int Avdl_FileOp_GetFilesInDirectoryRecursive(const char *dirname, struct avdl_dynamic_array *array) {
+
+	avdl_da_init(array, sizeof(struct avdl_string));
+	return Avdl_FileOp_GetFilesInDirectoryRecursive_internal(0, dirname, array, 0);
+
+}
+
 int Avdl_FileOp_GetFilesInDirectoryClean(struct avdl_dynamic_array *array) {
 	for (int i = 0; i < avdl_da_count(array); i++) {
 		struct avdl_string *str = avdl_da_get(array, i);
@@ -939,5 +1110,24 @@ int Avdl_FileOp_GetCurrentDirectory(struct avdl_string *str) {
 		return -1;
 	}
 	avdl_string_cat(str, buffer);
+	return 0;
+}
+
+int Avdl_FileOp_CreateSubDirectories(int dir_at, const char *dirname) {
+
+	char buffer[1024];
+	const char *slash = dirname;
+	while (slash[0] != '\0') {
+
+		if (slash[0] == '/') {
+			strncpy(buffer, dirname, slash -dirname);
+			buffer[slash -dirname] = '\0';
+			if (!is_dir_at(dir_at, buffer)) {
+				dir_createat(dir_at, buffer);
+			}
+		}
+
+		slash++;
+	}
 	return 0;
 }

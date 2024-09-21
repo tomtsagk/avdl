@@ -338,7 +338,7 @@ int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirNa
 
 	// cengine files
 	struct avdl_dynamic_array cengineFiles;
-	if (Avdl_FileOp_GetFilesInDirectory(avdl_settings->cengine_path, &cengineFiles) != 0) {
+	if (Avdl_FileOp_GetFilesInDirectoryRecursive(avdl_settings->cengine_path, &cengineFiles) != 0) {
 		avdl_log_error("Can't get cengine files");
 		return -1;
 	}
@@ -701,7 +701,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 			avdl_string_clean(&commandString);
 			return -1;
 		}
-		//printf("avdl compile command: %s\n", buffer3);
+		//printf("avdl compile command: %s\n", avdl_string_toCharPtr(&commandString));
 		if (system(avdl_string_toCharPtr(&commandString))) {
 			avdl_log_error("failed to compile file: " BLU "%s" RESET, avdl_string_toCharPtr(&srcFilePath));
 			avdl_string_clean(&srcFilePath);
@@ -762,7 +762,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 	
 	struct avdl_dynamic_array cengineFiles;
-	if (Avdl_FileOp_GetFilesInDirectory(avdl_settings->cengine_path, &cengineFiles) != 0) {
+	if (Avdl_FileOp_GetFilesInDirectoryRecursive(avdl_settings->cengine_path, &cengineFiles) != 0) {
 		avdl_log_error("Can't get cengine files");
 		return -1;
 	}
@@ -828,6 +828,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		else {
 			avdl_string_replaceEnding(&cenginePathOut, ".c", ".o");
 		}
+		Avdl_FileOp_CreateSubDirectories(0, avdl_string_toCharPtr(&cenginePathOut));
 
 		if ( !avdl_string_isValid(&cenginePathOut) ) {
 			avdl_log_error("cannot construct path '%s%s%s': %s", outdir, "cengine/", avdl_string_toCharPtr(str), avdl_string_getError(&cenginePathOut));
@@ -970,7 +971,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	Avdl_FileOp_GetFilesInDirectoryClean(&objFiles);
 
 	struct avdl_dynamic_array cengineFiles;
-	if (Avdl_FileOp_GetFilesInDirectory(avdl_settings->cengine_path, &cengineFiles) != 0) {
+	if (Avdl_FileOp_GetFilesInDirectoryRecursive(avdl_settings->cengine_path, &cengineFiles) != 0) {
 		avdl_log_error("Can't get cengine files");
 		return -1;
 	}

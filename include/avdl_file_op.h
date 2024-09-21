@@ -27,6 +27,7 @@ int Avdl_FileOp_GetNumberOfFiles(const char *directory);
 int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(const char *, const char*, int, int));
 
 int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_array *array);
+int Avdl_FileOp_GetFilesInDirectoryRecursive(const char *dirname, struct avdl_dynamic_array *array);
 int Avdl_FileOp_GetFilesInDirectoryClean(struct avdl_dynamic_array *array);
 
 int Avdl_FileOp_IsFileOlderThan(const char *filename, const char *filename2);
@@ -37,6 +38,8 @@ int Avdl_FileOp_DoesFileExistAt(int filename_at, const char *filename);
 
 int Avdl_FileOp_IsDirStat(struct stat *s);
 int Avdl_FileOp_IsRegStat(struct stat *s);
+
+int Avdl_FileOp_CreateSubDirectories(int dir_at, const char *dirname);
 
 int Avdl_FileOp_GetCurrentDirectory(struct avdl_string *str);
 

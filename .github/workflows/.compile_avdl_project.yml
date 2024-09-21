@@ -294,9 +294,6 @@ jobs:
         cd avdl_oculus_build
         unzip oculus_mobile_sdk.zip
         cp ../avdl_build_quest2/ -r avdl_vr_bk/AvdlProject
-        git clone https://github.com/libsdl-org/freetype.git avdl_vr_bk/AvdlProject/freetype
-        cd avdl_vr_bk/AvdlProject/freetype
-        git checkout fd08bbe13c52e305f037448e805e7e3c6ea1b1e4
     - name: compile
       run: |
         cd avdl_oculus_build/avdl_vr_bk/AvdlProject/Projects/Android

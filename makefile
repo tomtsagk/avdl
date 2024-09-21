@@ -47,7 +47,7 @@ HEADERS=$(wildcard include/*.h)
 #
 # engine files
 #
-ENGINE_FILES_SRC=$(wildcard engines/cengine/src/*.c)
+ENGINE_FILES_SRC=$(shell find engines/cengine/src -name "*.c")
 ENGINE_FILES_SRC_CPP=$(wildcard engines/cengine/src/*.cpp)
 ENGINE_FILES_HEADERS=$(wildcard engines/cengine/include/*.h)
 ENGINE_FILES_ANDROID=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=engine/%.h)\
@@ -136,7 +136,7 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	install -m644 scripts/* ${DESTDIR}${prefix}/share/avdl/scripts
 	@# c engine
 	install -m644 ${ENGINE_FILES_HEADERS} ${DESTDIR}${prefix}/include
-	install -m644 ${ENGINE_FILES_SRC} ${ENGINE_FILES_SRC_CPP} ${DESTDIR}${prefix}/share/avdl/cengine
+	cp -r ${CENGINE_PATH}/src/* ${DESTDIR}${prefix}/share/avdl/cengine
 	@# android engine
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
 	cp -r engines/cengine/src/*.c engines/cengine/src/*.cpp engines/cengine/include/*.h\
