@@ -346,3 +346,45 @@ int avdl_sound_getVolume() {
 	#endif
 	return 0;
 }
+
+int avdl_audio_initialise() {
+
+	#if defined(AVDL_DIRECT3D11)
+	#else
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	#else
+	/*
+	 * initialise audio, if it fails, don't play audio at all
+	 * during the game
+	 */
+	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
+		dd_log("avdl: error initialising audio mixer");
+		dd_hasAudio = 0;
+		return -1;
+	}
+	// audio initialisation succeeded
+	else {
+		Mix_Init(MIX_INIT_OGG);
+
+		// make sure there's at least 8 channels
+		dd_numberOfAudioChannels = Mix_AllocateChannels(-1);
+		if (dd_numberOfAudioChannels < 8) {
+			dd_numberOfAudioChannels = Mix_AllocateChannels(8);
+		}
+	}
+	#endif
+	#endif
+
+	return 0;
+}
+
+int avdl_audio_deinitialise() {
+	#if defined(AVDL_DIRECT3D11)
+	#else
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	#else
+	Mix_Quit();
+	#endif
+	#endif
+	return 0;
+}

@@ -65,6 +65,9 @@ void dd_sound_stop(struct dd_sound *);
 void avdl_sound_setVolume(int volume);
 int avdl_sound_getVolume();
 
+int avdl_audio_initialise();
+int avdl_audio_deinitialise();
+
 #ifdef __cplusplus
 }
 #endif
