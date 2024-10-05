@@ -195,7 +195,16 @@ int AVDL_MAIN(int argc, char *argv[]) {
 
 	// report results
 	avdl_time_end(&clock);
-	avdl_log("avdl: project " BLU "%s" RESET " compiled successfully at " BLU "./avdl_build/" RESET " in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
+	if (avdl_settings.target_platform == AVDL_PLATFORM_ANDROID) {
+		avdl_log("avdl: project " BLU "%s" RESET " compiled successfully at " BLU "./avdl_build_android/" RESET " in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
+	}
+	else
+	if (avdl_settings.target_platform == AVDL_PLATFORM_QUEST2) {
+		avdl_log("avdl: project " BLU "%s" RESET " compiled successfully at " BLU "./avdl_build_quest2/" RESET " in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
+	}
+	else {
+		avdl_log("avdl: project " BLU "%s" RESET " compiled successfully at " BLU "./avdl_build/" RESET " in " BLU "%.3f" RESET " seconds", avdl_settings.project_name, avdl_time_getTimeDouble(&clock));
+	}
 
 	// success!
 	return 0;
@@ -767,7 +776,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		return -1;
 	}
 
-	printf("avdl: compiling avdl - " RED "0%%" RESET "\r");
+	printf("avdl: compiling avdl engine - " RED "0%%" RESET "\r");
 	fflush(stdout);
 	char compile_command[6000];
 	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
@@ -852,7 +861,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		// skip files already compiled
 		if ( avdl_settings->use_cache && Avdl_FileOp_DoesFileExist(avdl_string_toCharPtr(&cenginePathOut)) ) {
 			//printf("skipping: %s\n", buffer);
-			printf("avdl: compiling avdl - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&cengineFiles)+1) *100));
+			printf("avdl: compiling avdl engine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&cengineFiles)+1) *100));
 			fflush(stdout);
 			continue;
 		}
@@ -864,13 +873,13 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 ////		if (!avdlQuietMode) {
-			printf("avdl: compiling avdl - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&cengineFiles)+1) *100));
+			printf("avdl: compiling avdl engine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&cengineFiles)+1) *100));
 			fflush(stdout);
 ////		}
 	}
 	Avdl_FileOp_GetFilesInDirectoryClean(&cengineFiles);
 ////	if (!avdlQuietMode) {
-		printf("avdl: compiling avdl - " GRN "100%%" RESET "\n");
+		printf("avdl: compiling avdl engine - " GRN "100%%" RESET "\n");
 ////	}
 
 	avdl_string_clean(&cenginePath);
@@ -1258,8 +1267,16 @@ int avdl_link_android(struct AvdlSettings *avdl_settings) {
 		return -1;
 	}
 
-	if (system("./gradlew build") != 0) {
-		avdl_log_error("error creating android apks");
+	avdl_log("avdl: generating apk, this might take a while ...");
+
+	if (system("./gradlew build >> .avdl_android_log") != 0) {
+
+		if (chdir(avdl_string_toCharPtr(&initialDirectory)) != 0) {
+			avdl_log_error("unable to change to default directory");
+			return -1;
+		}
+
+		avdl_log_error("error creating android apks, see logs in .avdl_cache/android/.avdl_android_log");
 		return -1;
 	}
 
