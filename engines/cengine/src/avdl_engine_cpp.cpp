@@ -552,8 +552,8 @@ void D3D11AvdlApplication::OnResuming(Platform::Object^ sender, Platform::Object
 
 void D3D11AvdlApplication::OnPointerPressed(CoreWindow^ window, PointerEventArgs^ args) {
 	avdl_input_AddInput(&engine.input,
-		DD_INPUT_MOUSE_BUTTON_LEFT,
-		DD_INPUT_MOUSE_TYPE_PRESSED,
+		AVDL_INPUT_MOUSE_LEFT,
+		AVDL_INPUT_STATE_DOWN,
 		args->CurrentPoint->Position.X,
 		args->CurrentPoint->Position.Y
 	);
@@ -565,8 +565,8 @@ void D3D11AvdlApplication::OnPointerMoved(CoreWindow^ window, PointerEventArgs^ 
 
 void D3D11AvdlApplication::OnPointerReleased(CoreWindow^ window, PointerEventArgs^ args) {
 	avdl_input_AddInput(&engine.input,
-		DD_INPUT_MOUSE_BUTTON_LEFT,
-		DD_INPUT_MOUSE_TYPE_RELEASED,
+		AVDL_INPUT_MOUSE_LEFT,
+		AVDL_INPUT_STATE_UP,
 		args->CurrentPoint->Position.X,
 		args->CurrentPoint->Position.Y
 	);

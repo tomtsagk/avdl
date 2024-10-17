@@ -17,6 +17,13 @@
 extern "C" {
 #endif
 
+enum AVDL_INPUT_STATES {
+	AVDL_INPUT_STATE_DOWN,
+	AVDL_INPUT_STATE_UP,
+	AVDL_INPUT_STATE_MOVE, // mouse only
+};
+
+// Custom input keys, must be above ASCII
 enum AVDL_INPUT_KEYS {
 	AVDL_INPUT_QUEST2_A = 300,
 	AVDL_INPUT_QUEST2_B,
@@ -27,20 +34,29 @@ enum AVDL_INPUT_KEYS {
 	AVDL_INPUT_QUEST2_GRIP_L,
 	AVDL_INPUT_QUEST2_GRIP_R,
 	AVDL_INPUT_QUEST2_MENU,
+	AVDL_INPUT_ARROW_UP = 400,
+	AVDL_INPUT_ARROW_RIGHT,
+	AVDL_INPUT_ARROW_DOWN,
+	AVDL_INPUT_ARROW_LEFT,
+	AVDL_INPUT_MOUSE_LEFT,
+	AVDL_INPUT_MOUSE_MIDDLE,
+	AVDL_INPUT_MOUSE_RIGHT,
 };
 
-struct AvdlMouseInput {
+#define AVDL_INPUT_KEYS_MAXIMUM 100
+
+struct AvdlKeyInput {
 	int button;
 	int state;
 };
 
 struct AvdlInput {
-	int input_mouse;
-	struct AvdlMouseInput mouse_input[10];
-	int mouse_input_total;
+
+	// input keys
+	struct AvdlKeyInput input[AVDL_INPUT_KEYS_MAXIMUM];
+	int input_total;
 	int loc_x;
 	int loc_y;
-	int input_key;
 
 	#if defined(AVDL_QUEST2)
 	XrActionSet actionSet;
@@ -77,7 +93,8 @@ int avdl_input_GetX(struct AvdlInput *);
 int avdl_input_GetY(struct AvdlInput *);
 int avdl_input_ClearInput(struct AvdlInput *);
 
-int avdl_input_AddInput(struct AvdlInput *, int button, int state, int x, int y);
+int avdl_input_AddInput(struct AvdlInput *, int button, int state);
+int avdl_input_AddInputLocation(struct AvdlInput *, int button, int state, int x, int y);
 int avdl_input_AddPassiveMotion(struct AvdlInput *, int x, int y);
 
 #ifdef __cplusplus

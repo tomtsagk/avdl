@@ -35,10 +35,9 @@ void get_state(XrActionStateBoolean *state, XrSession session, XrAction action) 
 #endif
 
 void avdl_input_Init(struct AvdlInput *o) {
-	o->mouse_input_total = 0;
+	o->input_total = 0;
 	o->loc_x = 0;
 	o->loc_y = 0;
-	o->input_key = 0;
 
 #if defined(AVDL_QUEST2)
 	o->actionSet = XR_NULL_HANDLE;
@@ -215,6 +214,7 @@ void avdl_input_update(struct AvdlInput *o) {
         XrActionStateBoolean stateMenu = {XR_TYPE_ACTION_STATE_BOOLEAN};
 	get_state(&stateMenu, o->session, o->menu);
 
+/*
         if (state.changedSinceLastSync == XR_TRUE && state.currentState == XR_TRUE) {
 		o->input_key = AVDL_INPUT_QUEST2_A;
 	}
@@ -250,43 +250,54 @@ void avdl_input_update(struct AvdlInput *o) {
         if (stateMenu.changedSinceLastSync == XR_TRUE && stateMenu.currentState == XR_TRUE) {
 		o->input_key = AVDL_INPUT_QUEST2_MENU;
 	}
+	*/
 
 	#endif
 
 }
 
 int avdl_input_GetInputTotal(struct AvdlInput *o) {
-	return o->mouse_input_total;
+	return o->input_total;
 }
 
 int avdl_input_GetButton(struct AvdlInput *o, int index) {
 	if (index >= avdl_input_GetInputTotal(o)) {
 		return 0;
 	}
-	return o->mouse_input[index].button;
+	return o->input[index].button;
 }
 
 int avdl_input_GetState(struct AvdlInput *o, int index) {
 	if (index >= avdl_input_GetInputTotal(o)) {
 		return 0;
 	}
-	return o->mouse_input[index].state;
+	return o->input[index].state;
 }
 
 int avdl_input_ClearInput(struct AvdlInput *o) {
-	o->mouse_input_total = 0;
+	o->input_total = 0;
 	return 0;
 }
 
-int avdl_input_AddInput(struct AvdlInput *o, int button, int state, int x, int y) {
-	if (o->mouse_input_total >= 10) {
+int avdl_input_AddInput(struct AvdlInput *o, int button, int state) {
+	if (o->input_total >= AVDL_INPUT_KEYS_MAXIMUM) {
 		return -1;
 	}
-	o->mouse_input[o->mouse_input_total].button = button;
-	o->mouse_input[o->mouse_input_total].state = state;
+	o->input[o->input_total].button = button;
+	o->input[o->input_total].state = state;
+	o->input_total++;
+	return 0;
+}
+
+int avdl_input_AddInputLocation(struct AvdlInput *o, int button, int state, int x, int y) {
+	if (o->input_total >=AVDL_INPUT_KEYS_MAXIMUM) {
+		return -1;
+	}
+	o->input[o->input_total].button = button;
+	o->input[o->input_total].state = state;
 	o->loc_x = x;
 	o->loc_y = y;
-	o->mouse_input_total++;
+	o->input_total++;
 	return 0;
 }
 

@@ -14,8 +14,7 @@ extern struct dd_world {
 	void (*resize)(struct dd_world *);
 	void (*draw)(struct dd_world *);
 
-	void (*key_input)(struct dd_world *, int key);
-	void (*mouse_input)(struct dd_world *, int button, int type);
+	void (*input)(struct dd_world *, int button, int type);
 	void (*clean)(struct dd_world *);
 
 } *cworld, *nworld;
@@ -45,8 +44,7 @@ void dd_world_create(struct dd_world *);
 void dd_world_onload(struct dd_world *);
 void dd_world_update(struct dd_world *, float dt);
 void dd_world_draw(struct dd_world *);
-void dd_world_key_input(struct dd_world *, int key);
-void dd_world_mouse_input(struct dd_world *, int button, int type);
+void dd_world_input(struct dd_world *, int button, int type);
 void dd_world_clean(struct dd_world *);
 
 // default world

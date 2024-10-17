@@ -18,8 +18,7 @@ void struct_table_init() {
 	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("resize", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
-	struct_table_push_member("key_input", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
-	struct_table_push_member("mouse_input", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("input", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_matrix", 0);
 	struct_table_push("avdl_mesh", 0);

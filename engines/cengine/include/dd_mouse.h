@@ -5,18 +5,6 @@
 extern "C" {
 #endif
 
-enum DD_INPUT_MOUSE_BUTTON {
-	DD_INPUT_MOUSE_BUTTON_LEFT,
-	DD_INPUT_MOUSE_BUTTON_MIDDLE,
-	DD_INPUT_MOUSE_BUTTON_RIGHT,
-};
-
-enum DD_INPUT_MOUSE_TYPE {
-	DD_INPUT_MOUSE_TYPE_PRESSED,
-	DD_INPUT_MOUSE_TYPE_MOVE,
-	DD_INPUT_MOUSE_TYPE_RELEASED,
-};
-
 /* mouse
  *
  * `dd_mouse_?` functions return the exact pixel the mouse is on

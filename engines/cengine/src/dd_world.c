@@ -63,13 +63,11 @@ void dd_world_create(struct dd_world *this) {
 	this->draw = 0;
 	this->clean = dd_world_clean;
 
-	this->key_input = 0;
-	this->mouse_input = 0;
+	this->input = 0;
 }
 void dd_world_onload(struct dd_world *this) {}
 
 void dd_world_update(struct dd_world *this, float dt) {}
 void dd_world_draw  (struct dd_world *this) {}
 
-void dd_world_key_input(struct dd_world *this, int key) {}
-void dd_world_mouse_input(struct dd_world *this, int button, int type) {}
+void dd_world_input(struct dd_world *this, int button, int type) {}

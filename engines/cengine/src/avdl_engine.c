@@ -667,17 +667,11 @@ int avdl_engine_update(struct avdl_engine *o, float dt) {
 
 	avdl_input_update(&o->input);
 
-	// handle key input
-	if (o->cworld && o->cworld->key_input && o->input.input_key) {
-		o->cworld->key_input(o->cworld, o->input.input_key);
-		o->input.input_key = 0;
-	}
-
 	// handle mouse input
-	if (o->cworld && o->cworld->mouse_input && avdl_input_GetInputTotal(&o->input) > 0) {
+	if (o->cworld && o->cworld->input && avdl_input_GetInputTotal(&o->input) > 0) {
 		int totalInput = avdl_input_GetInputTotal(&o->input);
 		for (int i = 0; i < totalInput; i++) {
-			o->cworld->mouse_input(o->cworld, avdl_input_GetButton(&o->input, i), avdl_input_GetState(&o->input, i));
+			o->cworld->input(o->cworld, avdl_input_GetButton(&o->input, i), avdl_input_GetState(&o->input, i));
 		}
 		avdl_input_ClearInput(&o->input);
 	}
@@ -772,11 +766,11 @@ static void handleMousePress(struct avdl_engine *o, int button, int state, int x
 	switch (state) {
 		//case GLUT_DOWN:
 		case 0:
-			state_temp = DD_INPUT_MOUSE_TYPE_PRESSED;
+			state_temp = AVDL_INPUT_STATE_DOWN;
 			break;
 		//case GLUT_UP:
 		case 1:
-			state_temp = DD_INPUT_MOUSE_TYPE_RELEASED;
+			state_temp = AVDL_INPUT_STATE_UP;
 			break;
 	}
 
@@ -784,19 +778,64 @@ static void handleMousePress(struct avdl_engine *o, int button, int state, int x
 	switch (button) {
 		//case GLUT_LEFT_BUTTON:
 		case 0:
-			button_temp = DD_INPUT_MOUSE_BUTTON_LEFT;
+			button_temp = AVDL_INPUT_MOUSE_LEFT;
 			break;
 		//case GLUT_MIDDLE_BUTTON:
 		case 1:
-			button_temp = DD_INPUT_MOUSE_BUTTON_MIDDLE;
+			button_temp = AVDL_INPUT_MOUSE_MIDDLE;
 			break;
 		//case GLUT_RIGHT_BUTTON:
 		case 2:
-			button_temp = DD_INPUT_MOUSE_BUTTON_RIGHT;
+			button_temp = AVDL_INPUT_MOUSE_RIGHT;
 			break;
 	}
-	avdl_input_AddInput(&o->input, button_temp, state_temp, x, y);
+	avdl_input_AddInputLocation(&o->input, button_temp, state_temp, x, y);
 
+}
+
+static int SDLScancodeToAvdl(int button) {
+	// a-z - ASCII
+	if (button >= SDL_SCANCODE_A && button <= SDL_SCANCODE_Z) {
+		return 'a' +(button -SDL_SCANCODE_A);
+	}
+
+	// numbers - ASCII
+	if (button == SDL_SCANCODE_0) {
+		return '0';
+	}
+	if (button >= SDL_SCANCODE_1 && button <= SDL_SCANCODE_9) {
+		return '1' +(button -SDL_SCANCODE_1);
+	}
+
+	// arrow keys - CUSTOM
+	if (button == SDL_SCANCODE_UP) {
+		return AVDL_INPUT_ARROW_UP;
+	}
+	if (button == SDL_SCANCODE_RIGHT) {
+		return AVDL_INPUT_ARROW_RIGHT;
+	}
+	if (button == SDL_SCANCODE_DOWN) {
+		return AVDL_INPUT_ARROW_DOWN;
+	}
+	if (button == SDL_SCANCODE_LEFT) {
+		return AVDL_INPUT_ARROW_LEFT;
+	}
+
+	// etc - ASCII
+	if (button == SDL_SCANCODE_ESCAPE) {
+		return 27;
+	}
+
+	if (button == SDL_SCANCODE_SPACE) {
+		return 32;
+	}
+
+	if (button == SDL_SCANCODE_RETURN) {
+		return 13;
+	}
+
+	// ???
+	return -1;
 }
 
 int avdl_engine_loop(struct avdl_engine *o) {
@@ -812,6 +851,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 	while (isRunning && !dd_flag_exit) {
 
 		avdl_time_start(&o->frame_duration);
+		int keycode;
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT:
@@ -832,49 +872,15 @@ int avdl_engine_loop(struct avdl_engine *o) {
 				handleMousePress(o, 0, 1, event.motion.x, event.motion.y);
 				break;
 			case SDL_KEYDOWN:
-				// temporary keyboard controls
-				if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE) {
-					o->input.input_key = 27;
+				keycode = SDLScancodeToAvdl(event.key.keysym.scancode);
+				if (keycode >= 0) {
+					avdl_input_AddInput(&o->input, keycode, AVDL_INPUT_STATE_DOWN);
 				}
-				else
-				if (event.key.keysym.scancode == SDL_SCANCODE_A) {
-					o->input.input_key = 97;
-				}
-				else
-				if (event.key.keysym.scancode == SDL_SCANCODE_D) {
-					o->input.input_key = 100;
-				}
-				else
-				if (event.key.keysym.scancode == SDL_SCANCODE_W) {
-					o->input.input_key = 119;
-				}
-				else
-				if (event.key.keysym.scancode == SDL_SCANCODE_S) {
-					o->input.input_key = 115;
-				}
-				else
-				if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
-					o->input.input_key = 32;
-				}
-				else
-				if (event.key.keysym.scancode == SDL_SCANCODE_RETURN) {
-					o->input.input_key = 13;
-				}
-				else
-				if (event.key.keysym.scancode == SDL_SCANCODE_LEFT) {
-					o->input.input_key = 1;
-				}
-				else
-				if (event.key.keysym.scancode == SDL_SCANCODE_UP) {
-					o->input.input_key = 2;
-				}
-				else
-				if (event.key.keysym.scancode == SDL_SCANCODE_RIGHT) {
-					o->input.input_key = 3;
-				}
-				else
-				if (event.key.keysym.scancode == SDL_SCANCODE_DOWN) {
-					o->input.input_key = 4;
+				break;
+			case SDL_KEYUP:
+				keycode = SDLScancodeToAvdl(event.key.keysym.scancode);
+				if (keycode >= 0) {
+					avdl_input_AddInput(&o->input, keycode, AVDL_INPUT_STATE_UP);
 				}
 				break;
 			}

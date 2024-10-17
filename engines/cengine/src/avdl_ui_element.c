@@ -3,6 +3,7 @@
 #include "dd_log.h"
 #include "dd_mouse.h"
 #include "dd_game.h"
+#include "avdl_input.h"
 
 static void CheckIsSelected(struct avdl_ui_element *o) {
 	if (o->hasMouseCollided(o)) {
@@ -185,14 +186,14 @@ void avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type
 	CheckIsSelected(o);
 
 	// set click state on selected button
-	if (type == DD_INPUT_MOUSE_TYPE_PRESSED) {
+	if (type == AVDL_INPUT_STATE_DOWN) {
 		if (o->isSelected && o->hasMouseCollided(o)) {
 			o->isSelectedClicked = 1;
 		}
 	}
 	else
 	// apply selected button if it was clicked
-	if (type == DD_INPUT_MOUSE_TYPE_RELEASED) {
+	if (type == AVDL_INPUT_STATE_UP) {
 	
 		if (o->isSelectedClicked && o->hasMouseCollided(o)) {
 			// onclick
