@@ -35,6 +35,10 @@ float dd_vec3_dot(struct dd_vec3 *a, struct dd_vec3 *b);
 void dd_vec3_normalise(struct dd_vec3 *o);
 float dd_vec3_magnitude(struct dd_vec3 *o);
 
+float dd_vec3_rotateX(struct dd_vec3 *o, float rad);
+float dd_vec3_rotateY(struct dd_vec3 *o, float rad);
+float dd_vec3_rotateZ(struct dd_vec3 *o, float rad);
+
 void dd_vec3_print(struct dd_vec3 *);
 
 #ifdef __cplusplus

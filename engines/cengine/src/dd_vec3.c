@@ -98,3 +98,33 @@ void dd_vec3_print(struct dd_vec3 *o) {
 		o->z
 	);
 }
+
+float dd_vec3_rotateX(struct dd_vec3 *o, float rad) {
+	float x = o->x;
+	float y = o->y;
+	float z = o->z;
+
+	o->x = x;
+	o->y = y *dd_math_cos(rad) -z *dd_math_sin(rad);
+	o->z = y *dd_math_sin(rad) +z *dd_math_cos(rad);
+}
+
+float dd_vec3_rotateY(struct dd_vec3 *o, float rad) {
+	float x = o->x;
+	float y = o->y;
+	float z = o->z;
+
+	o->x = x *dd_math_cos(rad) +z *dd_math_sin(rad);;
+	o->y = y;
+	o->z = -x *dd_math_sin(rad) +z *dd_math_cos(rad);
+}
+
+float dd_vec3_rotateZ(struct dd_vec3 *o, float rad) {
+	float x = o->x;
+	float y = o->y;
+	float z = o->z;
+
+	o->x = x *dd_math_cos(rad) -y *dd_math_sin(rad);;
+	o->y = x *dd_math_sin(rad) +y *dd_math_cos(rad);;
+	o->z = z;
+}
