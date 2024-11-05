@@ -20,6 +20,8 @@ struct avdl_collider {
 void avdl_collider_create(struct avdl_collider *o);
 void avdl_collider_clean(struct avdl_collider *o);
 
+int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, struct dd_matrix *nm1, struct avdl_collider *o2, struct dd_matrix *m2, struct dd_matrix *nm2);
+
 #ifdef __cplusplus
 }
 #endif

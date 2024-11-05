@@ -198,6 +198,7 @@ void struct_table_init() {
 	struct_table_push_member("getHeight", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("isLoaded", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("isOnTerrain", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setScaleZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

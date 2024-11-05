@@ -36,6 +36,18 @@ void avdl_collider_aabb_setMax(struct avdl_collider_aabb *o, float x, float y, f
 	o->max.z = z;
 }
 
+float avdl_collider_aabb_getMinX(struct avdl_collider_aabb *o) {
+	return o->min.x;
+}
+
+float avdl_collider_aabb_getMinY(struct avdl_collider_aabb *o) {
+	return o->min.y;
+}
+
+float avdl_collider_aabb_getMinZ(struct avdl_collider_aabb *o) {
+	return o->min.z;
+}
+
 float avdl_collider_aabb_getMaxX(struct avdl_collider_aabb *o) {
 	return o->max.x;
 }

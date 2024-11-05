@@ -31,6 +31,7 @@ void dd_vec4_addVec3(struct dd_vec4 *o1, struct dd_vec4 *o2);
 
 void dd_vec4_multiply(struct dd_vec4 *o, struct dd_matrix *m);
 float dd_vec4_dot(struct dd_vec4 *a, struct dd_vec4 *b);
+void dd_vec4_cross(struct dd_vec4 *a, struct dd_vec4 *b);
 
 void dd_vec4_print(struct dd_vec4 *);
 

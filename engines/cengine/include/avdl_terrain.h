@@ -17,6 +17,9 @@ struct avdl_terrain {
 	float *heights;
 	int loaded;
 
+	// z scale
+	float scaleZ;
+
 	// constructor/destructor
 	void (*create)(struct avdl_terrain *);
 	void (*clean)(struct avdl_terrain *);
@@ -32,6 +35,8 @@ struct avdl_terrain {
 	int (*getWidth)(struct avdl_terrain *o);
 	int (*getHeight)(struct avdl_terrain *o);
 	int (*isLoaded)(struct avdl_terrain *o);
+
+	int (*setScaleZ)(struct avdl_terrain *o, float scale);
 };
 
 void avdl_terrain_create(struct avdl_terrain *o);
@@ -45,5 +50,7 @@ int avdl_terrain_isOnTerrain(struct avdl_terrain *o, float x, float z);
 int avdl_terrain_getWidth(struct avdl_terrain *o);
 int avdl_terrain_getHeight(struct avdl_terrain *o);
 int avdl_terrain_isLoaded(struct avdl_terrain *o);
+
+int avdl_terrain_setScaleZ(struct avdl_terrain *o, float scale);
 
 #endif

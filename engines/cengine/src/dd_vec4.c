@@ -83,6 +83,15 @@ float dd_vec4_dot(struct dd_vec4 *a, struct dd_vec4 *b) {
 		+a->cell[3] *b->cell[3];
 }
 
+void dd_vec4_cross(struct dd_vec4 *a, struct dd_vec4 *b) {
+	dd_vec4_set(a,
+		dd_vec4_getY(a) *dd_vec4_getZ(b) -dd_vec4_getZ(a) *dd_vec4_getY(b),
+		dd_vec4_getZ(a) *dd_vec4_getX(b) -dd_vec4_getX(a) *dd_vec4_getZ(b),
+		dd_vec4_getX(a) *dd_vec4_getY(b) -dd_vec4_getY(a) *dd_vec4_getX(b),
+		dd_vec4_getW(a)
+	);
+}
+
 void dd_vec4_print(struct dd_vec4 *o) {
 	dd_log("dd_vec4: %f %f %f %f",
 		o->cell[0],
