@@ -21,6 +21,12 @@ static char *avsl_shader_vertex =
 "#define AVDL_OUT varying\n"
 "#endif\n"
 
+"#if __VERSION__ > 150\n"
+"#define avdl_texture(x, y) texture(x, y)\n"
+"#else\n"
+"#define avdl_texture(x, y) texture2D(x, y)\n"
+"#endif\n"
+
 #if defined(AVDL_QUEST2)
 "#define NUM_VIEWS 2\n"
 "#define VIEW_ID gl_ViewID_OVR\n"
