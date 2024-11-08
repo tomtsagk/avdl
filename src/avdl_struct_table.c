@@ -199,6 +199,14 @@ void struct_table_init() {
 	struct_table_push_member("isLoaded", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("isOnTerrain", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setScaleZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("avdl_transform", 0);
+	struct_table_push_member("SetPosition", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetPosition3f", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetRotation", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetRotation3f", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetScale", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetScale3f", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 
