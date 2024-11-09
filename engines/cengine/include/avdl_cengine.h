@@ -39,6 +39,7 @@
 #include "avdl_collider_aabb.h"
 #include "avdl_collider_sphere.h"
 #include "avdl_transform.h"
+#include "avdl_node.h"
 #include "avdl_rigidbody.h"
 #include "avdl_graphics.h"
 #include "avdl_engine.h"
