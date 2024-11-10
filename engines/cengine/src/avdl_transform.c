@@ -1,4 +1,5 @@
 #include "avdl_transform.h"
+#include "dd_log.h"
 
 void avdl_transform_create(struct avdl_transform *o) {
 	o->clean = avdl_transform_clean;
@@ -11,6 +12,7 @@ void avdl_transform_create(struct avdl_transform *o) {
 
 	o->GetMatrix = avdl_transform_GetMatrix;
 	o->GetInverseMatrix = avdl_transform_GetInverseMatrix;
+	o->GetNormalMatrix = avdl_transform_GetNormalMatrix;
 	o->GetPosition = avdl_transform_GetPosition;
 	o->GetRotation = avdl_transform_GetRotation;
 	o->GetScale = avdl_transform_GetScale;
@@ -20,9 +22,11 @@ void avdl_transform_create(struct avdl_transform *o) {
 	dd_vec3_setf(&o->scale, 1, 1, 1);
 	dd_matrix_identity(&o->matrix);
 	dd_matrix_identity(&o->matrix_inverse);
+	dd_matrix_identity(&o->matrix_normal);
 
 	o->matrix_dirty = 0;
 	o->matrix_inverse_dirty = 0;
+	o->matrix_normal_dirty = 0;
 }
 
 void avdl_transform_clean(struct avdl_transform *o) {
@@ -44,12 +48,14 @@ void avdl_transform_SetRotation(struct avdl_transform *o, struct dd_vec3 *src) {
 	dd_vec3_set(&o->rotation, src);
 	o->matrix_dirty = 1;
 	o->matrix_inverse_dirty = 1;
+	o->matrix_normal_dirty = 1;
 }
 
 void avdl_transform_SetRotation3f(struct avdl_transform *o, float x, float y, float z) {
 	dd_vec3_setf(&o->rotation, x, y, z);
 	o->matrix_dirty = 1;
 	o->matrix_inverse_dirty = 1;
+	o->matrix_normal_dirty = 1;
 }
 
 void avdl_transform_SetScale(struct avdl_transform *o, struct dd_vec3 *src) {
@@ -89,11 +95,38 @@ struct dd_matrix *avdl_transform_GetMatrix(struct avdl_transform *o) {
 struct dd_matrix *avdl_transform_GetInverseMatrix(struct avdl_transform *o) {
 	// re-calculate matrix
 	if (o->matrix_inverse_dirty) {
-		dd_matrix_copy(&o->matrix_inverse, avdl_transform_GetMatrix(o));
-		dd_matrix_inverse(&o->matrix_inverse);
+		//dd_matrix_copy(&o->matrix_inverse, avdl_transform_GetMatrix(o));
+		//dd_matrix_inverse(&o->matrix_inverse);
+
+		dd_matrix_identity(&o->matrix_inverse);
+		dd_matrix_scale(&o->matrix_inverse,
+			1/dd_vec3_getX(&o->scale),
+			1/dd_vec3_getY(&o->scale),
+			1/dd_vec3_getZ(&o->scale)
+		);
+		dd_matrix_rotate(&o->matrix_inverse, -dd_vec3_getX(&o->rotation), 1, 0, 0);
+		dd_matrix_rotate(&o->matrix_inverse, -dd_vec3_getY(&o->rotation), 0, 1, 0);
+		dd_matrix_rotate(&o->matrix_inverse, -dd_vec3_getZ(&o->rotation), 0, 0, 1);
+		dd_matrix_translate(&o->matrix_inverse,
+			-dd_vec3_getX(&o->position),
+			-dd_vec3_getY(&o->position),
+			-dd_vec3_getZ(&o->position)
+		);
 		o->matrix_inverse_dirty	= 0;
 	}
 	return &o->matrix_inverse;
+}
+
+struct dd_matrix *avdl_transform_GetNormalMatrix(struct avdl_transform *o) {
+	// re-calculate matrix
+	if (o->matrix_normal_dirty) {
+		dd_matrix_identity(&o->matrix_normal);
+		dd_matrix_rotate(&o->matrix_normal, dd_vec3_getZ(&o->rotation), 0, 0, 1);
+		dd_matrix_rotate(&o->matrix_normal, dd_vec3_getY(&o->rotation), 0, 1, 0);
+		dd_matrix_rotate(&o->matrix_normal, dd_vec3_getX(&o->rotation), 1, 0, 0);
+		o->matrix_normal_dirty	= 0;
+	}
+	return &o->matrix_normal;
 }
 
 struct dd_vec3 *avdl_transform_GetPosition(struct avdl_transform *o) {

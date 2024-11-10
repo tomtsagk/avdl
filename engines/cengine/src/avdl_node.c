@@ -1,4 +1,5 @@
 #include "avdl_node.h"
+#include "dd_log.h"
 
 void avdl_node_create(struct avdl_node *o) {
 	o->parent = 0;
@@ -8,6 +9,7 @@ void avdl_node_create(struct avdl_node *o) {
 	o->AddChild = avdl_node_AddChild;
 
 	dd_matrix_identity(&o->globalMatrix);
+	dd_matrix_identity(&o->globalNormalMatrix);
 	avdl_transform_create(&o->localTransform);
 
 	dd_dynamic_array_create(&o->children);
@@ -24,13 +26,25 @@ struct avdl_transform *avdl_node_GetLocalTransform(struct avdl_node *o) {
 struct dd_matrix *avdl_node_GetGlobalMatrix(struct avdl_node *o) {
 	dd_matrix_identity(&o->globalMatrix);
 	if (o->parent) {
-		dd_matrix_copy(&o->globalMatrix, avdl_node_GetGlobalMatrix(&o->parent));
+		dd_matrix_copy(&o->globalMatrix, avdl_node_GetGlobalMatrix(o->parent));
 	}
 	dd_matrix_mult(&o->globalMatrix, avdl_transform_GetMatrix(&o->localTransform));
 	return &o->globalMatrix;
 }
 
+struct dd_matrix *avdl_node_GetGlobalNormalMatrix(struct avdl_node *o) {
+	dd_matrix_identity(&o->globalNormalMatrix);
+	if (o->parent) {
+		dd_matrix_copy(&o->globalNormalMatrix, avdl_node_GetGlobalNormalMatrix(o->parent));
+	}
+	dd_matrix_mult(&o->globalNormalMatrix, avdl_transform_GetNormalMatrix(&o->localTransform));
+	return &o->globalNormalMatrix;
+}
+
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {
 	dd_da_pushEmpty(&o->children);
-	return dd_da_get(&o->children, -1);
+	struct avdl_node *child = dd_da_get(&o->children, -1);
+	avdl_node_create(child);
+	child->parent = o;
+	return child;
 }
