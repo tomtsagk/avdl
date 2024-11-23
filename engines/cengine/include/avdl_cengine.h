@@ -49,6 +49,7 @@
 #include "avdl_font.h"
 #include "avdl_ui_element.h"
 #include "avdl_terrain.h"
+#include "avdl_component.h"
 
 #ifdef __cplusplus
 extern "C" {

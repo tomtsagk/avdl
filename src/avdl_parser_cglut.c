@@ -683,7 +683,7 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 	fprintf(fd, "};\n");
 
 	// pre-define functions, so they are visible to all functions regardless of order
-	for (unsigned int i = 1; i < definitions->children.elements; i++) {
+	for (unsigned int i = 0; i < definitions->children.elements; i++) {
 
 		// grab ast node and symbol table entry, ensure this is a function
 		struct ast_node *child = avdl_da_get(&definitions->children, i);

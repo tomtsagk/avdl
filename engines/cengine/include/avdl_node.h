@@ -7,12 +7,20 @@
 
 struct avdl_node {
 
+	// parent node (optional)
 	struct avdl_node *parent;
 
-	struct dd_matrix globalMatrix;
-	struct dd_matrix globalNormalMatrix;
+	// local transform
 	struct avdl_transform localTransform;
 
+	// matrix of all parents + local
+	struct dd_matrix globalMatrix;
+	struct dd_matrix globalNormalMatrix;
+
+	// component
+	struct dd_dynamic_array components;
+
+	// children nodes
 	struct dd_dynamic_array children;
 
 	void (*create)(struct avdl_node *);
@@ -34,5 +42,7 @@ struct dd_matrix *avdl_node_GetGlobalMatrix(struct avdl_node *o);
 struct dd_matrix *avdl_node_GetGlobalNormalMatrix(struct avdl_node *o);
 
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o);
+struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int size, void (*constructor)(void *));
+#define avdl_node_AddComponent(x, y) avdl_node_AddComponentInternal(x, sizeof(struct y), y ## _create);
 
 #endif
