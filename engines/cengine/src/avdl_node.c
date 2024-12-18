@@ -2,6 +2,7 @@
 #include "dd_log.h"
 #include "avdl_component.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 void avdl_node_create(struct avdl_node *o) {
 	o->parent = 0;
@@ -62,3 +63,34 @@ struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int s
 	c->node = o;
 	return c;
 }
+
+static void avdl_node_printInternal(struct avdl_node *o, int tabs) {
+
+	// Print tabs (if any)
+	for (int i = 0; i < tabs; i++) {
+		printf("\t");
+	}
+
+	if (tabs == 0) {
+		printf("avdl_node:\n");
+		printf("*** ");
+	}
+	else {
+		printf("* ");
+	}
+
+	struct dd_vec3 *pos = avdl_transform_GetPosition(&o->localTransform);
+	printf("node_name | position %f %f %f", pos->x, pos->y, pos->z);
+	printf("\n");
+
+	// Print children
+	for (unsigned int i = 0; i < dd_da_count(&o->children); i++) {
+		struct avdl_node *child = dd_da_get(&o->children, i);
+		avdl_node_printInternal(child, tabs+1);
+	}
+}
+
+void avdl_node_print(struct avdl_node *o) {
+	avdl_node_printInternal(o, 0);
+}
+

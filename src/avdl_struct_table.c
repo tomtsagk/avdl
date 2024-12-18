@@ -31,6 +31,7 @@ void struct_table_init() {
 	struct_table_push_member("set_primitive_texcoords", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setTextureNormal", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setTextureIndex", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("hasTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setTransparency", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setWireframe", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

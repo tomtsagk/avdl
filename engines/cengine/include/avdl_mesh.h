@@ -17,6 +17,8 @@ enum avdl_primitives {
 #include "dd_image.h"
 #include "dd_filetomesh.h"
 
+#define TEXTURES_COUNT 5
+
 struct avdl_mesh {
 
 	// number of vertices
@@ -58,6 +60,7 @@ struct avdl_mesh {
 	// texture to be used
 	struct dd_image *img;
 	struct dd_image *img_normal;
+	struct dd_image *img_extra[TEXTURES_COUNT];
 
 	// transparency
 	int hasTransparency;
@@ -80,6 +83,7 @@ struct avdl_mesh {
 	void (*set_primitive_texcoords)(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY);
 	void (*setTexture)(struct avdl_mesh *o, struct dd_image *img);
 	void (*setTextureNormal)(struct avdl_mesh *o, struct dd_image *img);
+	void (*setTextureIndex)(struct avdl_mesh *o, struct dd_image *img, int index);
 	int (*hasTexture)(struct avdl_mesh *o);
 	void (*setTransparency)(struct avdl_mesh *o, int transparency);
 
@@ -112,6 +116,7 @@ void avdl_mesh_set_colour(struct avdl_mesh *m, float r, float g, float b);
 
 void avdl_mesh_setTexture(struct avdl_mesh *o, struct dd_image *tex);
 void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct dd_image *tex);
+void avdl_mesh_setTextureIndex(struct avdl_mesh *o, struct dd_image *tex, int index);
 void avdl_mesh_setTransparency(struct avdl_mesh *o, int transparency);
 void avdl_mesh_set_primitive_texcoords(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY);
 

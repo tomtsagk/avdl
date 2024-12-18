@@ -36,6 +36,7 @@ struct avdl_node {
 
 void avdl_node_create(struct avdl_node *o);
 void avdl_node_clean(struct avdl_node *o);
+void avdl_node_print(struct avdl_node *o);
 
 struct avdl_transform *avdl_node_GetLocalTransform(struct avdl_node *o);
 struct dd_matrix *avdl_node_GetGlobalMatrix(struct avdl_node *o);

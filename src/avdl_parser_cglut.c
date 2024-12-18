@@ -332,13 +332,19 @@ static void print_command_function(FILE *fd, struct ast_node *n) {
 	// print function signature and args
 	fprintf(fd, "%s %s(", functype->lex, funcname->lex);
 	print_command_functionArguments(fd, funcargs, 0);
-	fprintf(fd, ") {\n");
+	fprintf(fd, ")");
+	if (!n->isExtern) {
+		fprintf(fd, " {\n");
 
-	if (funcstatements) {
-		print_command_groupStatements(fd, funcstatements);
+		if (funcstatements) {
+			print_command_groupStatements(fd, funcstatements);
+		}
+
+		fprintf(fd, "}\n");
 	}
-
-	fprintf(fd, "}\n");
+	else {
+		fprintf(fd, ";\n");
+	}
 }
 
 static void print_command_classFunction(FILE *fd, struct ast_node *n) {

@@ -172,6 +172,7 @@ struct ast_node *ast_getParent(struct ast_node *n) {
 /*
  * Print whole node tree, meant for debugging only
  * might delete, or modify at a later point
+ */
 int tabs = 0;
 void ast_print(struct ast_node *node) {
 
@@ -207,7 +208,7 @@ void ast_print(struct ast_node *node) {
 			break;
 
 		default:
-			printf("%d | %d", node->node_type, node->value);
+			printf("TYPE(%d) | %d", node->node_type, node->value);
 			break;
 	}
 
@@ -221,4 +222,3 @@ void ast_print(struct ast_node *node) {
 	}
 	tabs--;
 }
- */
