@@ -5,10 +5,15 @@
 #include "dd_matrix.h"
 #include "dd_dynamic_array.h"
 
+#define AVDL_NODE_NAME_LENGTH 100
+
 struct avdl_node {
 
 	// parent node (optional)
 	struct avdl_node *parent;
+
+	// node name
+	char name[AVDL_NODE_NAME_LENGTH];
 
 	// local transform
 	struct avdl_transform localTransform;
@@ -31,6 +36,7 @@ struct avdl_node {
 	struct avdl_transform *(*GetGlobalNormalMatrix)(struct avdl_node *);
 
 	struct avdl_node *(*AddChild)(struct avdl_node *);
+	void (*SetName)(struct avdl_node *, char *name);
 
 };
 
@@ -45,5 +51,7 @@ struct dd_matrix *avdl_node_GetGlobalNormalMatrix(struct avdl_node *o);
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o);
 struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int size, void (*constructor)(void *));
 #define avdl_node_AddComponent(x, y) avdl_node_AddComponentInternal(x, sizeof(struct y), y ## _create);
+
+void avdl_node_SetName(struct avdl_node *o, char *name);
 
 #endif

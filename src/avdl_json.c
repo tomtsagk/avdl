@@ -205,7 +205,7 @@ void avdl_json_next(struct avdl_json_object *o) {
 					break;
 				}
 
-				avdl_log("number or unknown: %c %d %s", nextChar, nextChar, o->current);
+				//avdl_log("number or unknown: %c %d %s", nextChar, nextChar, o->current);
 				o->current++;
 				break;
 		}

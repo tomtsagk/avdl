@@ -216,6 +216,7 @@ void struct_table_init() {
 	struct_table_push_member("GetGlobalMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetLocalTransform", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("AddChild", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("SetName", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_component", 0);
 	struct_table_push_member("GetNode", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);

@@ -11,6 +11,8 @@
 #include "avdl_pkg.h"
 #include "avdl_log.h"
 #include "avdl_settings.h"
+#include "avdl_json.h"
+#include "avdl_ast_node.h"
 
 // TODO: Possibly remove this
 enum AVDL_PLATFORM avdl_platform_temp;
@@ -332,20 +334,26 @@ static struct ast_node *expect_command_functionDefinition(struct avdl_lexer *l) 
 	ast_setValuei(function, 0);
 	ast_setLex(function, "function");
 
-	struct ast_node *potentialRef = expect_identifier(l);
-	struct ast_node *returnType;
-	if (strcmp(ast_getLex(potentialRef), "ref") == 0) {
+	struct ast_node *optionalModifier = expect_identifier(l);
+	if (strcmp(ast_getLex(optionalModifier), "ref") == 0) {
 		function->isRef = 1;
-		returnType = expect_identifier(l);
+		ast_delete(optionalModifier);
+		optionalModifier = expect_identifier(l);
 	}
-	else {
-		returnType = potentialRef;
+	else
+	if (strcmp(ast_getLex(optionalModifier), "extern") == 0) {
+		// apply modifier
+		function->isExtern = 1;
+
+		// get new optional modifier
+		ast_delete(optionalModifier);
+		optionalModifier = expect_identifier(l);
 	}
 
 	struct ast_node *functionName = expect_identifier(l);
 	struct ast_node *args = expect_command(l);
 
-	ast_addChild(function, returnType);
+	ast_addChild(function, optionalModifier);
 	ast_addChild(function, functionName);
 	ast_addChild(function, args);
 
@@ -962,11 +970,22 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		if (strcmp(ast_getLex(cmdname), "function") == 0) {
 			cmd = expect_command_functionDefinition(l);
 
+			symtable_push();
+			struct ast_node *args = ast_getChild(cmd, 2);
+			for (int i = 0; i < ast_getChildCount(args); i += 2) {
+				struct ast_node *idtype = ast_getChild(args, i);
+				struct ast_node *id = ast_getChild(args, i+1);
+				struct entry *e = symtable_entryat(symtable_insert(ast_getLex(id), DD_VARIABLE_TYPE_STRUCT));
+				e->isRef = 1;
+				e->value = struct_table_get_index(ast_getLex(idtype));
+			}
+
 			if (avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDSTART
 			||  avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDSTART_BRACKET) {
 				// function statements
 				ast_addChild(cmd, expect_command(l));
 			}
+			symtable_pop();
 
 		}
 		else
@@ -1088,6 +1107,443 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 	return cmd;
 }
 
+static struct avdl_vec3 {
+	float v[3];
+};
+
+static struct ast_node *json_expect_array3f(struct avdl_json_object *json, struct avdl_vec3 *v) {
+
+	if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
+		avdl_log_error("Json: expected array start for 3f: %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+		return 0;
+	}
+
+	int index = 0;
+
+	avdl_json_next(json);
+	for (int i = 0; i < 3; i++) {
+		if (avdl_json_getToken(json) != AVDL_JSON_FLOAT) {
+			avdl_log_error("Json 3f: was expecting 3 floats but found something else: %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+			return 0;
+		}
+
+		v->v[i] = avdl_json_getTokenFloat(json);
+		avdl_json_next(json);
+	}
+}
+
+static struct ast_node *json_expect_component(struct avdl_json_object *json, struct ast_node *parent) {
+
+	// check main object
+	if (avdl_json_getToken(json) != AVDL_JSON_OBJECT_START) {
+		avdl_log_error("Json component should start with a '{': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+		return 0;
+	}
+
+	avdl_json_next(json);
+	while (avdl_json_getToken(json) != AVDL_JSON_OBJECT_END) {
+		// find key
+		if (avdl_json_getToken(json) != AVDL_JSON_KEY) {
+			avdl_log_error("json expected key, got something else: %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+			return 0;
+		}
+		//avdl_log("got component key: %s", avdl_json_getTokenString(json));
+
+		avdl_json_next(json);
+		if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+			//avdl_log("got component string: %s", avdl_json_getTokenString(json));
+		}
+		else {
+			//avdl_log("component something else?");
+		}
+
+		avdl_json_next(json);
+	}
+
+	avdl_json_next(json);
+
+}
+
+static int transform_counter = 0;
+
+static struct ast_node *json_expect_node(struct avdl_json_object *json, struct ast_node *parent, char *node_parent_name) {
+
+	// check main object
+	if (avdl_json_getToken(json) != AVDL_JSON_OBJECT_START) {
+		avdl_log_error("Json should start with a '{': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+		return 0;
+	}
+
+	// generate node name
+	char node_name[100];
+	strcpy(node_name, "n_");
+	snprintf(node_name +2, 80, "%d", transform_counter);
+
+	if (transform_counter > 0) {
+
+		// every node apart from the first one needs to have a parent
+		if (!node_parent_name) {
+			avdl_log_error("node parent name missing on non-root node");
+			return 0;
+		}
+
+		// define node
+		struct ast_node *node_def = ast_create(AST_COMMAND_NATIVE);
+		ast_setLex(node_def, "def");
+		node_def->isRef = 1;
+		struct ast_node *node_def_c1 = ast_create(AST_IDENTIFIER);
+		ast_setLex(node_def_c1, "avdl_node");
+		struct ast_node *node_def_c2 = ast_create(AST_IDENTIFIER);
+		ast_setLex(node_def_c2, node_name);
+
+		ast_addChild(node_def, node_def_c1);
+		ast_addChild(node_def, node_def_c2);
+		ast_addChild(parent, node_def);
+
+		// add child to parent and assign
+		struct ast_node *node_assign = ast_create(AST_COMMAND_NATIVE);
+		ast_setLex(node_assign, "=");
+		struct ast_node *node_assign_id = ast_create(AST_IDENTIFIER);
+		ast_setLex(node_assign_id, node_name);
+		struct ast_node *node_create_child = ast_create(AST_COMMAND_CUSTOM);
+
+			struct ast_node *node_create_child_id = ast_create(AST_IDENTIFIER);
+			ast_setLex(node_create_child_id, node_parent_name);
+			node_create_child_id->isRef = 1;
+			struct ast_node *node_create_child_id_child = ast_create(AST_IDENTIFIER);
+			ast_setLex(node_create_child_id_child, "AddChild");
+			ast_addChild(node_create_child_id, node_create_child_id_child);
+
+		ast_addChild(node_create_child, node_create_child_id);
+
+		struct ast_node *node_create_child_id_child2 = ast_create(AST_IDENTIFIER);
+		ast_setLex(node_create_child_id_child2, node_parent_name);
+		ast_addChild(node_create_child, node_create_child_id_child2);
+
+		ast_addChild(node_assign, node_assign_id);
+		ast_addChild(node_assign, node_create_child);
+		ast_addChild(parent, node_assign);
+	}
+
+	// generate transform name
+	char transform_name[100];
+	strcpy(transform_name, "t_");
+	snprintf(transform_name +2, 80, "%d", transform_counter);
+
+	{
+		// define transform node
+		struct ast_node *transform_def = ast_create(AST_COMMAND_NATIVE);
+		ast_setLex(transform_def, "def");
+		transform_def->isRef = 1;
+		struct ast_node *transform_def_node_c1 = ast_create(AST_IDENTIFIER);
+		ast_setLex(transform_def_node_c1, "avdl_transform");
+		struct ast_node *transform_def_node_c2 = ast_create(AST_IDENTIFIER);
+		ast_setLex(transform_def_node_c2, transform_name);
+
+		ast_addChild(transform_def, transform_def_node_c1);
+		ast_addChild(transform_def, transform_def_node_c2);
+		ast_addChild(parent, transform_def);
+
+		// assign transform node
+		struct ast_node *node_assign = ast_create(AST_COMMAND_NATIVE);
+		ast_setLex(node_assign, "=");
+		struct ast_node *node_assign_id = ast_create(AST_IDENTIFIER);
+		ast_setLex(node_assign_id, transform_name);
+		struct ast_node *node_create_child = ast_create(AST_COMMAND_CUSTOM);
+
+			struct ast_node *node_create_child_id = ast_create(AST_IDENTIFIER);
+			ast_setLex(node_create_child_id, node_name);
+			node_create_child_id->isRef = 1;
+			struct ast_node *node_create_child_id_child = ast_create(AST_IDENTIFIER);
+			ast_setLex(node_create_child_id_child, "GetLocalTransform");
+			ast_addChild(node_create_child_id, node_create_child_id_child);
+
+		ast_addChild(node_create_child, node_create_child_id);
+
+		struct ast_node *node_create_child_id_child2 = ast_create(AST_IDENTIFIER);
+		ast_setLex(node_create_child_id_child2, node_name);
+		ast_addChild(node_create_child, node_create_child_id_child2);
+
+		ast_addChild(node_assign, node_assign_id);
+		ast_addChild(node_assign, node_create_child);
+		ast_addChild(parent, node_assign);
+	}
+
+	transform_counter++;
+
+	avdl_json_next(json);
+	while (avdl_json_getToken(json) != AVDL_JSON_OBJECT_END) {
+
+		// find key
+		if (avdl_json_getToken(json) != AVDL_JSON_KEY) {
+			avdl_log_error("json expected key, got something else: %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+			return 0;
+		}
+		//avdl_log("got key: %s", avdl_json_getTokenString(json));
+
+		if (strcmp(avdl_json_getTokenString(json), "name") == 0) {
+			avdl_json_next(json);
+			if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+				//avdl_log("got string name: %s", avdl_json_getTokenString(json));
+
+				struct ast_node *node_set_name = ast_create(AST_COMMAND_CUSTOM);
+
+					struct ast_node *node_set_name_id = ast_create(AST_IDENTIFIER);
+					ast_setLex(node_set_name_id, node_name);
+					node_set_name_id->isRef = 1;
+					struct ast_node *node_set_name_id2 = ast_create(AST_IDENTIFIER);
+					ast_setLex(node_set_name_id2, "SetName");
+					ast_addChild(node_set_name_id, node_set_name_id2);
+
+				ast_addChild(node_set_name, node_set_name_id);
+
+				// arguments
+				struct ast_node *node_arg1 = ast_create(AST_IDENTIFIER);
+				ast_setLex(node_arg1, node_name);
+				ast_addChild(node_set_name, node_arg1);
+
+				struct ast_node *node_arg2 = ast_create(AST_STRING);
+				ast_setLex(node_arg2, avdl_json_getTokenString(json));
+				ast_addChild(node_set_name, node_arg2);
+
+				ast_addChild(parent, node_set_name);
+			}
+		}
+		else
+		if (strcmp(avdl_json_getTokenString(json), "position") == 0) {
+			avdl_json_next(json);
+			struct avdl_vec3 v;
+			json_expect_array3f(json, &v);
+			//avdl_log("got position: %f %f %f", v.v[0], v.v[1], v.v[2]);
+
+			struct ast_node *node_position = ast_create(AST_COMMAND_CUSTOM);
+
+				struct ast_node *node_position_id = ast_create(AST_IDENTIFIER);
+				ast_setLex(node_position_id, transform_name);
+				node_position_id->isRef = 1;
+				struct ast_node *node_position_id2 = ast_create(AST_IDENTIFIER);
+				ast_setLex(node_position_id2, "SetPosition3f");
+				ast_addChild(node_position_id, node_position_id2);
+
+			ast_addChild(node_position, node_position_id);
+
+			// arguments
+			struct ast_node *node_arg1 = ast_create(AST_IDENTIFIER);
+			ast_setLex(node_arg1, transform_name);
+			ast_addChild(node_position, node_arg1);
+
+			struct ast_node *node_arg2 = ast_create(AST_FLOAT);
+			ast_setValuef(node_arg1, v.v[0]);
+			ast_addChild(node_position, node_arg2);
+
+			struct ast_node *node_arg3 = ast_create(AST_FLOAT);
+			ast_setValuef(node_arg3, v.v[1]);
+			ast_addChild(node_position, node_arg3);
+
+			struct ast_node *node_arg4 = ast_create(AST_FLOAT);
+			ast_setValuef(node_arg4, v.v[2]);
+			ast_addChild(node_position, node_arg4);
+
+			ast_addChild(parent, node_position);
+		}
+		else
+		if (strcmp(avdl_json_getTokenString(json), "rotation") == 0) {
+			avdl_json_next(json);
+			struct avdl_vec3 v;
+			json_expect_array3f(json, &v);
+			//avdl_log("got rotation: %f %f %f", v.v[0], v.v[1], v.v[2]);
+
+			struct ast_node *node_rotation = ast_create(AST_COMMAND_CUSTOM);
+
+				struct ast_node *node_rotation_id = ast_create(AST_IDENTIFIER);
+				ast_setLex(node_rotation_id, transform_name);
+				node_rotation_id->isRef = 1;
+				struct ast_node *node_rotation_id2 = ast_create(AST_IDENTIFIER);
+				ast_setLex(node_rotation_id2, "SetRotation3f");
+				ast_addChild(node_rotation_id, node_rotation_id2);
+
+			ast_addChild(node_rotation, node_rotation_id);
+
+			// arguments
+			struct ast_node *node_arg1 = ast_create(AST_IDENTIFIER);
+			ast_setLex(node_arg1, transform_name);
+			ast_addChild(node_rotation, node_arg1);
+
+			struct ast_node *node_arg2 = ast_create(AST_FLOAT);
+			ast_setValuef(node_arg1, v.v[0]);
+			ast_addChild(node_rotation, node_arg2);
+
+			struct ast_node *node_arg3 = ast_create(AST_FLOAT);
+			ast_setValuef(node_arg3, v.v[1]);
+			ast_addChild(node_rotation, node_arg3);
+
+			struct ast_node *node_arg4 = ast_create(AST_FLOAT);
+			ast_setValuef(node_arg4, v.v[2]);
+			ast_addChild(node_rotation, node_arg4);
+
+			ast_addChild(parent, node_rotation);
+		}
+		else
+		if (strcmp(avdl_json_getTokenString(json), "scale") == 0) {
+			avdl_json_next(json);
+			struct avdl_vec3 v;
+			json_expect_array3f(json, &v);
+			//avdl_log("got scale: %f %f %f", v.v[0], v.v[1], v.v[2]);
+
+			struct ast_node *node_scale = ast_create(AST_COMMAND_CUSTOM);
+
+				struct ast_node *node_scale_id = ast_create(AST_IDENTIFIER);
+				ast_setLex(node_scale_id, transform_name);
+				node_scale_id->isRef = 1;
+				struct ast_node *node_scale_id2 = ast_create(AST_IDENTIFIER);
+				ast_setLex(node_scale_id2, "SetScale3f");
+				ast_addChild(node_scale_id, node_scale_id2);
+
+			ast_addChild(node_scale, node_scale_id);
+
+			// arguments
+			struct ast_node *node_arg1 = ast_create(AST_IDENTIFIER);
+			ast_setLex(node_arg1, transform_name);
+			ast_addChild(node_scale, node_arg1);
+
+			struct ast_node *node_arg2 = ast_create(AST_FLOAT);
+			ast_setValuef(node_arg1, v.v[0]);
+			ast_addChild(node_scale, node_arg2);
+
+			struct ast_node *node_arg3 = ast_create(AST_FLOAT);
+			ast_setValuef(node_arg3, v.v[1]);
+			ast_addChild(node_scale, node_arg3);
+
+			struct ast_node *node_arg4 = ast_create(AST_FLOAT);
+			ast_setValuef(node_arg4, v.v[2]);
+			ast_addChild(node_scale, node_arg4);
+
+			ast_addChild(parent, node_scale);
+		}
+		else
+		if (strcmp(avdl_json_getTokenString(json), "components") == 0) {
+			avdl_json_next(json);
+
+			// expect array
+			if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
+				avdl_log_error("Json expected array start '[': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+				return 0;
+			}
+		
+			avdl_json_next(json);
+			while (avdl_json_getToken(json) != AVDL_JSON_ARRAY_END) {
+				json_expect_component(json, parent);
+			}
+		}
+		else
+		if (strcmp(avdl_json_getTokenString(json), "children") == 0) {
+			avdl_json_next(json);
+
+			// expect array
+			if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
+				avdl_log_error("Json expected array start '[': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+				return 0;
+			}
+		
+			avdl_json_next(json);
+			while (avdl_json_getToken(json) != AVDL_JSON_ARRAY_END) {
+				json_expect_node(json, parent, node_name);
+			}
+		}
+		else {
+			avdl_json_next(json);
+			avdl_log("something else: %s", avdl_json_getTokenString(json));
+			break;
+		}
+		avdl_json_next(json);
+	}
+	avdl_json_next(json);
+
+	//return node;
+	return 0;
+
+}
+
+static int semanticAnalyser_convertToAst_json_node(struct ast_node *node) {
+	return 0;
+}
+
+static int semanticAnalyser_convertToAst_json(struct ast_node *node, const char *filename) {
+	struct avdl_json_object json;
+	//avdl_log("json parse");
+
+	// get function name from filename
+	char id[100];
+
+	// filename should have the form "src/my_file.json", first remove everything before and including "/"
+	char *p = strstr(filename, "/");
+	if (p) {
+		p++;
+		strcpy(id, p);
+	}
+	else {
+		strcpy(id, filename);
+	}
+
+	// remove anything after and including "."
+	p = strstr(id, ".");
+	if (p) {
+		p[0] = '\0';
+	}
+	//avdl_log("filename: %s", filename);
+	//avdl_log("id: %s", id);
+
+	// init
+	avdl_json_initFile(&json, filename);
+	avdl_json_next(&json);
+
+	// pre-made function template
+	struct ast_node *func = ast_create(AST_COMMAND_NATIVE);
+	ast_setLex(func, "function");
+
+	// func type
+	struct ast_node *functype = ast_create(AST_IDENTIFIER);
+	ast_setLex(functype, "void");
+
+	// func name
+	struct ast_node *funcname = ast_create(AST_IDENTIFIER);
+	ast_setLex(funcname, id);
+
+	ast_addChild(func, functype);
+	ast_addChild(func, funcname);
+
+	// func args - default node
+	struct ast_node *funcargs = ast_create(AST_COMMAND_NATIVE);
+	ast_setLex(funcargs, "group");
+
+	struct ast_node *defaultnode = ast_create(AST_IDENTIFIER);
+	ast_setLex(defaultnode, "avdl_node");
+
+	struct ast_node *defaultnodename = ast_create(AST_IDENTIFIER);
+	ast_setLex(defaultnodename, "n_0");
+
+	ast_addChild(funcargs, defaultnode);
+	ast_addChild(funcargs, defaultnodename);
+
+	ast_addChild(func, funcargs);
+
+	// func statements
+	struct ast_node *funcstatements = ast_create(AST_COMMAND_NATIVE);
+	ast_setLex(funcstatements, "group");
+
+	transform_counter = 0;
+	json_expect_node(&json, funcstatements, 0);
+	//avdl_log("json parse complete");
+
+	ast_addChild(func, funcstatements);
+	ast_addChild(node, func);
+	//ast_print(node);
+
+	// clean
+	avdl_json_deinit(&json);
+	return 0;
+}
+
 int semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) {
 
 	struct_table_init();
@@ -1096,10 +1552,22 @@ int semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) {
 	struct avdl_lexer l;
 	avdl_lexer_create(&l, filename);
 
-	struct ast_node *cmd;
+	//avdl_log("filename: %s", filename);
+	// json format
+	if (strcmp(filename +strlen(filename) -5, ".json") == 0) {
+		return semanticAnalyser_convertToAst_json(node, filename);
+	}
+
+	// check for error src
+	while (avdl_lexer_peek(&l) != LEXER_TOKEN_COMMANDSTART
+	&&     avdl_lexer_peek(&l) != LEXER_TOKEN_COMMANDEND_BRACKET) {
+		avdl_log_error("src file is not a valid avdl program: %s", filename);
+		return 0;
+	}
+
 	while (avdl_lexer_peek(&l) == LEXER_TOKEN_COMMANDSTART
 	||     avdl_lexer_peek(&l) == LEXER_TOKEN_COMMANDEND_BRACKET) {
-		cmd = expect_command(&l);
+		struct ast_node *cmd = expect_command(&l);
 
 		if (cmd->node_type == AST_INCLUDE) {
 			if (avdl_lexer_addIncludedFile(&l, ast_getLex(cmd)) != 0) {
@@ -1110,6 +1578,7 @@ int semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) {
 			ast_addChild(node, cmd);
 		}
 	}
+	//ast_print(node);
 
 	avdl_lexer_clean(&l);
 

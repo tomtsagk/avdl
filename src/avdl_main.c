@@ -421,7 +421,12 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 		struct avdl_string *str = avdl_da_get(&srcFiles, i);
 
 		// only avdl `.dd` files
-		if (!avdl_string_endsIn(str, ".dd")) {
+		if (!avdl_string_endsIn(str, ".dd") && !avdl_string_endsIn(str, ".json")) {
+			/*
+			avdl_log("---");
+			avdl_log("read: %s", avdl_string_toCharPtr(str));
+			avdl_log("---");
+			*/
 			continue;
 		}
 
@@ -502,7 +507,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 			avdl_string_clean(&dstFilePath);
 			continue;
 		}
-		//printf("transpiling %s to %s\n", buffer, buffer2);
+		//avdl_log("transpiling %s to %s", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath));
 
 		included_files_num = 0;
 

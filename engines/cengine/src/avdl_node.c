@@ -3,13 +3,17 @@
 #include "avdl_component.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 void avdl_node_create(struct avdl_node *o) {
 	o->parent = 0;
 
+	o->name[0] = '\0';
+
 	o->GetLocalTransform = avdl_node_GetLocalTransform;
 	o->GetGlobalMatrix = avdl_node_GetGlobalMatrix;
 	o->AddChild = avdl_node_AddChild;
+	o->SetName = avdl_node_SetName;
 
 	dd_matrix_identity(&o->globalMatrix);
 	dd_matrix_identity(&o->globalNormalMatrix);
@@ -80,7 +84,7 @@ static void avdl_node_printInternal(struct avdl_node *o, int tabs) {
 	}
 
 	struct dd_vec3 *pos = avdl_transform_GetPosition(&o->localTransform);
-	printf("node_name | position %f %f %f", pos->x, pos->y, pos->z);
+	printf("%s | position %f %f %f", o->name[0] != '\0' ? o->name : "no_node_name", pos->x, pos->y, pos->z);
 	printf("\n");
 
 	// Print children
@@ -94,3 +98,14 @@ void avdl_node_print(struct avdl_node *o) {
 	avdl_node_printInternal(o, 0);
 }
 
+void avdl_node_SetName(struct avdl_node *o, char *name) {
+
+	if (strlen(name) >= AVDL_NODE_NAME_LENGTH) {
+		dd_log("cannot copy node name, too big: %s", name);
+		return;
+	}
+
+	//dd_log("set name to : %s", name);
+	strncpy(o->name, name, AVDL_NODE_NAME_LENGTH-1);
+	o->name[AVDL_NODE_NAME_LENGTH-1] = '\0';
+}
