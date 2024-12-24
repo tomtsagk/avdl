@@ -20,4 +20,6 @@ void avdl_string_clean(struct avdl_string *o);
 int avdl_string_endsIn(struct avdl_string *o, const char *endingString);
 void avdl_string_replaceEnding(struct avdl_string *o, const char *fromEnding, const char *toEnding);
 
+void avdl_string_copy(struct avdl_string *o, struct avdl_string *target);
+
 #endif

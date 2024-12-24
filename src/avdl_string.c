@@ -102,3 +102,9 @@ void avdl_string_replaceEnding(struct avdl_string *o, const char *fromEnding, co
 	avdl_da_add(&o->string, toEnding, strlen(toEnding), position);
 
 }
+
+void avdl_string_copy(struct avdl_string *o, struct avdl_string *target) {
+	avdl_string_clean(o);
+	avdl_string_create(o, target->maxCharacters);
+	avdl_string_cat(o, avdl_string_toCharPtr(target));
+}
