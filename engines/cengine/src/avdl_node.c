@@ -84,8 +84,12 @@ static void avdl_node_printInternal(struct avdl_node *o, int tabs) {
 	}
 
 	struct dd_vec3 *pos = avdl_transform_GetPosition(&o->localTransform);
-	printf("%s | position %f %f %f", o->name[0] != '\0' ? o->name : "no_node_name", pos->x, pos->y, pos->z);
-	printf("\n");
+	printf("%s | position %f %f %f\n", o->name[0] != '\0' ? o->name : "no_node_name", pos->x, pos->y, pos->z);
+
+	// Print components
+	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
+		printf("	component %d\n", i);
+	}
 
 	// Print children
 	for (unsigned int i = 0; i < dd_da_count(&o->children); i++) {

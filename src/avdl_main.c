@@ -419,7 +419,8 @@ int json_expect_array3f(struct avdl_json_object *json, struct avdl_vec3 *v) {
 	return 0;
 }
 
-int json_expect_component(struct avdl_json_object *json, int fd, struct ast_node *parent) {
+static int component_counter = 0;
+int json_expect_component(struct avdl_json_object *json, int fd, char *node_name) {
 
 	// check main object
 	if (avdl_json_getToken(json) != AVDL_JSON_OBJECT_START) {
@@ -442,6 +443,93 @@ int json_expect_component(struct avdl_json_object *json, int fd, struct ast_node
 		content = "\"\n";
 		write(fd, content, strlen(content));
 
+		char component_name[100];
+		strcpy(component_name, "c_");
+		snprintf(component_name +2, 80, "%d", component_counter);
+
+		if (strcmp(avdl_json_getTokenString(json), "name") == 0) {
+			avdl_json_next(json);
+			if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+				if (strlen(avdl_json_getTokenString(json)) >= 99) {
+					avdl_log_error("component type too big: %s", avdl_json_getTokenString(json));
+					return -1;
+				}
+				char component_type[100];
+				strcpy(component_type, avdl_json_getTokenString(json));
+
+				//avdl_log("got component string: %s", avdl_json_getTokenString(json));
+				char *content = "\t(def ref ";
+				write(fd, content, strlen(content));
+				content = component_type;
+				write(fd, content, strlen(content));
+				content = " ";
+				write(fd, content, strlen(content));
+				content = component_name;
+				write(fd, content, strlen(content));
+				content = ")\n";
+				write(fd, content, strlen(content));
+
+				content = "\t(= ";
+				write(fd, content, strlen(content));
+				content = component_name;
+				write(fd, content, strlen(content));
+				content = " (avdl_node_AddComponent ";
+				write(fd, content, strlen(content));
+				content = node_name;
+				write(fd, content, strlen(content));
+				content = " ";
+				write(fd, content, strlen(content));
+				content = component_type;
+				write(fd, content, strlen(content));
+				content = "))\n";
+				write(fd, content, strlen(content));
+			}
+			else {
+				//avdl_log("component something else?");
+			}
+		}
+		else {
+			if (strlen(avdl_json_getTokenString(json)) >= 99) {
+				avdl_log_error("component variable too big: %s", avdl_json_getTokenString(json));
+				return -1;
+			}
+			char component_variable[100];
+			strcpy(component_variable, avdl_json_getTokenString(json));
+
+			avdl_json_next(json);
+
+			char *content = "\t(= ";
+			write(fd, content, strlen(content));
+			write(fd, component_name, strlen(component_name));
+			content = ".";
+			write(fd, content, strlen(content));
+			write(fd, component_variable, strlen(component_variable));
+			content = " ";
+			write(fd, content, strlen(content));
+
+			if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+				content = "\"";
+				write(fd, content, strlen(content));
+				content = avdl_json_getTokenString(json);
+				write(fd, content, strlen(content));
+				content = "\"";
+				write(fd, content, strlen(content));
+			}
+			else
+			if (avdl_json_getToken(json) == AVDL_JSON_INT
+			||  avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+				content = avdl_json_getTokenString(json);
+				write(fd, content, strlen(content));
+			}
+			else {
+				avdl_log_error("unsupported json component variable value");
+				return -1;
+			}
+			content = ")\n";
+			write(fd, content, strlen(content));
+		}
+
+		/*
 		avdl_json_next(json);
 		if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
 			//avdl_log("got component string: %s", avdl_json_getTokenString(json));
@@ -455,11 +543,14 @@ int json_expect_component(struct avdl_json_object *json, int fd, struct ast_node
 		else {
 			//avdl_log("component something else?");
 		}
+		*/
 
 		avdl_json_next(json);
 	}
 
 	avdl_json_next(json);
+
+	component_counter++;
 
 	return 0;
 }
@@ -696,7 +787,7 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 
 			avdl_json_next(json);
 			while (avdl_json_getToken(json) != AVDL_JSON_ARRAY_END) {
-				json_expect_component(json, fd, 0);
+				json_expect_component(json, fd, node_name);
 			}
 		}
 		else
@@ -765,7 +856,7 @@ static int avdl_json_to_dd(char *src, char *dst) {
 		return -1;
 	}
 
-	char *content = "(function void ";
+	char *content = "(include \"avdl_custom_components.ddh\")\n\n(function void ";
 	write(fd, content, strlen(content));
 	content = id;
 	write(fd, content, strlen(content));
@@ -777,6 +868,7 @@ static int avdl_json_to_dd(char *src, char *dst) {
 	avdl_json_next(&json);
 
 	transform_counter = 0;
+	component_counter = 0;
 	json_expect_node(&json, fd, 0);
 	//avdl_log("json parse complete");
 

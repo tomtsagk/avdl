@@ -182,6 +182,12 @@ void avdl_json_next(struct avdl_json_object *o) {
 				}
 				if (o->isFloat) {
 					o->token = AVDL_JSON_FLOAT;
+					if (end -o->current >= AVDL_JSON_BUFFER_SIZE) {
+						avdl_log("json float too long");
+						break;
+					}
+					strncpy(o->buffer, o->current, end -o->current);
+					o->buffer[end -o->current] = '\0';
 					o->numberf = atof(o->current);
 					o->current = end;
 					o->hasKey = 0;
@@ -199,6 +205,12 @@ void avdl_json_next(struct avdl_json_object *o) {
 				}
 				if (o->isNumber) {
 					o->token = AVDL_JSON_INT;
+					if (end -o->current >= AVDL_JSON_BUFFER_SIZE) {
+						avdl_log("json number too long");
+						break;
+					}
+					strncpy(o->buffer, o->current, end -o->current);
+					o->buffer[end -o->current] = '\0';
 					o->number = atoi(o->current);
 					o->current = end;
 					o->hasKey = 0;
