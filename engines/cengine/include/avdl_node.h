@@ -38,6 +38,8 @@ struct avdl_node {
 	struct avdl_node *(*AddChild)(struct avdl_node *);
 	void (*SetName)(struct avdl_node *, char *name);
 
+	void (*AddComponentsToArray)(struct avdl_node *, struct dd_dynamic_array *array, int component_type);
+
 };
 
 void avdl_node_create(struct avdl_node *o);
@@ -53,5 +55,7 @@ struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int s
 #define avdl_node_AddComponent(x, y) avdl_node_AddComponentInternal(x, sizeof(struct y), y ## _create);
 
 void avdl_node_SetName(struct avdl_node *o, char *name);
+
+void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array *array, int component_type);
 
 #endif

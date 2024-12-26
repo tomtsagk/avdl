@@ -28,6 +28,7 @@ void dd_dynamic_array_clean(struct dd_dynamic_array *da);
  */
 int dd_da_init (struct dd_dynamic_array *da, int el_size);
 #define dd_da_initStruct(da, str) dd_da_init(da, sizeof(struct str))
+#define dd_da_initStructRef(da, str) dd_da_init(da, sizeof(struct str *))
 
 /*
  * add functions
@@ -52,6 +53,7 @@ void dd_da_free(struct dd_dynamic_array *da);
 
 /* Get element of the array */
 void *dd_da_get(struct dd_dynamic_array *da, int position);
+void *dd_da_getDeref(struct dd_dynamic_array *da, int position);
 
 /*
  * Get number of elements in array

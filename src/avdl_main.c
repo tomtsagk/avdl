@@ -428,6 +428,9 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 		return -1;
 	}
 
+	char component_name[100];
+	strcpy(component_name, "c_");
+	snprintf(component_name +2, 80, "%d", component_counter);
 	avdl_json_next(json);
 	while (avdl_json_getToken(json) != AVDL_JSON_OBJECT_END) {
 		// find key
@@ -442,10 +445,6 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 		write(fd, content, strlen(content));
 		content = "\"\n";
 		write(fd, content, strlen(content));
-
-		char component_name[100];
-		strcpy(component_name, "c_");
-		snprintf(component_name +2, 80, "%d", component_counter);
 
 		if (strcmp(avdl_json_getTokenString(json), "name") == 0) {
 			avdl_json_next(json);
@@ -550,6 +549,17 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 
 	avdl_json_next(json);
 
+	/*
+	char *content = "\t(";
+	write(fd, content, strlen(content));
+	write(fd, component_name, strlen(component_name));
+	content = ".AfterCreate ";
+	write(fd, content, strlen(content));
+	write(fd, component_name, strlen(component_name));
+	content = ")\n";
+	write(fd, content, strlen(content));
+	*/
+
 	component_counter++;
 
 	return 0;
@@ -561,7 +571,7 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 	// check main object
 	if (avdl_json_getToken(json) != AVDL_JSON_OBJECT_START) {
 		avdl_log_error("Json node should start with a '{': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
-		return 0;
+		return -1;
 	}
 
 	// generate node name
@@ -574,7 +584,7 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 		// every node apart from the first one needs to have a parent
 		if (!node_parent_name) {
 			avdl_log_error("node parent name missing on non-root node");
-			return 0;
+			return -1;
 		}
 
 		// define node
@@ -642,7 +652,7 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 		// find key
 		if (avdl_json_getToken(json) != AVDL_JSON_KEY) {
 			avdl_log_error("json expected key, got something else: %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
-			return 0;
+			return -1;
 		}
 		//avdl_log("got key: %s", avdl_json_getTokenString(json));
 
@@ -782,7 +792,7 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 			// expect array
 			if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
 				avdl_log_error("Json expected array start '[': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
-				return 0;
+				return -1;
 			}
 
 			avdl_json_next(json);
@@ -797,14 +807,17 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 			// expect array
 			if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
 				avdl_log_error("Json expected array start '[': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
-				return 0;
+				return -1;
 			}
 
 			avdl_json_next(json);
 			while (avdl_json_getToken(json) != AVDL_JSON_ARRAY_END) {
 				char *content = "\n";
 				write(fd, content, strlen(content));
-				json_expect_node(json, fd, node_name);
+				if (json_expect_node(json, fd, node_name) != 0) {
+					avdl_log_error("json: error parsing node");
+					return -1;
+				}
 			}
 		}
 		else {
@@ -869,7 +882,12 @@ static int avdl_json_to_dd(char *src, char *dst) {
 
 	transform_counter = 0;
 	component_counter = 0;
-	json_expect_node(&json, fd, 0);
+	if (json_expect_node(&json, fd, 0) != 0) {
+		avdl_log_error("error translating json to dd");
+		close(fd);
+		avdl_json_deinit(&json);
+		return -1;
+	}
 	//avdl_log("json parse complete");
 
 	content = "})\n";

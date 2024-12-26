@@ -165,10 +165,16 @@ void avdl_json_next(struct avdl_json_object *o) {
 				int has_comma = 0;
 				o->isFloat = 0;
 				char *end = o->current;
-				while ((end[0] >= '0' && end[0] <= '9') || end[0] == '.') {
+				while ((end[0] >= '0' && end[0] <= '9') || end[0] == '.' || end[0] == '-') {
+
+					if (end > o->current && end[0] == '-') {
+						avdl_log_error("json: unexpected '-' found for floats");
+						break;
+					}
+
 					if (end[0] == '.') {
 						if (has_comma) {
-							avdl_log("json: float has more than one commas");
+							avdl_log_error("json: float has more than one commas");
 						}
 						has_comma = 1;
 					}
@@ -197,7 +203,11 @@ void avdl_json_next(struct avdl_json_object *o) {
 				// check int
 				o->isNumber = 0;
 				end = o->current;
-				while (end[0] >= '0' && end[0] <= '9') {
+				while ((end[0] >= '0' && end[0] <= '9') || end[0] == '-') {
+					if (end > o->current && end[0] == '-') {
+						avdl_log_error("json: unexpected '-' found");
+						break;
+					}
 					end++;
 				}
 				if (end > o->current) {

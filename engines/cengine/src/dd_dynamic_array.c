@@ -196,6 +196,10 @@ void *dd_da_get(struct dd_dynamic_array *da, int position) {
 	return ((char*)da->array) +(position *da->element_size);
 }
 
+void *dd_da_getDeref(struct dd_dynamic_array *da, int position) {
+	return * ((void **)dd_da_get(da, position));
+}
+
 unsigned int dd_da_count(struct dd_dynamic_array *da) {
 	return da->elements;
 }

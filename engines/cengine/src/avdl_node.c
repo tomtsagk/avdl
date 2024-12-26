@@ -14,6 +14,7 @@ void avdl_node_create(struct avdl_node *o) {
 	o->GetGlobalMatrix = avdl_node_GetGlobalMatrix;
 	o->AddChild = avdl_node_AddChild;
 	o->SetName = avdl_node_SetName;
+	o->AddComponentsToArray = avdl_node_AddComponentsToArray;
 
 	dd_matrix_identity(&o->globalMatrix);
 	dd_matrix_identity(&o->globalNormalMatrix);
@@ -61,7 +62,7 @@ struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {
 
 struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int size, void (*constructor)(void *)) {
 	struct avdl_component *c = malloc(size);
-	dd_da_push(&o->components, c);
+	dd_da_push(&o->components, &c);
 	constructor(c);
 	// each component has a reference to the node they are attached to
 	c->node = o;
@@ -112,4 +113,22 @@ void avdl_node_SetName(struct avdl_node *o, char *name) {
 	//dd_log("set name to : %s", name);
 	strncpy(o->name, name, AVDL_NODE_NAME_LENGTH-1);
 	o->name[AVDL_NODE_NAME_LENGTH-1] = '\0';
+}
+
+void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array *array, int component_type) {
+
+	// Print components
+	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
+		struct avdl_component *c = *((struct avdl_component **) dd_da_get(&o->components, i));
+
+		if (c->type == component_type) {
+			dd_da_push(array, &c);
+		}
+	}
+
+	// Print children
+	for (unsigned int i = 0; i < dd_da_count(&o->children); i++) {
+		struct avdl_node *child = dd_da_get(&o->children, i);
+		avdl_node_AddComponentsToArray(child, array, component_type);
+	}
 }
