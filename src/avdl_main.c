@@ -549,16 +549,14 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 
 	avdl_json_next(json);
 
-	/*
 	char *content = "\t(";
 	write(fd, content, strlen(content));
 	write(fd, component_name, strlen(component_name));
-	content = ".AfterCreate ";
+	content = ".after_create ";
 	write(fd, content, strlen(content));
 	write(fd, component_name, strlen(component_name));
 	content = ")\n";
 	write(fd, content, strlen(content));
-	*/
 
 	component_counter++;
 

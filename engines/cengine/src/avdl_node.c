@@ -132,3 +132,9 @@ void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array
 		avdl_node_AddComponentsToArray(child, array, component_type);
 	}
 }
+
+void avdl_node_NodeToJson(struct avdl_node *o, char *filename) {
+}
+
+void avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
+}
