@@ -60,7 +60,9 @@ void avdl_json_initFile(struct avdl_json_object *o, char *filename) {
 	rewind(o->file);
 
 	o->str = malloc((size +1) *sizeof(char));
-	while (fscanf(o->file, "%1024c", o->str) > 0) {
+	int times = 0;
+	while (fscanf(o->file, "%1024c", o->str +(times *1024)) > 0) {
+		times++;
 	}
 	o->str[size] = '\0';
 	//avdl_log("json file: %s", o->str);
@@ -189,7 +191,7 @@ void avdl_json_next(struct avdl_json_object *o) {
 				if (o->isFloat) {
 					o->token = AVDL_JSON_FLOAT;
 					if (end -o->current >= AVDL_JSON_BUFFER_SIZE) {
-						avdl_log("json float too long");
+						avdl_log_error("json float too long");
 						break;
 					}
 					strncpy(o->buffer, o->current, end -o->current);
@@ -216,7 +218,7 @@ void avdl_json_next(struct avdl_json_object *o) {
 				if (o->isNumber) {
 					o->token = AVDL_JSON_INT;
 					if (end -o->current >= AVDL_JSON_BUFFER_SIZE) {
-						avdl_log("json number too long");
+						avdl_log_error("json number too long");
 						break;
 					}
 					strncpy(o->buffer, o->current, end -o->current);

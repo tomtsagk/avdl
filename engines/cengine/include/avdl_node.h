@@ -37,6 +37,7 @@ struct avdl_node {
 
 	struct avdl_node *(*AddChild)(struct avdl_node *);
 	void (*SetName)(struct avdl_node *, char *name);
+	char *(*GetName)(struct avdl_node *);
 
 	int (*GetChildrenCount)(struct avdl_node *);
 	int (*GetChild)(struct avdl_node *, int index);
@@ -58,12 +59,13 @@ struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int s
 #define avdl_node_AddComponent(x, y) avdl_node_AddComponentInternal(x, sizeof(struct y), y ## _create);
 
 void avdl_node_SetName(struct avdl_node *o, char *name);
+char *avdl_node_GetName(struct avdl_node *o);
 int avdl_node_GetChildrenCount(struct avdl_node *o);
 struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index);
 
 void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array *array, int component_type);
 
-void avdl_node_NodeToJson(struct avdl_node *o, char *filename);
-void avdl_node_JsonToNode(char *filename, struct avdl_node *o);
+int avdl_node_NodeToJson(struct avdl_node *o, char *filename);
+int avdl_node_JsonToNode(char *filename, struct avdl_node *o);
 
 #endif

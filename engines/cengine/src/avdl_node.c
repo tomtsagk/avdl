@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+
 void avdl_node_create(struct avdl_node *o) {
 	o->parent = 0;
 
@@ -14,6 +18,7 @@ void avdl_node_create(struct avdl_node *o) {
 	o->GetGlobalMatrix = avdl_node_GetGlobalMatrix;
 	o->AddChild = avdl_node_AddChild;
 	o->SetName = avdl_node_SetName;
+	o->GetName = avdl_node_GetName;
 	o->AddComponentsToArray = avdl_node_AddComponentsToArray;
 
 	o->GetChildrenCount = avdl_node_GetChildrenCount;
@@ -148,6 +153,15 @@ void avdl_node_SetName(struct avdl_node *o, char *name) {
 	o->name[AVDL_NODE_NAME_LENGTH-1] = '\0';
 }
 
+char *avdl_node_GetName(struct avdl_node *o) {
+	if (o->name[0] == '\0') {
+		return 0;
+	}
+	else {
+		return o->name;
+	}
+}
+
 void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array *array, int component_type) {
 
 	// Print components
@@ -166,12 +180,6 @@ void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array
 	}
 }
 
-void avdl_node_NodeToJson(struct avdl_node *o, char *filename) {
-}
-
-void avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
-}
-
 int avdl_node_GetChildrenCount(struct avdl_node *o) {
 	return dd_da_count(&o->children);
 }
@@ -182,4 +190,170 @@ struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index) {
 		return 0;
 	}
 	return dd_da_get(&o->children, index);
+}
+
+static int NodeToJson_PrintTabs(int fd, int tabs) {
+	char *content;
+	for (int i = 0; i < tabs; i++) {
+		content = "\t";
+		write(fd, content, strlen(content));
+	}
+}
+
+static int NodeToJson_PrintVec3(int fd, struct dd_vec3 *v) {
+	char *content;
+	char buffer[100];
+	// x
+	snprintf(buffer, 80, "%f", v->x);
+	write(fd, buffer, strlen(buffer));
+
+	content = ", ";
+	write(fd, content, strlen(content));
+
+	// y
+	snprintf(buffer, 80, "%f", v->y);
+	write(fd, buffer, strlen(buffer));
+
+	content = ", ";
+	write(fd, content, strlen(content));
+
+	// z
+	snprintf(buffer, 80, "%f", v->z);
+	write(fd, buffer, strlen(buffer));
+
+	return 0;
+}
+
+static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs) {
+
+	char *content;
+
+	// start
+	NodeToJson_PrintTabs(fd, tabs);
+	content = "{\n";
+	write(fd, content, strlen(content));
+
+	NodeToJson_PrintTabs(fd, tabs);
+	content = "\"name\": \"avdl_component_mesh\",\n";
+	write(fd, content, strlen(content));
+
+	// end
+	NodeToJson_PrintTabs(fd, tabs);
+	content = "}\n";
+	write(fd, content, strlen(content));
+}
+
+static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
+
+	char *content;
+
+	// start
+	NodeToJson_PrintTabs(fd, tabs);
+	content = "{\n";
+	write(fd, content, strlen(content));
+
+	// content
+	if (avdl_node_GetName(o)) {
+		NodeToJson_PrintTabs(fd, tabs+1);
+		content = "\"name\": \"";
+		write(fd, content, strlen(content));
+		content = avdl_node_GetName(o);
+		write(fd, content, strlen(content));
+		content = "\",\n";
+		write(fd, content, strlen(content));
+	}
+	else {
+		NodeToJson_PrintTabs(fd, tabs+1);
+		content = "\"name\": \"";
+		write(fd, content, strlen(content));
+		content = "NO_NAME";
+		write(fd, content, strlen(content));
+		content = "\",\n";
+		write(fd, content, strlen(content));
+	}
+
+	struct avdl_transform *t = avdl_node_GetLocalTransform(o);
+
+	// position
+	struct dd_vec3 *pos = avdl_transform_GetPosition(t);
+	NodeToJson_PrintTabs(fd, tabs+1);
+	content = "\"position\": [ ";
+	write(fd, content, strlen(content));
+	NodeToJson_PrintVec3(fd, pos);
+	content = " ],\n";
+	write(fd, content, strlen(content));
+
+	// rotation
+	struct dd_vec3 *rot = avdl_transform_GetRotation(t);
+	NodeToJson_PrintTabs(fd, tabs+1);
+	content = "\"rotation\": [ ";
+	write(fd, content, strlen(content));
+	NodeToJson_PrintVec3(fd, rot);
+	content = " ],\n";
+	write(fd, content, strlen(content));
+
+	// scale
+	struct dd_vec3 *scale = avdl_transform_GetScale(t);
+	NodeToJson_PrintTabs(fd, tabs+1);
+	content = "\"scale\": [ ";
+	write(fd, content, strlen(content));
+	NodeToJson_PrintVec3(fd, scale);
+	content = " ],\n";
+	write(fd, content, strlen(content));
+
+	// components
+	if (dd_da_count(&o->components) > 0) {
+		NodeToJson_PrintTabs(fd, tabs+1);
+		content = "\"components\": [\n";
+		write(fd, content, strlen(content));
+		for (int i = 0; i < dd_da_count(&o->components); i++) {
+			struct avdl_component *component = dd_da_getDeref(&o->components, i);
+			NodeToJson_PrintComponent(fd, component, tabs+1);
+		}
+		NodeToJson_PrintTabs(fd, tabs+1);
+		content = "]\n";
+		write(fd, content, strlen(content));
+	}
+
+	// children
+	if (dd_da_count(&o->children) > 0) {
+		NodeToJson_PrintTabs(fd, tabs+1);
+		content = "\"children\": [\n";
+		write(fd, content, strlen(content));
+		for (int i = 0; i < dd_da_count(&o->children); i++) {
+			struct avdl_node *child = dd_da_get(&o->children, i);
+			NodeToJson_PrintNode(fd, child, tabs+1);
+		}
+		NodeToJson_PrintTabs(fd, tabs+1);
+		content = "]\n";
+		write(fd, content, strlen(content));
+	}
+
+	// end
+	NodeToJson_PrintTabs(fd, tabs);
+	content = "}\n";
+	write(fd, content, strlen(content));
+}
+
+int avdl_node_NodeToJson(struct avdl_node *o, char *filename) {
+	dd_log("NodeToJson at %s", filename);
+
+	remove(filename);
+
+	int fd = open(filename, O_RDWR | O_CREAT, 0777);
+	if (fd == -1) {
+		dd_log("NodeToJson: Unable to open '%s': %s\n", filename, strerror(errno));
+		return -1;
+	}
+
+	int startingTabs = 0;
+	NodeToJson_PrintNode(fd, o, startingTabs);
+
+	close(fd);
+
+	return 0;
+}
+
+int avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
+	return 0;
 }
