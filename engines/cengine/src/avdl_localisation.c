@@ -1,5 +1,5 @@
 #include "avdl_localisation.h"
-#include "dd_json.h"
+#include "avdl_json.h"
 #include <string.h>
 #include "dd_log.h"
 #include "dd_game.h"
@@ -33,7 +33,7 @@ extern const char* getAppLocation(void);
 void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) {
 
 	//dd_log("avdl: localisation '%s'", keyGroupID);
-	struct dd_json_object obj;
+	struct avdl_json_object obj;
 
 	#if defined( AVDL_DIRECT3D11 )
 	strcpy_s(obj.buffer, 1000, getAppLocation());
@@ -58,25 +58,25 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 	strcat(obj.buffer, localisation_to_filecode(AVDL_LOCALE_CURRENT));
 	strcat(obj.buffer, ".json");
 	#endif
-	dd_json_initFile(&obj, obj.buffer);
+	avdl_json_initFile(&obj, obj.buffer);
 
 	// expect start of object
-	dd_json_next(&obj);
-	if (dd_json_getToken(&obj) != DD_JSON_OBJECT_START) {
+	avdl_json_next(&obj);
+	if (avdl_json_getToken(&obj) != AVDL_JSON_OBJECT_START) {
 		dd_log("avdl: error reading json file '%s'", obj.buffer);
 		return;
 	}
 
 	// expect series of key-string pairs until it's done
 	o->count = 0;
-	dd_json_next(&obj);
-	while (dd_json_getToken(&obj) == DD_JSON_KEY) {
+	avdl_json_next(&obj);
+	while (avdl_json_getToken(&obj) == AVDL_JSON_KEY) {
 
 		if (o->count >= LOC_MAX_KEYS) {
 			dd_log("avdl error: too many localisation keys while reading key '%s', maximum is %d", obj.buffer, LOC_MAX_KEYS);
 			break;
 		}
-		const char *c = dd_json_getTokenString(&obj);
+		const char *c = avdl_json_getTokenString(&obj);
 		if (strlen(c) >= LOC_MAX_CHARACTERS) {
 			dd_log("avdl error: loc key '%s' has too many characters: %d / %d", c, strlen(c), LOC_MAX_CHARACTERS);
 			break;
@@ -86,8 +86,8 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 		#else
 		strcpy(o->keys[o->count], c);
 		#endif
-		dd_json_next(&obj);
-		const char *c2 = dd_json_getTokenString(&obj);
+		avdl_json_next(&obj);
+		const char *c2 = avdl_json_getTokenString(&obj);
 		if (strlen(c2) >= LOC_MAX_CHARACTERS) {
 			dd_log("avdl error: loc value has too many characters: %d / %d", strlen(c2), LOC_MAX_CHARACTERS);
 			dd_log("value: %s", c2);
@@ -98,12 +98,12 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 		#else
 		strcpy(o->values[o->count], c2);
 		#endif
-		dd_json_next(&obj);
+		avdl_json_next(&obj);
 		o->count++;
 	}
 
 	//avdl_localisation_print(o);
-	dd_json_deinit(&obj);
+	avdl_json_deinit(&obj);
 
 }
 

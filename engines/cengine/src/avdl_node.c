@@ -1,9 +1,12 @@
 #include "avdl_node.h"
 #include "dd_log.h"
 #include "avdl_component.h"
+#include "avdl_json.h"
+#include "dd_vec3.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "avdl_component_mesh.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -354,6 +357,325 @@ int avdl_node_NodeToJson(struct avdl_node *o, char *filename) {
 	return 0;
 }
 
+static int json_expect_component(struct avdl_json_object *json, struct avdl_node *node) {
+
+	// check main object
+	if (avdl_json_getToken(json) != AVDL_JSON_OBJECT_START) {
+		dd_log("Json component should start with a '{': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+		return -1;
+	}
+
+	struct avdl_component *c = 0;
+
+	/*
+	char component_name[100];
+	strcpy(component_name, "c_");
+	snprintf(component_name +2, 80, "%d", component_counter);
+	*/
+	avdl_json_next(json);
+	while (avdl_json_getToken(json) != AVDL_JSON_OBJECT_END) {
+
+		// find key
+		if (avdl_json_getToken(json) != AVDL_JSON_KEY) {
+			dd_log("json expected key, got something else: %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+			return -1;
+		}
+		//avdl_log("got component key: %s", avdl_json_getTokenString(json));
+
+		/*
+		char *content = "\t# found component \"";
+		write(fd, content, strlen(content));
+		content = avdl_json_getTokenString(json);
+		write(fd, content, strlen(content));
+		content = "\"\n";
+		write(fd, content, strlen(content));
+		*/
+
+		if (strcmp(avdl_json_getTokenString(json), "name") == 0) {
+			avdl_json_next(json);
+			if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+				if (strlen(avdl_json_getTokenString(json)) >= 99) {
+					dd_log("component type too big: %s", avdl_json_getTokenString(json));
+					return -1;
+				}
+
+				if (strcmp(avdl_json_getTokenString(json), "avdl_component_mesh") == 0) {
+					//dd_log("found mesh component");
+					c = avdl_node_AddComponent(node, avdl_component_mesh);
+				}
+				/*
+				char component_type[100];
+				strcpy(component_type, avdl_json_getTokenString(json));
+
+				//avdl_log("got component string: %s", avdl_json_getTokenString(json));
+				char *content = "\t(def ref ";
+				write(fd, content, strlen(content));
+				content = component_type;
+				write(fd, content, strlen(content));
+				content = " ";
+				write(fd, content, strlen(content));
+				content = component_name;
+				write(fd, content, strlen(content));
+				content = ")\n";
+				write(fd, content, strlen(content));
+
+				content = "\t(= ";
+				write(fd, content, strlen(content));
+				content = component_name;
+				write(fd, content, strlen(content));
+				content = " (avdl_node_AddComponent ";
+				write(fd, content, strlen(content));
+				content = node_name;
+				write(fd, content, strlen(content));
+				content = " ";
+				write(fd, content, strlen(content));
+				content = component_type;
+				write(fd, content, strlen(content));
+				content = "))\n";
+				write(fd, content, strlen(content));
+				*/
+			}
+			else {
+				//avdl_log("component something else?");
+			}
+		}
+		else {
+			if (strlen(avdl_json_getTokenString(json)) >= 99) {
+				dd_log("component variable too big: %s", avdl_json_getTokenString(json));
+				return -1;
+			}
+			/*
+			char component_variable[100];
+			strcpy(component_variable, avdl_json_getTokenString(json));
+			*/
+
+			avdl_json_next(json);
+
+			/*
+			char *content = "\t(= ";
+			write(fd, content, strlen(content));
+			write(fd, component_name, strlen(component_name));
+			content = ".";
+			write(fd, content, strlen(content));
+			write(fd, component_variable, strlen(component_variable));
+			content = " ";
+			write(fd, content, strlen(content));
+
+			if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+				content = "\"";
+				write(fd, content, strlen(content));
+				content = avdl_json_getTokenString(json);
+				write(fd, content, strlen(content));
+				content = "\"";
+				write(fd, content, strlen(content));
+			}
+			else
+			if (avdl_json_getToken(json) == AVDL_JSON_INT
+			||  avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+				content = avdl_json_getTokenString(json);
+				write(fd, content, strlen(content));
+			}
+			else {
+				dd_log("unsupported json component variable value");
+				return -1;
+			}
+			content = ")\n";
+			write(fd, content, strlen(content));
+			*/
+		}
+
+		/*
+		avdl_json_next(json);
+		if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+			//avdl_log("got component string: %s", avdl_json_getTokenString(json));
+			char *content = "\t# with component string \"";
+			write(fd, content, strlen(content));
+			content = avdl_json_getTokenString(json);
+			write(fd, content, strlen(content));
+			content = "\"\n";
+			write(fd, content, strlen(content));
+		}
+		else {
+			//avdl_log("component something else?");
+		}
+		*/
+
+		avdl_json_next(json);
+	}
+
+	avdl_json_next(json);
+
+	if (c) {
+		c->after_create(c);
+	}
+
+	/*
+	char *content = "\t(";
+	write(fd, content, strlen(content));
+	write(fd, component_name, strlen(component_name));
+	content = ".after_create ";
+	write(fd, content, strlen(content));
+	write(fd, component_name, strlen(component_name));
+	content = ")\n";
+	write(fd, content, strlen(content));
+
+	component_counter++;
+	*/
+
+	return 0;
+}
+
+static int json_expect_array3f(struct avdl_json_object *json, struct dd_vec3 *v) {
+
+	if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
+		dd_log("Json: expected array start for 3f: %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+		return -1;
+	}
+
+	avdl_json_next(json);
+	for (int i = 0; i < 3; i++) {
+		if (avdl_json_getToken(json) != AVDL_JSON_FLOAT) {
+			dd_log("Json 3f: was expecting 3 floats but found something else: %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+			return -1;
+		}
+
+		if (i == 0) {
+			v->x = avdl_json_getTokenFloat(json);
+		}
+		else
+		if (i == 1) {
+			v->y = avdl_json_getTokenFloat(json);
+		}
+		else
+		if (i == 2) {
+			v->z = avdl_json_getTokenFloat(json);
+		}
+		avdl_json_next(json);
+	}
+
+	return 0;
+}
+
+static int json_expect_node(struct avdl_json_object *json, struct avdl_node *node) {
+
+	// check main object
+	if (avdl_json_getToken(json) != AVDL_JSON_OBJECT_START) {
+		dd_log("Json node should start with a '{': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+		return -1;
+	}
+
+	struct avdl_transform *t = node->GetLocalTransform(node);
+
+	avdl_json_next(json);
+	while (avdl_json_getToken(json) != AVDL_JSON_OBJECT_END) {
+
+		// find key
+		if (avdl_json_getToken(json) != AVDL_JSON_KEY) {
+			dd_log("json expected key, got something else: %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+			return -1;
+		}
+
+		if (strcmp(avdl_json_getTokenString(json), "name") == 0) {
+			avdl_json_next(json);
+			if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+				//dd_log("got string name: %s", avdl_json_getTokenString(json));
+				node->SetName(node, avdl_json_getTokenString(json));
+			}
+		}
+		else
+		if (strcmp(avdl_json_getTokenString(json), "position") == 0) {
+			avdl_json_next(json);
+			struct dd_vec3 v;
+			json_expect_array3f(json, &v);
+			//dd_log("got position: %f %f %f", v.x, v.y, v.z);
+			t->SetPosition(t, &v);
+		}
+		else
+		if (strcmp(avdl_json_getTokenString(json), "rotation") == 0) {
+			avdl_json_next(json);
+			struct dd_vec3 v;
+			json_expect_array3f(json, &v);
+			//dd_log("got rotation: %f %f %f", v.x, v.y, v.z);
+			t->SetRotation(t, &v);
+		}
+		else
+		if (strcmp(avdl_json_getTokenString(json), "scale") == 0) {
+			avdl_json_next(json);
+			struct dd_vec3 v;
+			json_expect_array3f(json, &v);
+			//dd_log("got scale: %f %f %f", v.x, v.y, v.z);
+			t->SetScale(t, &v);
+		}
+		else
+		if (strcmp(avdl_json_getTokenString(json), "components") == 0) {
+			avdl_json_next(json);
+
+			// expect array
+			if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
+				dd_log("Json expected array start '[': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+				return -1;
+			}
+
+			avdl_json_next(json);
+			while (avdl_json_getToken(json) != AVDL_JSON_ARRAY_END) {
+				json_expect_component(json, node);
+			}
+		}
+		else
+		if (strcmp(avdl_json_getTokenString(json), "children") == 0) {
+			avdl_json_next(json);
+
+			// expect array
+			if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
+				dd_log("Json expected array start '[': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
+				return -1;
+			}
+
+			avdl_json_next(json);
+			while (avdl_json_getToken(json) != AVDL_JSON_ARRAY_END) {
+				struct avdl_node *child = node->AddChild(node);
+
+				/*
+				char *content = "\n";
+				write(fd, content, strlen(content));
+				*/
+				if (json_expect_node(json, child) != 0) {
+					dd_log("json: error parsing node");
+					return -1;
+				}
+			}
+		}
+		else {
+			avdl_json_next(json);
+			avdl_log("something else: %s", avdl_json_getTokenString(json));
+			break;
+		}
+
+		avdl_json_next(json);
+	}
+	avdl_json_next(json);
+
+	return 0;
+}
+
 int avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
+
+	dd_log("opening %s to convert to hierarchy", filename);
+
+	struct avdl_json_object json;
+	if (avdl_json_initFile(&json, filename) != 0) {
+		dd_log("could not open json file %s to convert to node", filename);
+		return -1;
+	}
+	avdl_json_next(&json);
+
+	if (json_expect_node(&json, o) != 0) {
+		dd_log("error translating json to dd");
+		avdl_json_deinit(&json);
+		return -1;
+	}
+
+	avdl_json_deinit(&json);
+
 	return 0;
 }
