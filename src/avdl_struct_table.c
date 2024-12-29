@@ -217,6 +217,8 @@ void struct_table_init() {
 	struct_table_push_member("GetLocalTransform", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("AddChild", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetName", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetChildrenCount", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetChild", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_component", 0);
 	struct_table_push_member("after_create", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetNode", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

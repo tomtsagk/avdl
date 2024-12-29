@@ -16,6 +16,9 @@ void avdl_node_create(struct avdl_node *o) {
 	o->SetName = avdl_node_SetName;
 	o->AddComponentsToArray = avdl_node_AddComponentsToArray;
 
+	o->GetChildrenCount = avdl_node_GetChildrenCount;
+	o->GetChild = avdl_node_GetChild;
+
 	dd_matrix_identity(&o->globalMatrix);
 	dd_matrix_identity(&o->globalNormalMatrix);
 	avdl_transform_create(&o->localTransform);
@@ -52,11 +55,30 @@ struct dd_matrix *avdl_node_GetGlobalNormalMatrix(struct avdl_node *o) {
 	return &o->globalNormalMatrix;
 }
 
+static void ReAssignComponentNodes(struct avdl_node *o) {
+	for (int i = 0; i < dd_da_count(&o->components); i++) {
+		struct avdl_component *c = dd_da_getDeref(&o->components, i);
+		c->node = o;
+	}
+
+	for (int i = 0; i < dd_da_count(&o->children); i++) {
+		struct avdl_node *child = dd_da_get(&o->children, i);
+		ReAssignComponentNodes(child);
+	}
+}
+
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {
 	dd_da_pushEmpty(&o->children);
 	struct avdl_node *child = dd_da_get(&o->children, -1);
 	avdl_node_create(child);
 	child->parent = o;
+
+	// components should get a fresh reference of their nodes, otherwise this introduces nasty bugs
+	for (int i = 0; i < dd_da_count(&o->children); i++) {
+		struct avdl_node *child = dd_da_get(&o->children, i);
+		ReAssignComponentNodes(child);
+	}
+
 	return child;
 }
 
@@ -66,6 +88,7 @@ struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int s
 	constructor(c);
 	// each component has a reference to the node they are attached to
 	c->node = o;
+
 	return c;
 }
 
@@ -86,11 +109,21 @@ static void avdl_node_printInternal(struct avdl_node *o, int tabs) {
 
 	struct dd_vec3 *pos = avdl_transform_GetPosition(&o->localTransform);
 	printf("%s | position %f %f %f\n", o->name[0] != '\0' ? o->name : "no_node_name", pos->x, pos->y, pos->z);
+	if (dd_da_count(&o->components) > 0) {
+		for (int i = 0; i < tabs+1; i++) {
+			printf("\t");
+		}
+		for (int i = 0; i < dd_da_count(&o->components); i++) {
+			printf("component: %d %x %x\n", i, dd_da_get(&o->components, i), dd_da_getDeref(&o->components, i));
+		}
+	}
 
+	/*
 	// Print components
 	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
 		printf("	component %d\n", i);
 	}
+	*/
 
 	// Print children
 	for (unsigned int i = 0; i < dd_da_count(&o->children); i++) {
@@ -137,4 +170,16 @@ void avdl_node_NodeToJson(struct avdl_node *o, char *filename) {
 }
 
 void avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
+}
+
+int avdl_node_GetChildrenCount(struct avdl_node *o) {
+	return dd_da_count(&o->children);
+}
+
+struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index) {
+	if (index < 0 || index >= avdl_node_GetChildrenCount(o)) {
+		dd_log("avdl_node_GetChild wrong index: %d", index);
+		return 0;
+	}
+	return dd_da_get(&o->children, index);
 }
