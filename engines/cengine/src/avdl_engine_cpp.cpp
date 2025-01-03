@@ -70,7 +70,7 @@ public:
 #include <dxgi.h>
 #include <d3dcompiler.h>
 #include <assert.h>
-#include <dd_log.h>
+#include <avdl_log.h>
 #include "dd_game.h"
 #include "avdl_assetManager.h"
 #include "avdl_steam.h"
@@ -122,7 +122,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	#ifdef AVDL_STEAM
 	if (!o->verify) {
 		if (!avdl_steam_init()) {
-			dd_log("avdl: error initialising steam");
+			avdl_log("avdl: error initialising steam");
 			return -1;
 		}
 	}
@@ -137,12 +137,12 @@ int avdl_engine_init(struct avdl_engine *o) {
 	const PROJ_LOC_TYPE *proj_loc = avdl_getProjectLocation();
 	if (proj_loc) {
 		if (_wchdir(proj_loc) != 0) {
-			dd_log("avdl: failed to change directory: %lS", _wcserror(errno));
+			avdl_log("avdl: failed to change directory: %lS", _wcserror(errno));
 			return -1;
 		}
 	}
 	else {
-		dd_log("avdl error: unable to get project location");
+		avdl_log("avdl error: unable to get project location");
 	}
 	#endif
 	*/
@@ -157,7 +157,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	if (pthread_mutex_init(&asyncCallMutex, NULL) != 0)
 	{
-		dd_log("avdl: mutex for async calls init failed");
+		avdl_log("avdl: mutex for async calls init failed");
 		return -1;
 	}
 	*/
@@ -266,18 +266,18 @@ int avdl_engine_loop(struct avdl_engine *o) {
 //
 //			if (getEnvStat == JNI_EDETACHED) {
 //				if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
-//					dd_log("avdl: failed to attach thread for new world");
+//					avdl_log("avdl: failed to attach thread for new world");
 //				}
 //			} else if (getEnvStat == JNI_OK) {
 //			} else if (getEnvStat == JNI_EVERSION) {
-//				dd_log("avdl: GetEnv: version not supported");
+//				avdl_log("avdl: GetEnv: version not supported");
 //			}
 //			jniEnv = env;
-//			dd_log("get method");
+//			avdl_log("get method");
 //			jmethodID MethodID = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "CloseApplication", "()V");
-//			dd_log("call method");
+//			avdl_log("call method");
 //			(*(*jniEnv)->CallStaticVoidMethod)(jniEnv, clazz, MethodID);
-//			dd_log("detach");
+//			avdl_log("detach");
 //			if (getEnvStat == JNI_EDETACHED) {
 //				(*jvm)->DetachCurrentThread(jvm);
 //			}

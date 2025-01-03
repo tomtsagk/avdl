@@ -1,6 +1,6 @@
 #include "avdl_engine.h"
 
-#include "dd_log.h"
+#include "avdl_log.h"
 
 extern "C" int dd_main(int argc, char *argv[]);
 
@@ -59,29 +59,29 @@ void avdl_handle_cmd(struct android_app* androidApp, int32_t cmd) {
 
 	switch (cmd) {
 	case APP_CMD_START:
-		//dd_log("onStart()");
+		//avdl_log("onStart()");
 		break;
 	case APP_CMD_RESUME:
-		//dd_log("onResume()");
+		//avdl_log("onResume()");
 		engine->resumed = 1;
 		break;
 	case APP_CMD_PAUSE:
-		//dd_log("onPause()");
+		//avdl_log("onPause()");
 		engine->resumed = 0;
 		break;
 	case APP_CMD_STOP:
-		//dd_log("onStop()");
+		//avdl_log("onStop()");
 		break;
 	case APP_CMD_DESTROY:
-		//dd_log("onDestroy()");
+		//avdl_log("onDestroy()");
 		engine->NativeWindow = 0;
 		break;
 	case APP_CMD_INIT_WINDOW:
-		//dd_log("surfaceCreated()");
+		//avdl_log("surfaceCreated()");
 		engine->NativeWindow = androidApp->window;
 		break;
 	case APP_CMD_TERM_WINDOW:
-		//dd_log("surfaceDestroyed()");
+		//avdl_log("surfaceDestroyed()");
 		engine->NativeWindow = 0;
 		break;
 	}
@@ -130,7 +130,7 @@ void android_main(struct android_app* androidApp) {
 	eglGetConfigs(eglDisplay, 0, 0, &numConfigs);
 	EGLConfig *configs = (EGLConfig *) malloc(sizeof(EGLConfig) *numConfigs);
 	if (eglGetConfigs(eglDisplay, configs, numConfigs, &numConfigs) == EGL_FALSE) {
-		dd_log("avdl error: could not get configs");
+		avdl_log("avdl error: could not get configs");
 		exit(-1);
 	}
 	const EGLint configAttribs[] = {
@@ -175,7 +175,7 @@ void android_main(struct android_app* androidApp) {
 	free(configs);
 
 	if (eglConfig == 0) {
-		dd_log("avdl error: could not find suitable configuration");
+		avdl_log("avdl error: could not find suitable configuration");
 		exit(-1);
 	}
 
@@ -183,7 +183,7 @@ void android_main(struct android_app* androidApp) {
 	EGLint contextAttribs[] = {EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE};
 	eglContext = eglCreateContext(eglDisplay, eglConfig, EGL_NO_CONTEXT, contextAttribs);
 	if (eglContext == EGL_NO_CONTEXT) {
-		dd_log("avdl error: unable to create egl context");
+		avdl_log("avdl error: unable to create egl context");
 		exit(-1);
 	}
 
@@ -191,7 +191,7 @@ void android_main(struct android_app* androidApp) {
 	const EGLint surfaceAttribs[] = {EGL_WIDTH, 16, EGL_HEIGHT, 16, EGL_NONE};
 	eglTinySurface = eglCreatePbufferSurface(eglDisplay, eglConfig, surfaceAttribs);
 	if (eglTinySurface == EGL_NO_SURFACE) {
-		dd_log("avdl error: unable to create egl surface");
+		avdl_log("avdl error: unable to create egl surface");
 		eglDestroyContext(eglDisplay, eglContext);
 		eglContext = EGL_NO_CONTEXT;
 		exit(-1);
@@ -199,7 +199,7 @@ void android_main(struct android_app* androidApp) {
 
 	// make egl display to draw on
 	if (eglMakeCurrent(eglDisplay, eglTinySurface, eglTinySurface, eglContext) == EGL_FALSE) {
-		dd_log("avdl error: unable to make egl display");
+		avdl_log("avdl error: unable to make egl display");
 		eglDestroySurface(eglDisplay, eglTinySurface);
 		eglDestroyContext(eglDisplay, eglContext);
 		eglContext = EGL_NO_CONTEXT;
@@ -210,7 +210,7 @@ void android_main(struct android_app* androidApp) {
 	// initialise pthread mutex for jni
 	if (pthread_mutex_init(&jniMutex, NULL) != 0)
 	{
-		dd_log("avdl: mutex for jni init failed");
+		avdl_log("avdl: mutex for jni init failed");
 		return;
 	}
 	*/
@@ -227,7 +227,7 @@ void android_main(struct android_app* androidApp) {
 	// at some point try "ovr_PlatformInitializeAndroidAsynchronous" for async
 	if (ovr_PlatformInitializeAndroid(AVDL_OCULUS_PROJECT_ID, androidApp->activity->clazz, jniEnv) != ovrPlatformInitialize_Success) {
 		// should exit
-		dd_log("avdl error: cannot initiale oculus platform sdk");
+		avdl_log("avdl error: cannot initiale oculus platform sdk");
 		exit(-1);
 	}
 	ovr_Entitlement_GetIsViewerEntitled();
@@ -237,7 +237,7 @@ void android_main(struct android_app* androidApp) {
 	PFN_xrInitializeLoaderKHR xrInitializeLoaderKHR;
 	xrGetInstanceProcAddr(XR_NULL_HANDLE, "xrInitializeLoaderKHR", (PFN_xrVoidFunction*)&xrInitializeLoaderKHR);
 	if (xrInitializeLoaderKHR == NULL) {
-		dd_log("avdl error: cannot initialise OpenXR Loader");
+		avdl_log("avdl error: cannot initialise OpenXR Loader");
 		exit(-1);
 	}
 
@@ -272,7 +272,7 @@ void android_main(struct android_app* androidApp) {
 		(PFN_xrVoidFunction*)&xrEnumerateInstanceExtensionProperties
 	);
 	if (xrResult != XR_SUCCESS) {
-		dd_log("avdl error: `xrEnumerateInstanceExtensionProperties` not found");
+		avdl_log("avdl error: `xrEnumerateInstanceExtensionProperties` not found");
 		exit(-1);
 	}
 
@@ -302,7 +302,7 @@ void android_main(struct android_app* androidApp) {
 			}
 		}
 		if (!found) {
-			dd_log("avdl error: could not find extension %s", requiredExtensionNames[i]);
+			avdl_log("avdl error: could not find extension %s", requiredExtensionNames[i]);
 			exit(-1);
 		}
 	}
@@ -331,7 +331,7 @@ void android_main(struct android_app* androidApp) {
 	XrResult initResult;
 	initResult = xrCreateInstance(&instanceCreateInfo, &instance);
 	if (initResult != XR_SUCCESS) {
-		dd_log("avdl error: unable to create XR instance: %d.", initResult);
+		avdl_log("avdl error: unable to create XR instance: %d.", initResult);
 		exit(-1);
 	}
 
@@ -344,7 +344,7 @@ void android_main(struct android_app* androidApp) {
 	// get system id
 	initResult = xrGetSystem(instance, &systemGetInfo, &engine.SystemId);
 	if (initResult != XR_SUCCESS) {
-		dd_log("avdl_error: cannot get system");
+		avdl_log("avdl_error: cannot get system");
 		exit(-1);
 	}
 
@@ -355,7 +355,7 @@ void android_main(struct android_app* androidApp) {
 
 	// project needs more layers than allowed
 	if (systemProperties.graphicsProperties.maxLayerCount < ovrMaxLayerCount) {
-		dd_log("avdl error: system has less available layers than expected");
+		avdl_log("avdl error: system has less available layers than expected");
 		exit(-1);
 	}
 
@@ -363,7 +363,7 @@ void android_main(struct android_app* androidApp) {
 	PFN_xrGetOpenGLESGraphicsRequirementsKHR pfnGetOpenGLESGraphicsRequirementsKHR = NULL;
 	xrResult = xrGetInstanceProcAddr(instance, "xrGetOpenGLESGraphicsRequirementsKHR", (PFN_xrVoidFunction*)(&pfnGetOpenGLESGraphicsRequirementsKHR));
 	if (xrResult != XR_SUCCESS) {
-		dd_log("avdl error: unable to find `xrGetOpenGLESGraphicsRequirementsKHR`");
+		avdl_log("avdl error: unable to find `xrGetOpenGLESGraphicsRequirementsKHR`");
 		exit(-1);
 	}
 	XrGraphicsRequirementsOpenGLESKHR graphicsRequirements = {};
@@ -378,7 +378,7 @@ void android_main(struct android_app* androidApp) {
 	const XrVersion eglVersion = XR_MAKE_VERSION(eglMajor, eglMinor, 0);
 	if (eglVersion < graphicsRequirements.minApiVersionSupported ||
 	    eglVersion > graphicsRequirements.maxApiVersionSupported) {
-		dd_log("avdl error: OpenGLES version %d.%d not supported", eglMajor, eglMinor);
+		avdl_log("avdl error: OpenGLES version %d.%d not supported", eglMajor, eglMinor);
 		exit(-1);
 	}
 
@@ -400,7 +400,7 @@ void android_main(struct android_app* androidApp) {
 	sessionCreateInfo.systemId = engine.SystemId;
 	xrResult = xrCreateSession(instance, &sessionCreateInfo, &engine.session);
 	if (xrResult != XR_SUCCESS) {
-		dd_log("avdl error: cannot create XR session: %d", initResult);
+		avdl_log("avdl error: cannot create XR session: %d", initResult);
 		exit(-1);
 	}
 
@@ -467,7 +467,7 @@ void android_main(struct android_app* androidApp) {
 			free(elements);
 		}
 		else {
-			dd_log("avdl error: only supports configuration with 2 views");
+			avdl_log("avdl error: only supports configuration with 2 views");
 		}
 		break;
 	}
@@ -577,7 +577,7 @@ void android_main(struct android_app* androidApp) {
 			case ovrMessage_Entitlement_GetIsViewerEntitled:
 				if (ovr_Message_IsError(message)) {
 					// user is NOT entitled, exit for now
-					dd_log("avdl error: user is not entitled to use software");
+					avdl_log("avdl error: user is not entitled to use software");
 					exit(0);
 				}
 
@@ -585,7 +585,7 @@ void android_main(struct android_app* androidApp) {
 				break;
 			default:
 				// unsupported message
-				//dd_log("some other msg: %s", ovr_Message_GetString(message));
+				//avdl_log("some other msg: %s", ovr_Message_GetString(message));
 				break;
 			}
 		}
@@ -853,24 +853,24 @@ void android_main(struct android_app* androidApp) {
 	// egl cleanup
 	if (eglDisplay != 0) {
 		if (eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT) == EGL_FALSE) {
-			dd_log("avdl error: failed to set main egl display during cleanup");
+			avdl_log("avdl error: failed to set main egl display during cleanup");
 		}
 	}
 	if (eglContext != EGL_NO_CONTEXT) {
 		if (eglDestroyContext(eglDisplay, eglContext) == EGL_FALSE) {
-			dd_log("avdl error: could not destroy egl context");
+			avdl_log("avdl error: could not destroy egl context");
 		}
 		eglContext = EGL_NO_CONTEXT;
 	}
 	if (eglTinySurface != EGL_NO_SURFACE) {
 		if (eglDestroySurface(eglDisplay, eglTinySurface) == EGL_FALSE) {
-			dd_log("avdl error: could not destroy egl surface");
+			avdl_log("avdl error: could not destroy egl surface");
 		}
 		eglTinySurface = EGL_NO_SURFACE;
 	}
 	if (eglDisplay != 0) {
 		if (eglTerminate(eglDisplay) == EGL_FALSE) {
-			dd_log("avdl error: could not terminate egl");
+			avdl_log("avdl error: could not terminate egl");
 		}
 		eglDisplay = 0;
 	}

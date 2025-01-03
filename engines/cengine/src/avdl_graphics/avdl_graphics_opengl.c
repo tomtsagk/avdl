@@ -4,7 +4,7 @@
 
 #include "avdl_shaders.h"
 #include "dd_game.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include <stdlib.h>
 #include "avdl_assetManager.h"
 #include "dd_image.h"
@@ -16,27 +16,27 @@ void test_glError(char *file, int line) {
 	if (err != GL_NO_ERROR) {
 		switch (err) {
 		case GL_INVALID_ENUM:
-			dd_log("avdl: opengl error: invalid enum at %s %d", file, line);
+			avdl_log("avdl: opengl error: invalid enum at %s %d", file, line);
 			break;
 		case GL_INVALID_VALUE:
-			dd_log("avdl: opengl error: invalid value at %s %d", file, line);
+			avdl_log("avdl: opengl error: invalid value at %s %d", file, line);
 			break;
 		case GL_INVALID_OPERATION:
-			dd_log("avdl: opengl error: invalid operation at %s %d", file, line);
+			avdl_log("avdl: opengl error: invalid operation at %s %d", file, line);
 			break;
 		case GL_INVALID_FRAMEBUFFER_OPERATION:
-			dd_log("avdl: opengl error: invalid framebuffer operation at %s %d", file, line);
+			avdl_log("avdl: opengl error: invalid framebuffer operation at %s %d", file, line);
 			break;
 		case GL_OUT_OF_MEMORY:
-			dd_log("avdl: opengl error: out of memory at %s %d", file, line);
+			avdl_log("avdl: opengl error: out of memory at %s %d", file, line);
 			break;
 		// are these not present in OpenGL ES (Android)?
 		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 		case GL_STACK_UNDERFLOW:
-			dd_log("stack underflow");
+			avdl_log("stack underflow");
 			break;
 		case GL_STACK_OVERFLOW:
-			dd_log("stack overflow");
+			avdl_log("stack overflow");
 			break;
 		#endif
 		}
@@ -71,7 +71,7 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 	o->sdl_window = SDL_CreateWindow(gameTitle, SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED, width, height, flags);
 	if (o->sdl_window == NULL) {
-		dd_log("avdl: failed to create SDL2 window: %s\n", SDL_GetError());
+		avdl_log("avdl: failed to create SDL2 window: %s\n", SDL_GetError());
 		return -1;
 	}
 
@@ -83,7 +83,7 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	o->gl_context = SDL_GL_CreateContext(o->sdl_window);
 	if (o->gl_context == NULL) {
-		dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
+		avdl_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
 	}
 
 	// anti-aliasing
@@ -92,7 +92,7 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 	// init glew
 	GLenum glewError = glewInit();
 	if (glewError != GLEW_OK) {
-		dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
+		avdl_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
 		return -1;
 	}
 
@@ -139,7 +139,7 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 
 	avdl_graphics_PrintInfo();
 	if (avdl_graphics_generateContext() != 0) {
-		dd_log("error generating graphics context");
+		avdl_log("error generating graphics context");
 		return -1;
 	}
 
@@ -182,13 +182,13 @@ void avdl_graphics_Refresh() {
 	// recreate opengl context
 	engine.graphics.gl_context = SDL_GL_CreateContext(engine.graphics.sdl_window);
 	if (engine.graphics.gl_context == NULL) {
-		dd_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
+		avdl_log("avdl: failed to create OpenGL context: %s\n", SDL_GetError());
 	}
 
 	// re-init glew
 	GLenum glewError = glewInit();
 	if (glewError != GLEW_OK) {
-		dd_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
+		avdl_log("avdl: glew failed to initialise: %s\n", glewGetErrorString(glewError));
 		return;
 	}
 
@@ -242,7 +242,7 @@ int avdl_graphics_Init() {
 	// Initialise SDL window
 	int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 	if (sdlError < 0) {
-		dd_log("avdl: error initialising SDL2: %s", SDL_GetError());
+		avdl_log("avdl: error initialising SDL2: %s", SDL_GetError());
 		return -1;
 	}
 	#endif
@@ -256,10 +256,10 @@ void avdl_graphics_Viewport(int x, int y, int w, int h) {
 }
 
 void avdl_graphics_PrintInfo() {
-	//dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
-	//dd_log("Renderer: %s", glGetString(GL_RENDERER));
-	//dd_log("Version GL: %s", glGetString(GL_VERSION));
-	//dd_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	//avdl_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
+	//avdl_log("Renderer: %s", glGetString(GL_RENDERER));
+	//avdl_log("Version GL: %s", glGetString(GL_VERSION));
+	//avdl_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
 int avdl_graphics_GetCurrentProgram() {
@@ -435,7 +435,7 @@ int avdl_graphics_generateContext() {
 	skyboxProgram = avdl_loadProgram(avdl_shaderSkybox_vertex, avdl_shaderSkybox_fragment);
 	#endif
 	if (!defaultProgram) {
-		dd_log("avdl: error loading shaders");
+		avdl_log("avdl: error loading shaders");
 		return -1;
 	}
 

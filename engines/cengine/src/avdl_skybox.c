@@ -134,7 +134,7 @@ void avdl_skybox_bind(struct avdl_skybox *o) {
 //			o->set(o, o->assetName, o->assetType);
 //		}
 //		else {
-//			//dd_log("error state?");
+//			//avdl_log("error state?");
 //		}
 //	}
 //	#endif

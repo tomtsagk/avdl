@@ -1,7 +1,7 @@
 #include "avdl_localisation.h"
 #include "avdl_json.h"
 #include <string.h>
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "dd_game.h"
 #include "avdl_assetManager.h"
 
@@ -32,7 +32,7 @@ extern const char* getAppLocation(void);
 
 void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) {
 
-	//dd_log("avdl: localisation '%s'", keyGroupID);
+	//avdl_log("avdl: localisation '%s'", keyGroupID);
 	struct avdl_json_object obj;
 
 	#if defined( AVDL_DIRECT3D11 )
@@ -63,7 +63,7 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 	// expect start of object
 	avdl_json_next(&obj);
 	if (avdl_json_getToken(&obj) != AVDL_JSON_OBJECT_START) {
-		dd_log("avdl: error reading json file '%s'", obj.buffer);
+		avdl_log("avdl: error reading json file '%s'", obj.buffer);
 		return;
 	}
 
@@ -73,12 +73,12 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 	while (avdl_json_getToken(&obj) == AVDL_JSON_KEY) {
 
 		if (o->count >= LOC_MAX_KEYS) {
-			dd_log("avdl error: too many localisation keys while reading key '%s', maximum is %d", obj.buffer, LOC_MAX_KEYS);
+			avdl_log("avdl error: too many localisation keys while reading key '%s', maximum is %d", obj.buffer, LOC_MAX_KEYS);
 			break;
 		}
 		const char *c = avdl_json_getTokenString(&obj);
 		if (strlen(c) >= LOC_MAX_CHARACTERS) {
-			dd_log("avdl error: loc key '%s' has too many characters: %d / %d", c, strlen(c), LOC_MAX_CHARACTERS);
+			avdl_log("avdl error: loc key '%s' has too many characters: %d / %d", c, strlen(c), LOC_MAX_CHARACTERS);
 			break;
 		}
 		#if defined( AVDL_DIRECT3D11 )
@@ -89,8 +89,8 @@ void avdl_localisation_set(struct avdl_localisation *o, const char *keyGroupID) 
 		avdl_json_next(&obj);
 		const char *c2 = avdl_json_getTokenString(&obj);
 		if (strlen(c2) >= LOC_MAX_CHARACTERS) {
-			dd_log("avdl error: loc value has too many characters: %d / %d", strlen(c2), LOC_MAX_CHARACTERS);
-			dd_log("value: %s", c2);
+			avdl_log("avdl error: loc value has too many characters: %d / %d", strlen(c2), LOC_MAX_CHARACTERS);
+			avdl_log("value: %s", c2);
 			break;
 		}
 		#if defined( AVDL_DIRECT3D11 )
@@ -118,7 +118,7 @@ char *avdl_localisation_getValue(struct avdl_localisation *o, const char *key) {
 
 void avdl_localisation_print(struct avdl_localisation *o) {
 	for (int i = 0; i < o->count; i++) {
-		dd_log("key: %s | value: %s", o->keys[i], o->values[i]);
+		avdl_log("key: %s | value: %s", o->keys[i], o->values[i]);
 	}
 }
 

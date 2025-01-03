@@ -1,6 +1,6 @@
 #include "avdl_collider.h"
 #include "avdl_collider_aabb.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "dd_math.h"
 
 void avdl_collider_create(struct avdl_collider *o) {
@@ -138,7 +138,7 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 			1
 		);
 		dd_vec4_multiply(&max1, m1);
-		dd_log("min/max 1");
+		avdl_log("min/max 1");
 		dd_vec4_print(&min1);
 		dd_vec4_print(&max1);
 
@@ -158,7 +158,7 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 			1
 		);
 		dd_vec4_multiply(&max2, m2);
-		dd_log("min/max 2");
+		avdl_log("min/max 2");
 		dd_vec4_print(&min2);
 		dd_vec4_print(&max2);
 		*/
@@ -195,7 +195,7 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 				continue;
 			}
 			int index = total_normals;//6 +(i*3 +j);
-			//dd_log("set normal index: %d", index);
+			//avdl_log("set normal index: %d", index);
 			dd_vec4_set(&normals[index],
 				dd_vec4_getX(&normals[i]),
 				dd_vec4_getY(&normals[i]),
@@ -208,13 +208,13 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 			total_normals++;
 		}
 
-		//dd_log("~~~ Normal checks");
+		//avdl_log("~~~ Normal checks");
 		for (int i = 0; i < total_normals; i++) {
-			//dd_log("Normal %d", i);
+			//avdl_log("Normal %d", i);
 			if (dd_vec4_getX(&normals[i]) == 0
 			&&  dd_vec4_getY(&normals[i]) == 0
 			&&  dd_vec4_getZ(&normals[i]) == 0) {
-				//dd_log("skip");
+				//avdl_log("skip");
 				continue;
 			}
 			//dd_vec4_print(&normals[i]);
@@ -227,7 +227,7 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 			float finalMax2 = 0;
 
 			for (int j = 0; j < 8; j++) {
-				//dd_log("vertex: %d", j);
+				//avdl_log("vertex: %d", j);
 				//dd_vec4_print(&vertices1[j]);
 				//dd_vec4_print(&vertices2[j]);
 				// just dot it to get the min/max along this axis.
@@ -240,7 +240,7 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 					finalMin2 = dotValMin2;
 					finalMax2 = dotValMin2;
 					haslimits = 1;
-					//dd_log("set limits %d - %f %f - %f %f", i, finalMin1, finalMax1, finalMin2, finalMax2);
+					//avdl_log("set limits %d - %f %f - %f %f", i, finalMin1, finalMax1, finalMin2, finalMax2);
 				}
 				else {
 					if (dotValMin1 < finalMin1) {
@@ -257,19 +257,19 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 					if (dotValMin2 > finalMax2) {
 						finalMax2 = dotValMin2;
 					}
-					//dd_log("modify limits %d - %f %f - %f %f", i, finalMin1, finalMax1, finalMin2, finalMax2);
+					//avdl_log("modify limits %d - %f %f - %f %f", i, finalMin1, finalMax1, finalMin2, finalMax2);
 				}
 			}
 
-			//dd_log("inv %d - %f %f - %f %f", i, finalMin1, finalMax1, finalMin2, finalMax2);
+			//avdl_log("inv %d - %f %f - %f %f", i, finalMin1, finalMax1, finalMin2, finalMax2);
 			//dd_vec4_print(&normals[i]);
 
 			// aabb collision
 			if ((finalMax2 -finalMin1 > 0) != (finalMin2 -finalMax1 > 0)) {
-				//dd_log("sat collide");
+				//avdl_log("sat collide");
 			}
 			else {
-				//dd_log("sat not collide");
+				//avdl_log("sat not collide");
 				return 0;
 			}
 		}
@@ -287,7 +287,7 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 		return 0;
 	}
 
-	dd_log("collision not supported");
+	avdl_log("collision not supported");
 	return 0;
 }
 
@@ -486,10 +486,10 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 
 			// aabb collision
 			if ((finalMax2 -finalMin1 > 0) != (finalMin2 -finalMax1 > 0)) {
-				//dd_log("sat collide");
+				//avdl_log("sat collide");
 			}
 			else {
-				//dd_log("sat not collide");
+				//avdl_log("sat not collide");
 				return 0;
 			}
 		}
@@ -507,6 +507,6 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 		return 0;
 	}
 
-	dd_log("collision not supported");
+	avdl_log("collision not supported");
 	return 0;
 }

@@ -125,7 +125,7 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 	 * set up a copy of the source code, and try different versions of it
 	 */
 	if (!src || strlen(src) < 20) {
-		dd_log("avdl: create_shader: no source given, or source smaller than 20");
+		avdl_log("avdl: create_shader: no source given, or source smaller than 20");
 		return 0;
 	}
 
@@ -141,7 +141,7 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 		shaderIntro = avsl_shader_fragment;
 	}
 	else {
-		dd_log("avdl: create_shader: unsupported shader type: %d", type);
+		avdl_log("avdl: create_shader: unsupported shader type: %d", type);
 		exit(-1);
 	}
 
@@ -155,7 +155,7 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 	strcat(newSource, src);
 
 	// potentially compile the actual glsl version first
-	//dd_log("glsl version: %s", glGetStringi(GL_SHADING_LANGUAGE_VERSION, 0));
+	//avdl_log("glsl version: %s", glGetStringi(GL_SHADING_LANGUAGE_VERSION, 0));
 
 	// try with the given glsl version
 	int i = glslVersionIndex;
@@ -178,14 +178,14 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 	unsigned int sdr = glCreateShader(type);
 	GLenum err = glGetError();
 	if (!sdr || err != GL_NO_ERROR) {
-		//dd_log("avdl: create_shader: error creating shader");
+		//avdl_log("avdl: create_shader: error creating shader");
 		glDeleteShader(sdr);
 		free(newSource);
 		return 0;
 	}
 	glShaderSource(sdr, 1, &newSource2, 0);
 	if (glGetError() != GL_NO_ERROR) {
-		//dd_log("avdl: create_shader: error getting shader source");
+		//avdl_log("avdl: create_shader: error getting shader source");
 		glDeleteShader(sdr);
 		free(newSource);
 		return 0;
@@ -194,7 +194,7 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 	GLint sdrStatus;
 	glGetShaderiv(sdr, GL_COMPILE_STATUS, &sdrStatus);
 	if (glGetError() != GL_NO_ERROR || sdrStatus == GL_FALSE) {
-		//dd_log("avdl: create_shader: error compiling shader source");
+		//avdl_log("avdl: create_shader: error compiling shader source");
 
 		//Get compilation log
 		int logsz;
@@ -203,7 +203,7 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 			char *buf = malloc(sizeof(char) *(logsz +1));
 			glGetShaderInfoLog(sdr, logsz, 0, buf);
 			buf[logsz] = 0;
-			dd_log("avdl: compilation of %s shader failed: %s",
+			avdl_log("avdl: compilation of %s shader failed: %s",
 				type == GL_VERTEX_SHADER   ? "vertex" :
 				type == GL_FRAGMENT_SHADER ? "fragment" :
 				"<unknown>", buf);
@@ -240,7 +240,7 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
 	#ifndef AVDL_DIRECT3D11
 	// no shaders given
 	if (!vsdr || !fsdr) {
-		dd_log("create_program called with invalid shader objects, aborting");
+		avdl_log("create_program called with invalid shader objects, aborting");
 		return 0;
 	}
 
@@ -260,7 +260,7 @@ unsigned int create_program(unsigned int vsdr, unsigned int fsdr) {
 		char *buf = malloc(sizeof(char) *(logsz +1));
 		glGetProgramInfoLog(prog, logsz, 0, buf);
 		buf[logsz] = 0;
-		dd_log("linking shader program failed.\nshader program linker log: %s", buf);
+		avdl_log("linking shader program failed.\nshader program linker log: %s", buf);
 		free(buf);
 	}
 
@@ -331,7 +331,7 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 	}
 
 	if (!vsdr || !fsdr) {
-		dd_log("avdl: one or more shaders failed to compile:\n"
+		avdl_log("avdl: one or more shaders failed to compile:\n"
 			"vertex:\n%s\nresult code '%d'\nfragment:\n%s\nresult code '%d'", vfname, vsdr, ffname, fsdr);
 		return 0;
 	}

@@ -8,7 +8,7 @@
 //#include "dd_json.h"
 //#include <pthread.h>
 //#include "dd_async_call.h"
-//#include "dd_log.h"
+//#include "avdl_log.h"
 //
 ///*
 // * Data needed for GameJolt functionality
@@ -335,7 +335,7 @@
 //		// send them
 //		CURLcode res = curl_easy_perform(curl);
 //		if (res != CURLE_OK) {
-//			dd_log("avdl: gamejolt_submit(): curl_easy_perform() failed: %s",
+//			avdl_log("avdl: gamejolt_submit(): curl_easy_perform() failed: %s",
 //				curl_easy_strerror(res));
 //		}
 //		else {
@@ -343,7 +343,7 @@
 //			data->respData[0] = structReturnData;
 //			/*
 //			for (int i = 0; i < 10; i++) {
-//				dd_log("date: %d", data->respData->scores[i].stored_timestamp);
+//				avdl_log("date: %d", data->respData->scores[i].stored_timestamp);
 //				//data->respData->scores[i] = structReturnData.scores[i];
 //			}
 //			*/
@@ -388,12 +388,12 @@
 //	SHA_CTX context;
 //
 //	if(!SHA1_Init(&context)) {
-//		dd_log("avdl: error initialising SHA1");
+//		avdl_log("avdl: error initialising SHA1");
 //		exit(-1);
 //	}
 //	SHA1_Update(&context, src, strlen(src));
 //	if(!SHA1_Final(buffer, &context)) {
-//		dd_log("avdl: error finalising SHA1");
+//		avdl_log("avdl: error finalising SHA1");
 //		exit(-1);
 //	}
 //}
@@ -462,9 +462,9 @@
 //	}
 //
 //	/*
-//	dd_log("post fields: %s", postFields);
-//	dd_log("url %s", url);
-//	dd_log("post signat: %s", postSignature);
+//	avdl_log("post fields: %s", postFields);
+//	avdl_log("url %s", url);
+//	avdl_log("post signat: %s", postSignature);
 //	*/
 //
 //	// Submit request

@@ -1,7 +1,7 @@
 #include "avdl_assetManager.h"
 #include "dd_dynamic_array.h"
 #include "dd_filetomesh.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include <string.h>
 #include <stdlib.h>
 #include "dd_meshTexture.h"
@@ -88,7 +88,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	//#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	/*
 	if (assetManagerLoading) {
-		dd_log("error add new asset while loading: %s", assetname);
+		avdl_log("error add new asset while loading: %s", assetname);
 		return;
 	}
 	*/
@@ -107,16 +107,16 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	meshToLoad.type = type;
 	#if defined(_WIN32) || defined(WIN32)
 	strcpy(meshToLoad.filename, assetname);
-	//dd_log("add asset: %s\n", meshToLoad.filename);
+	//avdl_log("add asset: %s\n", meshToLoad.filename);
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	strcpy(meshToLoad.filename, assetname);
-	//dd_log("add android asset: %s\n", meshToLoad.filename);
+	//avdl_log("add android asset: %s\n", meshToLoad.filename);
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
 	strcat(meshToLoad.filename, GAME_ASSET_PREFIX);
 	strcat(meshToLoad.filename, assetname);
 	//printf("add asset: %s\n", meshToLoad.filename);
-	//dd_log("add asset: %s\n", meshToLoad.filename);
+	//avdl_log("add asset: %s\n", meshToLoad.filename);
 	#endif
 	dd_da_push(&meshesToLoad, &meshToLoad);
 	//#endif
@@ -128,12 +128,12 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 void avdl_assetManager_loadAssets() {
 
 	// load assets here
-	//dd_log("meshes to load: %d", meshesLoading.elements);
+	//avdl_log("meshes to load: %d", meshesLoading.elements);
 	for (int i = 0; i < meshesLoading.elements; i++) {
 		struct dd_meshToLoad *m = dd_da_get(&meshesLoading, i);
-		//dd_log("loading asset: %s", m->filename);
+		//avdl_log("loading asset: %s", m->filename);
 		//wprintf(L"loading asset: %lS", m->filenameW);
-		//dd_log("loading asset type: %d", m->meshType);
+		//avdl_log("loading asset type: %d", m->meshType);
 
 		// load texture
 		if (m->meshType == AVDL_ASSETMANAGER_TEXTURE) {
@@ -148,7 +148,7 @@ void avdl_assetManager_loadAssets() {
 			pthread_mutex_lock(&jniMutex);
 			while (!jvm) {
 				pthread_mutex_unlock(&jniMutex);
-				//dd_log("sleeping");
+				//avdl_log("sleeping");
 				sleep(1);
 				pthread_mutex_lock(&jniMutex);
 			}
@@ -160,13 +160,13 @@ void avdl_assetManager_loadAssets() {
 
 			if (getEnvStat == JNI_EDETACHED) {
 				if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
-					dd_log("avdl: failed to attach thread for new world");
+					avdl_log("avdl: failed to attach thread for new world");
 				}
 			// thread already attached to jni
 			} else if (getEnvStat == JNI_OK) {
 			// wrong version
 			} else if (getEnvStat == JNI_EVERSION) {
-				dd_log("avdl: GetEnv: version not supported");
+				avdl_log("avdl: GetEnv: version not supported");
 			}
 
 			struct dd_image *mesh = m->object;
@@ -226,9 +226,9 @@ void avdl_assetManager_loadAssets() {
 				#endif
 			}
 			else {
-				dd_log("avdl: error loading texture: %s", m->filename);
+				avdl_log("avdl: error loading texture: %s", m->filename);
 			}
-			//dd_log("done: %s", m->filename);
+			//avdl_log("done: %s", m->filename);
 
 			if (jvm && getEnvStat == JNI_EDETACHED) {
 				(*jvm)->DetachCurrentThread(jvm);
@@ -242,7 +242,7 @@ void avdl_assetManager_loadAssets() {
 			else
 			if (m->type == AVDL_IMAGETYPE_PNG) {
 				if (dd_image_load_png(mesh, m->filename) != 0) {
-					dd_log("avdl: error loading texture %s", m->filename);
+					avdl_log("avdl: error loading texture %s", m->filename);
 				}
 			}
 			#endif
@@ -256,7 +256,7 @@ void avdl_assetManager_loadAssets() {
 				if (dd_filetomesh(&lm, m->filename,
 					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, m->type) == -1) {
 					// error loading file
-					dd_log("avdl: error loading mesh2: %s", m->filename);
+					avdl_log("avdl: error loading mesh2: %s", m->filename);
 				}
 				else {
 					#if defined( AVDL_DIRECT3D11 )
@@ -342,7 +342,7 @@ void avdl_assetManager_loadAssets() {
 
 		totalAssetsLoaded++;
 		if (interruptLoading) break;
-		//dd_log("assets loaded: %d / %d", totalAssetsLoaded, totalAssets);
+		//avdl_log("assets loaded: %d / %d", totalAssetsLoaded, totalAssets);
 		#ifdef AVDL_DIRECT3D11
 		#elif defined( AVDL_WINDOWS )
 		ReleaseMutex(updateDrawMutex);
@@ -350,10 +350,10 @@ void avdl_assetManager_loadAssets() {
 		pthread_mutex_unlock(&updateDrawMutex);
 		#endif
 
-		//dd_log("done");
+		//avdl_log("done");
 	}
 	dd_da_empty(&meshesLoading);
-	//dd_log("finished all loading");
+	//avdl_log("finished all loading");
 
 	#ifdef AVDL_DIRECT3D11
 	#elif defined( AVDL_WINDOWS )

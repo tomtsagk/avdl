@@ -4,7 +4,7 @@
 #include "dd_filetomesh.h"
 #include <string.h>
 #include "avdl_assetManager.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include <stdlib.h>
 #include "avdl_graphics.h"
 #include "dd_math.h"
@@ -548,7 +548,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	#if defined(AVDL_QUEST2)
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		//dd_log("avdl: avdl_mesh: location of `matrix` not found in current program");
+		//avdl_log("avdl: avdl_mesh: location of `matrix` not found in current program");
 	}
 	else {
 		GL(glUniformMatrix4fv(
@@ -561,7 +561,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		//dd_log("avdl: avdl_mesh: location of `matrix` not found in current program");
+		//avdl_log("avdl: avdl_mesh: location of `matrix` not found in current program");
 	}
 	else {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
@@ -774,7 +774,7 @@ void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct dd_image *tex) {
 
 void avdl_mesh_setTextureIndex(struct avdl_mesh *o, struct dd_image *tex, int index) {
 	if (index < 0 || index >= TEXTURES_COUNT) {
-		dd_log("avdl_mesh: texture index out of bounds: %d / %d", index, TEXTURES_COUNT);
+		avdl_log("avdl_mesh: texture index out of bounds: %d / %d", index, TEXTURES_COUNT);
 		return;
 	}
 	o->img_extra[index] = tex;

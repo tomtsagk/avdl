@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "dd_dynamic_array.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 
 void dd_dynamic_array_create(struct dd_dynamic_array *da) {
 	da->array = 0;
@@ -73,7 +73,7 @@ int dd_da_add(struct dd_dynamic_array *da, const void *data, unsigned int data_c
 		position = da->elements +(position +1);
 
 		if (position < 0) {
-			dd_log("failed to add data to array: position is negative: %d", position);
+			avdl_log("failed to add data to array: position is negative: %d", position);
 			return 0;
 		}
 	}
@@ -184,12 +184,12 @@ void dd_da_free(struct dd_dynamic_array *da) {
 void *dd_da_get(struct dd_dynamic_array *da, int position) {
 
 	if (position < 0) {
-		//dd_log("%d converting negative from %d to %d", da->elements, position, da->elements -position);
+		//avdl_log("%d converting negative from %d to %d", da->elements, position, da->elements -position);
 		position = da->elements +position;
 	}
 
 	if (position >= da->elements) {
-		dd_log("error dd_da_get: %d", position);
+		avdl_log("error dd_da_get: %d", position);
 		return 0;
 	}
 

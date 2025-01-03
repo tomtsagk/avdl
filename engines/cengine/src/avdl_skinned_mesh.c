@@ -1,5 +1,5 @@
 #include "avdl_skinned_mesh.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -252,10 +252,10 @@ void avdl_skinned_mesh_draw(struct avdl_skinned_mesh *m) {
 		// attach weights
 		if (m->weights) {
 			int weightsLoc = glGetAttribLocation(currentProgram, "weights");
-			//dd_log("weights loc: %d", weightsLoc);
+			//avdl_log("weights loc: %d", weightsLoc);
 			// program has weights
 			if (weightsLoc != -1) {
-				//dd_log("attached weights");
+				//avdl_log("attached weights");
 				GL(glVertexAttribPointer(weightsLoc, 4, GL_FLOAT, 0, 0, (void *) weightsOffset));
 				GL(glEnableVertexAttribArray(weightsLoc));
 			}
@@ -286,7 +286,7 @@ void avdl_skinned_mesh_draw(struct avdl_skinned_mesh *m) {
 	#if defined(AVDL_QUEST2)
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		//dd_log("avdl: avdl_mesh: location of `matrix` not found in current program");
+		//avdl_log("avdl: avdl_mesh: location of `matrix` not found in current program");
 	}
 	else {
 		GL(glUniformMatrix4fv(
@@ -299,7 +299,7 @@ void avdl_skinned_mesh_draw(struct avdl_skinned_mesh *m) {
 	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		//dd_log("avdl: avdl_mesh: location of `matrix` not found in current program");
+		//avdl_log("avdl: avdl_mesh: location of `matrix` not found in current program");
 	}
 	else {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
@@ -365,7 +365,7 @@ void avdl_skinned_mesh_PlayAnimationInstant(struct avdl_skinned_mesh *o, const c
 void avdl_skinned_mesh_PrintAnimations(struct avdl_skinned_mesh *o) {
 	if (!avdl_skeleton_IsActive(&o->skeleton)) return;
 	for (int i = 0; i < o->skeleton.animations_count; i++) {
-		dd_log(o->skeleton.animations[i].name);
+		avdl_log(o->skeleton.animations[i].name);
 	}
 }
 

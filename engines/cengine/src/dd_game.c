@@ -2,7 +2,7 @@
 #include "dd_math.h"
 #include "dd_fov.h"
 #include <stdio.h>
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "avdl_engine.h"
 #include "avdl_whereami.h"
 
@@ -147,7 +147,7 @@ const PROJ_LOC_TYPE *avdl_getProjectLocation() {
 			wai_getExecutablePath(tempProjLoc, length, 0);
 		}
 		else {
-			dd_log("avdl error: too long project path\n");
+			avdl_log("avdl error: too long project path\n");
 			return 0;
 		}
 
@@ -173,14 +173,14 @@ const PROJ_LOC_TYPE *avdl_getProjectLocation() {
 					break;
 				}
 				else {
-					dd_log("avdl error: cannot get project path");
+					avdl_log("avdl error: cannot get project path");
 					return 0;
 				}
 			}
 			p--;
 		}
 		if (!secondToLastSlash) {
-			dd_log("avdl error: can't truncate path of cengine");
+			avdl_log("avdl error: can't truncate path of cengine");
 			return 0;
 		}
 		(secondToLastSlash+1)[0] = '\0';

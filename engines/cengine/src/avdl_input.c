@@ -1,6 +1,6 @@
 #include "avdl_input.h"
 #include <string.h>
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "avdl_engine.h"
 
 extern struct avdl_engine engine;

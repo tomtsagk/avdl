@@ -11,13 +11,13 @@
 #include <dxgi.h>
 #include <d3dcompiler.h>
 #include <assert.h>
-#include <dd_log.h>
+#include <avdl_log.h>
 
 #include <Windows.h>
 
 #include "avdl_shaders.h"
 #include "dd_game.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include <stdlib.h>
 */
 using namespace concurrency;
@@ -166,10 +166,10 @@ void avdl_graphics_Viewport(int x, int y, int w, int h) {
 
 void avdl_graphics_PrintInfo() {
 	/*
-	dd_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
-	dd_log("Renderer: %s", glGetString(GL_RENDERER));
-	dd_log("Version GL: %s", glGetString(GL_VERSION));
-	dd_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
+	avdl_log("Vendor graphic card: %s", glGetString(GL_VENDOR));
+	avdl_log("Renderer: %s", glGetString(GL_RENDERER));
+	avdl_log("Version GL: %s", glGetString(GL_VERSION));
+	avdl_log("Version GLSL: %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 	*/
 }
 
@@ -346,13 +346,13 @@ int avdl_graphics_generateContext() {
 //	 /
 //	defaultProgram = avdl_loadProgram(avdl_shaderDefault_vertex, avdl_shaderDefault_fragment);
 //	if (!defaultProgram) {
-//		dd_log("avdl: error loading shaders");
+//		avdl_log("avdl: error loading shaders");
 //		return -1;
 //	}
 //
 //	fontProgram = avdl_loadProgram(avdl_shaderFont_vertex, avdl_shaderFont_fragment);
 //	if (!fontProgram) {
-//		dd_log("avdl: error loading font shaders");
+//		avdl_log("avdl: error loading font shaders");
 //		return -1;
 //	}
 //

@@ -5,7 +5,7 @@
 #include <string.h>
 #include "dd_matrix.h"
 #include "avdl_assetManager.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include <stdlib.h>
 #include "avdl_graphics.h"
 
@@ -151,7 +151,7 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 	#if defined(AVDL_QUEST2)
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		//dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
+		//avdl_log("avdl: dd_meshColour: location of `matrix` not found in current program");
 	}
 	else {
 		GL(glUniformMatrix4fv(
@@ -164,7 +164,7 @@ void dd_meshColour_draw(struct dd_meshColour *m) {
 	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		//dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
+		//avdl_log("avdl: dd_meshColour: location of `matrix` not found in current program");
 	}
 	else {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());

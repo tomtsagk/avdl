@@ -3,7 +3,7 @@
 #include "avdl_collider.h"
 #include "avdl_collider_aabb.h"
 #include "avdl_collider_sphere.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 
 struct manifold {
 	int collide;
@@ -30,20 +30,20 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 
 	m->collide = 0;
 	/*
-	dd_log("aabb vs sphere CHECK");
-	dd_log("~~~~~~~~~~~~~~~~");
+	avdl_log("aabb vs sphere CHECK");
+	avdl_log("~~~~~~~~~~~~~~~~");
 	*/
 
 	struct avdl_collider_aabb *a_col = a->collider;
 	struct avdl_collider_sphere *b_col = b->collider;
 
 	/*
-	dd_log("a: %f - %f - %f",
+	avdl_log("a: %f - %f - %f",
 		a->position.x,
 		a->position.y,
 		a->position.z
 	);
-	dd_log("b: %f - %f - %f",
+	avdl_log("b: %f - %f - %f",
 		b->position.x,
 		b->position.y,
 		b->position.z
@@ -57,11 +57,11 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 		b->position.y -a->position.y,
 		b->position.z -a->position.z
 	);
-	//dd_log("diff: %f - %f - %f", diff.x, diff.y, diff.z);
+	//avdl_log("diff: %f - %f - %f", diff.x, diff.y, diff.z);
 
 	/*
-	dd_log("a min: %f - %f - %f", a_col->min.x, a_col->min.y, a_col->min.z);
-	dd_log("a max: %f - %f - %f", a_col->max.x, a_col->max.y, a_col->max.z);
+	avdl_log("a min: %f - %f - %f", a_col->min.x, a_col->min.y, a_col->min.z);
+	avdl_log("a max: %f - %f - %f", a_col->max.x, a_col->max.y, a_col->max.z);
 	*/
 
 	// find closest point on aabb
@@ -71,7 +71,7 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 		dd_math_clamp(a->position.y +a_col->min.y, a->position.y +a_col->max.y, a->position.y +diff.y),
 		dd_math_clamp(a->position.z +a_col->min.z, a->position.z +a_col->max.z, a->position.z +diff.z)
 	);
-	//dd_log("closest: %f - %f - %f", closest.x, closest.y, closest.z);
+	//avdl_log("closest: %f - %f - %f", closest.x, closest.y, closest.z);
 
 	struct dd_vec3 normal;
 	dd_vec3_setf(&normal,
@@ -85,12 +85,12 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 	if (dd_vec3_magnitude(&normal) == 0) {
 		dd_vec3_setf(&normal, 0, 1, 0);
 	}
-	//dd_log("normal: %f - %f - %f", normal.x, normal.y, normal.z);
+	//avdl_log("normal: %f - %f - %f", normal.x, normal.y, normal.z);
 
 	float r = b_col->radius;
-	//dd_log("radius: %f", b_col->radius);
+	//avdl_log("radius: %f", b_col->radius);
 	float d = dd_vec3_magnitude(&normal);
-	//dd_log("magnit: %f", d);
+	//avdl_log("magnit: %f", d);
 
 	if ( r < d
 	|| isnan(a->position.x)
@@ -105,50 +105,50 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 		dd_vec3_normalise(&m->normal);
 		m->penetration = r -d;
 
-		//dd_log("m->normal: %f - %f - %f", m->normal.x, m->normal.y, m->normal.z);
+		//avdl_log("m->normal: %f - %f - %f", m->normal.x, m->normal.y, m->normal.z);
 
-//		dd_log("aabb vs sphere CHECK");
-//		dd_log("~~~~~~~~~~~~~~~~");
+//		avdl_log("aabb vs sphere CHECK");
+//		avdl_log("~~~~~~~~~~~~~~~~");
 //
-//		dd_log("a: %f - %f - %f",
+//		avdl_log("a: %f - %f - %f",
 //			a->position.x,
 //			a->position.y,
 //			a->position.z
 //		);
-//		dd_log("b: %f - %f - %f",
+//		avdl_log("b: %f - %f - %f",
 //			b->position.x,
 //			b->position.y,
 //			b->position.z
 //		);
 //
-//		dd_log("diff: %f - %f - %f", diff.x, diff.y, diff.z);
+//		avdl_log("diff: %f - %f - %f", diff.x, diff.y, diff.z);
 //
-//		dd_log("a min: %f - %f - %f", a_col->min.x, a_col->min.y, a_col->min.z);
-//		dd_log("a max: %f - %f - %f", a_col->max.x, a_col->max.y, a_col->max.z);
-//		dd_log("normal: %f - %f - %f", normal.x, normal.y, normal.z);
+//		avdl_log("a min: %f - %f - %f", a_col->min.x, a_col->min.y, a_col->min.z);
+//		avdl_log("a max: %f - %f - %f", a_col->max.x, a_col->max.y, a_col->max.z);
+//		avdl_log("normal: %f - %f - %f", normal.x, normal.y, normal.z);
 //
-//		dd_log("radius: %f", b_col->radius);
-//		dd_log("magnit: %f", d);
+//		avdl_log("radius: %f", b_col->radius);
+//		avdl_log("magnit: %f", d);
 	}
 }
 
 void avdl_physics_collision_sphereVSsphere(struct manifold *m, struct avdl_rigidbody *a, struct avdl_rigidbody *b) {
 
 	/*
-	dd_log("aabb vs sphere CHECK");
-	dd_log("~~~~~~~~~~~~~~~~");
+	avdl_log("aabb vs sphere CHECK");
+	avdl_log("~~~~~~~~~~~~~~~~");
 	*/
 
 	struct avdl_collider_sphere *a_col = a->collider;
 	struct avdl_collider_sphere *b_col = b->collider;
 
 	/*
-	dd_log("a: %f - %f - %f",
+	avdl_log("a: %f - %f - %f",
 		a->position.x,
 		a->position.y,
 		a->position.z
 	);
-	dd_log("b: %f - %f - %f",
+	avdl_log("b: %f - %f - %f",
 		b->position.x,
 		b->position.y,
 		b->position.z
@@ -162,7 +162,7 @@ void avdl_physics_collision_sphereVSsphere(struct manifold *m, struct avdl_rigid
 		b->position.y -a->position.y,
 		b->position.z -a->position.z
 	);
-	//dd_log("diff: %f - %f - %f", diff.x, diff.y, diff.z);
+	//avdl_log("diff: %f - %f - %f", diff.x, diff.y, diff.z);
 
 	float distance = dd_vec3_magnitude(&diff);
 
@@ -175,7 +175,7 @@ void avdl_physics_collision_sphereVSsphere(struct manifold *m, struct avdl_rigid
 		a->position.y +(diff.y /2),
 		a->position.z +(diff.z /2)
 	);
-	//dd_log("closest: %f - %f - %f", closest.x, closest.y, closest.z);
+	//avdl_log("closest: %f - %f - %f", closest.x, closest.y, closest.z);
 
 	struct dd_vec3 normal;
 	dd_vec3_setf(&normal,
@@ -183,7 +183,7 @@ void avdl_physics_collision_sphereVSsphere(struct manifold *m, struct avdl_rigid
 		b->position.y -contact.y,
 		b->position.z -contact.z
 	);
-	//dd_log("normal: %f - %f - %f", normal.x, normal.y, normal.z);
+	//avdl_log("normal: %f - %f - %f", normal.x, normal.y, normal.z);
 
 	// collision!
 	if (distance < a_col->radius +b_col->radius) {
@@ -255,7 +255,7 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				// vs aabb
 				if (o->object[j]->collider && o->object[j]->collider->type == AVDL_COLLIDER_TYPE_AABB) {
 					//avdl_physics_collision_aabbVSaabb(&m, o->object[i], o->object[j]);
-					//dd_log("aabb vs aabb");
+					//avdl_log("aabb vs aabb");
 				}
 				else
 				// vs sphere
@@ -264,10 +264,10 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 					m.normal.x *= -1;
 					m.normal.y *= -1;
 					m.normal.z *= -1;
-					//dd_log("aabb vs sphere");
+					//avdl_log("aabb vs sphere");
 				}
 				else {
-					dd_log("aabb vs ???");
+					avdl_log("aabb vs ???");
 				}
 			}
 			else
@@ -276,16 +276,16 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				// vs aabb
 				if (o->object[j]->collider && o->object[j]->collider->type == AVDL_COLLIDER_TYPE_AABB) {
 					avdl_physics_collision_aabbVSsphere(&m, o->object[j], o->object[i]);
-					//dd_log("sphere vs aabb");
+					//avdl_log("sphere vs aabb");
 				}
 				else
 				// vs sphere
 				if (o->object[j]->collider && o->object[j]->collider->type == AVDL_COLLIDER_TYPE_SPHERE) {
 					avdl_physics_collision_sphereVSsphere(&m, o->object[i], o->object[j]);
-					//dd_log("sphere vs sphere");
+					//avdl_log("sphere vs sphere");
 				}
 				else {
-					dd_log("sphere vs ???");
+					avdl_log("sphere vs ???");
 				}
 			}
 
@@ -302,7 +302,7 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 					o->object[j]->velocity.y -o->object[i]->velocity.y,
 					o->object[j]->velocity.z -o->object[i]->velocity.z
 				);
-				//dd_log("rv: %f - %f - %f", rv.x, rv.y, rv.z);
+				//avdl_log("rv: %f - %f - %f", rv.x, rv.y, rv.z);
 
 				// elasticity - lowest of two
 				float e = dd_math_min(o->object[i]->restitution, o->object[j]->restitution);
@@ -324,7 +324,7 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 					m.normal.z *z +(o->object[j]->angularVelocityVec3.x -o->object[i]->angularVelocityVec3.x) *angularImpact
 				);
 
-				//dd_log("impulse: %f - %f - %f", impulse.x, impulse.y, impulse.z);
+				//avdl_log("impulse: %f - %f - %f", impulse.x, impulse.y, impulse.z);
 
 				// apply impulse
 				dd_vec3_setf(&o->object[i]->velocity,
@@ -359,7 +359,7 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 					m.normal.y *m.penetration,
 					m.normal.z *m.penetration
 				);
-				//dd_log("correction: %f - %f - %f", correction.x, correction.y, correction.z);
+				//avdl_log("correction: %f - %f - %f", correction.x, correction.y, correction.z);
 
 				dd_vec3_setf(&o->object[i]->position,
 					o->object[i]->position.x + o->object[i]->mass_inv *correction.x,
@@ -422,7 +422,7 @@ void avdl_physics_clean(struct avdl_physics *o) {
 
 void avdl_physics_addObject(struct avdl_physics *o, struct avdl_rigidbody *obj) {
 	if (o->object_count >= 1000) {
-		dd_log("avdl error: physics engine: can't add more than 1000 objects");
+		avdl_log("avdl error: physics engine: can't add more than 1000 objects");
 		return;
 	}
 

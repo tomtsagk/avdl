@@ -1,6 +1,6 @@
 #include "avdl_skeleton.h"
 #include "string.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "dd_vec3.h"
 #include "dd_math.h"
 #include "dd_matrix.h"
@@ -133,7 +133,7 @@ static void interpolate_position(struct avdl_skeleton *o, int index, struct dd_m
 	int keyframe_index = -1;
 	// find current keyframe index
 	for (int j = 0; j < b->keyframe_count_positions; j++) {
-		//dd_log("keyframe: %d", j);
+		//avdl_log("keyframe: %d", j);
 		if (o->currentTime < b->positions_time[j]) {
 			// before first keyframe
 			if (j == 0) {
@@ -181,7 +181,7 @@ static void interpolate_position(struct avdl_skeleton *o, int index, struct dd_m
 	int keyframe_rotation_index = -1;
 	// find current keyframe index
 	for (int j = 0; j < b->keyframe_count_rotations; j++) {
-		//dd_log("keyframe: %d", j);
+		//avdl_log("keyframe: %d", j);
 		if (o->currentTime < b->rotations_time[j]) {
 			// before first keyframe
 			if (j == 0) {
@@ -306,7 +306,7 @@ void avdl_skeleton_PlayAnimation(struct avdl_skeleton *o, const char *animName, 
 	}
 
 	if (animIndex == -1) {
-		dd_log("avdl: skeleton: could not find animation with name '%s'", animName);
+		avdl_log("avdl: skeleton: could not find animation with name '%s'", animName);
 		return;
 	}
 

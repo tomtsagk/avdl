@@ -1,6 +1,6 @@
 #include "avdl_ads.h"
 #include <string.h>
-#include "dd_log.h"
+#include "avdl_log.h"
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <jni.h>
@@ -33,11 +33,11 @@ void avdl_ads_loadFullScreenAd() {
 
 	if (getEnvStat == JNI_EDETACHED) {
 		if ((*jvm)->AttachCurrentThread(jvm, &jniEnv, NULL) != 0) {
-			dd_log("avdl: failed to attach thread for ads");
+			avdl_log("avdl: failed to attach thread for ads");
 		}
 	} else if (getEnvStat == JNI_OK) {
 	} else if (getEnvStat == JNI_EVERSION) {
-		dd_log("avdl: GetEnv: version not supported");
+		avdl_log("avdl: GetEnv: version not supported");
 	}
 
 	(*(*jniEnv)->CallVoidMethod)(jniEnv, mainActivityp, loadFullscreenAdMethodId);
@@ -57,11 +57,11 @@ void avdl_ads_showFullScreenAd() {
 
 	if (getEnvStat == JNI_EDETACHED) {
 		if ((*jvm)->AttachCurrentThread(jvm, &jniEnv, NULL) != 0) {
-			dd_log("avdl: failed to attach thread for ads");
+			avdl_log("avdl: failed to attach thread for ads");
 		}
 	} else if (getEnvStat == JNI_OK) {
 	} else if (getEnvStat == JNI_EVERSION) {
-		dd_log("avdl: GetEnv: version not supported");
+		avdl_log("avdl: GetEnv: version not supported");
 	}
 
 	(*(*jniEnv)->CallVoidMethod)(jniEnv, mainActivityp, showFullscreenAdMethodId);
@@ -81,11 +81,11 @@ void avdl_ads_loadRewardedAd() {
 
 	if (getEnvStat == JNI_EDETACHED) {
 		if ((*jvm)->AttachCurrentThread(jvm, &jniEnv, NULL) != 0) {
-			dd_log("avdl: failed to attach thread for ads");
+			avdl_log("avdl: failed to attach thread for ads");
 		}
 	} else if (getEnvStat == JNI_OK) {
 	} else if (getEnvStat == JNI_EVERSION) {
-		dd_log("avdl: GetEnv: version not supported");
+		avdl_log("avdl: GetEnv: version not supported");
 	}
 
 	(*(*jniEnv)->CallVoidMethod)(jniEnv, mainActivityp, loadRewardedAdMethodId);
@@ -105,11 +105,11 @@ void avdl_ads_showRewardedAd() {
 
 	if (getEnvStat == JNI_EDETACHED) {
 		if ((*jvm)->AttachCurrentThread(jvm, &jniEnv, NULL) != 0) {
-			dd_log("avdl: failed to attach thread for ads");
+			avdl_log("avdl: failed to attach thread for ads");
 		}
 	} else if (getEnvStat == JNI_OK) {
 	} else if (getEnvStat == JNI_EVERSION) {
-		dd_log("avdl: GetEnv: version not supported");
+		avdl_log("avdl: GetEnv: version not supported");
 	}
 
 	hasReward = 0;
@@ -126,7 +126,7 @@ void avdl_ads_onRewardedAd(int amount, const char *type) {
 
 	#if defined( AVDL_ANDROID ) && defined( AVDL_ADMOB )
 	if (strlen(type) >= 100) {
-		dd_log("avdl error: ad reward type can have a maximum of 100 characters: %s", type);
+		avdl_log("avdl error: ad reward type can have a maximum of 100 characters: %s", type);
 		return;
 	}
 

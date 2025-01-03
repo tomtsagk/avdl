@@ -1,6 +1,6 @@
 #include "dd_vec4.h"
 #include "dd_math.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 
 void dd_vec4_create(struct dd_vec4 *o) {
 	o->cell[0] = 0;
@@ -93,7 +93,7 @@ void dd_vec4_cross(struct dd_vec4 *a, struct dd_vec4 *b) {
 }
 
 void dd_vec4_print(struct dd_vec4 *o) {
-	dd_log("dd_vec4: %f %f %f %f",
+	avdl_log("dd_vec4: %f %f %f %f",
 		o->cell[0],
 		o->cell[1],
 		o->cell[2],

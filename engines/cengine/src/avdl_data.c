@@ -1,5 +1,5 @@
 #include "avdl_data.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "dd_game.h"
 #include <stdio.h>
 #include <errno.h>
@@ -25,7 +25,7 @@ char avdl_data_saveDirectory[1024] = "saves";
 
 void parse_filename(char *buffer, const char *filename) {
 	#if defined(_WIN32) || defined(WIN32)
-	//dd_log("parsing: %s", filename);
+	//avdl_log("parsing: %s", filename);
 
 	/*
 	PWSTR *path;
@@ -176,7 +176,7 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 	 */
 	FILE *f = fopen(buffer, "w");
 	if (!f) {
-		dd_log("avdl: error opening file '%s': %s",
+		avdl_log("avdl: error opening file '%s': %s",
 			buffer, strerror(errno)
 		);
 		return -1;
@@ -187,7 +187,7 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 	 */
 	if (fwrite(data, data_size, 1, f) == 0) {
 		if (fclose(f) != 0) {
-			dd_log("avdl: error while closing file '%s': %s",
+			avdl_log("avdl: error while closing file '%s': %s",
 				buffer, strerror(errno)
 			);
 			exit(-1);
@@ -199,13 +199,13 @@ int avdl_data_save_internal(void *data, int data_size, const char *filename) {
 	 * close file and check for errors
 	 */
 	if (fclose(f) != 0) {
-		dd_log("avdl: error while closing file '%s': %s",
+		avdl_log("avdl: error while closing file '%s': %s",
 			buffer, strerror(errno)
 		);
 		exit(-1);
 	}
 
-	//dd_log("savefile: %s\n", buffer);
+	//avdl_log("savefile: %s\n", buffer);
 
 	// everything worked as expected
 	return 0;
@@ -220,7 +220,7 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 	#if defined(AVDL_DIRECT3D11)
 	#elif defined(_WIN32) || defined(WIN32)
 
-	//dd_log("save file: %s", filename);
+	//avdl_log("save file: %s", filename);
 
 	PWSTR path;
 	SHGetKnownFolderPath(&FOLDERID_LocalAppData, 0, NULL, &path);
@@ -288,7 +288,7 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 	FILE *f = fopen(buffer, "r");
 	if (!f) {
 		/*
-		dd_log("avdl: error opening file '%s': %s",
+		avdl_log("avdl: error opening file '%s': %s",
 			buffer, strerror(errno)
 		);
 		*/
@@ -300,7 +300,7 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 	 */
 	if (fread(data, data_size, 1, f) == 0) {
 		if (fclose(f) != 0) {
-			dd_log("avdl: error while closing file '%s': %s",
+			avdl_log("avdl: error while closing file '%s': %s",
 				buffer, strerror(errno)
 			);
 			exit(-1);
@@ -312,13 +312,13 @@ int avdl_data_load_internal(void *data, int data_size, const char *filename) {
 	 * close file and check for errors
 	 */
 	if (fclose(f) != 0) {
-		dd_log("avdl: error while closing file '%s': %s",
+		avdl_log("avdl: error while closing file '%s': %s",
 			buffer, strerror(errno)
 		);
 		exit(-1);
 	}
 
-	//dd_log("loadfile: %s", buffer);
+	//avdl_log("loadfile: %s", buffer);
 
 	// everything worked as expected
 	return 0;

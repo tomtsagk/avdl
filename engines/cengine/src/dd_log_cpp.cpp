@@ -1,4 +1,4 @@
-#include "dd_log.h"
+#include "avdl_log.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -8,7 +8,7 @@
 
 using namespace Windows::UI::Popups;
 
-void dd_log(const char *msg, ...) {
+void avdl_log(const char *msg, ...) {
 
 	va_list args;
 	va_start(args, msg);

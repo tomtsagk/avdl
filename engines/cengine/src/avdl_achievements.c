@@ -1,6 +1,6 @@
 #include "avdl_achievements.h"
 
-#include "dd_log.h"
+#include "avdl_log.h"
 
 #if !defined(AVDL_STEAM) && !defined(AVDL_QUEST2)
 
@@ -38,13 +38,13 @@ void avdl_achievements_set(struct avdl_achievements *o, const char *achievementI
 
 	if (getEnvStat == JNI_EDETACHED) {
 		if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
-			dd_log("avdl: failed to attach thread for new world");
+			avdl_log("avdl: failed to attach thread for new world");
 		}
 	// thread already attached to jni
 	} else if (getEnvStat == JNI_OK) {
 	// wrong version
 	} else if (getEnvStat == JNI_EVERSION) {
-		dd_log("avdl: GetEnv: version not supported");
+		avdl_log("avdl: GetEnv: version not supported");
 	}
 
 	jmethodID MethodID = (*(*env)->GetStaticMethodID)(env, clazz, "UnlockAchievement", "(Ljava/lang/String;)I");

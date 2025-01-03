@@ -1,7 +1,7 @@
 #include "dd_image.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "avdl_assetManager.h"
 #include <errno.h>
 #include "dd_math.h"
@@ -83,7 +83,7 @@ int dd_image_load_png(struct dd_image *img, const char *filename) {
 	FILE* fp = fopen(filename, "rb");
 	#endif
 	if (!fp) {
-		dd_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
+		avdl_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
 		return -1;
 	}
 	char header[9];
@@ -92,7 +92,7 @@ int dd_image_load_png(struct dd_image *img, const char *filename) {
 	int is_png = !png_sig_cmp(header, 0, 8);
 	if (!is_png)
 	{
-		dd_log("avdl: error reading asset file signature '%s'", filename);
+		avdl_log("avdl: error reading asset file signature '%s'", filename);
 		fclose(fp);
 		return -1;
 	}
@@ -103,7 +103,7 @@ int dd_image_load_png(struct dd_image *img, const char *filename) {
 	//png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)user_error_ptr, user_error_fn, user_warning_fn);
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	if (!png_ptr) {
-		dd_log("avdl: error while parsing '%s'", filename);
+		avdl_log("avdl: error while parsing '%s'", filename);
 		fclose(fp);
 		return -1;
 	}
@@ -113,7 +113,7 @@ int dd_image_load_png(struct dd_image *img, const char *filename) {
 	if (!info_ptr) {
 		png_destroy_read_struct(&png_ptr, 0, 0);
 		fclose(fp);
-		dd_log("avdl: error while parsing '%s'", filename);
+		avdl_log("avdl: error while parsing '%s'", filename);
 		return -1;
 	}
 
@@ -131,7 +131,7 @@ int dd_image_load_png(struct dd_image *img, const char *filename) {
 	int filter_method = 0;
 	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method);
 
-	//dd_log("%dx%d %d %d | %d %d %d", width, height, bit_depth, color_type, interlace_type, compression_type, filter_method);
+	//avdl_log("%dx%d %d %d | %d %d %d", width, height, bit_depth, color_type, interlace_type, compression_type, filter_method);
 
 	#if defined( AVDL_DIRECT3D11)
 	img->pixelFormat = 0;
@@ -199,7 +199,7 @@ int dd_image_load_png(struct dd_image *img, const char *filename) {
 	else {
 		fclose(fp);
 		png_destroy_read_struct(&png_ptr, &info_ptr, 0);
-		dd_log("avdl: error while parsing '%s': unsupported format", filename);
+		avdl_log("avdl: error while parsing '%s': unsupported format", filename);
 		return -1;
 	}
 
@@ -242,7 +242,7 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	// on Unix system, "r" is enough, on windows "rb" is needed
 	FILE *f = fopen(filename, "rb");
 	if (!f) {
-		dd_log("dd_image_load_bmp: error opening file: '%s': '%s'", filename, strerror(errno));
+		avdl_log("dd_image_load_bmp: error opening file: '%s': '%s'", filename, strerror(errno));
 		exit(-1);
 	}
 
@@ -253,7 +253,7 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	fread(&header.offset, sizeof(unsigned int), 1, f);
 
 	if (fread(&headerinfo, sizeof(struct bmp_headerinfo), 1, f) != 1) {
-		dd_log("dd_image_load_bmp: error reading info header: '%s'", filename);
+		avdl_log("dd_image_load_bmp: error reading info header: '%s'", filename);
 	}
 
 	fseek(f, header.offset, SEEK_SET);
@@ -405,7 +405,7 @@ void dd_image_bindIndex(struct dd_image *o, int index) {
 			o->set(o, o->assetName, o->assetType);
 		}
 		else {
-			//dd_log("error state?");
+			//avdl_log("error state?");
 		}
 	}
 	#endif

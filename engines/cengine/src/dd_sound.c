@@ -1,5 +1,5 @@
 #include "dd_sound.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include <string.h>
 #include "dd_game.h"
 #include "avdl_assetManager.h"
@@ -49,7 +49,7 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 	#if !defined(AVDL_DIRECT3D11)
 	if (!dd_hasAudio) return;
 	if (strlen(filename) >= 100) {
-		dd_log("avdl: asset name can't be more than 100 characters: %s", filename);
+		avdl_log("avdl: asset name can't be more than 100 characters: %s", filename);
 	}
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	strcpy(o->filename, filename);
@@ -69,7 +69,7 @@ void dd_sound_load(struct dd_sound *o, const char *filename, enum dd_audio_forma
 	#endif
 	o->sound = Mix_LoadWAV(o->filename);
 	if (!o->sound) {
-		dd_log("avdl: error playing dd_sound: '%s': %s", filename, Mix_GetError());
+		avdl_log("avdl: error playing dd_sound: '%s': %s", filename, Mix_GetError());
 	}
 
 	#endif
@@ -116,11 +116,11 @@ static void *play_sound_thread_function(void *data) {
 
 		if (getEnvStat == JNI_EDETACHED) {
 			if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
-				dd_log("avdl: failed to attach thread for new world");
+				avdl_log("avdl: failed to attach thread for new world");
 			}
 		} else if (getEnvStat == JNI_OK) {
 		} else if (getEnvStat == JNI_EVERSION) {
-			dd_log("avdl: GetEnv: version not supported");
+			avdl_log("avdl: GetEnv: version not supported");
 		}
 
 		if (playingAudioId) {
@@ -358,7 +358,7 @@ int avdl_audio_initialise() {
 	 * during the game
 	 */
 	if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
-		dd_log("avdl: error initialising audio mixer");
+		avdl_log("avdl: error initialising audio mixer");
 		dd_hasAudio = 0;
 		return -1;
 	}

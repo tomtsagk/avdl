@@ -101,7 +101,7 @@ int dd_main(int argc, char *argv[]) {
 		if (strcmp(argv[i], "--avdl-save-dir") == 0) {
 			i++;
 			if (i >= argc) {
-				dd_log("avdl: please provide a save directory after \"--avdl-save-dir\"");
+				avdl_log("avdl: please provide a save directory after \"--avdl-save-dir\"");
 				return -1;
 			}
 			strcpy(avdl_data_saveDirectory, argv[i]);
@@ -111,7 +111,7 @@ int dd_main(int argc, char *argv[]) {
 		if (strcmp(argv[i], "--locale") == 0) {
 			i++;
 			if (i >= argc) {
-				dd_log("avdl: please provide a language, for example 'en'");
+				avdl_log("avdl: please provide a language, for example 'en'");
 				return -1;
 			}
 			avdl_locale_set(argv[i]);
@@ -135,7 +135,7 @@ int dd_main(int argc, char *argv[]) {
 	// initialise pthread mutex for jni
 	if (pthread_mutex_init(&jniMutex, NULL) != 0)
 	{
-		dd_log("avdl: mutex for jni init failed");
+		avdl_log("avdl: mutex for jni init failed");
 		return -1;
 	}
 	#endif
@@ -146,14 +146,14 @@ int dd_main(int argc, char *argv[]) {
 	#else
 	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
 	{
-		dd_log("avdl: mutex for update/draw init failed");
+		avdl_log("avdl: mutex for update/draw init failed");
 		return -1;
 	}
 	#endif
 
 	// initialise engine
 	if (avdl_engine_init(&engine)) {
-		dd_log("avdl: error initialising engine");
+		avdl_log("avdl: error initialising engine");
 		return -1;
 	}
 	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
@@ -240,10 +240,10 @@ void onPause() {
 
 	/*
 	if (nworld_constructor) {
-		dd_log("cancel new world thread");
+		avdl_log("cancel new world thread");
 		pthread_cancel(newWorldPthread);
 		nworld_constructor = 0;
-		dd_log("canceled new world thread");
+		avdl_log("canceled new world thread");
 	}
 	*/
 
@@ -287,18 +287,18 @@ void updateThread() {
 
 			if (getEnvStat == JNI_EDETACHED) {
 				if ((*jvm)->AttachCurrentThread(jvm, &env, NULL) != 0) {
-					dd_log("avdl: failed to attach thread for new world");
+					avdl_log("avdl: failed to attach thread for new world");
 				}
 			} else if (getEnvStat == JNI_OK) {
 			} else if (getEnvStat == JNI_EVERSION) {
-				dd_log("avdl: GetEnv: version not supported");
+				avdl_log("avdl: GetEnv: version not supported");
 			}
 			jniEnv = env;
-			dd_log("get method");
+			avdl_log("get method");
 			jmethodID MethodID = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "CloseApplication", "()V");
-			dd_log("call method");
+			avdl_log("call method");
 			(*(*jniEnv)->CallStaticVoidMethod)(jniEnv, clazz, MethodID);
-			dd_log("detach");
+			avdl_log("detach");
 			if (getEnvStat == JNI_EDETACHED) {
 				(*jvm)->DetachCurrentThread(jvm);
 			}
@@ -328,7 +328,7 @@ void Java_dev_afloof_avdl_AvdlRenderer_nativeInit(JNIEnv* env, jobject thiz, job
 	// initialise pthread mutex for jni
 	if (pthread_mutex_init(&jniMutex, NULL) != 0)
 	{
-		dd_log("avdl: mutex for jni init failed");
+		avdl_log("avdl: mutex for jni init failed");
 		return;
 	}
 	#endif
@@ -455,7 +455,7 @@ void Java_dev_afloof_avdl_AvdlActivity_nativeOnRewardedAd(JNIEnv* env, jobject t
 
 #if defined(AVDL_QUEST2)
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
-	//dd_log("JNI_OnLoad");
+	//avdl_log("JNI_OnLoad");
 	jvm = vm;
 	(*jvm)->GetEnv(jvm, &jniEnv, JNI_VERSION_1_6);
 	jclass classLocal = (*(*jniEnv)->FindClass)(jniEnv, "dev/afloof/avdl/AvdlActivity");
@@ -467,7 +467,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 
 	if (pthread_mutex_init(&updateDrawMutex, NULL) != 0)
 	{
-		dd_log("avdl: mutex for update/draw init failed");
+		avdl_log("avdl: mutex for update/draw init failed");
 		return JNI_VERSION_1_6;
 	}
 
@@ -484,7 +484,7 @@ void set_android_save_dir(jobject activity) {
 	jstring path=(jstring)(*(*jniEnv)->CallObjectMethod)(jniEnv, dirobj, getStoragePath);
 	const char *pathstr=(*(*jniEnv)->GetStringUTFChars)(jniEnv, path, 0);
 	strcpy(avdl_data_saveDirectory, pathstr);
-	//dd_log("save dir: %s", avdl_data_saveDirectory);
+	//avdl_log("save dir: %s", avdl_data_saveDirectory);
 	(*(*jniEnv)->ReleaseStringUTFChars)(jniEnv, path, pathstr);
 }
 #endif

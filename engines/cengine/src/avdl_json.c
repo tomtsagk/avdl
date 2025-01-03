@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "dd_log.h"
+#include "avdl_log.h"
 
 #include <stdlib.h>
 #include <wchar.h>
@@ -33,7 +33,7 @@ int avdl_json_initFile(struct avdl_json_object *o, char *filename) {
 	o->file2 = AAssetManager_open(aassetManager, filename, AASSET_MODE_UNKNOWN);
 	if (!o->file2)
 	{
-		dd_log("json: error opening file: %s: %s", filename, "unknown error");
+		avdl_log("json: error opening file: %s: %s", filename, "unknown error");
 		return -1;
 	}
 	o->str2 = AAsset_getBuffer(o->file2);
@@ -46,7 +46,7 @@ int avdl_json_initFile(struct avdl_json_object *o, char *filename) {
 	o->file = fopen(filename, "r");
 	#endif
 	if (!o->file) {
-		dd_log("error opening json file '%s': %s", filename,
+		avdl_log("error opening json file '%s': %s", filename,
 			#if defined( AVDL_DIRECT3D11 )
 			"error"
 			#else
@@ -66,7 +66,7 @@ int avdl_json_initFile(struct avdl_json_object *o, char *filename) {
 		times++;
 	}
 	o->str[size] = '\0';
-	//dd_log("json file: %s", o->str);
+	//avdl_log("json file: %s", o->str);
 	o->current = o->str;
 
 	#endif
@@ -173,13 +173,13 @@ void avdl_json_next(struct avdl_json_object *o) {
 				while ((end[0] >= '0' && end[0] <= '9') || end[0] == '.' || end[0] == '-') {
 
 					if (end > o->current && end[0] == '-') {
-						dd_log("json: unexpected '-' found for floats");
+						avdl_log("json: unexpected '-' found for floats");
 						break;
 					}
 
 					if (end[0] == '.') {
 						if (has_comma) {
-							dd_log("json: float has more than one commas");
+							avdl_log("json: float has more than one commas");
 						}
 						has_comma = 1;
 					}
@@ -194,7 +194,7 @@ void avdl_json_next(struct avdl_json_object *o) {
 				if (o->isFloat) {
 					o->token = AVDL_JSON_FLOAT;
 					if (end -o->current >= AVDL_JSON_BUFFER_SIZE) {
-						dd_log("json float too long");
+						avdl_log("json float too long");
 						break;
 					}
 					strncpy(o->buffer, o->current, end -o->current);
@@ -210,7 +210,7 @@ void avdl_json_next(struct avdl_json_object *o) {
 				end = o->current;
 				while ((end[0] >= '0' && end[0] <= '9') || end[0] == '-') {
 					if (end > o->current && end[0] == '-') {
-						dd_log("json: unexpected '-' found");
+						avdl_log("json: unexpected '-' found");
 						break;
 					}
 					end++;
@@ -221,7 +221,7 @@ void avdl_json_next(struct avdl_json_object *o) {
 				if (o->isNumber) {
 					o->token = AVDL_JSON_INT;
 					if (end -o->current >= AVDL_JSON_BUFFER_SIZE) {
-						dd_log("json number too long");
+						avdl_log("json number too long");
 						break;
 					}
 					strncpy(o->buffer, o->current, end -o->current);
@@ -232,7 +232,7 @@ void avdl_json_next(struct avdl_json_object *o) {
 					break;
 				}
 
-				//dd_log("number or unknown: %c %d %s", nextChar, nextChar, o->current);
+				//avdl_log("number or unknown: %c %d %s", nextChar, nextChar, o->current);
 				o->current++;
 				break;
 		}

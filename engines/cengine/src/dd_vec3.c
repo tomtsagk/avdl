@@ -1,6 +1,6 @@
 #include "dd_vec3.h"
 #include "dd_math.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 
 void dd_vec3_create(struct dd_vec3 *o) {
 	o->x = 0;
@@ -92,7 +92,7 @@ void dd_vec3_substractf(struct dd_vec3 *o, float x, float y, float z) {
 }
 
 void dd_vec3_print(struct dd_vec3 *o) {
-	dd_log("dd_vec3: %f %f %f",
+	avdl_log("dd_vec3: %f %f %f",
 		o->x,
 		o->y,
 		o->z

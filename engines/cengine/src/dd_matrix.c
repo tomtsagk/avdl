@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "dd_dynamic_array.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include <string.h>
 #include "dd_vec3.h"
 #include "dd_vec4.h"
@@ -401,7 +401,7 @@ float dd_matrix_z(struct dd_matrix *m) { return m->cell[14]; }
 void dd_matrix_print(struct dd_matrix *m) {
 	int i;
 	for (i = 0; i < 16; i += 4) {
-		dd_log("%f %f %f %f",
+		avdl_log("%f %f %f %f",
 			m->cell[(i) +0],
 			m->cell[(i) +1],
 			m->cell[(i) +2],
@@ -409,7 +409,7 @@ void dd_matrix_print(struct dd_matrix *m) {
 		);
 
 		if ((i -3) % 4 == 0) {
-			dd_log("");
+			avdl_log("");
 		}
 	}
 }
@@ -445,7 +445,7 @@ void dd_matrix_push() {
 		dd_matrix_copy(&dd_cam[dd_cam_index], &dd_cam[dd_cam_index-1]);
 	}
 	else {
-		dd_log("dd_matrix: maximum matrix stack reached");
+		avdl_log("dd_matrix: maximum matrix stack reached");
 		exit(-1);
 	}
 	if (matModel_index < (DD_MATRIX_STACK_LIMIT -1)) {
@@ -453,7 +453,7 @@ void dd_matrix_push() {
 		dd_matrix_copy(&matModel[matModel_index], &matModel[matModel_index-1]);
 	}
 	else {
-		dd_log("dd_matrix matModel: maximum matrix stack reached");
+		avdl_log("dd_matrix matModel: maximum matrix stack reached");
 		exit(-1);
 	}
 }
@@ -463,14 +463,14 @@ void dd_matrix_pop() {
 		dd_cam_index--;
 	}
 	else {
-		dd_log("dd_matrix: no matrix to pop");
+		avdl_log("dd_matrix: no matrix to pop");
 		exit(-1);
 	}
 	if (matModel_index > 0) {
 		matModel_index--;
 	}
 	else {
-		dd_log("dd_matrix: no matrix model to pop");
+		avdl_log("dd_matrix: no matrix model to pop");
 		exit(-1);
 	}
 }
@@ -580,7 +580,7 @@ void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m) {
 
 #if defined(AVDL_QUEST2)
 	if (controllerIndex > 2) {
-		dd_log("too many controllers: %d", controllerIndex);
+		avdl_log("too many controllers: %d", controllerIndex);
 		return;
 	}
 

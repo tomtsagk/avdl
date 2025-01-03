@@ -135,7 +135,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	#ifdef AVDL_STEAM
 	if (!o->verify) {
 		if (!avdl_steam_init()) {
-			dd_log("avdl: error initialising steam");
+			avdl_log("avdl: error initialising steam");
 			return -1;
 		}
 		if (avdl_use_default_locale) {
@@ -152,12 +152,12 @@ int avdl_engine_init(struct avdl_engine *o) {
 	const PROJ_LOC_TYPE *proj_loc = avdl_getProjectLocation();
 	if (proj_loc) {
 		if (_wchdir(proj_loc) != 0) {
-			dd_log("avdl: failed to change directory: %lS", _wcserror(errno));
+			avdl_log("avdl: failed to change directory: %lS", _wcserror(errno));
 			return -1;
 		}
 	}
 	else {
-		dd_log("avdl error: unable to get project location");
+		avdl_log("avdl error: unable to get project location");
 	}
 	#endif
 
@@ -171,7 +171,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	if (pthread_mutex_init(&asyncCallMutex, NULL) != 0)
 	{
-		dd_log("avdl: mutex for async calls init failed");
+		avdl_log("avdl: mutex for async calls init failed");
 		return -1;
 	}
 	*/
@@ -198,19 +198,19 @@ int avdl_engine_init(struct avdl_engine *o) {
 	if (dd_hasAudio) {
 
 		if (avdl_audio_initialise() != 0) {
-			dd_log("avdl: error initialising audio");
+			avdl_log("avdl: error initialising audio");
 		}
 
 	} // init audio
 
 	// audio is off - display message about it
 	if (!dd_hasAudio && !o->verify) {
-		dd_log("avdl error: Game will play without audio");
+		avdl_log("avdl error: Game will play without audio");
 	}
 
 	#else
 	if (avdl_audio_initialise() != 0) {
-		dd_log("avdl: error initialising audio");
+		avdl_log("avdl: error initialising audio");
 	}
 	#endif
 
@@ -225,12 +225,12 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	if (!o->verify) {
 		if (avdl_graphics_Init()) {
-			dd_log("avdl: error initialising engine graphics");
+			avdl_log("avdl: error initialising engine graphics");
 			return -1;
 		}
 
 		if (avdl_graphics_CreateWindow(&o->graphics) != 0) {
-			dd_log("avdl: error creating window");
+			avdl_log("avdl: error creating window");
 			return -1;
 		}
 	}
@@ -351,7 +351,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 		GLenum renderFramebufferStatus = glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 		if (renderFramebufferStatus != GL_FRAMEBUFFER_COMPLETE) {
-			dd_log("avdl error: could not get framebuffer status");
+			avdl_log("avdl error: could not get framebuffer status");
 			return -1;
 		}
 	}

@@ -1,6 +1,6 @@
 #include "avdl_ui_element.h"
 #include "dd_matrix.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "dd_mouse.h"
 #include "dd_game.h"
 #include "avdl_input.h"
@@ -149,7 +149,7 @@ int avdl_ui_element_hasMouseCollided(struct avdl_ui_element *o) {
 	planeX = screenProportionX *dd_screen_width_get ( 5);
 	planeY = screenProportionY *dd_screen_height_get(-5);
 
-	//dd_log("Plane: %f %f - %f %f - %f %f", screenProportionX, screenProportionY, dd_screen_width_get(-5), dd_screen_height_get(-5), o->x, o->y);
+	//avdl_log("Plane: %f %f - %f %f - %f %f", screenProportionX, screenProportionY, dd_screen_width_get(-5), dd_screen_height_get(-5), o->x, o->y);
 
 	// check collision
 	if (planeX >= (o->x -(o->sizeW /2))

@@ -1,6 +1,6 @@
 #include "avdl_font.h"
 #include "dd_math.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "dd_game.h"
 #include "avdl_assetManager.h"
 
@@ -21,7 +21,7 @@ int avdl_font_init() {
 
 	int error = FT_Init_FreeType( &library );
 	if (error) {
-		dd_log("avdl: error initialising freetype2");
+		avdl_log("avdl: error initialising freetype2");
 		return -1;
 	}
 
@@ -137,7 +137,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		}
 	}
 	if (glyph_id == -1) {
-		dd_log("avdl error: cannot make more glyphs for this font");
+		avdl_log("avdl error: cannot make more glyphs for this font");
 		return -1;
 	}
 
@@ -147,7 +147,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		FONT_GLYPH_SIZE -20
 	);
 	if (error) {
-		dd_log("avdl error: could not set pixel size for font");
+		avdl_log("avdl error: could not set pixel size for font");
 	}
 
 	int pixels_size = FONT_GLYPH_SIZE *FONT_GLYPH_SIZE *4;
@@ -173,24 +173,24 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		FT_Stroker_New(library, &stroker);
 		error = FT_Load_Char( o->face, unicode_hex, FT_LOAD_NO_BITMAP | FT_LOAD_TARGET_NORMAL );
 		if ( error != 0 ) {
-			dd_log("avdl: error calling `FT_Load_Char`");
+			avdl_log("avdl: error calling `FT_Load_Char`");
 		}
 
 		error = FT_Get_Glyph( o->face->glyph, &glyphDescStroke );
 		if ( error ) {
-			dd_log("avdl: error calling `FT_Get_Glyph`");
+			avdl_log("avdl: error calling `FT_Get_Glyph`");
 		}
 
 		FT_Stroker_Set( stroker, o->outline_thickness * (float)(1 << 6), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0 );
 
 		error = FT_Glyph_Stroke( &glyphDescStroke, stroker, 1 );
 		if ( error ) {
-			dd_log("avdl: error calling `FT_Glyph_Stroke`");
+			avdl_log("avdl: error calling `FT_Glyph_Stroke`");
 		}
 
 		error = FT_Glyph_To_Bitmap( &glyphDescStroke, FT_RENDER_MODE_NORMAL, 0, 1);
 		if ( error ) {
-			dd_log("avdl: error calling `FT_Glyph_To_Bitmap`");
+			avdl_log("avdl: error calling `FT_Glyph_To_Bitmap`");
 		}
 
 		FT_BitmapGlyph glyph_bitmap;
@@ -200,10 +200,10 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 
 		/*
 		if (bitmap_stroke->width > FONT_GLYPH_SIZE) {
-			dd_log("glyph is too wide: %d / %d", bitmap_stroke->width, FONT_GLYPH_SIZE);
+			avdl_log("glyph is too wide: %d / %d", bitmap_stroke->width, FONT_GLYPH_SIZE);
 		}
 		if (bitmap_stroke->rows > FONT_GLYPH_SIZE) {
-			dd_log("glyph is too tall: %d / %d", bitmap_stroke->rows, FONT_GLYPH_SIZE);
+			avdl_log("glyph is too tall: %d / %d", bitmap_stroke->rows, FONT_GLYPH_SIZE);
 		}
 		*/
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
@@ -216,8 +216,8 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 			int index = ry *FONT_GLYPH_SIZE *4 +x*4;
 			/*
 			if (index >= pixels_size) {
-				dd_log("temp: %d %d %d - %d %d", y, FONT_GLYPH_SIZE, x, FONT_GLYPH_SIZE *4, x*4);
-				dd_log("too much index: %d / %d, %dx%d", index, pixels_size, bitmap_stroke->width, bitmap_stroke->rows);
+				avdl_log("temp: %d %d %d - %d %d", y, FONT_GLYPH_SIZE, x, FONT_GLYPH_SIZE *4, x*4);
+				avdl_log("too much index: %d / %d, %dx%d", index, pixels_size, bitmap_stroke->width, bitmap_stroke->rows);
 				continue;
 			}
 			*/
@@ -235,8 +235,8 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 			int index = ry *FONT_GLYPH_SIZE *4 +x*4;
 			/*
 			if (index >= pixels_size) {
-				dd_log("temp: %d %d %d - %d %d", y, FONT_GLYPH_SIZE, x, FONT_GLYPH_SIZE *4, x*4);
-				dd_log("too much index: %d / %d, %dx%d", index, pixels_size, bitmap_stroke->width, bitmap_stroke->rows);
+				avdl_log("temp: %d %d %d - %d %d", y, FONT_GLYPH_SIZE, x, FONT_GLYPH_SIZE *4, x*4);
+				avdl_log("too much index: %d / %d, %dx%d", index, pixels_size, bitmap_stroke->width, bitmap_stroke->rows);
 				continue;
 			}
 			*/
@@ -253,31 +253,31 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 
 	error = FT_Load_Char( o->face, unicode_hex, FT_LOAD_RENDER );
 	if (error) {
-		dd_log("avdl: error loading char glyph: %d", unicode_hex);
+		avdl_log("avdl: error loading char glyph: %d", unicode_hex);
 	}
 
 	/*
 	if (o->face->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_BGRA) {
-		//dd_log("TTF: BGRA");
+		//avdl_log("TTF: BGRA");
 	}
 	else
 	if (o->face->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_MONO) {
-		//dd_log("TTF: mono");
+		//avdl_log("TTF: mono");
 	}
 	else
 	if (o->face->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY) {
-		//dd_log("TTF: gray");
+		//avdl_log("TTF: gray");
 	}
 	else
 	if (o->face->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY2) {
-		//dd_log("TTF: gray2");
+		//avdl_log("TTF: gray2");
 	}
 	else
 	if (o->face->glyph->bitmap.pixel_mode == FT_PIXEL_MODE_GRAY4) {
-		//dd_log("TTF: gray4");
+		//avdl_log("TTF: gray4");
 	}
 	else {
-		//dd_log("TTF: other");
+		//avdl_log("TTF: other");
 	}
 	*/
 
@@ -302,8 +302,8 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 
 		/*
 		if (index2 >= pixels_size) {
-			dd_log("temp2: %d %d %d", y, FONT_GLYPH_SIZE, x);
-			dd_log("too much index2: %d / %d, %dx%d", index2, pixels_size, o->face->glyph->bitmap.width, o->face->glyph->bitmap.rows);
+			avdl_log("temp2: %d %d %d", y, FONT_GLYPH_SIZE, x);
+			avdl_log("too much index2: %d / %d, %dx%d", index2, pixels_size, o->face->glyph->bitmap.width, o->face->glyph->bitmap.rows);
 			continue;
 		}
 		*/
@@ -368,7 +368,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		#endif
 	}
 	else {
-		//dd_log("dd_image has error state ?");
+		//avdl_log("dd_image has error state ?");
 	}
 
 	o->glyphs[glyph_id].id = unicode_hex;
@@ -528,21 +528,21 @@ void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outl
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	AAsset* fontFile = AAssetManager_open(aassetManager, name, AASSET_MODE_UNKNOWN);
 	if (!fontFile) {
-		dd_log("avdl error: unable to open font file: %s", name);
+		avdl_log("avdl error: unable to open font file: %s", name);
 		return;
 	}
 	off_t fontDataSize = AAsset_getLength(fontFile);
 
 	o->fontData = malloc(sizeof(FT_Byte) *fontDataSize);
 	if (!o->fontData) {
-		dd_log("avdl error: malloc failed when creating font");
+		avdl_log("avdl error: malloc failed when creating font");
 		return;
 	}
 	AAsset_read(fontFile, o->fontData, fontDataSize);
 	AAsset_close(fontFile);
 
 	if (FT_New_Memory_Face(library, o->fontData, fontDataSize, 0, &o->face)) {
-		dd_log("avdl error: load font from memory failed");
+		avdl_log("avdl error: load font from memory failed");
 		o->face = 0;
 	}
 	#else
@@ -577,16 +577,16 @@ void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outl
 		&o->face
 	);
 	if ( error == FT_Err_Unknown_File_Format ) {
-		dd_log("avdl: unsupported font file format: %s", assetName);
+		avdl_log("avdl: unsupported font file format: %s", assetName);
 		o->face = 0;
 		return;
 	}
 	else if (error == FT_Err_Cannot_Open_Resource) {
-		dd_log("avdl: cannot open resource: %s", assetName);
+		avdl_log("avdl: cannot open resource: %s", assetName);
 		o->face = 0;
 	}
 	else if ( error ) {
-		dd_log("avdl: unknown error parsing font: %s", assetName);
+		avdl_log("avdl: unknown error parsing font: %s", assetName);
 		o->face = 0;
 		return;
 	}
@@ -608,7 +608,7 @@ int avdl_font_needsRefresh(struct avdl_font *o) {
 	#if !defined( AVDL_DIRECT3D11 )
 	// font needs to refresh
 	if (o->openglContextId != o->texture.openglContextId) {
-		//dd_log("font needs refresh");
+		//avdl_log("font needs refresh");
 		o->openglContextId = o->texture.openglContextId;
 		avdl_font_releaseAllGlyphs(o);
 		return 1;
@@ -621,7 +621,7 @@ int avdl_font_needsRefresh(struct avdl_font *o) {
 void avdl_font_addCustomIcon(struct avdl_font *o, const char *keyword, struct dd_image *image) {
 	#if !defined( AVDL_DIRECT3D11 )
 	if (o->customIconCount >= 10) {
-		dd_log("avdl error: too many custom icons in font");
+		avdl_log("avdl error: too many custom icons in font");
 		return;
 	}
 	o->customIcon[o->customIconCount] = image;

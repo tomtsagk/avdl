@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "avdl_assetManager.h"
 #include "dd_game.h"
 #include <stdlib.h>
@@ -183,7 +183,7 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 	#if defined(AVDL_QUEST2)
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		//dd_log("avdl: dd_meshTexture: location of `matrix` not found in current program");
+		//avdl_log("avdl: dd_meshTexture: location of `matrix` not found in current program");
 	}
 	else {
 		GL(glUniformMatrix4fv(
@@ -196,7 +196,7 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 	#else
 	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
 	if (MatrixID < 0) {
-		//dd_log("avdl: dd_meshColour: location of `matrix` not found in current program");
+		//avdl_log("avdl: dd_meshColour: location of `matrix` not found in current program");
 	}
 	else {
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());

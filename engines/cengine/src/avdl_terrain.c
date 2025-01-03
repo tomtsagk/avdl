@@ -1,5 +1,5 @@
 #include "avdl_terrain.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include "dd_math.h"
 
 void avdl_terrain_create(struct avdl_terrain *o) {
@@ -141,7 +141,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 float avdl_terrain_getSpot(struct avdl_terrain *o, float x, float z) {
 
 	if (!o->loaded) {
-		dd_log("terrain not loaded yet");
+		avdl_log("terrain not loaded yet");
 		return 0;
 	}
 

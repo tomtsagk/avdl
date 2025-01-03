@@ -1,7 +1,7 @@
 #include "dd_mesh.h"
 #include "dd_filetomesh.h"
 #include "dd_dynamic_array.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -35,7 +35,7 @@ int dd_filetomesh(struct dd_loaded_mesh *m, const char *asset, int settings, int
 	switch (file_type) {
 		case DD_PLY: return dd_load_ply(m, asset, settings);
 		case AVDL_GLTF: return avdl_load_gltf(m, asset, settings);
-		default: dd_log("dd_filetomesh: unsupported file format with id: %d", file_type);
+		default: avdl_log("dd_filetomesh: unsupported file format with id: %d", file_type);
 	}
 
 	return -1;
@@ -55,13 +55,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings) {
 	AAsset *f = AAssetManager_open(aassetManager, asset, AASSET_MODE_UNKNOWN);
 	if (!f)
 	{
-		dd_log("load_ply: error opening file: %s: %s", asset, "unknown error");
+		avdl_log("load_ply: error opening file: %s: %s", asset, "unknown error");
 		return -1;
 	}
 
 	char *fc = AAsset_getBuffer(f);
 	if ( avdl_load_ply_string(m, fc, settings) != 0) {
-		dd_log("avdl: avdl_load_ply_string: failed to load asset: %s", asset);
+		avdl_log("avdl: avdl_load_ply_string: failed to load asset: %s", asset);
 		AAsset_close(f);
 		return -1;
 	}
@@ -78,14 +78,14 @@ int avdl_load_gltf(struct dd_loaded_mesh *m, const char *asset, int settings) {
 	AAsset *f = AAssetManager_open(aassetManager, asset, AASSET_MODE_UNKNOWN);
 	if (!f)
 	{
-		dd_log("load_gltf: error opening file: %s: %s", asset, "unknown error");
+		avdl_log("load_gltf: error opening file: %s: %s", asset, "unknown error");
 		return -1;
 	}
 
 	void *fc = AAsset_getBuffer(f);
 	off_t fs = AAsset_getLength(f);
 	if ( avdl_load_gltf_string(m, fc, fs, settings) != 0) {
-		dd_log("avdl: avdl_load_gltf_string: failed to load asset: %s", asset);
+		avdl_log("avdl: avdl_load_gltf_string: failed to load asset: %s", asset);
 		AAsset_close(f);
 		return -1;
 	}
@@ -136,7 +136,7 @@ int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	avdl_time_start(&t);
 	*/
 
-	//dd_log("file: %s", path);
+	//avdl_log("file: %s", path);
 
 	//Open file and check error
 	#if defined( AVDL_DIRECT3D11 )
@@ -148,9 +148,9 @@ int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	if (!f)
 	{
 		#if defined( AVDL_DIRECT3D11 )
-		dd_log("load_ply: error opening file: %s", path);
+		avdl_log("load_ply: error opening file: %s", path);
 		#else
-		dd_log("avdl: avdl_load_ply: error opening file: %s: %s", path, strerror(errno));
+		avdl_log("avdl: avdl_load_ply: error opening file: %s: %s", path, strerror(errno));
 		#endif
 		return -1;
 	}
@@ -164,7 +164,7 @@ int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	fclose(f);
 
 	if ( avdl_load_ply_string(m, fstr, settings) != 0) {
-		dd_log("avdl: avdl_load_ply_string: failed to load asset: %s", path);
+		avdl_log("avdl: avdl_load_ply_string: failed to load asset: %s", path);
 		free(fstr);
 		return -1;
 	}
@@ -174,7 +174,7 @@ int avdl_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	/*
 	avdl_time_end(&t);
-	dd_log("loading took %ld for size %ld", avdl_time_getTimeDouble(&t), fsize);
+	avdl_log("loading took %ld for size %ld", avdl_time_getTimeDouble(&t), fsize);
 	*/
 
 	return 0;
@@ -188,20 +188,20 @@ int avdl_load_gltf(struct dd_loaded_mesh *m, const char *path, int settings) {
 	cgltf_data *data = 0;
 	cgltf_result result = cgltf_parse_file(&options, path, &data);
 	if (result != cgltf_result_success) {
-		dd_log("avdl: %s: error loading gtlf file", path);
+		avdl_log("avdl: %s: error loading gtlf file", path);
 		return -1;
 	}
 
 	// load cgltf buffers
 	result = cgltf_load_buffers(&options, data, 0);
 	if (result != cgltf_result_success) {
-		dd_log("avdl %s: error loading gtlf buffers", path);
+		avdl_log("avdl %s: error loading gtlf buffers", path);
 		cgltf_free(data);
 		return -1;
 	}
 
 	if (avdl_load_gltf_internal(m, &options, data, settings) != 0) {
-		dd_log("avdl %s: error loading gtlf internal data", path);
+		avdl_log("avdl %s: error loading gtlf internal data", path);
 		cgltf_free(data);
 		return -1;
 	}
@@ -226,9 +226,9 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	if (!f)
 	{
 		#if defined( AVDL_DIRECT3D11 )
-		dd_log("load_ply: error opening file: %s", path);
+		avdl_log("load_ply: error opening file: %s", path);
 		#else
-		dd_log("load_ply: error opening file: %s: %s", path, strerror(errno));
+		avdl_log("load_ply: error opening file: %s: %s", path, strerror(errno));
 		#endif
 		return -1;
 	}
@@ -433,7 +433,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	FILE *f = fopen(path, "r");
 	if (!f)
 	{
-		dd_log("load_ply: error opening file: %s: %s", path, strerror(errno));
+		avdl_log("load_ply: error opening file: %s: %s", path, strerror(errno));
 		return -1;
 	}
 
@@ -681,7 +681,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 					property->offsetSize = sizeof(int) *3;
 				}
 				else {
-					dd_log("unsupported property: %s", property->name);
+					avdl_log("unsupported property: %s", property->name);
 				}
 			}
 			else
@@ -700,13 +700,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 			if ( fscanf(f, "%*[ \t]%1022[a-zA-Z0-9 .]", buff) == EOF )
 				goto error;
 			if ( strcmp(buff, "ascii 1.0") != 0 ) {
-				dd_log("unsupported format: %s", buff);
+				avdl_log("unsupported format: %s", buff);
 				goto error;
 			}
 		}
 		// unsupported ply command
 		else {
-			//dd_log("skip unsupported ply command: %s", buff);
+			//avdl_log("skip unsupported ply command: %s", buff);
 			if ( fscanf(f, "%*[^\n]%*1c") == EOF) {
 				goto error;
 			}
@@ -728,7 +728,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 					if (property->list_format == PLY_FORMAT_FLOAT
 					||  property->list_format == PLY_FORMAT_DOUBLE) {
-						dd_log("dd_filetomesh.c: %s error parsing: list is float or double", path);
+						avdl_log("dd_filetomesh.c: %s error parsing: list is float or double", path);
 						exit(-1);
 					}
 
@@ -737,7 +737,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 					fscanf(f, buff, &iterator);
 
 					if (iterator > 3) {
-						dd_log("dd_filetomesh.c: %s error parsing: only triangulated meshes are supported", path);
+						avdl_log("dd_filetomesh.c: %s error parsing: only triangulated meshes are supported", path);
 						exit(-1);
 					}
 				}
@@ -855,13 +855,13 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	//Error handling
 	error:
 	if (ferror(f)) {
-		dd_log("load_ply: error while parsing %s: %s", path, strerror(errno));
+		avdl_log("load_ply: error while parsing %s: %s", path, strerror(errno));
 	} else
 	if (feof(f)) {
-		dd_log("load_ply: unexpected end of file on %s", path);
+		avdl_log("load_ply: unexpected end of file on %s", path);
 	}
 	else {
-		dd_log("load_ply: unexpected error on %s", path);
+		avdl_log("load_ply: unexpected error on %s", path);
 	}
 	fclose(f);
 	return -1;
@@ -891,7 +891,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 	//File
 	FILE *f = fopen(path, "r");
 	if ( !f ) {
-		dd_log("load_obj: %s: failed to open file: %s", path, strerror(errno));
+		avdl_log("load_obj: %s: failed to open file: %s", path, strerror(errno));
 		goto error;
 	}
 
@@ -908,7 +908,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 			if ( fscanf(f, "%f %f %f", &v.x, &v.y, &v.z) == EOF ) {
 				goto error;
 			}
-			//dd_log("parse vertex %f %f %f", v.x, v.y, v.z);
+			//avdl_log("parse vertex %f %f %f", v.x, v.y, v.z);
 
 			//Check mirroring
 			/*
@@ -929,7 +929,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 			//Assumes each face has at least 3 vertices
 			int base, last, new;
 			fscanf(f, "%d %d %d", &base, &last, &new);
-			//dd_log("parse face %d %d %d", base, last, new);
+			//avdl_log("parse face %d %d %d", base, last, new);
 
 			/* every face minus one, because obj starts from 1 */
 			base--;
@@ -947,7 +947,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 				vert_ind--;
 				last = new;
 				new = vert_ind;
-				//dd_log("parse extra face %d %d %d", base, last, new);
+				//avdl_log("parse extra face %d %d %d", base, last, new);
 
 				dd_da_push(&v_out, dd_da_get(&v_ind, base));
 				dd_da_push(&v_out, dd_da_get(&v_ind, last));
@@ -985,17 +985,17 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	error:
 	if (ferror(f)) {
-		dd_log("load_obj: error while parsing %s: %s", path, strerror(errno));
+		avdl_log("load_obj: error while parsing %s: %s", path, strerror(errno));
 	} else
 	if (feof(f)) {
-		dd_log("load_obj: unexpected end of file on %s", path);
+		avdl_log("load_obj: unexpected end of file on %s", path);
 	}
 	else {
-		dd_log("load_obj: unexpected error on %s", path);
+		avdl_log("load_obj: unexpected error on %s", path);
 	}
 	fclose(f);
 
-	//dd_log("stop parsing");
+	//avdl_log("stop parsing");
 	return -1;
 
 	#endif
@@ -1037,7 +1037,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 
 	// verify ply signature
 	if ( strncmp(p, "ply", strlen("ply")) != 0) {
-		dd_log("avdl: avdl_load_ply_string: ply signature not found");
+		avdl_log("avdl: avdl_load_ply_string: ply signature not found");
 		return -1;
 	}
 	p += 3;
@@ -1084,7 +1084,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 			p += strlen("format");
 			p = skip_whitespace(p);
 			if ( strncmp(p, "ascii 1.0", strlen("ascii 1.0")) != 0) {
-				dd_log("avdl: avdl_load_ply_string: unsupported ply format, only ascii supported");
+				avdl_log("avdl: avdl_load_ply_string: unsupported ply format, only ascii supported");
 				return -1;
 			}
 			while (p[0] != '\n') {
@@ -1108,7 +1108,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 
 			// element limit
 			if (elementTotal >= 10) {
-				dd_log("avdl: avdl_load_ply_string: too many elements, max is 10");
+				avdl_log("avdl: avdl_load_ply_string: too many elements, max is 10");
 				return -1;
 			}
 
@@ -1120,7 +1120,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 			const char *p2 = p;
 			p2 = skip_to_whitespace(p2);
 			if (p2 -p >= 100) {
-				dd_log("avdl: avdl_load_ply_string: element name has to be smaller than 100 characters");
+				avdl_log("avdl: avdl_load_ply_string: element name has to be smaller than 100 characters");
 				return -1;
 			}
 
@@ -1138,7 +1138,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 				vertex_count = elements[elementTotal].amount;
 			}
 
-			//dd_log("element: %s %d - %d", elements[elementTotal].name, elements[elementTotal].amount, elementTotal);
+			//avdl_log("element: %s %d - %d", elements[elementTotal].name, elements[elementTotal].amount, elementTotal);
 
 			// advance element
 			elementTotal++;
@@ -1159,7 +1159,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 
 			// check element is valid
 			if (elementTotal == 0) {
-				dd_log("avdl: avdl_load_ply_string: property found before element");
+				avdl_log("avdl: avdl_load_ply_string: property found before element");
 				return -1;
 			}
 
@@ -1173,7 +1173,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 				const char *p2 = p;
 				p2 = skip_to_whitespace(p2);
 				if (p2 -p >= 100) {
-					dd_log("avdl: avdl_load_ply_string: property list type has to be smaller than 100 characters");
+					avdl_log("avdl: avdl_load_ply_string: property list type has to be smaller than 100 characters");
 					return -1;
 				}
 
@@ -1182,7 +1182,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 					property->list_format = PLY_FORMAT_UCHAR;
 				}
 				else {
-					dd_log("avdl: avdl_load_ply_string: unsupported list type");
+					avdl_log("avdl: avdl_load_ply_string: unsupported list type");
 					return -1;
 				}
 				p = p2;
@@ -1193,7 +1193,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 			const char *p2 = p;
 			p2 = skip_to_whitespace(p2);
 			if (p2 -p >= 100) {
-				dd_log("avdl: avdl_load_ply_string: property type has to be smaller than 100 characters");
+				avdl_log("avdl: avdl_load_ply_string: property type has to be smaller than 100 characters");
 				return -1;
 			}
 
@@ -1219,7 +1219,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 			p2 = p;
 			p2 = skip_to_whitespace(p2);
 			if (p2 -p >= 100) {
-				dd_log("avdl: avdl_load_ply_string: property name has to be smaller than 100 characters");
+				avdl_log("avdl: avdl_load_ply_string: property name has to be smaller than 100 characters");
 				return -1;
 			}
 			strncpy(property->name, p, p2 -p);
@@ -1227,7 +1227,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 			p = p2;
 			elements[elementTotal-1].propertyTotal++;
 
-			//dd_log("property: %s %d - %d %d", property->name, property->format, elementTotal-1, elements[elementTotal-1].propertyTotal);
+			//avdl_log("property: %s %d - %d %d", property->name, property->format, elementTotal-1, elements[elementTotal-1].propertyTotal);
 
 		}
 		// unrecognised word
@@ -1238,7 +1238,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 			char temp[100];
 			strncpy(temp, p, dd_math_min(p2-p, 99));
 			temp[dd_math_min(p2-p, 99)] = '\0';
-			//dd_log("unrecognised word: %s", temp);
+			//avdl_log("unrecognised word: %s", temp);
 			return -1;
 		}
 
@@ -1356,7 +1356,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 
 	// error!
 	if (!has_positions) {
-		dd_log("avdl: avdl_load_ply_string: asset has no vertex positions!");
+		avdl_log("avdl: avdl_load_ply_string: asset has no vertex positions!");
 		return -1;
 	}
 
@@ -1391,12 +1391,12 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 			is_face_indices = 1;
 		}
 
-		//dd_log("element %d %s properties %d", i, element->name, element->propertyTotal);
+		//avdl_log("element %d %s properties %d", i, element->name, element->propertyTotal);
 		for (int j = 0; j < element->amount; j++) {
 
 			for (int z = 0; z < element->propertyTotal; z++) {
 				struct avdl_ply_property *property = &element->p[z];
-				//dd_log("property %s %d %d", property->name, z, property->format);
+				//avdl_log("property %s %d %d", property->name, z, property->format);
 
 				p = skip_whitespace(p);
 
@@ -1407,7 +1407,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 					p = skip_whitespace(p);
 					values = atoi(p);
 					p = skip_to_whitespace(p);
-					//dd_log("is list with values %d", values);
+					//avdl_log("is list with values %d", values);
 				}
 
 				// read property value(s)
@@ -1448,7 +1448,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 						if ( is_vertex && strncmp( property->name, "t", strlen("t") ) == 0 && has_texcoord) {
 							array_vertex_st[j*2 +1] = f;
 						}
-						//dd_log("\tfloat: %f", f);
+						//avdl_log("\tfloat: %f", f);
 					}
 				}
 				else
@@ -1474,7 +1474,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 						if ( is_vertex && strncmp( property->name, "alpha", strlen("alpha") ) == 0 && has_colours) {
 							//dd_da_push(&array_vertex_alpha, &integer);
 						}
-						//dd_log("\tuchar: %d", integer);
+						//avdl_log("\tuchar: %d", integer);
 					}
 				}
 				else
@@ -1497,7 +1497,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 							dd_da_push(&array_vertex_indices, &integer);
 						}
 
-						//dd_log("\tuint: %d", integer);
+						//avdl_log("\tuint: %d", integer);
 					}
 				}
 			}
@@ -1665,20 +1665,20 @@ int avdl_load_gltf_string(struct dd_loaded_mesh *m, void *file_data, off_t size,
 	cgltf_data *data = 0;
 	cgltf_result result = cgltf_parse(&options, file_data, size, &data);
 	if (result != cgltf_result_success) {
-		dd_log("avdl: %s: error loading gtlf file in string mode");
+		avdl_log("avdl: %s: error loading gtlf file in string mode");
 		return -1;
 	}
 
 	// load cgltf buffers
 	result = cgltf_load_buffers(&options, data, 0);
 	if (result != cgltf_result_success) {
-		dd_log("avdl %s: error loading gtlf buffers in string mode");
+		avdl_log("avdl %s: error loading gtlf buffers in string mode");
 		cgltf_free(data);
 		return -1;
 	}
 
 	if (avdl_load_gltf_internal(m, &options, data, settings) != 0) {
-		dd_log("avdl %s: error loading gtlf string internal data");
+		avdl_log("avdl %s: error loading gtlf string internal data");
 		cgltf_free(data);
 		return -1;
 	}
@@ -1701,34 +1701,34 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 	m->weights = 0;
 
 	if (data->meshes_count > 1) {
-		dd_log("avdl_load_gltf_internal: can only load one mesh at a time, found %d meshes", data->meshes_count);
+		avdl_log("avdl_load_gltf_internal: can only load one mesh at a time, found %d meshes", data->meshes_count);
 	}
-	//dd_log("meshes: %d", data->meshes_count);
+	//avdl_log("meshes: %d", data->meshes_count);
 	for (int i = 0; i < data->meshes_count; i++) {
 		cgltf_mesh *mesh = &data->meshes[i];
 		if (mesh->primitives_count > 1) {
-			dd_log("avdl_load_gltf_internal: only supporting one mesh primitive for now, found %d", mesh->primitives_count);
+			avdl_log("avdl_load_gltf_internal: only supporting one mesh primitive for now, found %d", mesh->primitives_count);
 		}
 		for (int j = 0; j < mesh->primitives_count; j++) {
 			cgltf_primitive *primitive = &mesh->primitives[j];
 			unsigned int *indices = 0;
 			int indices_count = 0;
 			if (primitive->type != cgltf_primitive_type_triangles) {
-				dd_log("avdl_load_gltf_internal: primitives can only contain triangles for now, not %d", primitive->type);
+				avdl_log("avdl_load_gltf_internal: primitives can only contain triangles for now, not %d", primitive->type);
 				cgltf_free(data);
 				return -1;
 			}
-			//dd_log("    primitive compression: %d", primitive->has_draco_mesh_compression);
+			//avdl_log("    primitive compression: %d", primitive->has_draco_mesh_compression);
 			if (primitive->indices) {
 				cgltf_accessor *indice_data = primitive->indices;
 				if (indice_data->type != cgltf_type_scalar) {
-					dd_log("avdl_load_gltf_internal: only supporting scalar for indices for now, not %d", indice_data->type);
+					avdl_log("avdl_load_gltf_internal: only supporting scalar for indices for now, not %d", indice_data->type);
 					cgltf_free(data);
 					return -1;
 				}
 				size_t attribute_value_dimension_count = cgltf_num_components(indice_data->type);
 				if (attribute_value_dimension_count != 1) {
-					dd_log("avdl_load_gltf_internal: indices should only have 1 dimension, they instead have %d", attribute_value_dimension_count);
+					avdl_log("avdl_load_gltf_internal: indices should only have 1 dimension, they instead have %d", attribute_value_dimension_count);
 					cgltf_free(data);
 					return -1;
 				}
@@ -1738,7 +1738,7 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 				cgltf_accessor_unpack_indices(primitive->indices, indices, sizeof(unsigned int), primitive->indices->count);
 			}
 			else {
-				dd_log("avdl_load_gltf_internal: only supporting meshes with indices for now");
+				avdl_log("avdl_load_gltf_internal: only supporting meshes with indices for now");
 				cgltf_free(data);
 				return -1;
 			}
@@ -1749,18 +1749,18 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 					size_t attribute_value_dimension_count = cgltf_num_components(attribute_data->type);
 					if (attribute->type == cgltf_attribute_type_position) {
 						if (attribute_data->type != cgltf_type_vec3) {
-							dd_log("avdl_load_gltf_internal: only supporting vec3 for vertex positions for now");
+							avdl_log("avdl_load_gltf_internal: only supporting vec3 for vertex positions for now");
 							cgltf_free(data);
 							return -1;
 						}
 						if (attribute_value_dimension_count != 3) {
-							dd_log("avdl_load_gltf_internal: vertex position should only have 3 dimensions, they instead have %d", attribute_value_dimension_count);
+							avdl_log("avdl_load_gltf_internal: vertex position should only have 3 dimensions, they instead have %d", attribute_value_dimension_count);
 							cgltf_free(data);
 							return -1;
 						}
 						/* cgltf parses other formats to floats
 						if (attribute_data->component_type != cgltf_component_type_r_32f) {
-							dd_log("avdl_load_gltf_internal: vertex position should only be float, it instead is %d", attribute_data->component_type);
+							avdl_log("avdl_load_gltf_internal: vertex position should only be float, it instead is %d", attribute_data->component_type);
 							cgltf_free(data);
 							return -1;
 						}
@@ -1782,18 +1782,18 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 					else
 					if (attribute->type == cgltf_attribute_type_color) {
 						if (attribute_data->type != cgltf_type_vec4) {
-							dd_log("avdl_load_gltf_internal: only supporting vec4 for vertex colours for now");
+							avdl_log("avdl_load_gltf_internal: only supporting vec4 for vertex colours for now");
 							cgltf_free(data);
 							return -1;
 						}
 						if (attribute_value_dimension_count != 4) {
-							dd_log("avdl_load_gltf_internal: vertex colours should only have 4 dimensions, they instead have %d", attribute_value_dimension_count);
+							avdl_log("avdl_load_gltf_internal: vertex colours should only have 4 dimensions, they instead have %d", attribute_value_dimension_count);
 							cgltf_free(data);
 							return -1;
 						}
 						/* cgltf parses other formats to floats
 						if (attribute_data->component_type != cgltf_component_type_r_32f) {
-							dd_log("avdl_load_gltf_internal: vertex colours should only be float, it instead is %d", attribute_data->component_type);
+							avdl_log("avdl_load_gltf_internal: vertex colours should only be float, it instead is %d", attribute_data->component_type);
 							cgltf_free(data);
 							return -1;
 						}
@@ -1815,12 +1815,12 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 					else
 					if (attribute->type == cgltf_attribute_type_normal) {
 						if (attribute_data->type != cgltf_type_vec3) {
-							dd_log("avdl_load_gltf_internal: only supporting vec3 for vertex normals for now");
+							avdl_log("avdl_load_gltf_internal: only supporting vec3 for vertex normals for now");
 							cgltf_free(data);
 							return -1;
 						}
 						if (attribute_value_dimension_count != 3) {
-							dd_log("avdl_load_gltf_internal: vertex normals should only have 3 dimensions, they instead have %d", attribute_value_dimension_count);
+							avdl_log("avdl_load_gltf_internal: vertex normals should only have 3 dimensions, they instead have %d", attribute_value_dimension_count);
 							cgltf_free(data);
 							return -1;
 						}
@@ -1841,18 +1841,18 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 					else
 					if (attribute->type == cgltf_attribute_type_texcoord) {
 						if (attribute_data->type != cgltf_type_vec2) {
-							dd_log("avdl_load_gltf_internal: only supporting vec2 for texture coordinates for now");
+							avdl_log("avdl_load_gltf_internal: only supporting vec2 for texture coordinates for now");
 							cgltf_free(data);
 							return -1;
 						}
 						if (attribute_value_dimension_count != 2) {
-							dd_log("avdl_load_gltf_internal: texture coordinates should only have 2 dimensions, they instead have %d", attribute_value_dimension_count);
+							avdl_log("avdl_load_gltf_internal: texture coordinates should only have 2 dimensions, they instead have %d", attribute_value_dimension_count);
 							cgltf_free(data);
 							return -1;
 						}
 						/* cgltf parses other formats to floats
 						if (attribute_data->component_type != cgltf_component_type_r_32f) {
-							dd_log("avdl_load_gltf_internal: texture coordinates should only be float, it instead is %d", attribute_data->component_type);
+							avdl_log("avdl_load_gltf_internal: texture coordinates should only be float, it instead is %d", attribute_data->component_type);
 							cgltf_free(data);
 							return -1;
 						}
@@ -1873,18 +1873,18 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 					else
 					if (attribute->type == cgltf_attribute_type_joints) {
 						if (attribute_data->type != cgltf_type_vec4) {
-							dd_log("avdl_load_gltf_internal: only supporting vec4 for vertex joints");
+							avdl_log("avdl_load_gltf_internal: only supporting vec4 for vertex joints");
 							cgltf_free(data);
 							return -1;
 						}
 						if (attribute_value_dimension_count != 4) {
-							dd_log("avdl_load_gltf_internal: vertex joints should only have 4 dimensions, they instead have %d", attribute_value_dimension_count);
+							avdl_log("avdl_load_gltf_internal: vertex joints should only have 4 dimensions, they instead have %d", attribute_value_dimension_count);
 							cgltf_free(data);
 							return -1;
 						}
 						/* cgltf parses other formats to floats
 						if (attribute_data->component_type != cgltf_component_type_r_32u) {
-							dd_log("avdl_load_gltf_internal: vertex joints should only be unsigned int, it instead is %d", attribute_data->component_type);
+							avdl_log("avdl_load_gltf_internal: vertex joints should only be unsigned int, it instead is %d", attribute_data->component_type);
 							cgltf_free(data);
 							return -1;
 						}
@@ -1907,18 +1907,18 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 					else
 					if (attribute->type == cgltf_attribute_type_weights) {
 						if (attribute_data->type != cgltf_type_vec4) {
-							dd_log("avdl_load_gltf_internal: only supporting vec4 for vertex weights");
+							avdl_log("avdl_load_gltf_internal: only supporting vec4 for vertex weights");
 							cgltf_free(data);
 							return -1;
 						}
 						if (attribute_value_dimension_count != 4) {
-							dd_log("avdl_load_gltf_internal: vertex weights should only have 4 dimensions, they instead have %d", attribute_value_dimension_count);
+							avdl_log("avdl_load_gltf_internal: vertex weights should only have 4 dimensions, they instead have %d", attribute_value_dimension_count);
 							cgltf_free(data);
 							return -1;
 						}
 						/* cgltf parses other formats to floats
 						if (attribute_data->component_type != cgltf_component_type_r_32f) {
-							dd_log("avdl_load_gltf_internal: vertex weights should only be float, it instead is %d", attribute_data->component_type);
+							avdl_log("avdl_load_gltf_internal: vertex weights should only be float, it instead is %d", attribute_data->component_type);
 							cgltf_free(data);
 							return -1;
 						}
@@ -1939,7 +1939,7 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 						free(weights);
 					}
 					else {
-						//dd_log("avdl: avdl_load_gltf_internal: vertex attribute not handled: %s", attribute->name);
+						//avdl_log("avdl: avdl_load_gltf_internal: vertex attribute not handled: %s", attribute->name);
 					}
 				}
 			}
@@ -1952,14 +1952,14 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 	}
 	cgltf_node **joints = 0;
 	if (data->skins_count > 1) {
-		dd_log("avdl_load_gltf_internal: only supporting one skin at a time for now");
+		avdl_log("avdl_load_gltf_internal: only supporting one skin at a time for now");
 	}
 	for (int i = 0; i < data->skins_count; i++) {
 		cgltf_skin *skin = &data->skins[i];
-		//dd_log("	skin name: %s", skin->name);
-		//dd_log("	skin joints: %d", skin->joints_count);
+		//avdl_log("	skin name: %s", skin->name);
+		//avdl_log("	skin joints: %d", skin->joints_count);
 		if (skin->joints_count < 1) {
-			dd_log("avdl_load_gltf_internal: skin should have at least one joint");
+			avdl_log("avdl_load_gltf_internal: skin should have at least one joint");
 			cgltf_free(data);
 			return -1;
 		}
@@ -1976,12 +1976,12 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 			dd_matrix_create(inverse_matrix);
 			dd_matrix_identity(inverse_matrix);
 			cgltf_node *joint = skin->joints[j];
-			//dd_log("	    joint i: %d", j);
-			//dd_log("	    joint name: %s", joint->name);
+			//avdl_log("	    joint i: %d", j);
+			//avdl_log("	    joint name: %s", joint->name);
 			m->children_indices[j] = 0;
 			m->children_indices_count[j] = 0;
 			if (joint->children && joint->children_count > 0) {
-				//dd_log("	    joint has children: %d", joint->children_count);
+				//avdl_log("	    joint has children: %d", joint->children_count);
 				m->children_indices_count[j] = joint->children_count;
 				m->children_indices[j] = malloc(sizeof(int) *joint->children_count);
 				for (int zz = 0; zz < joint->children_count; zz++) {
@@ -1993,17 +1993,17 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 						}
 					}
 					if (m->children_indices[j][zz] != -1) {
-						//dd_log("	    joint child: %d", m->children_indices[j][zz]);
+						//avdl_log("	    joint child: %d", m->children_indices[j][zz]);
 					}
 					else {
-						dd_log("avdl_load_gltf_internal: joint child: COULD NOT FIND CHILD INDEX");
+						avdl_log("avdl_load_gltf_internal: joint child: COULD NOT FIND CHILD INDEX");
 						cgltf_free(data);
 						return -1;
 					}
 				}
 			}
 			if (joint->parent) {
-				//dd_log("	    joint parent: %s", joint->parent->name);
+				//avdl_log("	    joint parent: %s", joint->parent->name);
 				int isRoot = 1;
 				for (int z = 0; z < skin->joints_count; z++) {
 					if (skin->joints[z] == joint->parent) {
@@ -2012,18 +2012,18 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 					}
 				}
 				if (isRoot) {
-					//dd_log("	    joint root: IS ROOT");
+					//avdl_log("	    joint root: IS ROOT");
 					if (m->rootIndex != -1) {
-						dd_log("avdl_load_gltf_internal: multiple root joints detected - confused");
+						avdl_log("avdl_load_gltf_internal: multiple root joints detected - confused");
 						cgltf_free(data);
 						return -1;
 					}
 					m->rootIndex = j;
 					cgltf_node *parentJoint = joint->parent;
-					//dd_log("parent node name: %s", parentJoint->name);
+					//avdl_log("parent node name: %s", parentJoint->name);
 					if (parentJoint->has_translation) {
 						/*
-						dd_log("	    parentJoint translation: %f %f %f",
+						avdl_log("	    parentJoint translation: %f %f %f",
 							parentJoint->translation[0],
 							parentJoint->translation[1],
 							parentJoint->translation[2]
@@ -2032,11 +2032,11 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 						dd_matrix_translate(&m->rootMatrix, parentJoint->translation[0], parentJoint->translation[1], parentJoint->translation[2]);
 					}
 					else {
-						//dd_log("	    parentJoint translation: no translation");
+						//avdl_log("	    parentJoint translation: no translation");
 					}
 					if (parentJoint->has_rotation) {
 						/*
-						dd_log("	    parentJoint rotation: %f %f %f %f",
+						avdl_log("	    parentJoint rotation: %f %f %f %f",
 							parentJoint->rotation[0],
 							parentJoint->rotation[1],
 							parentJoint->rotation[2],
@@ -2048,11 +2048,11 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 						dd_matrix_mult(&m->rootMatrix, &mat);
 					}
 					else {
-						//dd_log("	    parentJoint rotation: no rotation");
+						//avdl_log("	    parentJoint rotation: no rotation");
 					}
 					if (parentJoint->has_scale) {
 						/*
-						dd_log("	    parentJoint scale: %f %f %f",
+						avdl_log("	    parentJoint scale: %f %f %f",
 							parentJoint->scale[0],
 							parentJoint->scale[1],
 							parentJoint->scale[2]
@@ -2061,13 +2061,13 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 						dd_matrix_scale(&m->rootMatrix, parentJoint->scale[0], parentJoint->scale[1], parentJoint->scale[2]);
 					}
 					else {
-						//dd_log("	    parentJoint scale: no scale");
+						//avdl_log("	    parentJoint scale: no scale");
 					}
 					/*
 					*/
 					if (parentJoint->has_matrix) {
 						/*
-						dd_log("	    parentJoint matrix:\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f",
+						avdl_log("	    parentJoint matrix:\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f",
 							parentJoint->matrix[0],
 							parentJoint->matrix[1],
 							parentJoint->matrix[2],
@@ -2093,17 +2093,17 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 				}
 				/*
 				else {
-					dd_log("	    joint root: NOT ROOT");
+					avdl_log("	    joint root: NOT ROOT");
 				}
 				*/
 			}
 			else {
 				// doesn't happen
-				//dd_log("	    joint parent: NO PARENT");
+				//avdl_log("	    joint parent: NO PARENT");
 			}
 			if (joint->has_translation) {
 				/*
-				dd_log("	    joint translation: %f %f %f",
+				avdl_log("	    joint translation: %f %f %f",
 					joint->translation[0],
 					joint->translation[1],
 					joint->translation[2]
@@ -2111,11 +2111,11 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 				*/
 			}
 			else {
-				//dd_log("	    joint translation: no translation");
+				//avdl_log("	    joint translation: no translation");
 			}
 			if (joint->has_rotation) {
 				/*
-				dd_log("	    joint rotation: %f %f %f %f",
+				avdl_log("	    joint rotation: %f %f %f %f",
 					joint->rotation[0],
 					joint->rotation[1],
 					joint->rotation[2],
@@ -2124,11 +2124,11 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 				*/
 			}
 			else {
-				//dd_log("	    joint rotation: no rotation");
+				//avdl_log("	    joint rotation: no rotation");
 			}
 			if (joint->has_scale) {
 				/*
-				dd_log("	    joint scale: %f %f %f",
+				avdl_log("	    joint scale: %f %f %f",
 					joint->scale[0],
 					joint->scale[1],
 					joint->scale[2]
@@ -2136,11 +2136,11 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 				*/
 			}
 			else {
-				//dd_log("	    joint scale: no scale");
+				//avdl_log("	    joint scale: no scale");
 			}
 			if (joint->has_matrix) {
 				/*
-				dd_log("	    joint matrix:\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f",
+				avdl_log("	    joint matrix:\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f",
 					joint->matrix[0],
 					joint->matrix[1],
 					joint->matrix[2],
@@ -2165,27 +2165,27 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 			}
 			/*
 			else {
-				dd_log("	    joint matrix: no matrix");
+				avdl_log("	    joint matrix: no matrix");
 			}
 			*/
 			if (skin->inverse_bind_matrices) {
 				cgltf_accessor *inverse = skin->inverse_bind_matrices;
 				size_t attribute_value_dimension_count = cgltf_num_components(inverse->type);
-				//dd_log("	    joint inverse bind matrix components: %d", attribute_value_dimension_count);
-				//dd_log("	    joint inverse bind matrix count: %d", inverse->count);
+				//avdl_log("	    joint inverse bind matrix components: %d", attribute_value_dimension_count);
+				//avdl_log("	    joint inverse bind matrix count: %d", inverse->count);
 				if (inverse->type != cgltf_type_mat4) {
-					dd_log("avdl_load_gltf_internal: inverse bind matrix can only be mat4");
+					avdl_log("avdl_load_gltf_internal: inverse bind matrix can only be mat4");
 					cgltf_free(data);
 					return -1;
 				}
 				if (attribute_value_dimension_count != 16) {
-					dd_log("avdl_load_gltf_internal: inverse bind matrix can have 16 components, found %d", attribute_value_dimension_count);
+					avdl_log("avdl_load_gltf_internal: inverse bind matrix can have 16 components, found %d", attribute_value_dimension_count);
 					cgltf_free(data);
 					return -1;
 				}
 				cgltf_accessor_read_float(inverse, j, inverse_matrix, 16);
 				/*
-				dd_log("	    joint inverse bind matrix:\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f",
+				avdl_log("	    joint inverse bind matrix:\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f",
 					inverse_matrix->cell[0],
 					inverse_matrix->cell[1],
 					inverse_matrix->cell[2],
@@ -2213,35 +2213,35 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 				// inverse_matrix = parent transform + matrix, then inverse
 				//dd_matrix_copy(inverse_matrix, matrix);
 				//dd_matrix_inverse(inverse_matrix);
-				dd_log("avdl_load_gltf_internal: does not support files without inverse matrix for now");
+				avdl_log("avdl_load_gltf_internal: does not support files without inverse matrix for now");
 			}
-			//dd_log("matrix:");
+			//avdl_log("matrix:");
 			//dd_matrix_print(matrix);
 			//dd_matrix_print(inverse_matrix);
 		}
 		/*
 		if (skin->inverse_bind_matrices) {
 			cgltf_accessor *accessor = skin->inverse_bind_matrices;
-			dd_log("	skin inverse bind matrices: %d", accessor->count);
+			avdl_log("	skin inverse bind matrices: %d", accessor->count);
 			//float *matrices = malloc(sizeof(float) *16 *skin->inverse_bind_matrices);
 			size_t attribute_value_dimension_count = cgltf_num_components(accessor->type);
 			//cgltf_accessor_read_float(accessor, ind, &weights[ind *attribute_value_dimension_count], attribute_value_dimension_count);
-			dd_log("        num of components: %d", attribute_value_dimension_count);
+			avdl_log("        num of components: %d", attribute_value_dimension_count);
 		}
 		*/
 		/*
 		if (skin->skeleton) {
-			dd_log("	skin skeleton: %s", skin->skeleton->name);
+			avdl_log("	skin skeleton: %s", skin->skeleton->name);
 		}
 		else {
-			dd_log("	skin skeleton: NO SKELETON");
+			avdl_log("	skin skeleton: NO SKELETON");
 		}
 		*/
 		break;
 	}
 
 	if (data->animations_count == 0) {
-		dd_log("avdl_load_gltf_internal: not sure how to handle file without animations");
+		avdl_log("avdl_load_gltf_internal: not sure how to handle file without animations");
 		cgltf_free(data);
 		return -1;
 	}
@@ -2267,7 +2267,7 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 		}
 
 		if (animation->channels_count <= 0) {
-			dd_log("avdl_load_gltf_internal: animation has no channel, not supported");
+			avdl_log("avdl_load_gltf_internal: animation has no channel, not supported");
 			cgltf_free(data);
 			return -1;
 		}
@@ -2285,7 +2285,7 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 
 			// didn't find target
 			if (!animBone) {
-				dd_log("avdl_load_gltf_internal: bone targeted by channel cannot be found");
+				avdl_log("avdl_load_gltf_internal: bone targeted by channel cannot be found");
 				cgltf_free(data);
 				return -1;
 			}
@@ -2293,7 +2293,7 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 			if (channel->target_path == cgltf_animation_path_type_translation) {
 
 				if (!channel->sampler) {
-					dd_log("avdl_load_gltf_internal: channel without sampler - not supported");
+					avdl_log("avdl_load_gltf_internal: channel without sampler - not supported");
 					cgltf_free(data);
 					return -1;
 				}
@@ -2304,18 +2304,18 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 				cgltf_accessor* output = sampler->output;
 				size_t input_dimensions = cgltf_num_components(input->type);
 				if (input_dimensions != 1) {
-					dd_log("avdl_load_gltf_internal: channel input position should have 1 dimension, it instead has %d", input_dimensions);
+					avdl_log("avdl_load_gltf_internal: channel input position should have 1 dimension, it instead has %d", input_dimensions);
 					cgltf_free(data);
 					return -1;
 				}
 				size_t output_dimensions = cgltf_num_components(output->type);
 				if (output_dimensions != 3) {
-					dd_log("avdl_load_gltf_internal: channel output position should have 3 dimensions, it instead has %d", output_dimensions);
+					avdl_log("avdl_load_gltf_internal: channel output position should have 3 dimensions, it instead has %d", output_dimensions);
 					cgltf_free(data);
 					return -1;
 				}
 				if (input->count != output->count) {
-					dd_log("avdl_load_gltf_internal: channel input and output position should have the same number of values %d/%d", input->count, output->count);
+					avdl_log("avdl_load_gltf_internal: channel input and output position should have the same number of values %d/%d", input->count, output->count);
 					cgltf_free(data);
 					return -1;
 				}
@@ -2330,7 +2330,7 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 			if (channel->target_path == cgltf_animation_path_type_rotation) {
 
 				if (!channel->sampler) {
-					dd_log("avdl_load_gltf_internal: channel without sampler - not supported");
+					avdl_log("avdl_load_gltf_internal: channel without sampler - not supported");
 					cgltf_free(data);
 					return -1;
 				}
@@ -2341,18 +2341,18 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 				cgltf_accessor* output = sampler->output;
 				size_t input_dimensions = cgltf_num_components(input->type);
 				if (input_dimensions != 1) {
-					dd_log("avdl_load_gltf_internal: channel input rotation should have 1 dimension, it instead has %d", input_dimensions);
+					avdl_log("avdl_load_gltf_internal: channel input rotation should have 1 dimension, it instead has %d", input_dimensions);
 					cgltf_free(data);
 					return -1;
 				}
 				size_t output_dimensions = cgltf_num_components(output->type);
 				if (output_dimensions != 4) {
-					dd_log("avdl_load_gltf_internal: channel output rotation should have 4 dimensions, it instead has %d", output_dimensions);
+					avdl_log("avdl_load_gltf_internal: channel output rotation should have 4 dimensions, it instead has %d", output_dimensions);
 					cgltf_free(data);
 					return -1;
 				}
 				if (input->count != output->count) {
-					dd_log("avdl_load_gltf_internal: channel input and output rotation should have the same number of values %d/%d", input->count, output->count);
+					avdl_log("avdl_load_gltf_internal: channel input and output rotation should have the same number of values %d/%d", input->count, output->count);
 					cgltf_free(data);
 					return -1;
 				}
@@ -2366,19 +2366,19 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 			}
 			else
 			if (channel->target_path == cgltf_animation_path_type_scale) {
-				//dd_log("avdl_load_gltf_internal: unsupported animation type: scale");
+				//avdl_log("avdl_load_gltf_internal: unsupported animation type: scale");
 			}
 			else
 			if (channel->target_path == cgltf_animation_path_type_weights) {
-				//dd_log("avdl_load_gltf_internal: unsupported animation type: weights");
+				//avdl_log("avdl_load_gltf_internal: unsupported animation type: weights");
 			}
 			else
 			if (channel->target_path == cgltf_animation_path_type_max_enum) {
-				//dd_log("avdl_load_gltf_internal: unsupported animation type: max enum");
+				//avdl_log("avdl_load_gltf_internal: unsupported animation type: max enum");
 			}
 			else
 			if (channel->target_path == cgltf_animation_path_type_invalid) {
-				//dd_log("avdl_load_gltf_internal: invalid animation type");
+				//avdl_log("avdl_load_gltf_internal: invalid animation type");
 			}
 		}
 	}

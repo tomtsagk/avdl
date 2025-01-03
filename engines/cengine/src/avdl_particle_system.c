@@ -1,6 +1,6 @@
 #include "avdl_particle_system.h"
 #include "dd_math.h"
-#include "dd_log.h"
+#include "avdl_log.h"
 
 /*
  * Particle System Initialisation
@@ -232,7 +232,7 @@ void avdl_particle_system_setParticleScaleFuzz(struct avdl_particle_system *o, f
 
 void avdl_particle_system_setParticlesTotal(struct avdl_particle_system *o, int particlesTotal) {
 	if (particlesTotal > PARTICLES_TOTAL) {
-		dd_log("avdl error: cannot have %d particles, limiting to %d",
+		avdl_log("avdl error: cannot have %d particles, limiting to %d",
 			particlesTotal, PARTICLES_TOTAL
 		);
 		particlesTotal = PARTICLES_TOTAL;
