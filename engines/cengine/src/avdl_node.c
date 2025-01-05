@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "avdl_component_mesh.h"
+#include "avdl_component_custom.h"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -232,8 +233,67 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 	write(fd, content, strlen(content));
 
 	NodeToJson_PrintTabs(fd, tabs);
-	content = "\"name\": \"avdl_component_mesh\",\n";
+	content = "\"name\": \"";
 	write(fd, content, strlen(content));
+	if (o->type == AVDL_COMPONENT_MESH_ENUM) {
+		content = "avdl_component_mesh";
+		write(fd, content, strlen(content));
+		content = "\",\n";
+		write(fd, content, strlen(content));
+	}
+	else
+	if (o->type == AVDL_COMPONENT_CUSTOM_EDITOR_ENUM) {
+		struct avdl_component_custom *c = o;
+		content = avdl_component_custom_GetName(c);
+		write(fd, content, strlen(content));
+		content = "\",\n";
+		write(fd, content, strlen(content));
+
+		for (int i = 0; i+2 < dd_da_count(&c->values); i += 3) {
+			struct avdl_string *varName = dd_da_getDeref(&c->values, i);
+			struct avdl_string *varValue = dd_da_getDeref(&c->values, i+1);
+			struct avdl_string *varType = dd_da_getDeref(&c->values, i+2);
+			//avdl_log("var name and value: %s - %s", avdl_string_toCharPtr(varName), avdl_string_toCharPtr(varValue));
+
+			NodeToJson_PrintTabs(fd, tabs);
+			content = "\"";
+			write(fd, content, strlen(content));
+			content = avdl_string_toCharPtr(varName);
+			write(fd, content, strlen(content));
+			content = "\": ";
+			write(fd, content, strlen(content));
+
+			if (strcmp(avdl_string_toCharPtr(varType), "string") == 0) {
+				// string
+				content = "\"";
+				write(fd, content, strlen(content));
+				content = avdl_string_toCharPtr(varValue);
+				write(fd, content, strlen(content));
+				content = "\",\n";
+				write(fd, content, strlen(content));
+			}
+			else
+			if (strcmp(avdl_string_toCharPtr(varType), "int") == 0) {
+				// string
+				content = avdl_string_toCharPtr(varValue);
+				write(fd, content, strlen(content));
+				content = ",\n";
+				write(fd, content, strlen(content));
+			}
+			else
+			if (strcmp(avdl_string_toCharPtr(varType), "float") == 0) {
+				// string
+				content = avdl_string_toCharPtr(varValue);
+				write(fd, content, strlen(content));
+				content = ",\n";
+				write(fd, content, strlen(content));
+			}
+			else {
+				avdl_logError("unrecognized component variable type: %s", avdl_string_toCharPtr(varType));
+				return -1;
+			}
+		}
+	}
 
 	// end
 	NodeToJson_PrintTabs(fd, tabs);
@@ -398,102 +458,52 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					//avdl_log("found mesh component");
 					c = avdl_node_AddComponent(node, avdl_component_mesh);
 				}
-				/*
-				char component_type[100];
-				strcpy(component_type, avdl_json_getTokenString(json));
-
-				//avdl_log("got component string: %s", avdl_json_getTokenString(json));
-				char *content = "\t(def ref ";
-				write(fd, content, strlen(content));
-				content = component_type;
-				write(fd, content, strlen(content));
-				content = " ";
-				write(fd, content, strlen(content));
-				content = component_name;
-				write(fd, content, strlen(content));
-				content = ")\n";
-				write(fd, content, strlen(content));
-
-				content = "\t(= ";
-				write(fd, content, strlen(content));
-				content = component_name;
-				write(fd, content, strlen(content));
-				content = " (avdl_node_AddComponent ";
-				write(fd, content, strlen(content));
-				content = node_name;
-				write(fd, content, strlen(content));
-				content = " ";
-				write(fd, content, strlen(content));
-				content = component_type;
-				write(fd, content, strlen(content));
-				content = "))\n";
-				write(fd, content, strlen(content));
-				*/
+				else {
+					struct avdl_component_custom *custom = avdl_node_AddComponent(node, avdl_component_custom);
+					avdl_component_custom_SetName(custom, avdl_json_getTokenString(json));
+					c = custom;
+				}
 			}
 			else {
-				//avdl_log("component something else?");
+				avdl_logError("component name can only be string");
+				return -1;
 			}
 		}
 		else {
-			if (strlen(avdl_json_getTokenString(json)) >= 99) {
-				avdl_log("component variable too big: %s", avdl_json_getTokenString(json));
+			if (!c) {
+				avdl_logError("component name should come first: %s", avdl_json_getTokenString(json));
 				return -1;
 			}
-			/*
-			char component_variable[100];
-			strcpy(component_variable, avdl_json_getTokenString(json));
-			*/
+			if (strlen(avdl_json_getTokenString(json)) >= 99) {
+				avdl_logError("component variable too big: %s", avdl_json_getTokenString(json));
+				return -1;
+			}
+			//avdl_log("component variable name: %s", avdl_json_getTokenString(json));
+			struct avdl_component_custom *custom = c;
+			avdl_component_custom_AddVariableName(custom, avdl_json_getTokenString(json));
 
 			avdl_json_next(json);
 
-			/*
-			char *content = "\t(= ";
-			write(fd, content, strlen(content));
-			write(fd, component_name, strlen(component_name));
-			content = ".";
-			write(fd, content, strlen(content));
-			write(fd, component_variable, strlen(component_variable));
-			content = " ";
-			write(fd, content, strlen(content));
-
 			if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
-				content = "\"";
-				write(fd, content, strlen(content));
-				content = avdl_json_getTokenString(json);
-				write(fd, content, strlen(content));
-				content = "\"";
-				write(fd, content, strlen(content));
+				//avdl_log("component variable value (string): %s", avdl_json_getTokenString(json));
+				avdl_component_custom_AddVariableValue(custom, avdl_json_getTokenString(json), "string");
 			}
 			else
-			if (avdl_json_getToken(json) == AVDL_JSON_INT
-			||  avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
-				content = avdl_json_getTokenString(json);
-				write(fd, content, strlen(content));
+			if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+				//avdl_log("component variable value (int): %s", avdl_json_getTokenString(json));
+				avdl_component_custom_AddVariableValue(custom, avdl_json_getTokenString(json), "int");
+			}
+			else
+			if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+				//avdl_log("component variable value (float): %s", avdl_json_getTokenString(json));
+				avdl_component_custom_AddVariableValue(custom, avdl_json_getTokenString(json), "float");
 			}
 			else {
-				avdl_log("unsupported json component variable value");
+				avdl_log("unsupported component variable value type: %s", avdl_json_getTokenString(json));
 				return -1;
 			}
-			content = ")\n";
-			write(fd, content, strlen(content));
-			*/
-		}
 
-		/*
-		avdl_json_next(json);
-		if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
-			//avdl_log("got component string: %s", avdl_json_getTokenString(json));
-			char *content = "\t# with component string \"";
-			write(fd, content, strlen(content));
-			content = avdl_json_getTokenString(json);
-			write(fd, content, strlen(content));
-			content = "\"\n";
-			write(fd, content, strlen(content));
 		}
-		else {
-			//avdl_log("component something else?");
-		}
-		*/
 
 		avdl_json_next(json);
 	}
@@ -503,19 +513,6 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 	if (c) {
 		c->after_create(c);
 	}
-
-	/*
-	char *content = "\t(";
-	write(fd, content, strlen(content));
-	write(fd, component_name, strlen(component_name));
-	content = ".after_create ";
-	write(fd, content, strlen(content));
-	write(fd, component_name, strlen(component_name));
-	content = ")\n";
-	write(fd, content, strlen(content));
-
-	component_counter++;
-	*/
 
 	return 0;
 }
