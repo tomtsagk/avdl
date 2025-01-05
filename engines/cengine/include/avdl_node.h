@@ -67,6 +67,7 @@ int avdl_node_GetChildrenCount(struct avdl_node *o);
 struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index);
 
 void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array *array, int component_type);
+struct avdl_component *avdl_node_GetComponent(struct avdl_node *o, int component_type);
 
 int avdl_node_NodeToJson(struct avdl_node *o, char *filename);
 int avdl_node_JsonToNode(char *filename, struct avdl_node *o);

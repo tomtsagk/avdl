@@ -8,6 +8,7 @@ void avdl_component_mesh_create(struct avdl_component_mesh *o) {
 	o->parent.after_create = avdl_component_mesh_after_create;
 	o->parent.type = AVDL_COMPONENT_MESH_ENUM;
 	o->mesh_name = 0;
+	o->isEditor = 0;
 
 	avdl_mesh_create(&o->mesh);
 }
@@ -17,7 +18,12 @@ void avdl_component_mesh_clean(struct avdl_component_mesh *o) {
 
 void avdl_component_mesh_after_create(struct avdl_component_mesh *o) {
 	if (o->mesh_name) {
-		o->mesh.load(&o->mesh, o->mesh_name, DD_PLY);
+		if (o->isEditor) {
+			avdl_mesh_loadLocal(&o->mesh, o->mesh_name, DD_PLY);
+		}
+		else {
+			o->mesh.load(&o->mesh, o->mesh_name, DD_PLY);
+		}
 	}
 	else {
 		o->mesh.set_primitive(&o->mesh, AVDL_PRIMITIVE_BOX);

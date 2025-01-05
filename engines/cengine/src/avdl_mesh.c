@@ -624,6 +624,16 @@ void avdl_mesh_load(struct avdl_mesh *m, const char *asset, int type) {
 
 }
 
+void avdl_mesh_loadLocal(struct avdl_mesh *m, const char *asset, int type) {
+
+	// clean the mesh, if was dirty
+	avdl_mesh_clean(m);
+
+	// mark to be loaded
+	avdl_assetManager_addLocal(m, AVDL_ASSETMANAGER_MESH2, asset, type);
+
+}
+
 void avdl_mesh_copy(struct avdl_mesh *dest, struct avdl_mesh *src) {
 	avdl_mesh_clean(dest);
 	dest->vcount = src->vcount;

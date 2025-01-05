@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "avdl_component_mesh.h"
+#include "avdl_component_terrain.h"
 #include "avdl_component_custom.h"
 
 #include <fcntl.h>
@@ -251,6 +252,35 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 		write(fd, content, strlen(content));
 		content = "\",\n";
 		write(fd, content, strlen(content));
+
+		struct avdl_component_mesh *mesh = o;
+		if (mesh->mesh_name) {
+			NodeToJson_PrintTabs(fd, tabs);
+			content = "\"mesh_name\": \"";
+			write(fd, content, strlen(content));
+			content = mesh->mesh_name;
+			write(fd, content, strlen(content));
+			content = "\",\n";
+			write(fd, content, strlen(content));
+		}
+	}
+	else
+	if (o->type == AVDL_COMPONENT_TERRAIN_ENUM) {
+		content = "avdl_component_terrain";
+		write(fd, content, strlen(content));
+		content = "\",\n";
+		write(fd, content, strlen(content));
+
+		struct avdl_component_terrain *terrain = o;
+		if (terrain->asset_name) {
+			NodeToJson_PrintTabs(fd, tabs);
+			content = "\"asset_name\": \"";
+			write(fd, content, strlen(content));
+			content = terrain->asset_name;
+			write(fd, content, strlen(content));
+			content = "\",\n";
+			write(fd, content, strlen(content));
+		}
 	}
 	else
 	if (o->type == AVDL_COMPONENT_CUSTOM_EDITOR_ENUM) {
@@ -432,6 +462,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 	}
 
 	struct avdl_component *c = 0;
+	int component_type = -1;
 
 	/*
 	char component_name[100];
@@ -467,12 +498,24 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 
 				if (strcmp(avdl_json_getTokenString(json), "avdl_component_mesh") == 0) {
 					//avdl_log("found mesh component");
-					c = avdl_node_AddComponent(node, avdl_component_mesh);
+					struct avdl_component_mesh *mesh = avdl_node_AddComponent(node, avdl_component_mesh);
+					mesh->isEditor = 1;
+					c = mesh;
+					component_type = AVDL_COMPONENT_MESH_ENUM;
+				}
+				else
+				if (strcmp(avdl_json_getTokenString(json), "avdl_component_terrain") == 0) {
+					avdl_log("found terrain component");
+					struct avdl_component_terrain *terrain = avdl_node_AddComponent(node, avdl_component_terrain);
+					terrain->isEditor = 1;
+					c = terrain;
+					component_type = AVDL_COMPONENT_TERRAIN_ENUM;
 				}
 				else {
 					struct avdl_component_custom *custom = avdl_node_AddComponent(node, avdl_component_custom);
 					avdl_component_custom_SetName(custom, avdl_json_getTokenString(json));
 					c = custom;
+					component_type = AVDL_COMPONENT_CUSTOM_EDITOR_ENUM;
 				}
 			}
 			else {
@@ -481,7 +524,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 			}
 		}
 		else {
-			if (!c) {
+			if (!c || component_type < 0) {
 				avdl_logError("component name should come first: %s", avdl_json_getTokenString(json));
 				return -1;
 			}
@@ -490,28 +533,62 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				return -1;
 			}
 			//avdl_log("component variable name: %s", avdl_json_getTokenString(json));
-			struct avdl_component_custom *custom = c;
-			avdl_component_custom_AddVariableName(custom, avdl_json_getTokenString(json));
 
-			avdl_json_next(json);
+			if (component_type == AVDL_COMPONENT_MESH_ENUM) {
+				struct avdl_component_mesh *mesh = c;
 
-			if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
-				//avdl_log("component variable value (string): %s", avdl_json_getTokenString(json));
-				avdl_component_custom_AddVariableValue(custom, avdl_json_getTokenString(json), "string");
+				if (strcmp(avdl_json_getTokenString(json), "mesh_name") == 0) {
+					avdl_json_next(json);
+					if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+						mesh->mesh_name = malloc(sizeof(char) *strlen(avdl_json_getTokenString(json)));
+						strcpy(mesh->mesh_name, avdl_json_getTokenString(json));
+					}
+				}
+				else {
+					avdl_logError("unknown component variable name: %s", avdl_json_getTokenString(json));
+				}
 			}
 			else
-			if (avdl_json_getToken(json) == AVDL_JSON_INT) {
-				//avdl_log("component variable value (int): %s", avdl_json_getTokenString(json));
-				avdl_component_custom_AddVariableValue(custom, avdl_json_getTokenString(json), "int");
-			}
-			else
-			if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
-				//avdl_log("component variable value (float): %s", avdl_json_getTokenString(json));
-				avdl_component_custom_AddVariableValue(custom, avdl_json_getTokenString(json), "float");
+			if (component_type == AVDL_COMPONENT_TERRAIN_ENUM) {
+				struct avdl_component_terrain *terrain = c;
+
+				avdl_log("found terrain var component");
+
+				if (strcmp(avdl_json_getTokenString(json), "asset_name") == 0) {
+					avdl_json_next(json);
+					if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+						terrain->asset_name = malloc(sizeof(char) *strlen(avdl_json_getTokenString(json)));
+						strcpy(terrain->asset_name, avdl_json_getTokenString(json));
+					}
+				}
+				else {
+					avdl_logError("unknown component variable name: %s", avdl_json_getTokenString(json));
+				}
 			}
 			else {
-				avdl_log("unsupported component variable value type: %s", avdl_json_getTokenString(json));
-				return -1;
+				struct avdl_component_custom *custom = c;
+				avdl_component_custom_AddVariableName(custom, avdl_json_getTokenString(json));
+
+				avdl_json_next(json);
+
+				if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+					//avdl_log("component variable value (string): %s", avdl_json_getTokenString(json));
+					avdl_component_custom_AddVariableValue(custom, avdl_json_getTokenString(json), "string");
+				}
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+					//avdl_log("component variable value (int): %s", avdl_json_getTokenString(json));
+					avdl_component_custom_AddVariableValue(custom, avdl_json_getTokenString(json), "int");
+				}
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+					//avdl_log("component variable value (float): %s", avdl_json_getTokenString(json));
+					avdl_component_custom_AddVariableValue(custom, avdl_json_getTokenString(json), "float");
+				}
+				else {
+					avdl_log("unsupported component variable value type: %s", avdl_json_getTokenString(json));
+					return -1;
+				}
 			}
 
 		}
@@ -621,7 +698,10 @@ static int json_expect_node(struct avdl_json_object *json, struct avdl_node *nod
 
 			avdl_json_next(json);
 			while (avdl_json_getToken(json) != AVDL_JSON_ARRAY_END) {
-				json_expect_component(json, node);
+				if (json_expect_component(json, node) != 0) {
+					avdl_logError("error reading component");
+					return -1;
+				}
 			}
 		}
 		else
@@ -681,4 +761,19 @@ int avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
 	avdl_json_deinit(&json);
 
 	return 0;
+}
+
+struct avdl_component *avdl_node_GetComponent(struct avdl_node *o, int component_type) {
+
+	// Get first component
+	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
+		struct avdl_component *c = dd_da_getDeref(&o->components, i);
+
+		if (c->type == component_type) {
+			return c;
+		}
+	}
+
+	return 0;
+
 }

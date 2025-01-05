@@ -37,6 +37,7 @@ void avdl_assetManager_deinit();
 
 // add assets to load
 void avdl_assetManager_add(void *object, int meshType, const char *assetname, int type);
+void avdl_assetManager_addLocal(void *object, int meshType, const char *assetname, int type);
 void avdl_assetManager_loadAll();
 
 // getters

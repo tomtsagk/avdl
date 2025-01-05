@@ -44,6 +44,7 @@ void avdl_terrain_clean(struct avdl_terrain *o);
 void avdl_terrain_draw(struct avdl_terrain *o);
 
 void avdl_terrain_load(struct avdl_terrain *o, const char *filename);
+void avdl_terrain_loadLocal(struct avdl_terrain *o, const char *filename);
 
 float avdl_terrain_getSpot(struct avdl_terrain *o, float x, float z);
 int avdl_terrain_isOnTerrain(struct avdl_terrain *o, float x, float z);

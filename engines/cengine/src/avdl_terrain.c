@@ -42,6 +42,10 @@ void avdl_terrain_load(struct avdl_terrain *o, const char *filename) {
 	dd_image_load_png(&o->img, filename);
 }
 
+void avdl_terrain_loadLocal(struct avdl_terrain *o, const char *filename) {
+	dd_image_load_png(&o->img, filename);
+}
+
 void avdl_terrain_draw(struct avdl_terrain *o) {
 	if (o->img.isLoaded(&o->img)) {
 		if (o->img.width == 0 || o->img.height == 0) {

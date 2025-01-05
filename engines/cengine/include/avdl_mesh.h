@@ -105,6 +105,7 @@ void avdl_mesh_draw(struct avdl_mesh *m);
 // functions to give the mesh its shape
 void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape);
 void avdl_mesh_load(struct avdl_mesh *m, const char *filename, int type);
+void avdl_mesh_loadLocal(struct avdl_mesh *m, const char *filename, int type);
 
 void avdl_mesh_copy(struct avdl_mesh *dest, struct avdl_mesh *src);
 void avdl_mesh_combine(struct avdl_mesh *dest, struct avdl_mesh *src, float offsetX, float offsetY, float offsetZ);

@@ -11,6 +11,8 @@ struct avdl_component_mesh {
 	struct avdl_mesh mesh;
 	char *mesh_name;
 
+	int isEditor;
+
 	void (*after_create)(struct avdl_component_mesh *);
 	void (*draw)(struct avdl_component_mesh *);
 

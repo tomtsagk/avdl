@@ -125,6 +125,48 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 
 }
 
+void avdl_assetManager_addLocal(void *object, int meshType, const char *assetname, int type) {
+	if (lockLoading) {
+		return;
+	}
+	//#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	/*
+	if (assetManagerLoading) {
+		avdl_log("error add new asset while loading: %s", assetname);
+		return;
+	}
+	*/
+	#ifdef AVDL_DIRECT3D11
+	struct dd_meshToLoad meshToLoad;
+	meshToLoad.object = object;
+	meshToLoad.meshType = meshType;
+	meshToLoad.type = type;
+	strcpy_s(meshToLoad.filename, 300, assetname);
+	dd_da_push(&meshesToLoad, &meshToLoad);
+	#else
+
+	struct dd_meshToLoad meshToLoad;
+	meshToLoad.object = object;
+	meshToLoad.meshType = meshType;
+	meshToLoad.type = type;
+	#if defined(_WIN32) || defined(WIN32)
+	strcpy(meshToLoad.filename, assetname);
+	//avdl_log("add asset: %s\n", meshToLoad.filename);
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	strcpy(meshToLoad.filename, assetname);
+	//avdl_log("add android asset: %s\n", meshToLoad.filename);
+	#else
+	strcat(meshToLoad.filename, assetname);
+	//printf("add asset: %s\n", meshToLoad.filename);
+	//avdl_log("add asset: %s\n", meshToLoad.filename);
+	#endif
+	dd_da_push(&meshesToLoad, &meshToLoad);
+	//#endif
+
+	#endif
+
+}
+
 void avdl_assetManager_loadAssets() {
 
 	// load assets here
