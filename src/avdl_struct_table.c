@@ -232,6 +232,9 @@ void struct_table_init() {
 	struct_table_push("avdl_component_terrain", "avdl_component");
 	struct_table_push_member("asset_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0); // variable
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetTerrain", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("IsOnTerrain", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetSpot", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 
