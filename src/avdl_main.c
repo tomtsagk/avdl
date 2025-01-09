@@ -3404,7 +3404,6 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 			i--;
 		}
 	}
-	Avdl_FileOp_GetFilesInDirectoryClean(&srcFiles);
 
 	// project data in cmake
 	struct avdl_string cmake_data;
@@ -3428,6 +3427,7 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 		avdl_string_cat(&cmake_data, avdl_string_toCharPtr(str));
 		avdl_string_cat(&cmake_data, " ");
 	}
+	Avdl_FileOp_GetFilesInDirectoryClean(&srcFiles);
 
 	avdl_string_cat(&cmake_data, avdl_settings->project_name_code);
 	avdl_string_cat(&cmake_data, ".rc ");
