@@ -95,6 +95,7 @@ void avdl_json_next(struct avdl_json_object *o) {
 
 		// grab first character
 		char nextChar = o->current[0];
+		int has_comma = 0;
 
 		char *st;
 		switch (nextChar) {
@@ -164,7 +165,6 @@ void avdl_json_next(struct avdl_json_object *o) {
 			default:
 
 				// check float
-				int has_comma = 0;
 				o->isFloat = 0;
 				char *end = o->current;
 				while ((end[0] >= '0' && end[0] <= '9') || end[0] == '.' || end[0] == '-') {
