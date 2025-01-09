@@ -24,6 +24,7 @@ add_executable(${PROJECT_NAME}
 	src/avdl_string.c
 	src/avdl_arguments.c
 	src/avdl_time.c
+	src/avdl_json.c
 )
 
 add_compile_definitions(
