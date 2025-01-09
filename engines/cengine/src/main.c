@@ -413,15 +413,15 @@ void Java_dev_afloof_avdl_AvdlRenderer_nativeRender(JNIEnv* env) {
  * 	but will set a flag that the engine can pick up when ready
  */
 void Java_dev_afloof_avdl_AvdlGLSurfaceView_nativeMouseInputDown(JNIEnv*  env, jobject obj, jint mouseX, jint mouseY) {
-	avdl_input_AddInput(&engine.input, AVDL_INPUT_MOUSE_LEFT, AVDL_INPUT_STATE_DOWN, mouseX, mouseY);
+	avdl_input_AddInputLocation(&engine.input, AVDL_INPUT_MOUSE_LEFT, AVDL_INPUT_STATE_DOWN, mouseX, mouseY);
 }
 
 void Java_dev_afloof_avdl_AvdlGLSurfaceView_nativeMouseInputUp(JNIEnv*  env, jobject obj, jint mouseX, jint mouseY) {
-	avdl_input_AddInput(&engine.input, AVDL_INPUT_MOUSE_LEFT, AVDL_INPUT_STATE_UP, mouseX, mouseY);
+	avdl_input_AddInputLocation(&engine.input, AVDL_INPUT_MOUSE_LEFT, AVDL_INPUT_STATE_UP, mouseX, mouseY);
 }
 
 void Java_dev_afloof_avdl_AvdlGLSurfaceView_nativeMouseInputMove(JNIEnv*  env, jobject obj, jint mouseX, jint mouseY) {
-	avdl_input_AddInput(&engine.input, AVDL_INPUT_MOUSE_LEFT, AVDL_INPUT_STATE_MOVE, mouseX, mouseY);
+	avdl_input_AddInputLocation(&engine.input, AVDL_INPUT_MOUSE_LEFT, AVDL_INPUT_STATE_MOVE, mouseX, mouseY);
 }
 
 void Java_dev_afloof_avdl_AvdlGLSurfaceView_nativeTogglePauseResume(JNIEnv* env) {
@@ -442,7 +442,7 @@ void Java_dev_afloof_avdl_AvdlActivity_nativeResume(JNIEnv* env) {
 void Java_dev_afloof_avdl_AvdlActivity_nativeKeyDown(JNIEnv*  env, jobject obj, jint key) {
 	if (dd_flag_exit == 0) {
 		pthread_mutex_lock(&updateDrawMutex);
-		engine.input.input_key = key;
+		avdl_input_AddInput(&engine.input, key, AVDL_INPUT_STATE_DOWN);
 		pthread_mutex_unlock(&updateDrawMutex);
 	}
 }

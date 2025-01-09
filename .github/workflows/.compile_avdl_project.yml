@@ -141,8 +141,8 @@ on:
         required: false
 
 env:
-  AVDL_BUILD_URL_LINUX: https://github.com/tomtsagk/avdl/releases/download/v0.22.3/avdl_v0.22.3_linux.zip
-  AVDL_BUILD_URL_WINDOWS: https://github.com/tomtsagk/avdl/releases/download/v0.22.3/avdl_v0.22.3_windows.zip
+  AVDL_BUILD_URL_LINUX: https://github.com/tomtsagk/avdl/releases/download/v0.22.4/avdl_v0.22.4_linux.zip
+  AVDL_BUILD_URL_WINDOWS: https://github.com/tomtsagk/avdl/releases/download/v0.22.4/avdl_v0.22.4_windows.zip
 
 jobs:
   # Android

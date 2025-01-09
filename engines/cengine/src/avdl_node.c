@@ -11,7 +11,9 @@
 #include "avdl_component_custom.h"
 
 #include <fcntl.h>
+#if defined( AVDL_LINUX )
 #include <unistd.h>
+#endif
 #include <errno.h>
 
 void avdl_node_create(struct avdl_node *o) {

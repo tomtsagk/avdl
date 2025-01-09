@@ -794,6 +794,7 @@ static void handleMousePress(struct avdl_engine *o, int button, int state, int x
 }
 
 static int SDLScancodeToAvdl(int button) {
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	// a-z - ASCII
 	if (button >= SDL_SCANCODE_A && button <= SDL_SCANCODE_Z) {
 		return 'a' +(button -SDL_SCANCODE_A);
@@ -833,6 +834,8 @@ static int SDLScancodeToAvdl(int button) {
 	if (button == SDL_SCANCODE_RETURN) {
 		return 13;
 	}
+
+	#endif
 
 	// ???
 	return -1;
