@@ -204,14 +204,17 @@ struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index) {
 }
 
 static int NodeToJson_PrintTabs(int fd, int tabs) {
+	#if defined( AVDL_LINUX )
 	char *content;
 	for (int i = 0; i < tabs; i++) {
 		content = "\t";
 		write(fd, content, strlen(content));
 	}
+	#endif
 }
 
 static int NodeToJson_PrintVec3(int fd, struct dd_vec3 *v) {
+	#if defined( AVDL_LINUX )
 	char *content;
 	char buffer[100];
 	// x
@@ -231,11 +234,13 @@ static int NodeToJson_PrintVec3(int fd, struct dd_vec3 *v) {
 	// z
 	snprintf(buffer, 80, "%f", v->z);
 	write(fd, buffer, strlen(buffer));
+	#endif
 
 	return 0;
 }
 
 static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs) {
+	#if defined( AVDL_LINUX )
 
 	char *content;
 
@@ -340,10 +345,12 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 	NodeToJson_PrintTabs(fd, tabs);
 	content = "}\n";
 	write(fd, content, strlen(content));
+	#endif
 }
 
 static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 
+	#if defined( AVDL_LINUX )
 	char *content;
 
 	// start
@@ -432,9 +439,11 @@ static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 	NodeToJson_PrintTabs(fd, tabs);
 	content = "}\n";
 	write(fd, content, strlen(content));
+	#endif
 }
 
 int avdl_node_NodeToJson(struct avdl_node *o, char *filename) {
+	#if defined( AVDL_LINUX )
 	avdl_log("NodeToJson at %s", filename);
 
 	remove(filename);
@@ -450,10 +459,12 @@ int avdl_node_NodeToJson(struct avdl_node *o, char *filename) {
 
 	close(fd);
 
+	#endif
 	return 0;
 }
 
 static int json_expect_component(struct avdl_json_object *json, struct avdl_node *node) {
+	#if defined( AVDL_LINUX )
 
 	// check main object
 	if (avdl_json_getToken(json) != AVDL_JSON_OBJECT_START) {
@@ -601,11 +612,13 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 	if (c) {
 		c->after_create(c);
 	}
+	#endif
 
 	return 0;
 }
 
 static int json_expect_array3f(struct avdl_json_object *json, struct dd_vec3 *v) {
+	#if defined( AVDL_LINUX )
 
 	if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
 		avdl_log("Json: expected array start for 3f: %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
@@ -632,11 +645,13 @@ static int json_expect_array3f(struct avdl_json_object *json, struct dd_vec3 *v)
 		}
 		avdl_json_next(json);
 	}
+	#endif
 
 	return 0;
 }
 
 static int json_expect_node(struct avdl_json_object *json, struct avdl_node *node) {
+	#if defined( AVDL_LINUX )
 
 	// check main object
 	if (avdl_json_getToken(json) != AVDL_JSON_OBJECT_START) {
@@ -737,11 +752,13 @@ static int json_expect_node(struct avdl_json_object *json, struct avdl_node *nod
 		avdl_json_next(json);
 	}
 	avdl_json_next(json);
+	#endif
 
 	return 0;
 }
 
 int avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
+	#if defined( AVDL_LINUX )
 
 	avdl_log("opening %s to convert to hierarchy", filename);
 
@@ -759,6 +776,7 @@ int avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
 	}
 
 	avdl_json_deinit(&json);
+	#endif
 
 	return 0;
 }
