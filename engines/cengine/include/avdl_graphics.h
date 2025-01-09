@@ -120,6 +120,11 @@ int avdl_graphics_generateContext();
 #define avdl_graphics_SetUniform3f(uniform, f1, f2, f3)     glUniform3f(uniform, f1, f2, f3)
 #define avdl_graphics_SetUniform4f(uniform, f1, f2, f3, f4) glUniform4f(uniform, f1, f2, f3, f4)
 
+#define avdl_graphics_SetUniform1fv(uniform, count, f1) glUniform1fv(uniform, count, f1)
+#define avdl_graphics_SetUniform2fv(uniform, count, f1) glUniform2fv(uniform, count, f1)
+#define avdl_graphics_SetUniform3fv(uniform, count, f1) glUniform3fv(uniform, count, f1)
+#define avdl_graphics_SetUniform4fv(uniform, count, f1) glUniform4fv(uniform, count, f1)
+
 #define avdl_graphics_SetUniform1i(uniform, i1)             glUniform1i(uniform, i1)
 #define avdl_graphics_SetUniform2i(uniform, i1, i2)         glUniform2i(uniform, i1, i2)
 #define avdl_graphics_SetUniform3i(uniform, i1, i2, i3)     glUniform3i(uniform, i1, i2, i3)
