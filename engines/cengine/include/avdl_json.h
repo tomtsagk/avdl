@@ -8,12 +8,10 @@ extern "C" {
 #include <stdio.h>
 #include <stddef.h>
 
-/*
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 #endif
-*/
 
 // Tokens
 enum AVDL_JSON_TOKEN {
