@@ -1,5 +1,6 @@
 #include "avdl_collider.h"
 #include "avdl_collider_aabb.h"
+#include "avdl_collider_sphere.h"
 #include "avdl_log.h"
 #include "dd_math.h"
 
@@ -291,7 +292,7 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 	return 0;
 }
 
-int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, struct avdl_collider *o2, struct avdl_node *n2) {
+int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, struct avdl_collider *o2, struct avdl_node *n2, struct avdl_collider_collision *collision) {
 
 	if (o1->type == AVDL_COLLIDER_TYPE_AABB && o2->type == AVDL_COLLIDER_TYPE_AABB) {
 
@@ -506,7 +507,51 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 
 		return 0;
 	}
+	else
+	if (o1->type == AVDL_COLLIDER_TYPE_SPHERE && o2->type == AVDL_COLLIDER_TYPE_SPHERE) {
+
+		struct avdl_collider_sphere *col1 = o1;
+		struct avdl_collider_sphere *col2 = o2;
+
+		// collect vertices
+		struct dd_vec4 vertex1;
+		struct dd_vec4 vertex2;
+		dd_vec4_set(&vertex1, 0, 0, 0, 1);
+		dd_vec4_set(&vertex2, 0, 0, 0, 1);
+		dd_vec4_multiply(&vertex1, avdl_node_GetGlobalMatrix(n1));
+		dd_vec4_multiply(&vertex2, avdl_node_GetGlobalMatrix(n2));
+
+		float distance = dd_vec4_distance(&vertex1, &vertex2);
+
+		if (distance < col1->radius +col2->radius) {
+
+			if (collision) {
+				dd_vec4_set(&collision->overlap,
+					dd_vec4_getX(&vertex2) -dd_vec4_getX(&vertex1),
+					dd_vec4_getY(&vertex2) -dd_vec4_getY(&vertex1),
+					dd_vec4_getZ(&vertex2) -dd_vec4_getZ(&vertex1),
+					dd_vec4_getW(&vertex2) -dd_vec4_getW(&vertex1)
+				);
+				dd_vec4_normalise(&collision->overlap);
+				dd_vec4_multiplyFloat(&collision->overlap, col1->radius +col2->radius -distance);
+			}
+
+			return 1;
+		}
+
+		return 0;
+	}
 
 	avdl_log("collision not supported");
 	return 0;
+}
+
+void avdl_collider_collision_create(struct avdl_collider_collision *o) {
+}
+
+void avdl_collider_collision_clean(struct avdl_collider_collision *o) {
+}
+
+struct dd_vec4 *avdl_collider_collision_GetOverlap(struct avdl_collider_collision *o) {
+	return &o->overlap;
 }

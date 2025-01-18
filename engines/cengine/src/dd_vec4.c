@@ -76,6 +76,13 @@ void dd_vec4_multiply(struct dd_vec4 *o, struct dd_matrix *m) {
         }
 }
 
+void dd_vec4_multiplyFloat(struct dd_vec4 *o, float value) {
+	o->cell[0] *= value;
+	o->cell[1] *= value;
+	o->cell[2] *= value;
+	o->cell[3] *= value;
+}
+
 float dd_vec4_dot(struct dd_vec4 *a, struct dd_vec4 *b) {
 	return a->cell[0] *b->cell[0]
 		+a->cell[1] *b->cell[1]
@@ -111,4 +118,15 @@ void dd_vec4_normalise(struct dd_vec4 *o) {
 
 float dd_vec4_magnitude(struct dd_vec4 *o) {
 	return dd_math_sqrt(dd_math_pow(o->cell[0], 2) +dd_math_pow(o->cell[1], 2) +dd_math_pow(o->cell[2], 2) +dd_math_pow(o->cell[3], 2));
+}
+
+float dd_vec4_distance(struct dd_vec4 *a, struct dd_vec4 *b) {
+	struct dd_vec4 v;
+	dd_vec4_set(&v,
+		dd_vec4_getX(b) -dd_vec4_getX(a),
+		dd_vec4_getY(b) -dd_vec4_getY(a),
+		dd_vec4_getZ(b) -dd_vec4_getZ(a),
+		dd_vec4_getW(b) -dd_vec4_getW(a)
+	);
+	return dd_vec4_magnitude(&v);
 }

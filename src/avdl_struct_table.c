@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "avdl_struct_table.h"
+#include "avdl_log.h"
 
 struct struct_table_entry struct_table[DD_STRUCT_TABLE_TOTAL];
 int struct_table_current = 0;
@@ -141,6 +142,8 @@ void struct_table_init() {
 	struct_table_push_member("clearObjects", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("addConstantForcef", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clearConstantForce", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("avdl_collider_collision", 0);
+	struct_table_push_member("overlap", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_collider", 0);
 	struct_table_push("avdl_collider_aabb", "avdl_collider");
 	struct_table_push_member("setMin", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -343,8 +346,8 @@ void struct_table_print() {
 // return the name of the struct on index, make sure index is in bounds
 const char *struct_table_get_name(int index) {
 	if (index < 0 || index > struct_table_current) {
-		printf("error: struct_table_get_name: index out of bounds: %d\n", index);
-		exit(-1);
+		avdl_log_error("struct_table_get_name: index out of bounds: %d\n", index);
+		return "<null>";
 	}
 	return struct_table[index].name;
 }
@@ -434,8 +437,8 @@ static int parent_level;
 static int parent_level_current;
 static int struct_table_is_member_parent_search(int structIndex, const char *membername) {
 	if (structIndex < 0 || structIndex > struct_table_current) {
-		printf("error: struct_table_is_member_parent: index out of bounds: %d %s\n", structIndex, membername);
-		exit(-1);
+		avdl_log_error("struct_table_is_member_parent: index out of bounds: %d %s", structIndex, membername);
+		return -1;
 	}
 
 	parent_level++;
@@ -450,7 +453,6 @@ static int struct_table_is_member_parent_search(int structIndex, const char *mem
 		return parent_level_current;
 	}
 
-	//return -1;
 	return struct_table_is_member_parent_search(t->parent, membername);
 }
 

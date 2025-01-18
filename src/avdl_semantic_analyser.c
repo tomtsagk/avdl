@@ -795,6 +795,10 @@ static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 			semantic_error(l, "identifier '%s' not a known symbol", ast_getLex(identifier));
 		}
 
+		if (symEntry->value < 0) {
+			semantic_error(l, "identifier '%s' is of unknown type", ast_getLex(identifier));
+		}
+
 		// identifiers that own objects have to be structs
 		if (symEntry->token != DD_VARIABLE_TYPE_STRUCT) {
 			semantic_error(l, "identifier '%s' not a struct, so it can't own objects", ast_getLex(identifier));
