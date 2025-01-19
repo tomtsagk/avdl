@@ -34,8 +34,13 @@ int file_copy(const char *src, const char *dest, int append) {
 		return -1;
 	}
 
-	int dest_flags = _O_WRONLY | _O_CREAT | O_TRUNC;
-	if (append) dest_flags |= _O_APPEND;
+	int dest_flags = _O_WRONLY | _O_CREAT;
+	if (append) {
+		dest_flags |= _O_APPEND;
+	}
+	else {
+		dest_flags |= O_TRUNC;
+	}
 	int d = AVDL_FILE_OPEN_MODE(dest, dest_flags, _S_IREAD | _S_IWRITE);
 	if (!d) {
 		printf("can't open %s: %s\n", dest, strerror(errno));
@@ -80,7 +85,12 @@ int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int
 	}
 
 	int dest_flags = O_WRONLY | O_CREAT | O_TRUNC;
-	if (append) dest_flags |= O_APPEND;
+	if (append) {
+		dest_flags |= O_APPEND;
+	}
+	else {
+		dest_flags |= O_TRUNC;
+	}
 	int d;
 	if (dest_at) {
 		d = openat(dest_at, dest, dest_flags, S_IRUSR | S_IWUSR);
@@ -1109,9 +1119,12 @@ int file_write(const char *filename, const char *content, int append) {
 
 	return 0;
 	#else
-	int flags = O_WRONLY | O_CREAT | O_TRUNC;
+	int flags = O_WRONLY | O_CREAT;
 	if (append) {
 		flags |= O_APPEND;
+	}
+	else {
+		flags |= O_TRUNC;
 	}
 	int d;
 	d = open(filename, flags, S_IRUSR | S_IWUSR);
