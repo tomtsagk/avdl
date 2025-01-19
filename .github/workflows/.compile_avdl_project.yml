@@ -208,7 +208,9 @@ jobs:
       run: ./avdl_linux/bin/avdl --android || cat .avdl_cache/android/.avdl_android_log
     - name: generate_android_project admob
       if: ${{ matrix.build_type == 'android_admob' }}
-      run: ./avdl_linux/bin/avdl --android --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }} --admob-ads-rewarded ${{ secrets.ADMOB_REWARDED_AD_ID }} || cat .avdl_cache/android/.avdl_android_log
+      run: |
+        ./avdl_linux/bin/avdl --android --admob-ads ${{ secrets.ADMOB_PROJECT_ID }} --admob-ads-fullscreen ${{ secrets.ADMOB_INTERSTITIAL_AD_ID }} --admob-ads-rewarded ${{ secrets.ADMOB_REWARDED_AD_ID }} || cat .avdl_cache/android/.avdl_android_log
+        cat .avdl_cache/android/app/build.gradle
     - name: generate_android_project googleplay
       if: ${{ matrix.build_type == 'android_googleplay' }}
       run: ./avdl_linux/bin/avdl --android-google-play ${{ secrets.GOOGLE_PLAY_ID }} ${{ secrets.AVDL_GOOGLE_PLAY_ACHIEVEMENTS }} || cat .avdl_cache/android/.avdl_android_log
