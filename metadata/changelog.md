@@ -1,1 +1,2 @@
-* Improved windows builds
+* Implement hierarchy of game objects
+* Added components
