@@ -156,7 +156,7 @@ void avdl_assetManager_addLocal(void *object, int meshType, const char *assetnam
 	strcpy(meshToLoad.filename, assetname);
 	//avdl_log("add android asset: %s\n", meshToLoad.filename);
 	#else
-	strcat(meshToLoad.filename, assetname);
+	strcpy(meshToLoad.filename, assetname);
 	//printf("add asset: %s\n", meshToLoad.filename);
 	//avdl_log("add asset: %s\n", meshToLoad.filename);
 	#endif
