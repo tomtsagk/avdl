@@ -24,6 +24,8 @@ void avdl_node_create(struct avdl_node *o) {
 	o->GetLocalTransform = avdl_node_GetLocalTransform;
 	o->GetGlobalMatrix = avdl_node_GetGlobalMatrix;
 	o->GetGlobalInverseMatrix = avdl_node_GetGlobalInverseMatrix;
+	o->GetGlobalNormalMatrix = avdl_node_GetGlobalNormalMatrix;
+	o->GetGlobalNormalInverseMatrix = avdl_node_GetGlobalNormalInverseMatrix;
 	o->AddChild = avdl_node_AddChild;
 	o->SetName = avdl_node_SetName;
 	o->GetName = avdl_node_GetName;
@@ -35,6 +37,7 @@ void avdl_node_create(struct avdl_node *o) {
 	dd_matrix_identity(&o->globalMatrix);
 	dd_matrix_identity(&o->globalNormalMatrix);
 	dd_matrix_identity(&o->globalInverseMatrix);
+	dd_matrix_identity(&o->globalNormalInverseMatrix);
 	avdl_transform_create(&o->localTransform);
 
 	dd_dynamic_array_create(&o->components);
@@ -90,6 +93,15 @@ struct dd_matrix *avdl_node_GetGlobalNormalMatrix(struct avdl_node *o) {
 	}
 	dd_matrix_mult(&o->globalNormalMatrix, avdl_transform_GetNormalMatrix(&o->localTransform));
 	return &o->globalNormalMatrix;
+}
+
+struct dd_matrix *avdl_node_GetGlobalNormalInverseMatrix(struct avdl_node *o) {
+	dd_matrix_identity(&o->globalNormalInverseMatrix);
+	dd_matrix_copy(&o->globalNormalInverseMatrix, avdl_transform_GetNormalInverseMatrix(&o->localTransform));
+	if (o->parent) {
+		dd_matrix_mult(&o->globalNormalInverseMatrix, avdl_node_GetGlobalNormalInverseMatrix(o->parent));
+	}
+	return &o->globalNormalInverseMatrix;
 }
 
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {

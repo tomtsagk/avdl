@@ -16,6 +16,8 @@ struct avdl_transform {
 	struct dd_matrix matrix_inverse;
 	int matrix_normal_dirty;
 	struct dd_matrix matrix_normal;
+	int matrix_normal_inverse_dirty;
+	struct dd_matrix matrix_normal_inverse;
 
 	// setters
 	void (*SetPosition)(struct avdl_transform *, struct dd_vec3 *src);
@@ -29,6 +31,7 @@ struct avdl_transform {
 	struct dd_matrix *(*GetMatrix)(struct avdl_transform *);
 	struct dd_matrix *(*GetInverseMatrix)(struct avdl_transform *);
 	struct dd_matrix *(*GetNormalMatrix)(struct avdl_transform *);
+	struct dd_matrix *(*GetNormalInverseMatrix)(struct avdl_transform *);
 	struct dd_vec3 *(*GetPosition)(struct avdl_transform *);
 	struct dd_vec3 *(*GetRotation)(struct avdl_transform *);
 	struct dd_vec3 *(*GetScale)(struct avdl_transform *);
@@ -48,6 +51,7 @@ void avdl_transform_SetScale3f(struct avdl_transform *o, float x, float y, float
 struct dd_matrix *avdl_transform_GetMatrix(struct avdl_transform *o);
 struct dd_matrix *avdl_transform_GetInverseMatrix(struct avdl_transform *o);
 struct dd_matrix *avdl_transform_GetNormalMatrix(struct avdl_transform *o);
+struct dd_matrix *avdl_transform_GetNormalInverseMatrix(struct avdl_transform *o);
 struct dd_vec3 *avdl_transform_GetPosition(struct avdl_transform *o);
 struct dd_vec3 *avdl_transform_GetRotation(struct avdl_transform *o);
 struct dd_vec3 *avdl_transform_GetScale(struct avdl_transform *o);

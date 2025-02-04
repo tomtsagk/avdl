@@ -21,6 +21,24 @@ void dd_vec4_set(struct dd_vec4 *o, float x, float y, float z, float w) {
 	o->cell[3] = w;
 }
 
+void dd_vec4_setVec4(struct dd_vec4 *o, struct dd_vec4 *o2) {
+	for (int i = 0; i < 4; i++) {
+		o->cell[i] = o2->cell[i];
+	}
+}
+
+void dd_vec4_substract(struct dd_vec4 *o, struct dd_vec4 *o2) {
+	for (int i = 0; i < 4; i++) {
+		o->cell[i] -= o2->cell[i];
+	}
+}
+
+void dd_vec4_substractFloat(struct dd_vec4 *o, float f) {
+	for (int i = 0; i < 4; i++) {
+		o->cell[i] -= f;
+	}
+}
+
 float dd_vec4_getX(struct dd_vec4 *o) {
 	return o->cell[0];
 }

@@ -16,6 +16,10 @@ struct dd_vec4 {
 
 void dd_vec4_create(struct dd_vec4 *o);
 void dd_vec4_set(struct dd_vec4 *o, float x, float y, float z, float w);
+void dd_vec4_setVec4(struct dd_vec4 *o, struct dd_vec4 *o2);
+
+void dd_vec4_substract(struct dd_vec4 *o, struct dd_vec4 *o2);
+void dd_vec4_substractFloat(struct dd_vec4 *o, float f);
 
 float dd_vec4_getX(struct dd_vec4 *o);
 float dd_vec4_getY(struct dd_vec4 *o);

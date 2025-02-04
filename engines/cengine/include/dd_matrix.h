@@ -106,6 +106,9 @@ float dd_matrix_z(struct dd_matrix *m);
 
 void dd_matrix_quaternion_to_rotation_matrix(struct dd_vec4 *q, struct dd_matrix *output);
 
+extern struct dd_matrix matPerspective;
+#define dd_matrix_Perspective &matPerspective
+
 #ifdef __cplusplus
 }
 #endif

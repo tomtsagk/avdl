@@ -22,6 +22,7 @@ struct avdl_node {
 	struct dd_matrix globalMatrix;
 	struct dd_matrix globalNormalMatrix;
 	struct dd_matrix globalInverseMatrix;
+	struct dd_matrix globalNormalInverseMatrix;
 
 	// component
 	struct dd_dynamic_array components;
@@ -36,6 +37,7 @@ struct avdl_node {
 	struct avdl_transform *(*GetGlobalMatrix)(struct avdl_node *);
 	struct avdl_transform *(*GetGlobalNormalMatrix)(struct avdl_node *);
 	struct avdl_transform *(*GetGlobalInverseMatrix)(struct avdl_node *);
+	struct avdl_transform *(*GetGlobalNormalInverseMatrix)(struct avdl_node *);
 
 	struct avdl_node *(*AddChild)(struct avdl_node *);
 	void (*SetName)(struct avdl_node *, char *name);
@@ -56,6 +58,7 @@ struct avdl_transform *avdl_node_GetLocalTransform(struct avdl_node *o);
 struct dd_matrix *avdl_node_GetGlobalMatrix(struct avdl_node *o);
 struct dd_matrix *avdl_node_GetGlobalNormalMatrix(struct avdl_node *o);
 struct dd_matrix *avdl_node_GetGlobalInverseMatrix(struct avdl_node *o);
+struct dd_matrix *avdl_node_GetGlobalNormalInverseMatrix(struct avdl_node *o);
 
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o);
 struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int size, void (*constructor)(void *));

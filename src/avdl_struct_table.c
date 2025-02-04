@@ -213,12 +213,16 @@ void struct_table_init() {
 	struct_table_push_member("SetScale3f", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetInverseMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetNormalMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetNormalInverseMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetPosition", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetRotation", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetScale", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_node", 0);
 	struct_table_push_member("GetGlobalMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetGlobalInverseMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetGlobalNormalMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetGlobalNormalInverseMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetLocalTransform", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("AddChild", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetName", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
