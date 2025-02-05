@@ -235,6 +235,8 @@ void struct_table_init() {
 	struct_table_push_member("GetType", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_component_mesh", "avdl_component");
 	struct_table_push_member("mesh_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0); // variable
+	struct_table_push_member("texture_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0); // variable
+	struct_table_push_member("hasTransparency", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_component_terrain", "avdl_component");
 	struct_table_push_member("asset_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0); // variable

@@ -56,6 +56,7 @@ void dd_image_bind(struct dd_image *o);
 void dd_image_bindIndex(struct dd_image *o, int index);
 void dd_image_unbind(struct dd_image *o);
 void dd_image_set(struct dd_image *o, const char *filename, int type);
+void dd_image_setLocal(struct dd_image *o, const char *filename, int type);
 
 void dd_image_clean(struct dd_image *o);
 

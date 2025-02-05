@@ -282,6 +282,20 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 			content = "\",\n";
 			write(fd, content, strlen(content));
 		}
+		if (mesh->texture_name) {
+			NodeToJson_PrintTabs(fd, tabs);
+			content = "\"texture_name\": \"";
+			write(fd, content, strlen(content));
+			content = mesh->texture_name;
+			write(fd, content, strlen(content));
+			content = "\",\n";
+			write(fd, content, strlen(content));
+		}
+		if (mesh->hasTransparency) {
+			NodeToJson_PrintTabs(fd, tabs);
+			content = "\"hasTransparency\": 1,\n";
+			write(fd, content, strlen(content));
+		}
 	}
 	else
 	if (o->type == AVDL_COMPONENT_TERRAIN_ENUM) {
@@ -569,8 +583,24 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 						strcpy(mesh->mesh_name, avdl_json_getTokenString(json));
 					}
 				}
+				else
+				if (strcmp(avdl_json_getTokenString(json), "texture_name") == 0) {
+					avdl_json_next(json);
+					if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+						mesh->texture_name = malloc(sizeof(char) *strlen(avdl_json_getTokenString(json)));
+						strcpy(mesh->texture_name, avdl_json_getTokenString(json));
+					}
+				}
+				else
+				if (strcmp(avdl_json_getTokenString(json), "hasTransparency") == 0) {
+					avdl_json_next(json);
+					if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+						mesh->hasTransparency = 1;
+					}
+				}
 				else {
 					avdl_logError("unknown component variable name: %s", avdl_json_getTokenString(json));
+					return -1;
 				}
 			}
 			else
@@ -588,6 +618,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				}
 				else {
 					avdl_logError("unknown component variable name: %s", avdl_json_getTokenString(json));
+					return -1;
 				}
 			}
 			else {

@@ -433,6 +433,19 @@ void dd_image_set(struct dd_image *o, const char *filename, int type) {
 	#endif
 }
 
+void dd_image_setLocal(struct dd_image *o, const char *filename, int type) {
+	#ifdef AVDL_DIRECT3D11
+	o->assetName = filename;
+	o->assetType = type;
+	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
+	#else
+	o->openglContextId = avdl_graphics_getContextId();
+	o->assetName = filename;
+	o->assetType = type;
+	avdl_assetManager_addLocal(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
+	#endif
+}
+
 void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, int x, int y, int w, int h) {
 
 	#if defined( AVDL_DIRECT3D11 )

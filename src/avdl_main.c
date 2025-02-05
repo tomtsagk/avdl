@@ -795,7 +795,10 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 
 			avdl_json_next(json);
 			while (avdl_json_getToken(json) != AVDL_JSON_ARRAY_END) {
-				json_expect_component(json, fd, node_name);
+				if (json_expect_component(json, fd, node_name) == -1) {
+					avdl_log_error("Unable to read component");
+					return -1;
+				}
 			}
 		}
 		else
