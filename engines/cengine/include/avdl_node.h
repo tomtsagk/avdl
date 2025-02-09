@@ -40,6 +40,7 @@ struct avdl_node {
 	struct avdl_transform *(*GetGlobalNormalInverseMatrix)(struct avdl_node *);
 
 	struct avdl_node *(*AddChild)(struct avdl_node *);
+	struct avdl_node *(*GetParent)(struct avdl_node *);
 	void (*SetName)(struct avdl_node *, char *name);
 	char *(*GetName)(struct avdl_node *);
 
@@ -47,6 +48,8 @@ struct avdl_node {
 	int (*GetChild)(struct avdl_node *, int index);
 
 	void (*AddComponentsToArray)(struct avdl_node *, struct dd_dynamic_array *array, int component_type);
+
+	int (*Copy)(struct avdl_node *o, struct avdl_node *target);
 
 };
 
@@ -68,11 +71,13 @@ void avdl_node_SetName(struct avdl_node *o, char *name);
 char *avdl_node_GetName(struct avdl_node *o);
 int avdl_node_GetChildrenCount(struct avdl_node *o);
 struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index);
+struct avdl_node *avdl_node_GetParent(struct avdl_node *o);
 
 void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array *array, int component_type);
 struct avdl_component *avdl_node_GetComponent(struct avdl_node *o, int component_type);
 
 int avdl_node_NodeToJson(struct avdl_node *o, char *filename);
 int avdl_node_JsonToNode(char *filename, struct avdl_node *o);
+int avdl_node_Copy(struct avdl_node *o, struct avdl_node *target);
 
 #endif

@@ -178,9 +178,9 @@ void avdl_ui_element_SetAnchor(struct avdl_ui_element *o, float x, float y) {
 	o->resize(o);
 }
 
-void avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type) {
+int avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type) {
 	if (o->isVisible == 0) {
-		return;
+		return 0;
 	}
 
 	CheckIsSelected(o);
@@ -189,6 +189,7 @@ void avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type
 	if (type == AVDL_INPUT_STATE_DOWN) {
 		if (o->isSelected && o->hasMouseCollided(o)) {
 			o->isSelectedClicked = 1;
+			return 1;
 		}
 	}
 	else
@@ -199,10 +200,13 @@ void avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type
 			// onclick
 			if (o->onClick) {
 				o->onClick(o->onClickData);
+				o->isSelectedClicked = 0;
+				return 1;
 			}
 		}
 		o->isSelectedClicked = 0;
 	}
+	return 0;
 
 }
 

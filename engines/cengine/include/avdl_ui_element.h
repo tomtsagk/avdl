@@ -57,7 +57,7 @@ struct avdl_ui_element {
 	void (*clean)(struct avdl_ui_element *);
 	void (*resize)(struct avdl_ui_element *);
 
-	void (*mouse_input)(struct avdl_ui_element *, int, int);
+	int (*mouse_input)(struct avdl_ui_element *, int, int);
 	int (*hasMouseCollided)(struct avdl_ui_element *);
 
 	void (*disable)(struct avdl_ui_element *);
@@ -87,7 +87,7 @@ void avdl_ui_element_drawDebug(struct avdl_ui_element *);
 void avdl_ui_element_clean(struct avdl_ui_element *);
 void avdl_ui_element_resize(struct avdl_ui_element *);
 
-void avdl_ui_element_mouse_input(struct avdl_ui_element *, int, int);
+int avdl_ui_element_mouse_input(struct avdl_ui_element *, int, int);
 int avdl_ui_element_hasMouseCollided(struct avdl_ui_element *);
 
 void avdl_ui_element_disable(struct avdl_ui_element *);
