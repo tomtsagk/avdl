@@ -159,3 +159,9 @@ struct dd_vec3 *avdl_transform_GetRotation(struct avdl_transform *o) {
 struct dd_vec3 *avdl_transform_GetScale(struct avdl_transform *o) {
 	return &o->scale;
 }
+
+int avdl_transform_Copy(struct avdl_transform *o, struct avdl_transform *target) {
+	avdl_transform_SetPosition(o, &target->position);
+	avdl_transform_SetRotation(o, &target->rotation);
+	avdl_transform_SetScale(o, &target->scale);
+}

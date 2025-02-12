@@ -230,6 +230,7 @@ void struct_table_init() {
 	struct_table_push_member("GetChild", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetParent", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("Copy", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("Duplicate", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_component", 0);
 	struct_table_push_member("after_create", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetNode", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

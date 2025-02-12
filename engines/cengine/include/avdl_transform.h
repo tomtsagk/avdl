@@ -56,6 +56,8 @@ struct dd_vec3 *avdl_transform_GetPosition(struct avdl_transform *o);
 struct dd_vec3 *avdl_transform_GetRotation(struct avdl_transform *o);
 struct dd_vec3 *avdl_transform_GetScale(struct avdl_transform *o);
 
+int avdl_transform_Copy(struct avdl_transform *o, struct avdl_transform *target);
+
 void avdl_transform_create(struct avdl_transform *o);
 void avdl_transform_clean(struct avdl_transform *o);
 

@@ -32,6 +32,7 @@ void avdl_node_create(struct avdl_node *o) {
 	o->GetName = avdl_node_GetName;
 	o->AddComponentsToArray = avdl_node_AddComponentsToArray;
 	o->Copy = avdl_node_Copy;
+	o->Duplicate = avdl_node_Duplicate;
 
 	o->GetChildrenCount = avdl_node_GetChildrenCount;
 	o->GetChild = avdl_node_GetChild;
@@ -854,4 +855,86 @@ int avdl_node_Copy(struct avdl_node *o, struct avdl_node *target) {
 	// TODO - Copy the rest
 
 	return 0;
+}
+
+static struct avdl_component *DuplicateComponent(struct avdl_component *o, struct avdl_node *newParent) {
+
+	if (!newParent) {
+		avdl_log("avdl_node DuplicateComponent: No parent given, cannot duplicate component");
+		return 0;
+	}
+
+	struct avdl_component *component = 0;
+	if (o->GetType(o) == AVDL_COMPONENT_MESH_ENUM) {
+		component = avdl_node_AddComponent(newParent, avdl_component_mesh);
+	}
+	else
+	if (o->GetType(o) == AVDL_COMPONENT_TERRAIN_ENUM) {
+		component = avdl_node_AddComponent(newParent, avdl_component_terrain);
+	}
+	else
+	if (o->GetType(o) == AVDL_COMPONENT_CUSTOM_EDITOR_ENUM) {
+		component = avdl_node_AddComponent(newParent, avdl_component_custom);
+	}
+	else
+	if (o->GetType(o) == AVDL_COMPONENT_INAVLID_ENUM) {
+		avdl_log("avdl_node DuplicateComponent: invalid component type");
+		return 0;
+	}
+	else {
+		avdl_log("avdl_node DuplicateComponent: cannot duplicate custom components for now");
+		return 0;
+	}
+
+	if (!component) {
+		avdl_log("avdl_node DuplicateComponent: could not add component");
+		return 0;
+	}
+
+	if (component->Copy(component, o) != 0) {
+		avdl_log("failed to copy component");
+	}
+	component->after_create(component);
+
+	return component;
+}
+
+struct avdl_node *avdl_node_Duplicate(struct avdl_node *o, struct avdl_node *newParent) {
+
+	// No Parent - duplicate on the same parent
+	if (newParent == 0) {
+		newParent = o->GetParent(o);
+		if (!newParent) {
+			avdl_log("avdl_node_Duplicate: No parent given, and no parent detected, failed to duplicate");
+			return 0;
+		}
+	}
+
+	// Create new Node
+	struct avdl_node *newNode = newParent->AddChild(newParent);
+
+	// Copy Transform
+	struct avdl_transform *newTransform = newNode->GetLocalTransform(newNode);
+	avdl_transform_Copy(newTransform, o->GetLocalTransform(o));
+
+	// Copy components
+	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
+		struct avdl_component *component = dd_da_getDeref(&o->components, i);
+		if (!DuplicateComponent(component, newNode)) {
+			avdl_log("avdl_node_Duplicate: could not duplicate component");
+			continue;
+		}
+	}
+
+	// Copy children
+	for (int i = 0; i < o->GetChildrenCount(o); i++) {
+		struct avdl_node *child = o->GetChild(o, i);
+		avdl_node_Duplicate(child, newNode);
+	}
+
+	return newNode;
+}
+
+int avdl_node_GetComponentCount(struct avdl_node *o) {
+	return dd_da_count(&o->components);
 }

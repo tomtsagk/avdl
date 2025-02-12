@@ -4,6 +4,7 @@
 void avdl_component_create(struct avdl_component *o) {
 	o->GetNode = avdl_component_GetNode;
 	o->SetType = avdl_component_SetType;
+	o->Copy = avdl_component_Copy;
 	o->after_create = avdl_component_after_create;
 
 	o->type = AVDL_COMPONENT_INAVLID_ENUM;
@@ -26,4 +27,9 @@ void avdl_component_after_create(struct avdl_component *o) {
 
 int avdl_component_GetType(struct avdl_component *o) {
 	return o->type;
+}
+
+int avdl_component_Copy(struct avdl_component *o, struct avdl_component *target) {
+	o->type = target->type;
+	return 0;
 }

@@ -16,6 +16,7 @@ void avdl_component_terrain_create(struct avdl_component_terrain *o) {
 	o->parent.type = AVDL_COMPONENT_TERRAIN_ENUM;
 	o->asset_name = 0;
 	o->isEditor = 0;
+	o->parent.Copy = avdl_component_terrain_Copy;
 
 	avdl_terrain_create(&o->terrain);
 }
@@ -105,4 +106,10 @@ float avdl_component_terrain_GetSpot(struct avdl_component_terrain *o, struct av
 
 	return avdl_terrain_getSpot(&o->terrain, position.cell[0], -position.cell[2]);
 
+}
+
+int avdl_component_terrain_Copy(struct avdl_component *o, struct avdl_component *target) {
+	avdl_component_Copy(o, target);
+	avdl_log("avdl_component_terrain_Copy NOT IMPLEMENTED");
+	return 1;
 }

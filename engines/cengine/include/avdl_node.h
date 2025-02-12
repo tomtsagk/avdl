@@ -45,11 +45,13 @@ struct avdl_node {
 	char *(*GetName)(struct avdl_node *);
 
 	int (*GetChildrenCount)(struct avdl_node *);
-	int (*GetChild)(struct avdl_node *, int index);
+	struct avdl_node *(*GetChild)(struct avdl_node *, int index);
 
 	void (*AddComponentsToArray)(struct avdl_node *, struct dd_dynamic_array *array, int component_type);
 
 	int (*Copy)(struct avdl_node *o, struct avdl_node *target);
+
+	struct avdl_node *(*Duplicate)(struct avdl_node *o, struct avdl_node *newParent);
 
 };
 
@@ -74,10 +76,12 @@ struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index);
 struct avdl_node *avdl_node_GetParent(struct avdl_node *o);
 
 void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array *array, int component_type);
+int avdl_node_GetComponentCount(struct avdl_node *o);
 struct avdl_component *avdl_node_GetComponent(struct avdl_node *o, int component_type);
 
 int avdl_node_NodeToJson(struct avdl_node *o, char *filename);
 int avdl_node_JsonToNode(char *filename, struct avdl_node *o);
 int avdl_node_Copy(struct avdl_node *o, struct avdl_node *target);
+struct avdl_node *avdl_node_Duplicate(struct avdl_node *o, struct avdl_node *newParent);
 
 #endif

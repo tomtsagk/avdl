@@ -30,4 +30,6 @@ void avdl_component_mesh_clean(struct avdl_component_mesh *o);
 void avdl_component_mesh_after_create(struct avdl_component_mesh *o);
 void avdl_component_mesh_draw(struct avdl_component_mesh *o);
 
+int avdl_component_mesh_Copy(struct avdl_component *o, struct avdl_component *target);
+
 #endif

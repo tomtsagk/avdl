@@ -33,4 +33,6 @@ struct avdl_terrain *avdl_component_terrain_GetTerrain(struct avdl_component_ter
 int avdl_component_terrain_IsOnTerrain(struct avdl_component_terrain *o, struct avdl_node *n);
 float avdl_component_terrain_GetSpot(struct avdl_component_terrain *o, struct avdl_node *n);
 
+int avdl_component_terrain_Copy(struct avdl_component *o, struct avdl_component *target);
+
 #endif

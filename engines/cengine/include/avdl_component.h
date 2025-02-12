@@ -22,6 +22,8 @@ struct avdl_component {
 	void (*SetType)(struct avdl_component *, int type);
 	int (*GetType)(struct avdl_component *);
 
+	int (*Copy)(struct avdl_component *, struct avdl_component *);
+
 	struct avdl_node *(*GetNode)(struct avdl_component *);
 };
 
@@ -32,5 +34,7 @@ void avdl_component_after_create(struct avdl_component *o);
 struct avdl_node *avdl_component_GetNode(struct avdl_component *o);
 void avdl_component_SetType(struct avdl_component *o, int type);
 int avdl_component_GetType(struct avdl_component *o);
+
+int avdl_component_Copy(struct avdl_component *o, struct avdl_component *target);
 
 #endif

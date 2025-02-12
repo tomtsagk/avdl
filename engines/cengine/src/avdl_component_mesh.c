@@ -11,6 +11,7 @@ void avdl_component_mesh_create(struct avdl_component_mesh *o) {
 	o->texture_name = 0;
 	o->hasTransparency = 0;
 	o->isEditor = 0;
+	o->parent.Copy = avdl_component_mesh_Copy;
 
 	avdl_mesh_create(&o->mesh);
 	dd_image_create(&o->image);
@@ -50,4 +51,14 @@ void avdl_component_mesh_after_create(struct avdl_component_mesh *o) {
 
 void avdl_component_mesh_draw(struct avdl_component_mesh *o) {
 	o->mesh.draw(&o->mesh);
+}
+
+int avdl_component_mesh_Copy(struct avdl_component *o, struct avdl_component *target) {
+	avdl_component_Copy(o, target);
+	struct avdl_component_mesh *m = o;
+	struct avdl_component_mesh *t = target;
+	m->mesh_name = t->mesh_name;
+	m->texture_name = t->texture_name;
+	m->isEditor = t->isEditor;
+	return 0;
 }
