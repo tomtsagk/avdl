@@ -27,6 +27,7 @@ void avdl_node_create(struct avdl_node *o) {
 	o->GetGlobalNormalMatrix = avdl_node_GetGlobalNormalMatrix;
 	o->GetGlobalNormalInverseMatrix = avdl_node_GetGlobalNormalInverseMatrix;
 	o->AddChild = avdl_node_AddChild;
+	o->RemoveChild = avdl_node_RemoveChild;
 	o->GetParent = avdl_node_GetParent;
 	o->SetName = avdl_node_SetName;
 	o->GetName = avdl_node_GetName;
@@ -114,6 +115,23 @@ struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {
 	avdl_node_create(child);
 	child->parent = o;
 	return child;
+}
+
+int avdl_node_RemoveChild(struct avdl_node *o, struct avdl_node *targetChild) {
+
+	for (unsigned int i = 0; i < dd_da_count(&o->children); i++) {
+		struct avdl_node *child = dd_da_getDeref(&o->children, i);
+
+		if (child != targetChild) {
+			continue;
+		}
+
+		avdl_node_clean(child);
+		dd_da_remove(&o->children, 1, i);
+		free(child);
+	}
+
+	return 0;
 }
 
 struct avdl_node *avdl_node_GetParent(struct avdl_node *o) {

@@ -40,6 +40,7 @@ struct avdl_node {
 	struct avdl_transform *(*GetGlobalNormalInverseMatrix)(struct avdl_node *);
 
 	struct avdl_node *(*AddChild)(struct avdl_node *);
+	int (*RemoveChild)(struct avdl_node *, struct avdl_node *);
 	struct avdl_node *(*GetParent)(struct avdl_node *);
 	void (*SetName)(struct avdl_node *, char *name);
 	char *(*GetName)(struct avdl_node *);
@@ -66,6 +67,7 @@ struct dd_matrix *avdl_node_GetGlobalInverseMatrix(struct avdl_node *o);
 struct dd_matrix *avdl_node_GetGlobalNormalInverseMatrix(struct avdl_node *o);
 
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o);
+int avdl_node_RemoveChild(struct avdl_node *o, struct avdl_node *child);
 struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int size, void (*constructor)(void *));
 #define avdl_node_AddComponent(x, y) avdl_node_AddComponentInternal(x, sizeof(struct y), y ## _create);
 

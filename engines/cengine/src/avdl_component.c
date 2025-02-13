@@ -4,6 +4,7 @@
 void avdl_component_create(struct avdl_component *o) {
 	o->GetNode = avdl_component_GetNode;
 	o->SetType = avdl_component_SetType;
+	o->GetType = avdl_component_GetType;
 	o->Copy = avdl_component_Copy;
 	o->after_create = avdl_component_after_create;
 
