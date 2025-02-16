@@ -203,6 +203,7 @@ void struct_table_init() {
 	struct_table_push_member("isLoaded", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("isOnTerrain", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setScaleZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("setTextureIndex", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setMesh", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_transform", 0);
 	struct_table_push_member("SetPosition", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -248,6 +249,7 @@ void struct_table_init() {
 	struct_table_push_member("GetTerrain", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("IsOnTerrain", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetSpot", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("scaleZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 

@@ -15,43 +15,56 @@ void avdl_component_terrain_create(struct avdl_component_terrain *o) {
 	o->parent.after_create = avdl_component_terrain_after_create;
 	o->parent.type = AVDL_COMPONENT_TERRAIN_ENUM;
 	o->asset_name = 0;
+	o->texture0_name = 0;
 	o->isEditor = 0;
 	o->parent.Copy = avdl_component_terrain_Copy;
 
+	o->scaleZ = 1.0;
+
 	avdl_terrain_create(&o->terrain);
+	dd_image_create(&o->img);
+	dd_image_create(&o->img_extra_0);
+	dd_image_create(&o->img_extra_1);
+	dd_image_create(&o->img_extra_2);
+	dd_image_create(&o->img_extra_3);
+
 }
 
 void avdl_component_terrain_clean(struct avdl_component_terrain *o) {
 }
 
 void avdl_component_terrain_after_create(struct avdl_component_terrain *o) {
+	o->terrain.setScaleZ(&o->terrain, o->scaleZ);
 	if (o->asset_name) {
 		if (o->isEditor) {
 			avdl_terrain_loadLocal(&o->terrain, o->asset_name);
+			dd_image_setLocal(&o->img, "assets/terrain_main.png", AVDL_IMAGETYPE_PNG);
+			o->terrain.setTextureIndex(&o->terrain, &o->img, 0);
+
+			dd_image_setLocal(&o->img_extra_0, "assets/terrain_grass.png", AVDL_IMAGETYPE_PNG);
+			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
+			dd_image_setLocal(&o->img_extra_1, "assets/terrain_path.png", AVDL_IMAGETYPE_PNG);
+			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_1, 2);
+			dd_image_setLocal(&o->img_extra_2, "assets/terrain_mountain.png", AVDL_IMAGETYPE_PNG);
+			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_2, 3);
+			dd_image_setLocal(&o->img_extra_3, "assets/terrain_water.png", AVDL_IMAGETYPE_PNG);
+			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_3, 4);
 		}
 		else {
 			o->terrain.load(&o->terrain, o->asset_name);
-		}
-	}
+			dd_image_set(&o->img, "assets/terrain_main.png", AVDL_IMAGETYPE_PNG);
+			o->terrain.setTextureIndex(&o->terrain, &o->img, 0);
 
-	/*
-	if (o->parent.node) {
-		struct avdl_component_mesh *mesh = avdl_node_GetComponent(o->parent.node, AVDL_COMPONENT_MESH_ENUM);
-
-		if (mesh) {
-			avdl_terrain_setMesh(o, &mesh->mesh);
-		}
-		else {
-			avdl_log("terrain found without a mesh component");
+			dd_image_set(&o->img_extra_0, "assets/terrain_grass.png", AVDL_IMAGETYPE_PNG);
+			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
+			dd_image_set(&o->img_extra_1, "assets/terrain_path.png", AVDL_IMAGETYPE_PNG);
+			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_1, 2);
+			dd_image_set(&o->img_extra_2, "assets/terrain_mountain.png", AVDL_IMAGETYPE_PNG);
+			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_2, 3);
+			dd_image_set(&o->img_extra_3, "assets/terrain_water.png", AVDL_IMAGETYPE_PNG);
+			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_3, 4);
 		}
 	}
-	*/
-/*
-	else {
-		o->mesh.set_primitive(&o->mesh, AVDL_PRIMITIVE_BOX);
-		o->mesh.set_colour(&o->mesh, 1.0, 0.0, 1.0);
-	}
-	*/
 }
 
 void avdl_component_terrain_draw(struct avdl_component_terrain *o) {

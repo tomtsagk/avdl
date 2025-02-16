@@ -37,6 +37,8 @@ struct avdl_terrain {
 	int (*isLoaded)(struct avdl_terrain *o);
 
 	int (*setScaleZ)(struct avdl_terrain *o, float scale);
+
+	int (*setTextureIndex)(struct avdl_terrain *o, struct dd_image *img, int index);
 };
 
 void avdl_terrain_create(struct avdl_terrain *o);
@@ -53,5 +55,7 @@ int avdl_terrain_getHeight(struct avdl_terrain *o);
 int avdl_terrain_isLoaded(struct avdl_terrain *o);
 
 int avdl_terrain_setScaleZ(struct avdl_terrain *o, float scale);
+
+int avdl_terrain_setTextureIndex(struct avdl_terrain *o, struct dd_image *img, int index);
 
 #endif

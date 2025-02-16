@@ -339,6 +339,16 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 			content = "\",\n";
 			write(fd, content, strlen(content));
 		}
+		if (terrain->scaleZ != 1.0) {
+			NodeToJson_PrintTabs(fd, tabs);
+			content = "\"scaleZ\": \"";
+			write(fd, content, strlen(content));
+			char buffer[100];
+			snprintf(buffer, 80, "%f", terrain->scaleZ);
+			write(fd, buffer, strlen(buffer));
+			content = "\",\n";
+			write(fd, content, strlen(content));
+		}
 	}
 	else
 	if (o->type == AVDL_COMPONENT_CUSTOM_EDITOR_ENUM) {
@@ -639,6 +649,16 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
 						terrain->asset_name = malloc(sizeof(char) *strlen(avdl_json_getTokenString(json)));
 						strcpy(terrain->asset_name, avdl_json_getTokenString(json));
+					}
+				}
+				else
+				if (strcmp(avdl_json_getTokenString(json), "scaleZ") == 0) {
+					avdl_json_next(json);
+					if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+						terrain->scaleZ = avdl_json_getTokenFloat(json);
+					}
+					else {
+						avdl_log("expected terrain 'scaleZ' to be float");
 					}
 				}
 				else {

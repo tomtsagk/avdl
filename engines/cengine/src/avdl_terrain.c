@@ -14,6 +14,8 @@ void avdl_terrain_create(struct avdl_terrain *o) {
 
 	o->setScaleZ = avdl_terrain_setScaleZ;
 
+	o->setTextureIndex = avdl_terrain_setTextureIndex;
+
 	avdl_mesh_create(&o->mesh);
 	dd_image_create(&o->img);
 
@@ -71,6 +73,8 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 		o->mesh.dirtyVertices = 1;
 		o->mesh.c = malloc(sizeof(float) *o->mesh.vcount *3);
 		o->mesh.dirtyColours = 1;
+		o->mesh.t = malloc(sizeof(float) *o->mesh.vcount *2);
+		o->mesh.dirtyTextures = 1;
 
 		for (int x = 0; x < o->img.width -1; x++)
 		for (int y = 0; y < o->img.height-1; y++) {
@@ -81,24 +85,81 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			int pixelIndexRight = pixelIndex +3;
 			int pixelIndexTop = pixelIndex +((o->img.width-0)*3);
 			int pixelIndexTopRight = pixelIndexTop +3;
+			int indexT = ((y *(o->img.width-1)) +x) *12;
+
+			int invertTX = (y%5 +y*3%3 +x%3) %2;
+			int invertTY = (y%2 +y*4%6 +x*2%5) %2;
+			float fromTX = (x+0) *1.0;
+			float toTX   = (x+1) *1.0;
+			float fromTY = 0;
+			float toTY   = 1;
+
+			// rotate
+			float cornersX[4];
+			float cornersY[4];
+			/*
+			cornersX[0] = dd_math_randf(0.4);
+			cornersY[0] = dd_math_randf(0.4);
+
+			cornersX[2] = cornersX[0] +0.25 +dd_math_randf(0.25);
+			cornersY[2] = cornersY[0] +0.25 +dd_math_randf(0.25);
+			*/
+
+			cornersX[0] = (float) x /o->img.width ;
+			cornersY[0] = (float) y /o->img.height;
+
+			cornersX[2] = (x+1.0) /o->img.width ;
+			cornersY[2] = (y+1.0) /o->img.height;
+
+			cornersX[1] = cornersX[0];
+			cornersY[1] = cornersY[2];
+
+			cornersX[3] = cornersX[2];
+			cornersY[3] = cornersY[0];
+
+			/*
+			int rotations = (y +x) %4;
+			for (int i = 0; i < rotations; i++) {
+				float tempX = cornersX[0];
+				float tempY = cornersY[0];
+				for (int j = 0; j < 3; j++) {
+					cornersX[j] = cornersX[j+1];
+					cornersY[j] = cornersY[j+1];
+				}
+				cornersX[3] = tempX;
+				cornersY[3] = tempY;
+			}
+			*/
 
 			// triangle 1
 
-			// vertex 1
+			// vertex 1 - bottom left
 			o->mesh.v[index +0] = x *1;
 			o->mesh.v[index +1] = o->img.pixels[pixelIndex] *o->scaleZ;
 			o->mesh.v[index +2] = y *-1;
 			o->mesh.c[index +0] = 0;
 			o->mesh.c[index +1] = 0;
 			o->mesh.c[index +2] = 0;
+			//o->mesh.t[indexT +0] = invertTX ? 1 : 0;
+			//o->mesh.t[indexT +1] = invertTY ? 1 : 0;
+			//o->mesh.t[indexT +0] = fromTX;
+			//o->mesh.t[indexT +1] = fromTY;
+			o->mesh.t[indexT +0] = cornersX[0];
+			o->mesh.t[indexT +1] = cornersY[0];
 
 			// vertex 2
 			o->mesh.v[index +3] = x *1 +1;
 			o->mesh.v[index +4] = o->img.pixels[pixelIndexTopRight] *o->scaleZ;
 			o->mesh.v[index +5] = y *-1 -1;
-			o->mesh.c[index +3] = 1;
+			o->mesh.c[index +3] = 0;
 			o->mesh.c[index +4] = 0;
-			o->mesh.c[index +5] = 1;
+			o->mesh.c[index +5] = 0;
+			//o->mesh.t[indexT +2] = invertTX ? 0 : 1;
+			//o->mesh.t[indexT +3] = invertTY ? 0 : 1;
+			//o->mesh.t[indexT +2] = toTX;
+			//o->mesh.t[indexT +3] = toTY;
+			o->mesh.t[indexT +2] = cornersX[2];
+			o->mesh.t[indexT +3] = cornersY[2];
 
 			// vertex 3
 			o->mesh.v[index +6] = x *1;
@@ -106,7 +167,13 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			o->mesh.v[index +8] = y *-1 -1;
 			o->mesh.c[index +6] = 0;
 			o->mesh.c[index +7] = 0;
-			o->mesh.c[index +8] = 1;
+			o->mesh.c[index +8] = 0;
+			//o->mesh.t[indexT +4] = invertTX ? 1 : 0;
+			//o->mesh.t[indexT +5] = invertTY ? 0 : 1;
+			//o->mesh.t[indexT +4] = fromTX;
+			//o->mesh.t[indexT +5] = toTY;
+			o->mesh.t[indexT +4] = cornersX[1];
+			o->mesh.t[indexT +5] = cornersY[1];
 
 			// triangle 2
 
@@ -117,22 +184,40 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			o->mesh.c[index +9] = 0;
 			o->mesh.c[index +10] = 0;
 			o->mesh.c[index +11] = 0;
+			//o->mesh.t[indexT +6] = invertTX ? 1 : 0;
+			//o->mesh.t[indexT +7] = invertTY ? 1 : 0;
+			//o->mesh.t[indexT +6] = fromTX;
+			//o->mesh.t[indexT +7] = fromTY;
+			o->mesh.t[indexT +6] = cornersX[0];
+			o->mesh.t[indexT +7] = cornersY[0];
 
 			// vertex 2
 			o->mesh.v[index +12] = x *1 +1;
 			o->mesh.v[index +13] = o->img.pixels[pixelIndexRight] *o->scaleZ;
 			o->mesh.v[index +14] = y *-1;
-			o->mesh.c[index +12] = 1;
+			o->mesh.c[index +12] = 0;
 			o->mesh.c[index +13] = 0;
 			o->mesh.c[index +14] = 0;
+			//o->mesh.t[indexT +8] = invertTX ? 0 : 1;
+			//o->mesh.t[indexT +9] = invertTY ? 1 : 0;
+			//o->mesh.t[indexT +8] = toTX;
+			//o->mesh.t[indexT +9] = fromTY;
+			o->mesh.t[indexT +8] = cornersX[3];
+			o->mesh.t[indexT +9] = cornersY[3];
 
 			// vertex 3
 			o->mesh.v[index +15] = x *1 +1;
 			o->mesh.v[index +16] = o->img.pixels[pixelIndexTopRight] *o->scaleZ;
 			o->mesh.v[index +17] = y *-1 -1;
-			o->mesh.c[index +15] = 1;
+			o->mesh.c[index +15] = 0;
 			o->mesh.c[index +16] = 0;
-			o->mesh.c[index +17] = 1;
+			o->mesh.c[index +17] = 0;
+			//o->mesh.t[indexT +10] = invertTX ? 0 : 1;
+			//o->mesh.t[indexT +11] = invertTY ? 0 : 1;
+			//o->mesh.t[indexT +10] = toTX;
+			//o->mesh.t[indexT +11] = toTY;
+			o->mesh.t[indexT +10] = cornersX[2];
+			o->mesh.t[indexT +11] = cornersY[2];
 
 		}
 
@@ -196,4 +281,13 @@ int avdl_terrain_isLoaded(struct avdl_terrain *o) {
 
 int avdl_terrain_setScaleZ(struct avdl_terrain *o, float scale) {
 	o->scaleZ = scale;
+}
+
+int avdl_terrain_setTextureIndex(struct avdl_terrain *o, struct dd_image *img, int index) {
+	if (index == 0) {
+		o->mesh.setTexture(&o->mesh, img);
+	}
+	else {
+		o->mesh.setTextureIndex(&o->mesh, img, index-1);
+	}
 }
