@@ -341,12 +341,12 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 		}
 		if (terrain->scaleZ != 1.0) {
 			NodeToJson_PrintTabs(fd, tabs);
-			content = "\"scaleZ\": \"";
+			content = "\"scaleZ\": ";
 			write(fd, content, strlen(content));
 			char buffer[100];
 			snprintf(buffer, 80, "%f", terrain->scaleZ);
 			write(fd, buffer, strlen(buffer));
-			content = "\",\n";
+			content = ",\n";
 			write(fd, content, strlen(content));
 		}
 	}

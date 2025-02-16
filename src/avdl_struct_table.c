@@ -227,6 +227,7 @@ void struct_table_init() {
 	struct_table_push_member("GetLocalTransform", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("AddChild", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("RemoveChild", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("GetName", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetName", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetChildrenCount", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetChild", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
