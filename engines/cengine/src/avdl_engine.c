@@ -544,7 +544,7 @@ int avdl_engine_resize(struct avdl_engine *o, int w, int h) {
 	}
 
 	// perspective projection matrix
-	avdl_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0, ypriority);
+	avdl_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 0.1, 200.0, ypriority);
 
 	if (o->cworld && o->cworld->resize) {
 		o->cworld->resize(o->cworld);
