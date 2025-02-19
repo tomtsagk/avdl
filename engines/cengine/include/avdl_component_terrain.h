@@ -54,4 +54,8 @@ float avdl_component_terrain_GetSpot(struct avdl_component_terrain *o, struct av
 
 int avdl_component_terrain_Copy(struct avdl_component *o, struct avdl_component *target);
 
+int avdl_component_terrain_SetPropertyInt(struct avdl_component_terrain *c, const char *property_name, int value);
+int avdl_component_terrain_SetPropertyFloat(struct avdl_component_terrain *c, const char *property_name, float value);
+int avdl_component_terrain_SetPropertyString(struct avdl_component_terrain *c, const char *property_name, const char *value);
+
 #endif

@@ -611,59 +611,90 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 			if (component_type == AVDL_COMPONENT_MESH_ENUM) {
 				struct avdl_component_mesh *mesh = c;
 
-				if (strcmp(avdl_json_getTokenString(json), "mesh_name") == 0) {
-					avdl_json_next(json);
-					if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
-						mesh->mesh_name = malloc(sizeof(char) *strlen(avdl_json_getTokenString(json)));
-						strcpy(mesh->mesh_name, avdl_json_getTokenString(json));
-					}
-				}
-				else
-				if (strcmp(avdl_json_getTokenString(json), "texture_name") == 0) {
-					avdl_json_next(json);
-					if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
-						mesh->texture_name = malloc(sizeof(char) *strlen(avdl_json_getTokenString(json)));
-						strcpy(mesh->texture_name, avdl_json_getTokenString(json));
-					}
-				}
-				else
-				if (strcmp(avdl_json_getTokenString(json), "hasTransparency") == 0) {
-					avdl_json_next(json);
-					if (avdl_json_getToken(json) == AVDL_JSON_INT) {
-						mesh->hasTransparency = 1;
-					}
-				}
-				else {
-					avdl_logError("unknown component variable name: %s", avdl_json_getTokenString(json));
+				struct avdl_string property_name;
+				avdl_string_create(&property_name, 1024);
+				avdl_string_cat(&property_name, avdl_json_getTokenString(json));
+				if (!avdl_string_isValid(&property_name)) {
+					avdl_logError("Unable to construct property name");
 					return -1;
+				}
+
+				avdl_json_next(json);
+				if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+					struct avdl_string property_value;
+					avdl_string_create(&property_value, 1024);
+					avdl_string_cat(&property_value, avdl_json_getTokenString(json));
+					if (!avdl_string_isValid(&property_value)) {
+						avdl_logError("Unable to construct property value");
+						return -1;
+					}
+
+					if (avdl_component_mesh_SetPropertyString(mesh, avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value)) != 0) {
+						avdl_logError("unable to set property '%s' for mesh component to value '%s'",
+							avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value));
+						return -1;
+					}
+				}
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+					if (avdl_component_mesh_SetPropertyInt(mesh, avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json)) != 0) {
+						avdl_logError("unable to set property '%s' for mesh component to value '%d'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json));
+						return -1;
+					}
+				}
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+					if (avdl_component_mesh_SetPropertyFloat(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json)) != 0) {
+						avdl_logError("unable to set property '%s' for mesh component to value '%f'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json));
+						return -1;
+					}
 				}
 			}
 			else
 			if (component_type == AVDL_COMPONENT_TERRAIN_ENUM) {
 				struct avdl_component_terrain *terrain = c;
 
-				avdl_log("found terrain var component");
+				struct avdl_string property_name;
+				avdl_string_create(&property_name, 1024);
+				avdl_string_cat(&property_name, avdl_json_getTokenString(json));
+				if (!avdl_string_isValid(&property_name)) {
+					avdl_logError("Unable to construct property name");
+					return -1;
+				}
 
-				if (strcmp(avdl_json_getTokenString(json), "asset_name") == 0) {
-					avdl_json_next(json);
-					if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
-						terrain->asset_name = malloc(sizeof(char) *strlen(avdl_json_getTokenString(json)));
-						strcpy(terrain->asset_name, avdl_json_getTokenString(json));
+				avdl_json_next(json);
+				if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+					struct avdl_string property_value;
+					avdl_string_create(&property_value, 1024);
+					avdl_string_cat(&property_value, avdl_json_getTokenString(json));
+					if (!avdl_string_isValid(&property_value)) {
+						avdl_logError("Unable to construct property value");
+						return -1;
+					}
+
+					if (avdl_component_terrain_SetPropertyString(c, avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value)) != 0) {
+						avdl_logError("unable to set property '%s' for terrain component to value '%s'",
+							avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value));
+						return -1;
 					}
 				}
 				else
-				if (strcmp(avdl_json_getTokenString(json), "scaleZ") == 0) {
-					avdl_json_next(json);
-					if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
-						terrain->scaleZ = avdl_json_getTokenFloat(json);
-					}
-					else {
-						avdl_log("expected terrain 'scaleZ' to be float");
+				if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+					if (avdl_component_terrain_SetPropertyInt(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json)) != 0) {
+						avdl_logError("unable to set property '%s' for terrain component to value '%d'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json));
+						return -1;
 					}
 				}
-				else {
-					avdl_logError("unknown component variable name: %s", avdl_json_getTokenString(json));
-					return -1;
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+					if (avdl_component_terrain_SetPropertyFloat(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json)) != 0) {
+						avdl_logError("unable to set property '%s' for terrain component to value '%f'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json));
+						return -1;
+					}
 				}
 			}
 			else {

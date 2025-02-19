@@ -126,3 +126,69 @@ int avdl_component_terrain_Copy(struct avdl_component *o, struct avdl_component 
 	avdl_log("avdl_component_terrain_Copy NOT IMPLEMENTED");
 	return 1;
 }
+
+// Array of modifiable properties
+static struct avdl_component_property property_array[] = {
+	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, asset_name, AVDL_COMPONENT_PROPERTY_TYPE_STRING),
+	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, texture_main_name, AVDL_COMPONENT_PROPERTY_TYPE_STRING),
+	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, texture0_name, AVDL_COMPONENT_PROPERTY_TYPE_STRING),
+	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, texture1_name, AVDL_COMPONENT_PROPERTY_TYPE_STRING),
+	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, texture2_name, AVDL_COMPONENT_PROPERTY_TYPE_STRING),
+	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, texture3_name, AVDL_COMPONENT_PROPERTY_TYPE_STRING),
+	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, scaleZ, AVDL_COMPONENT_PROPERTY_TYPE_FLOAT),
+};
+static int property_array_count = sizeof(property_array) /sizeof(struct avdl_component_property);;
+
+int avdl_component_terrain_SetPropertyInt(struct avdl_component_terrain *c, const char *property_name, int value) {
+	if (avdl_component_SetPropertyInt(c, property_name, value) == 0) {
+		return 0;
+	}
+	for (int i = 0; i < property_array_count; i++) {
+		if (strcmp(property_name, property_array[i].name) == 0) {
+			if (property_array[i].type == AVDL_COMPONENT_PROPERTY_TYPE_INT) {
+				memcpy(((void *)c) +property_array[i].offset, &value, sizeof(int));
+				return 0;
+			}
+			else
+			if (property_array[i].type == AVDL_COMPONENT_PROPERTY_TYPE_FLOAT) {
+				float f = value;
+				memcpy(((void *)c) +property_array[i].offset, &f, sizeof(float));
+				return 0;
+			}
+			return -1;
+		}
+	}
+}
+
+int avdl_component_terrain_SetPropertyFloat(struct avdl_component_terrain *c, const char *property_name, float value) {
+	if (avdl_component_SetPropertyFloat(c, property_name, value) == 0) {
+		return 0;
+	}
+	for (int i = 0; i < property_array_count; i++) {
+		if (strcmp(property_name, property_array[i].name) == 0) {
+			if (property_array[i].type == AVDL_COMPONENT_PROPERTY_TYPE_FLOAT) {
+				memcpy(((void *)c) +property_array[i].offset, &value, sizeof(float));
+				return 0;
+			}
+			return -1;
+		}
+	}
+}
+
+int avdl_component_terrain_SetPropertyString(struct avdl_component_terrain *c, const char *property_name, const char *value) {
+	if (avdl_component_SetPropertyString(c, property_name, value) == 0) {
+		return 0;
+	}
+	for (int i = 0; i < property_array_count; i++) {
+		if (strcmp(property_name, property_array[i].name) == 0) {
+			if (property_array[i].type == AVDL_COMPONENT_PROPERTY_TYPE_STRING) {
+				char *prop;
+				prop = malloc(sizeof(char) *strlen(value));
+				strcpy(prop, value);
+				memcpy(((void *)c) +property_array[i].offset, &prop, sizeof(char *));
+				return 0;
+			}
+			return -1;
+		}
+	}
+}

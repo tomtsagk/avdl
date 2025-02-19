@@ -32,4 +32,8 @@ void avdl_component_mesh_draw(struct avdl_component_mesh *o);
 
 int avdl_component_mesh_Copy(struct avdl_component *o, struct avdl_component *target);
 
+int avdl_component_mesh_SetPropertyInt(struct avdl_component_mesh *c, const char *property_name, int value);
+int avdl_component_mesh_SetPropertyFloat(struct avdl_component_mesh *c, const char *property_name, float value);
+int avdl_component_mesh_SetPropertyString(struct avdl_component_mesh *c, const char *property_name, const char *value);
+
 #endif
