@@ -115,3 +115,68 @@ void avdl_string_empty(struct avdl_string *o) {
 	o->errorCharacters = 0;
 	o->errorCode = 0;
 }
+
+int avdl_string_endsInInt(struct avdl_string *o) {
+	if (o->errorCode) {
+		return 0;
+	}
+
+	char *p = avdl_string_toCharPtr(o);
+	int length = strlen(p);
+	if (p[length-1] >= '0' && p[length-1] <= '9') {
+		return 1;
+	}
+
+	return 0;
+}
+
+static int avdl_string_incrementIndexInt(struct avdl_string *o, int index) {
+	char *p = avdl_string_toCharPtr(o);
+
+	// not a digit
+	if (p[index] < '0' || p[index] > '9') {
+		return -1;
+	}
+
+	// increment digit
+	for (int i = 0; i < 9; i++) {
+		if (p[index] == ('0' +i)) {
+			p[index]++;
+			return 0;
+		}
+	}
+
+	// increment a '9', needs special handling
+	if (p[index] == '9') {
+
+		p[index] = '0';
+
+		// incremented a previous digit - all good
+		if (avdl_string_incrementIndexInt(o, index-1) == 0) {
+			return 0;
+		}
+
+		// no previous digit, set to '1' and add a new digit
+		p[index] = '1';
+		avdl_string_cat(o, "0");
+		return 0;
+	}
+}
+
+int avdl_string_incrementEndingInt(struct avdl_string *o) {
+	if (o->errorCode) {
+		return -1;
+	}
+
+	if (!avdl_string_endsInInt(o)) {
+		avdl_log("string does not end in int");
+		return -1;
+	}
+
+	char *p = avdl_string_toCharPtr(o);
+	int length = strlen(p);
+	char *lastdigit = p +(length -1);
+	avdl_string_incrementIndexInt(o, length-1);
+
+	return 0;
+}

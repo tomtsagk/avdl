@@ -19,7 +19,8 @@
 void avdl_node_create(struct avdl_node *o) {
 	o->parent = 0;
 
-	o->name[0] = '\0';
+	//o->name[0] = '\0';
+	avdl_string_create(&o->name, 100);
 
 	o->GetLocalTransform = avdl_node_GetLocalTransform;
 	o->GetGlobalMatrix = avdl_node_GetGlobalMatrix;
@@ -163,7 +164,7 @@ static void avdl_node_printInternal(struct avdl_node *o, int tabs) {
 	}
 
 	struct dd_vec3 *pos = avdl_transform_GetPosition(&o->localTransform);
-	printf("%s | position %f %f %f\n", o->name[0] != '\0' ? o->name : "no_node_name", pos->x, pos->y, pos->z);
+	printf("%s | position %f %f %f\n", avdl_string_toCharPtr(&o->name), pos->x, pos->y, pos->z);
 	if (dd_da_count(&o->components) > 0) {
 		for (int i = 0; i < tabs+1; i++) {
 			printf("\t");
@@ -191,25 +192,26 @@ void avdl_node_print(struct avdl_node *o) {
 	avdl_node_printInternal(o, 0);
 }
 
-void avdl_node_SetName(struct avdl_node *o, char *name) {
+void avdl_node_SetName(struct avdl_node *o, const char *name) {
 
-	if (strlen(name) >= AVDL_NODE_NAME_LENGTH) {
-		avdl_log("cannot copy node name, too big: %s", name);
+	avdl_string_empty(&o->name);
+	avdl_string_cat(&o->name, name);
+	if (!avdl_string_isValid(&o->name)) {
+		avdl_log("failed to set name for node: %s", name);
 		return;
 	}
-
-	//avdl_log("set name to : %s", name);
-	strncpy(o->name, name, AVDL_NODE_NAME_LENGTH-1);
-	o->name[AVDL_NODE_NAME_LENGTH-1] = '\0';
 }
 
-char *avdl_node_GetName(struct avdl_node *o) {
+const char *avdl_node_GetName(struct avdl_node *o) {
+	return avdl_string_toCharPtr(&o->name);
+	/*
 	if (o->name[0] == '\0') {
 		return 0;
 	}
 	else {
 		return o->name;
 	}
+	*/
 }
 
 void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array *array, int component_type) {
@@ -281,7 +283,7 @@ static int NodeToJson_PrintVec3(int fd, struct dd_vec3 *v) {
 static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs) {
 	#if defined( AVDL_LINUX )
 
-	char *content;
+	const char *content;
 
 	// start
 	NodeToJson_PrintTabs(fd, tabs);
@@ -482,7 +484,7 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 
 	#if defined( AVDL_LINUX )
-	char *content;
+	const char *content;
 
 	// start
 	NodeToJson_PrintTabs(fd, tabs);
@@ -1049,6 +1051,18 @@ struct avdl_node *avdl_node_Duplicate(struct avdl_node *o, struct avdl_node *new
 
 	// Create new Node
 	struct avdl_node *newNode = newParent->AddChild(newParent);
+
+	// Copy name
+	avdl_node_SetName(newNode, avdl_node_GetName(o));
+	if (avdl_string_endsInInt(&newNode->name)) {
+		if (avdl_string_incrementEndingInt(&newNode->name) != 0) {
+			avdl_log("failed to properly rename duplicate node");
+			return 0;
+		}
+	}
+	else {
+		avdl_string_cat(&newNode->name, "_0");
+	}
 
 	// Copy Transform
 	struct avdl_transform *newTransform = newNode->GetLocalTransform(newNode);

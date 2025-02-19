@@ -4,6 +4,7 @@
 #include "avdl_transform.h"
 #include "dd_matrix.h"
 #include "dd_dynamic_array.h"
+#include "avdl_string.h"
 
 #define AVDL_NODE_NAME_LENGTH 100
 
@@ -13,7 +14,7 @@ struct avdl_node {
 	struct avdl_node *parent;
 
 	// node name
-	char name[AVDL_NODE_NAME_LENGTH];
+	struct avdl_string name;
 
 	// local transform
 	struct avdl_transform localTransform;
@@ -42,8 +43,8 @@ struct avdl_node {
 	struct avdl_node *(*AddChild)(struct avdl_node *);
 	int (*RemoveChild)(struct avdl_node *, struct avdl_node *);
 	struct avdl_node *(*GetParent)(struct avdl_node *);
-	void (*SetName)(struct avdl_node *, char *name);
-	char *(*GetName)(struct avdl_node *);
+	void (*SetName)(struct avdl_node *, const char *name);
+	const char *(*GetName)(struct avdl_node *);
 
 	int (*GetChildrenCount)(struct avdl_node *);
 	struct avdl_node *(*GetChild)(struct avdl_node *, int index);
@@ -71,8 +72,8 @@ int avdl_node_RemoveChild(struct avdl_node *o, struct avdl_node *child);
 struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int size, void (*constructor)(void *));
 #define avdl_node_AddComponent(x, y) avdl_node_AddComponentInternal(x, sizeof(struct y), y ## _create);
 
-void avdl_node_SetName(struct avdl_node *o, char *name);
-char *avdl_node_GetName(struct avdl_node *o);
+void avdl_node_SetName(struct avdl_node *o, const char *name);
+const char *avdl_node_GetName(struct avdl_node *o);
 int avdl_node_GetChildrenCount(struct avdl_node *o);
 struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index);
 struct avdl_node *avdl_node_GetParent(struct avdl_node *o);
