@@ -298,28 +298,60 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 		write(fd, content, strlen(content));
 
 		struct avdl_component_mesh *mesh = o;
-		if (mesh->mesh_name) {
-			NodeToJson_PrintTabs(fd, tabs);
-			content = "\"mesh_name\": \"";
-			write(fd, content, strlen(content));
-			content = mesh->mesh_name;
-			write(fd, content, strlen(content));
-			content = "\",\n";
-			write(fd, content, strlen(content));
-		}
-		if (mesh->texture_name) {
-			NodeToJson_PrintTabs(fd, tabs);
-			content = "\"texture_name\": \"";
-			write(fd, content, strlen(content));
-			content = mesh->texture_name;
-			write(fd, content, strlen(content));
-			content = "\",\n";
-			write(fd, content, strlen(content));
-		}
-		if (mesh->hasTransparency) {
-			NodeToJson_PrintTabs(fd, tabs);
-			content = "\"hasTransparency\": 1,\n";
-			write(fd, content, strlen(content));
+		for (int i = 0; i < avdl_component_mesh_property_array_count; i++) {
+			struct avdl_component_property *p = &avdl_component_mesh_property_array[i];
+
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_INT) {
+				int val = avdl_component_mesh_GetPropertyIndexInt(mesh, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%d", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_FLOAT) {
+				float val = avdl_component_mesh_GetPropertyIndexFloat(mesh, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%f", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_STRING) {
+				char *val = avdl_component_mesh_GetPropertyIndexString(mesh, i);
+				if (val) {
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": \"";
+					write(fd, content, strlen(content));
+					write(fd, val, strlen(val));
+					content = "\",\n";
+					write(fd, content, strlen(content));
+				}
+			}
 		}
 	}
 	else
@@ -330,24 +362,60 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 		write(fd, content, strlen(content));
 
 		struct avdl_component_terrain *terrain = o;
-		if (terrain->asset_name) {
-			NodeToJson_PrintTabs(fd, tabs);
-			content = "\"asset_name\": \"";
-			write(fd, content, strlen(content));
-			content = terrain->asset_name;
-			write(fd, content, strlen(content));
-			content = "\",\n";
-			write(fd, content, strlen(content));
-		}
-		if (terrain->scaleZ != 1.0) {
-			NodeToJson_PrintTabs(fd, tabs);
-			content = "\"scaleZ\": ";
-			write(fd, content, strlen(content));
-			char buffer[100];
-			snprintf(buffer, 80, "%f", terrain->scaleZ);
-			write(fd, buffer, strlen(buffer));
-			content = ",\n";
-			write(fd, content, strlen(content));
+		for (int i = 0; i < avdl_component_terrain_property_array_count; i++) {
+			struct avdl_component_property *p = &avdl_component_terrain_property_array[i];
+
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_INT) {
+				int val = avdl_component_terrain_GetPropertyIndexInt(terrain, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%d", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_FLOAT) {
+				float val = avdl_component_terrain_GetPropertyIndexFloat(terrain, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%f", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_STRING) {
+				char *val = avdl_component_terrain_GetPropertyIndexString(terrain, i);
+				if (val) {
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": \"";
+					write(fd, content, strlen(content));
+					write(fd, val, strlen(val));
+					content = "\",\n";
+					write(fd, content, strlen(content));
+				}
+			}
 		}
 	}
 	else
@@ -579,7 +647,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				}
 				else
 				if (strcmp(avdl_json_getTokenString(json), "avdl_component_terrain") == 0) {
-					avdl_log("found terrain component");
+					//avdl_log("found terrain component");
 					struct avdl_component_terrain *terrain = avdl_node_AddComponent(node, avdl_component_terrain);
 					terrain->isEditor = 1;
 					c = terrain;
@@ -630,7 +698,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					}
 
 					if (avdl_component_mesh_SetPropertyString(mesh, avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value)) != 0) {
-						avdl_logError("unable to set property '%s' for mesh component to value '%s'",
+						avdl_logError("unable to set string property '%s' for mesh component to value '%s'",
 							avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value));
 						return -1;
 					}
@@ -638,7 +706,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				else
 				if (avdl_json_getToken(json) == AVDL_JSON_INT) {
 					if (avdl_component_mesh_SetPropertyInt(mesh, avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json)) != 0) {
-						avdl_logError("unable to set property '%s' for mesh component to value '%d'",
+						avdl_logError("unable to set int property '%s' for mesh component to value '%d'",
 							avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json));
 						return -1;
 					}
@@ -646,7 +714,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				else
 				if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
 					if (avdl_component_mesh_SetPropertyFloat(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json)) != 0) {
-						avdl_logError("unable to set property '%s' for mesh component to value '%f'",
+						avdl_logError("unable to set float property '%s' for mesh component to value '%f'",
 							avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json));
 						return -1;
 					}
