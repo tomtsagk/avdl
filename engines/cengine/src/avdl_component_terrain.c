@@ -14,6 +14,7 @@ void avdl_component_terrain_create(struct avdl_component_terrain *o) {
 	o->parent.after_create = avdl_component_terrain_after_create;
 	o->parent.type = AVDL_COMPONENT_TERRAIN_ENUM;
 	o->asset_name = 0;
+	o->texture_main_name = 0;
 	o->texture0_name = 0;
 	o->texture1_name = 0;
 	o->texture2_name = 0;
@@ -40,31 +41,56 @@ void avdl_component_terrain_after_create(struct avdl_component_terrain *o) {
 	if (o->asset_name) {
 		if (o->isEditor) {
 			avdl_terrain_loadLocal(&o->terrain, o->asset_name);
-			dd_image_setLocal(&o->img, "assets/terrain_main.png", AVDL_IMAGETYPE_PNG);
-			o->terrain.setTextureIndex(&o->terrain, &o->img, 0);
 
-			dd_image_setLocal(&o->img_extra_0, "assets/terrain_grass.png", AVDL_IMAGETYPE_PNG);
-			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
-			dd_image_setLocal(&o->img_extra_1, "assets/terrain_path.png", AVDL_IMAGETYPE_PNG);
-			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_1, 2);
-			dd_image_setLocal(&o->img_extra_2, "assets/terrain_mountain.png", AVDL_IMAGETYPE_PNG);
-			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_2, 3);
-			dd_image_setLocal(&o->img_extra_3, "assets/terrain_water.png", AVDL_IMAGETYPE_PNG);
-			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_3, 4);
+			if (o->texture_main_name) {
+				dd_image_setLocal(&o->img, o->texture_main_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img, 0);
+			}
+
+			if (o->texture0_name) {
+				dd_image_setLocal(&o->img_extra_0, o->texture0_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
+			}
+			if (o->texture1_name) {
+				dd_image_setLocal(&o->img_extra_1, o->texture1_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_1, 2);
+			}
+			if (o->texture2_name) {
+				dd_image_setLocal(&o->img_extra_2, o->texture2_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_2, 3);
+			}
+			if (o->texture3_name) {
+				dd_image_setLocal(&o->img_extra_3, o->texture3_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_3, 4);
+			}
 		}
 		else {
 			o->terrain.load(&o->terrain, o->asset_name);
-			dd_image_set(&o->img, "assets/terrain_main.png", AVDL_IMAGETYPE_PNG);
-			o->terrain.setTextureIndex(&o->terrain, &o->img, 0);
+			if (o->texture_main_name) {
+				dd_image_set(&o->img, o->texture_main_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img, 0);
+			}
 
-			dd_image_set(&o->img_extra_0, "assets/terrain_grass.png", AVDL_IMAGETYPE_PNG);
-			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
-			dd_image_set(&o->img_extra_1, "assets/terrain_path.png", AVDL_IMAGETYPE_PNG);
-			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_1, 2);
-			dd_image_set(&o->img_extra_2, "assets/terrain_mountain.png", AVDL_IMAGETYPE_PNG);
-			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_2, 3);
-			dd_image_set(&o->img_extra_3, "assets/terrain_water.png", AVDL_IMAGETYPE_PNG);
-			o->terrain.setTextureIndex(&o->terrain, &o->img_extra_3, 4);
+			if (o->texture0_name) {
+				dd_image_set(&o->img_extra_0, o->texture0_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
+			}
+			if (o->texture0_name) {
+				dd_image_set(&o->img_extra_0, o->texture0_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
+			}
+			if (o->texture1_name) {
+				dd_image_set(&o->img_extra_1, o->texture1_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_1, 2);
+			}
+			if (o->texture2_name) {
+				dd_image_set(&o->img_extra_2, o->texture2_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_2, 3);
+			}
+			if (o->texture3_name) {
+				dd_image_set(&o->img_extra_3, o->texture3_name, AVDL_IMAGETYPE_PNG);
+				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_3, 4);
+			}
 		}
 	}
 }
@@ -185,8 +211,9 @@ int avdl_component_terrain_SetPropertyString(struct avdl_component_terrain *c, c
 		if (strcmp(property_name, avdl_component_terrain_property_array[i].name) == 0) {
 			if (avdl_component_terrain_property_array[i].type == AVDL_COMPONENT_PROPERTY_TYPE_STRING) {
 				char *prop;
-				prop = malloc(sizeof(char) *strlen(value));
+				prop = malloc(sizeof(char) *(strlen(value)+1));
 				strcpy(prop, value);
+				strcat(prop, "\0");
 				memcpy(((void *)c) +avdl_component_terrain_property_array[i].offset, &prop, sizeof(char *));
 				return 0;
 			}
