@@ -51,21 +51,25 @@ void avdl_terrain_loadLocal(struct avdl_terrain *o, const char *filename) {
 void avdl_terrain_draw(struct avdl_terrain *o) {
 	if (o->img.isLoaded(&o->img)) {
 		if (o->img.width == 0 || o->img.height == 0) {
+			avdl_log("image doesn't have width or height: %dx%d", o->img.width, o->img.height);
 			dd_image_clean(&o->img);
 			return;
 		}
 
 		if (o->img.pixelFormat != GL_RGB) {
+			avdl_log("image has wrong format (non RGB): %d", o->img.pixelFormat);
+			avdl_log("image width height: %dx%d", o->img.width, o->img.height);
 			dd_image_clean(&o->img);
 			return;
 		}
+		int pixelStride = 3;
 
 		o->loaded = 1;
 		o->width = o->img.width;
 		o->height = o->img.height;
 		o->heights = malloc(sizeof(float) *o->img.width *o->img.height);
 		for (int i = 0; i < o->img.width *o->img.height; i++) {
-			o->heights[i] = o->img.pixels[i*3] *o->scaleZ;
+			o->heights[i] = o->img.pixels[i*pixelStride] *o->scaleZ;
 		}
 
 		o->mesh.vcount = ((o->img.width -1) *(o->img.height -1)) *6;
