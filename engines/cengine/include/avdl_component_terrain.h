@@ -15,18 +15,15 @@ struct avdl_component_terrain {
 	char *asset_name;
 
 	struct dd_image img;
-	char *texture_main_name;
-
 	struct dd_image img_extra_0;
-	char *texture0_name;
-
 	struct dd_image img_extra_1;
-	char *texture1_name;
-
 	struct dd_image img_extra_2;
-	char *texture2_name;
-
 	struct dd_image img_extra_3;
+
+	char *texture_main_name;
+	char *texture0_name;
+	char *texture1_name;
+	char *texture2_name;
 	char *texture3_name;
 
 	float scaleZ;

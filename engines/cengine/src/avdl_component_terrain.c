@@ -183,9 +183,12 @@ int avdl_component_terrain_SetPropertyInt(struct avdl_component_terrain *c, cons
 				memcpy(((void *)c) +avdl_component_terrain_property_array[i].offset, &f, sizeof(float));
 				return 0;
 			}
+			avdl_log("failed to set int property '%s', wrong format", property_name);
 			return -1;
 		}
 	}
+	avdl_log("could not find int property '%s'", property_name);
+	return -1;
 }
 
 int avdl_component_terrain_SetPropertyFloat(struct avdl_component_terrain *c, const char *property_name, float value) {
@@ -198,9 +201,13 @@ int avdl_component_terrain_SetPropertyFloat(struct avdl_component_terrain *c, co
 				memcpy(((void *)c) +avdl_component_terrain_property_array[i].offset, &value, sizeof(float));
 				return 0;
 			}
+			avdl_log("failed to set float property '%s', wrong format", property_name);
 			return -1;
 		}
 	}
+
+	avdl_log("could not find float property '%s'", property_name);
+	return -1;
 }
 
 int avdl_component_terrain_SetPropertyString(struct avdl_component_terrain *c, const char *property_name, const char *value) {
@@ -217,9 +224,12 @@ int avdl_component_terrain_SetPropertyString(struct avdl_component_terrain *c, c
 				memcpy(((void *)c) +avdl_component_terrain_property_array[i].offset, &prop, sizeof(char *));
 				return 0;
 			}
+			avdl_log("failed to set string property '%s', wrong format", property_name);
 			return -1;
 		}
 	}
+	avdl_log("could not find string property '%s'", property_name);
+	return -1;
 }
 
 int avdl_component_terrain_GetPropertyIndexInt(struct avdl_component_terrain *c, int index) {
