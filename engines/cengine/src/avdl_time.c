@@ -1,5 +1,9 @@
 #include "avdl_time.h"
 
+void avdl_time_create(struct avdl_time *o) {
+	o->elapsed_sec = 0;
+}
+
 void avdl_time_start(struct avdl_time *o) {
 	#if defined(_WIN32) || defined(WIN32)
 	QueryPerformanceFrequency(&o->frequency);

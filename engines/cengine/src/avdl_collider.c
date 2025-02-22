@@ -521,9 +521,19 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 		dd_vec4_multiply(&vertex1, avdl_node_GetGlobalMatrix(n1));
 		dd_vec4_multiply(&vertex2, avdl_node_GetGlobalMatrix(n2));
 
+		// collect radius
+		struct dd_vec4 rad1;
+		struct dd_vec4 rad2;
+		dd_vec4_set(&rad1, 0, 0, col1->radius, 1);
+		dd_vec4_set(&rad2, 0, 0, col2->radius, 1);
+		dd_vec4_multiply(&rad1, avdl_node_GetGlobalMatrix(n1));
+		dd_vec4_multiply(&rad2, avdl_node_GetGlobalMatrix(n2));
+		float rad1f = dd_vec4_distance(&vertex1, &rad1);
+		float rad2f = dd_vec4_distance(&vertex2, &rad2);
+
 		float distance = dd_vec4_distance(&vertex1, &vertex2);
 
-		if (distance < col1->radius +col2->radius) {
+		if (distance < rad1f +rad2f) {
 
 			if (collision) {
 				dd_vec4_set(&collision->overlap,
@@ -533,7 +543,7 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 					dd_vec4_getW(&vertex2) -dd_vec4_getW(&vertex1)
 				);
 				dd_vec4_normalise(&collision->overlap);
-				dd_vec4_multiplyFloat(&collision->overlap, col1->radius +col2->radius -distance);
+				dd_vec4_multiplyFloat(&collision->overlap, rad1f +rad2f -distance);
 			}
 
 			return 1;

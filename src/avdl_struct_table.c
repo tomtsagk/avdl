@@ -256,6 +256,7 @@ void struct_table_init() {
 	struct_table_push_member("texture1_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("texture2_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("texture3_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push("avdl_time", 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 
