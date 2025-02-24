@@ -36,7 +36,10 @@ void dd_image_create(struct dd_image *o) {
 
 	o->bind = dd_image_bind;
 	o->bindIndex = dd_image_bindIndex;
+	o->bindIndexArray = dd_image_bindIndexArray;
 	o->unbind = dd_image_unbind;
+	o->unbindIndex = dd_image_unbindIndex;
+	o->unbindIndexArray = dd_image_unbindIndexArray;
 	o->clean = dd_image_clean;
 	o->set = dd_image_set;
 	o->isLoaded = dd_image_isLoaded;
@@ -199,7 +202,7 @@ int dd_image_load_png(struct dd_image *img, const char *filename) {
 	else {
 		fclose(fp);
 		png_destroy_read_struct(&png_ptr, &info_ptr, 0);
-		avdl_log("avdl: error while parsing '%s': unsupported format", filename);
+		avdl_log("avdl: error while parsing '%s': unsupported format: color_type: %d", filename, color_type);
 		return -1;
 	}
 
@@ -411,11 +414,75 @@ void dd_image_bindIndex(struct dd_image *o, int index) {
 	#endif
 }
 
+void dd_image_bindIndexArray(struct dd_image *o, int index, int arraySize, struct dd_image *array[]) {
+
+	#ifdef AVDL_DIRECT3D11
+	#else
+	int isLoaded = 1;
+	for (int i = 0; i < arraySize; i++) {
+		if (!array[i]->isLoaded(o)) {
+			//avdl_log("one or more images from array are not loaded");
+			isLoaded = 0;
+			break;
+		}
+	}
+
+	if (isLoaded) {
+		// check tex ?
+		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+		o->tex = avdl_graphics_ImageArrayToGpuStart(o->pixels, o->pixelFormat, o->width, o->height, arraySize);
+		for (int i = 0; i < arraySize; i++) {
+			avdl_graphics_ImageArrayToGpuInstance(array[i]->pixels, o->pixelFormat, o->width, o->height, i);
+		}
+		avdl_graphics_ImageArrayToGpuEnd();
+		free(o->pixels);
+		o->pixels = 0;
+		#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+		/*
+		o->tex = avdl_graphics_ImageToGpu(o->pixelsb, GL_RGBA, o->width, o->height);
+		free(o->pixelsb);
+		o->pixelsb = 0;
+		*/
+		#endif
+	}
+
+	// texture is valid in this opengl context, bind it
+	if (o->openglContextId == avdl_graphics_getContextId()) {
+		avdl_graphics_BindTextureArrayIndex(o->tex, index);
+	}
+	/*
+	// texture was in a previous opengl context, reload it
+	else {
+		o->tex = 0;
+		if (o->assetName) {
+			o->set(o, o->assetName, o->assetType);
+		}
+		else {
+			//avdl_log("error state?");
+		}
+	}
+	*/
+	#endif
+}
+
 void dd_image_unbind(struct dd_image *o) {
+	dd_image_unbindIndex(o, 0);
+}
+
+void dd_image_unbindIndex(struct dd_image *o, int index) {
 	#ifdef AVDL_DIRECT3D11
 	#else
 	if (o->tex) {
-		avdl_graphics_BindTexture(0);
+		avdl_graphics_BindTextureIndex(0, index);
+	}
+	#endif
+}
+
+void dd_image_unbindIndexArray(struct dd_image *o, int index) {
+	#ifdef AVDL_DIRECT3D11
+	#else
+	if (o->tex) {
+		avdl_graphics_BindTextureArrayIndex(0, index);
 	}
 	#endif
 }

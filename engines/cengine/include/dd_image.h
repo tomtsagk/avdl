@@ -32,7 +32,10 @@ struct dd_image {
 
 	void (*bind)(struct dd_image *o);
 	void (*bindIndex)(struct dd_image *o, int index);
+	void (*bindIndexArray)(struct dd_image *o, int index, int arraySize, struct dd_image *array[]);
 	void (*unbind)(struct dd_image *o);
+	void (*unbindIndex)(struct dd_image *o, int index);
+	void (*unbindIndexArray)(struct dd_image *o, int index);
 	void (*clean)(struct dd_image *o);
 	void (*set)(struct dd_image *o, const char *filename, int type);
 
@@ -54,7 +57,10 @@ int dd_image_load_png(struct dd_image *img, const char *filename);
 
 void dd_image_bind(struct dd_image *o);
 void dd_image_bindIndex(struct dd_image *o, int index);
+void dd_image_bindIndexArray(struct dd_image *o, int index, int arraySize, struct dd_image *array[]);
 void dd_image_unbind(struct dd_image *o);
+void dd_image_unbindIndex(struct dd_image *o, int index);
+void dd_image_unbindIndexArray(struct dd_image *o, int index);
 void dd_image_set(struct dd_image *o, const char *filename, int type);
 void dd_image_setLocal(struct dd_image *o, const char *filename, int type);
 

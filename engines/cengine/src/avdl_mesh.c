@@ -515,31 +515,21 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 			GL(glUniform1i(loc, 1));
 		}
 	}
+	int activeTextures = 0;
 	for (int i = 0; i < TEXTURES_COUNT; i++) {
 		if (m->img_extra[i]) {
-			m->img_extra[i]->bindIndex(m->img_extra[i], 2 +i);
-			GLuint loc = -1;
-			switch (i) {
-			case 0:
-				loc = glGetUniformLocation(currentProgram, "image_extra_0");
-				break;
-			case 1:
-				loc = glGetUniformLocation(currentProgram, "image_extra_1");
-				break;
-			case 2:
-				loc = glGetUniformLocation(currentProgram, "image_extra_2");
-				break;
-			case 3:
-				loc = glGetUniformLocation(currentProgram, "image_extra_3");
-				break;
-			default:
-			case 4:
-				loc = glGetUniformLocation(currentProgram, "image_extra_4");
-				break;
-			}
-			if (loc != -1) {
-				GL(glUniform1i(loc, 2 +i));
-			}
+			activeTextures++;
+		}
+		else {
+			break;
+		}
+	}
+	if (activeTextures > 0) {
+		m->img_extra[0]->bindIndexArray(m->img_extra[0], 2, activeTextures, m->img_extra);
+		GLuint loc = -1;
+		loc = glGetUniformLocation(currentProgram, "image_extra");
+		if (loc != -1) {
+			GL(glUniform1i(loc, 2));
 		}
 	}
 
@@ -592,17 +582,15 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	GL(glBindVertexArray(0));
 
 	if (m->img) {
-		m->img->unbind(m->img);
+		m->img->unbindIndex(m->img, 0);
 	}
 
 	if (m->img_normal) {
-		m->img_normal->unbind(m->img_normal);
+		m->img_normal->unbindIndex(m->img_normal, 1);
 	}
 
-	for (int i = 0; i < TEXTURES_COUNT; i++) {
-		if (m->img_extra[i]) {
-			m->img_extra[i]->unbind(m->img_extra[i]);
-		}
+	if (activeTextures > 0) {
+		m->img_extra[0]->unbindIndexArray(m->img_extra[0], 2);
 	}
 
 	if (m->hasTransparency) {

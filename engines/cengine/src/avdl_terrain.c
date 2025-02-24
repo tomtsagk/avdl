@@ -109,15 +109,15 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			cornersY[2] = cornersY[0] +0.25 +dd_math_randf(0.25);
 			*/
 
-			//cornersX[0] = (float) x /o->img.width ;
-			//cornersY[0] = (float) y /o->img.height;
-			cornersX[0] = 0.0;
-			cornersY[0] = 0.0;
+			cornersX[0] = (float) x /o->img.width ;
+			cornersY[0] = (float) y /o->img.height;
+			//cornersX[0] = 0.0;
+			//cornersY[0] = 0.0;
 
-			//cornersX[2] = (x+1.0) /o->img.width ;
-			//cornersY[2] = (y+1.0) /o->img.height;
-			cornersX[2] = 1.0;
-			cornersY[2] = 1.0;
+			cornersX[2] = (x+1.0) /o->img.width ;
+			cornersY[2] = (y+1.0) /o->img.height;
+			//cornersX[2] = 1.0;
+			//cornersY[2] = 1.0;
 
 			cornersX[1] = cornersX[0];
 			cornersY[1] = cornersY[2];

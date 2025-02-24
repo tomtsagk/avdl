@@ -281,15 +281,15 @@ avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int wid
 	GLuint tex;
 	GL(glGenTextures(1, &tex));
 	GL(glBindTexture(GL_TEXTURE_2D, tex));
-	/*
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	/*
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	*/
 
 	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
 	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+	*/
 
 	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
@@ -304,6 +304,31 @@ avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int wid
 
 	return tex;
 
+}
+
+avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, int pixel_format, int width, int height, int arraySize) {
+
+	GLuint tex;
+	GL(glGenTextures(1, &tex));
+	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, tex));
+
+	GL(glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, pixel_format, width, height, arraySize, 0, pixel_format, GL_FLOAT, 0));
+
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+
+	return tex;
+
+}
+
+avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, int pixel_format, int width, int height, int index) {
+	GL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, width, height, 1, pixel_format, GL_FLOAT, pixels));
+}
+
+avdl_texture_id avdl_graphics_ImageArrayToGpuEnd() {
+	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, 0));
 }
 
 avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], int width[], int height[]) {
@@ -372,13 +397,17 @@ void avdl_graphics_DeleteTexture(avdl_texture_id tex) {
 }
 
 void avdl_graphics_BindTexture(avdl_texture_id tex) {
-	//GL(glBindTexture(GL_TEXTURE_2D, tex));
 	avdl_graphics_BindTextureIndex(tex, 0);
 }
 
 void avdl_graphics_BindTextureIndex(avdl_texture_id tex, int index) {
 	GL(glActiveTexture(GL_TEXTURE0 +index));
 	GL(glBindTexture(GL_TEXTURE_2D, tex));
+}
+
+void avdl_graphics_BindTextureArrayIndex(avdl_texture_id tex, int index) {
+	GL(glActiveTexture(GL_TEXTURE0 +index));
+	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, tex));
 }
 
 void avdl_graphics_BindTextureSkybox(avdl_texture_id tex) {
