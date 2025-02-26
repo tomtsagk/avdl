@@ -21,7 +21,7 @@ void avdl_skybox_create(struct avdl_skybox *o) {
 	avdl_mesh_set_colour(&o->mesh, 0, 0, 0);
 
 	for (int i = 0; i < 6; i++) {
-		dd_image_create(&o->img[i]);
+		avdl_texture_create(&o->img[i]);
 	}
 
 	// program shader
@@ -35,7 +35,7 @@ void avdl_skybox_clean(struct avdl_skybox *o) {
 	avdl_mesh_clean(&o->mesh);
 
 	for (int i = 0; i < 6; i++) {
-		dd_image_clean(&o->img[i]);
+		avdl_texture_clean(&o->img[i]);
 	}
 }
 
@@ -117,7 +117,7 @@ void avdl_skybox_bind(struct avdl_skybox *o) {
 		o->tex = avdl_graphics_SkyboxToGpu(pixels, pixelFormat, width, height);
 	
 		for (int i = 0; i < 6; i++) {
-			dd_image_cleanNonGpuData(&o->img[i]);
+			avdl_texture_cleanNonGpuData(&o->img[i]);
 		}
 	}
 

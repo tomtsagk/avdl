@@ -495,7 +495,7 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 					dd_meshTexture_set_primitive(&p->m, DD_PRIMITIVE_RECTANGLE);
 					dd_meshColour_set_colour(&p->m, 0, 0, 0);
 
-					struct dd_image *img = o->font->customIcon[i];
+					struct avdl_texture *img = o->font->customIcon[i];
 					dd_meshTexture_setTexture(&p->m, img);
 					dd_meshTexture_setTransparency(&p->m, 1);
 					dd_mesh_translatef(&p->m, 0.5, 0.1, 0);

@@ -608,7 +608,7 @@ void avdl_mesh_load(struct avdl_mesh *m, const char *asset, int type) {
 	avdl_mesh_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH2, asset, type);
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH2, asset, type, 0);
 
 }
 
@@ -762,15 +762,15 @@ void avdl_mesh_setTransparency(struct avdl_mesh *o, int transparency) {
 	o->hasTransparency = transparency;
 }
 
-void avdl_mesh_setTexture(struct avdl_mesh *o, struct dd_image *tex) {
+void avdl_mesh_setTexture(struct avdl_mesh *o, struct avdl_texture *tex) {
 	o->img = tex;
 }
 
-void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct dd_image *tex) {
+void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct avdl_texture *tex) {
 	o->img_normal = tex;
 }
 
-void avdl_mesh_setTextureIndex(struct avdl_mesh *o, struct dd_image *tex, int index) {
+void avdl_mesh_setTextureIndex(struct avdl_mesh *o, struct avdl_texture *tex, int index) {
 	if (index < 0 || index >= TEXTURES_COUNT) {
 		avdl_log("avdl_mesh: texture index out of bounds: %d / %d", index, TEXTURES_COUNT);
 		return;

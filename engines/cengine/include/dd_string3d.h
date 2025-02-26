@@ -2,7 +2,7 @@
 #define DD_TEXT_H
 
 #include "avdl_cengine.h"
-#include "dd_image.h"
+#include "avdl_texture.h"
 #include "avdl_font.h"
 
 #ifdef __cplusplus

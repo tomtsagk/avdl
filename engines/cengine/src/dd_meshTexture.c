@@ -39,7 +39,7 @@ void dd_meshTexture_load(struct dd_meshTexture *m, const char *filename, int typ
 	dd_meshTexture_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHTEXTURE, filename, type);
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHTEXTURE, filename, type, 0);
 
 }
 
@@ -226,7 +226,7 @@ void dd_meshTexture_copy(struct dd_meshTexture *dest, struct dd_meshTexture *src
 	}
 }
 
-void dd_meshTexture_setTexture(struct dd_meshTexture *o, struct dd_image *tex) {
+void dd_meshTexture_setTexture(struct dd_meshTexture *o, struct avdl_texture *tex) {
 	o->img = tex;
 }
 

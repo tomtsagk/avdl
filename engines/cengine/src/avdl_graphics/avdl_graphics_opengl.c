@@ -7,7 +7,7 @@
 #include "avdl_log.h"
 #include <stdlib.h>
 #include "avdl_assetManager.h"
-#include "dd_image.h"
+#include "avdl_texture.h"
 #include "avdl_engine.h"
 #include "dd_math.h"
 
@@ -106,9 +106,9 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 	strcat(filename, "assets/icon_64x64.png");
 	#endif
 
-	struct dd_image img;
-	dd_image_create(&img);
-	dd_image_load_png(&img, filename);
+	struct avdl_texture img;
+	avdl_texture_create(&img);
+	avdl_texture_load_png(&img, filename);
 	if (img.pixels && img.pixelFormat == GL_RGBA) {
 		SDL_Surface *surface;
 		int size = sizeof(GLubyte) *img.width *img.height *4;
@@ -133,7 +133,7 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 		SDL_SetWindowIcon(o->sdl_window, surface);
 		SDL_FreeSurface(surface);
 		free(pixels);
-		dd_image_clean(&img);
+		avdl_texture_clean(&img);
 	}
 	#endif
 

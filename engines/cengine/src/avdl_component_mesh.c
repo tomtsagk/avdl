@@ -13,11 +13,16 @@ void avdl_component_mesh_create(struct avdl_component_mesh *o) {
 	o->isEditor = 0;
 	o->parent.Copy = avdl_component_mesh_Copy;
 
+	o->parent.clean = avdl_component_mesh_clean;
+
 	avdl_mesh_create(&o->mesh);
-	dd_image_create(&o->image);
+	avdl_texture_create(&o->image);
 }
 
 void avdl_component_mesh_clean(struct avdl_component_mesh *o) {
+	avdl_mesh_clean(&o->mesh);
+	avdl_texture_clean(&o->image);
+	avdl_component_clean(o);
 }
 
 void avdl_component_mesh_after_create(struct avdl_component_mesh *o) {
@@ -36,7 +41,7 @@ void avdl_component_mesh_after_create(struct avdl_component_mesh *o) {
 
 	if (o->texture_name) {
 		if (o->isEditor) {
-			dd_image_setLocal(&o->image, o->texture_name, AVDL_IMAGETYPE_PNG);
+			avdl_texture_setLocal(&o->image, o->texture_name, AVDL_IMAGETYPE_PNG);
 		}
 		else {
 			o->image.set(&o->image, o->texture_name, AVDL_IMAGETYPE_PNG);

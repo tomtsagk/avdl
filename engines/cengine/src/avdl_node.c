@@ -60,13 +60,17 @@ void avdl_node_clean(struct avdl_node *o) {
 		free(child);
 	}
 	dd_da_empty(&o->children);
+	dd_da_free(&o->children);
 
 	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
 		struct avdl_component *c = dd_da_getDeref(&o->components, i);
-		avdl_component_clean(c);
+		c->clean(c);
 		free(c);
 	}
 	dd_da_empty(&o->components);
+	dd_da_free(&o->components);
+
+	avdl_string_clean(&o->name);
 }
 
 struct avdl_transform *avdl_node_GetLocalTransform(struct avdl_node *o) {
@@ -704,6 +708,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 							avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value));
 						return -1;
 					}
+					avdl_string_clean(&property_value);
 				}
 				else
 				if (avdl_json_getToken(json) == AVDL_JSON_INT) {
@@ -721,6 +726,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 						return -1;
 					}
 				}
+				avdl_string_clean(&property_name);
 			}
 			else
 			if (component_type == AVDL_COMPONENT_TERRAIN_ENUM) {

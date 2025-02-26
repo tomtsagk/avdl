@@ -218,7 +218,7 @@ void dd_mesh_load(struct dd_mesh *m, const char *asset, int type) {
 	dd_mesh_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH, asset, type);
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH, asset, type, 0);
 
 }
 

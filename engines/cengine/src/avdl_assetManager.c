@@ -8,6 +8,13 @@
 #include "avdl_mesh.h"
 #include <stdio.h>
 #include "dd_game.h"
+#include <errno.h>
+#include "dd_math.h"
+
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
+#else
+#include <png.h>
+#endif
 
 void avdl_assetManager_loadAssets();
 
@@ -57,6 +64,7 @@ DWORD WINAPI ThreadFunc(void* data) {
 
 struct dd_dynamic_array meshesToLoad;
 struct dd_dynamic_array meshesLoading;
+struct dd_dynamic_array textureCache;
 
 int assetManagerLoading;
 
@@ -67,6 +75,9 @@ static int lockLoading;
 
 static int interruptLoading;
 
+static int LoadTexturePNG(struct avdl_assetManager_texture *o, const char *filename);
+static struct avdl_assetManager_texture *FindTexture(const char *filename);
+
 void avdl_assetManager_init() {
 	dd_da_init(&meshesToLoad , sizeof(struct dd_meshToLoad));
 	dd_da_init(&meshesLoading, sizeof(struct dd_meshToLoad));
@@ -74,16 +85,28 @@ void avdl_assetManager_init() {
 	lockLoading = 0;
 	interruptLoading = 0;
 	desiredLoadedPercentage = 1.0;
+
+	// texture cache
+	dd_da_init(&textureCache, sizeof(struct avdl_assetManager_texture *));
 }
 
 void avdl_assetManager_deinit() {
 	dd_da_free(&meshesToLoad );
 	dd_da_free(&meshesLoading);
+
+	if (dd_da_count(&textureCache) > 0) {
+		avdl_log("%d texture(s) were not cleaned", dd_da_count(&textureCache));
+		for (int i = 0; i < dd_da_count(&textureCache); i++) {
+			struct avdl_assetManager_texture *t = dd_da_getDeref(&textureCache, i);
+			avdl_log("texture: %s", avdl_string_toCharPtr(&t));
+		}
+	}
+	dd_da_free(&textureCache);
 }
 
-void avdl_assetManager_add(void *object, int meshType, const char *assetname, int type) {
+int avdl_assetManager_add(void *object, int meshType, const char *assetname, int type, int (*callback)(void *obj, void *data)) {
 	if (lockLoading) {
-		return;
+		return -1;
 	}
 	//#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	/*
@@ -105,6 +128,7 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
 	meshToLoad.type = type;
+	meshToLoad.callback = callback;
 	#if defined(_WIN32) || defined(WIN32)
 	strcpy(meshToLoad.filename, assetname);
 	//avdl_log("add asset: %s\n", meshToLoad.filename);
@@ -115,14 +139,18 @@ void avdl_assetManager_add(void *object, int meshType, const char *assetname, in
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
 	strcat(meshToLoad.filename, GAME_ASSET_PREFIX);
 	strcat(meshToLoad.filename, assetname);
-	//printf("add asset: %s\n", meshToLoad.filename);
-	//avdl_log("add asset: %s\n", meshToLoad.filename);
+	//avdl_log("add asset: %s", meshToLoad.filename);
 	#endif
 	dd_da_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
 	#endif
 
+	return 0;
+}
+
+void avdl_assetManager_remove(int index) {
+	avdl_log("remove asset: %d", index);
 }
 
 void avdl_assetManager_addLocal(void *object, int meshType, const char *assetname, int type) {
@@ -211,7 +239,7 @@ void avdl_assetManager_loadAssets() {
 				avdl_log("avdl: GetEnv: version not supported");
 			}
 
-			struct dd_image *mesh = m->object;
+			struct avdl_texture *mesh = m->object;
 
 			jstring *parameter = (*env)->NewStringUTF(env, m->filename);
 			jobjectArray result = (jstring)(*(*env)->CallStaticObjectMethod)(env, clazz, BitmapMethodId, parameter);
@@ -277,14 +305,53 @@ void avdl_assetManager_loadAssets() {
 			}
 			//#endif
 			#else
-			struct dd_image *mesh = m->object;
+			struct avdl_texture *mesh = m->object;
 			if (m->type == AVDL_IMAGETYPE_BMP) {
-				dd_image_load_bmp(mesh, m->filename);
+				avdl_texture_load_bmp(mesh, m->filename);
 			}
 			else
 			if (m->type == AVDL_IMAGETYPE_PNG) {
-				if (dd_image_load_png(mesh, m->filename) != 0) {
-					avdl_log("avdl: error loading texture %s", m->filename);
+
+				// attempt to find texture from cache
+				struct avdl_assetManager_texture *t = 0;
+				t = FindTexture(m->filename);
+
+				// texture not found - load a new one
+				if (t == 0) {
+					t = malloc(sizeof(struct avdl_assetManager_texture));
+					avdl_string_create(&t->filename, 1024);
+					avdl_string_cat(&t->filename, m->filename);
+					if (!avdl_string_isValid(&t->filename)) {
+						avdl_log("avdl: AssetManager: Unable to construct filename for texture: %s", m->filename);
+						continue;
+					}
+					if (LoadTexturePNG(t, m->filename) != 0) {
+						avdl_log("avdl: AssetManager: Unable to load texture: %s", m->filename);
+						continue;
+					}
+					t->index = dd_da_count(&textureCache);
+					t->graphicsContextId = avdl_graphics_getContextId();
+					t->uses = 0;
+					dd_da_push(&textureCache, &t);
+				}
+
+				if (m->callback) {
+					t->uses++;
+					#if defined( AVDL_DIRECT3D11 )
+					#elif defined( AVDL_WINDOWS )
+					WaitForSingleObject(updateDrawMutex, INFINITE);
+					#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
+					pthread_mutex_lock(&updateDrawMutex);
+					#endif
+					if (m->callback(mesh, t) != 0) {
+						avdl_log("avdl: AssetManager: error loading texture %s", m->filename);
+					}
+					#if defined( AVDL_DIRECT3D11 )
+					#elif defined( AVDL_WINDOWS )
+					ReleaseMutex(updateDrawMutex);
+					#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
+					pthread_mutex_unlock(&updateDrawMutex);
+					#endif
 				}
 			}
 			#endif
@@ -490,4 +557,169 @@ void avdl_assetManager_clear() {
 
 void avdl_assetManager_setPercentage(float percentage) {
 	desiredLoadedPercentage = percentage;
+}
+
+static struct avdl_assetManager_texture *FindTexture(const char *filename) {
+	for (int i = 0; i < dd_da_count(&textureCache); i++) {
+		struct avdl_assetManager_texture *t = dd_da_getDeref(&textureCache, i);
+		if (strcmp(avdl_string_toCharPtr(&t->filename), filename) == 0) {
+			return t;
+		}
+	}
+	return 0;
+}
+
+static int LoadTexturePNG(struct avdl_assetManager_texture *o, const char *filename) {
+
+	// check signature
+	#if defined( AVDL_DIRECT3D11 )
+	FILE* fp = avdl_filetomesh_openFile(filename);
+	#else
+	FILE* fp = fopen(filename, "rb");
+	#endif
+	if (!fp) {
+		avdl_log("avdl: AssetManager: LoadTexturePNG: error opening file: '%s': '%s'", filename, strerror(errno));
+		return -1;
+	}
+	char header[9];
+	fread(header, 1, 8, fp);
+	header[8] = '\0';
+	int is_png = !png_sig_cmp(header, 0, 8);
+	if (!is_png)
+	{
+		avdl_log("avdl: AssetManager: LoadTexturePNG: error reading asset file signature: '%s'", filename);
+		fclose(fp);
+		return -1;
+	}
+
+	//png_set_sig_bytes_read();
+
+	// create struct pointer
+	//png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)user_error_ptr, user_error_fn, user_warning_fn);
+	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
+	if (!png_ptr) {
+		avdl_log("avdl: AssetManager: LoadTexturePNG: error parsing file: '%s'", filename);
+		fclose(fp);
+		return -1;
+	}
+
+	// create info pointer
+	png_infop info_ptr = png_create_info_struct(png_ptr);
+	if (!info_ptr) {
+		png_destroy_read_struct(&png_ptr, 0, 0);
+		fclose(fp);
+		avdl_log("avdl: AssetManager: LoadTexturePNG: error creating info struct from file: '%s'", filename);
+		return -1;
+	}
+
+	png_init_io(png_ptr, fp);
+	png_set_sig_bytes(png_ptr, 8);
+	png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, 0);
+	//png_read_info(png_ptr, info_ptr);
+
+	png_uint_32 width = 0;
+	png_uint_32 height = 0;
+	int bit_depth = 0;
+	int color_type = 0;
+	int interlace_type = 0;
+	int compression_type = 0;
+	int filter_method = 0;
+	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, &compression_type, &filter_method);
+
+	//avdl_log("%dx%d %d %d | %d %d %d", width, height, bit_depth, color_type, interlace_type, compression_type, filter_method);
+
+	#if defined( AVDL_DIRECT3D11)
+	o->pixelFormat = 0;
+	#else
+	o->pixelFormat = GL_RGB;
+	#endif
+	o->width = width;
+	o->height = height;
+	png_bytep *row_pointers = png_get_rows(png_ptr, info_ptr);
+	// grayscale images
+	if (color_type == PNG_COLOR_TYPE_GRAY) {
+		#if defined( AVDL_DIRECT3D11)
+		o->pixelFormat = 0;
+		#else
+		o->pixelFormat = GL_RGB;
+		#endif
+		float *pixels = malloc(sizeof(float) *o->width *o->height *3);
+		for (int x = 0; x < o->width ; x++)
+		for (int y = 0; y < o->height; y++) {
+			int ry = o->height-1 -y;
+			pixels[(y*width*3) +x*3+0] = dd_math_pow(row_pointers[ry][x]/ 255.0, 2.2);
+			pixels[(y*width*3) +x*3+1] = dd_math_pow(row_pointers[ry][x]/ 255.0, 2.2);
+			pixels[(y*width*3) +x*3+2] = dd_math_pow(row_pointers[ry][x]/ 255.0, 2.2);
+		}
+		o->pixels = pixels;
+	}
+	else
+	// RGB images
+	if (color_type == PNG_COLOR_TYPE_RGB) {
+		#if defined( AVDL_DIRECT3D11)
+		o->pixelFormat = 0;
+		#else
+		o->pixelFormat = GL_RGB;
+		#endif
+		float *pixels = malloc(sizeof(float) *o->width *o->height *3);
+		for (int x = 0; x < o->width ; x++)
+		for (int y = 0; y < o->height; y++) {
+			int ry = o->height-1 -y;
+			pixels[(y*width*3) +x*3+0] = dd_math_pow(row_pointers[ry][x*3+0]/ 255.0, 2.2);
+			pixels[(y*width*3) +x*3+1] = dd_math_pow(row_pointers[ry][x*3+1]/ 255.0, 2.2);
+			pixels[(y*width*3) +x*3+2] = dd_math_pow(row_pointers[ry][x*3+2]/ 255.0, 2.2);
+		}
+		o->pixels = pixels;
+	}
+	else
+	// RGBA images
+	if (color_type == PNG_COLOR_TYPE_RGBA) {
+		#if defined( AVDL_DIRECT3D11)
+		o->pixelFormat = 0;
+		#else
+		o->pixelFormat = GL_RGBA;
+		#endif
+		float *pixels = malloc(sizeof(float) *o->width *o->height *4);
+		for (int x = 0; x < o->width ; x++)
+		for (int y = 0; y < o->height; y++) {
+			int ry = o->height-1 -y;
+			pixels[(y*width*4) +x*4+0] = dd_math_pow(row_pointers[ry][x*4+0]/ 255.0, 2.2);
+			pixels[(y*width*4) +x*4+1] = dd_math_pow(row_pointers[ry][x*4+1]/ 255.0, 2.2);
+			pixels[(y*width*4) +x*4+2] = dd_math_pow(row_pointers[ry][x*4+2]/ 255.0, 2.2);
+			pixels[(y*width*4) +x*4+3] = dd_math_pow(row_pointers[ry][x*4+3]/ 255.0, 2.2);
+		}
+		o->pixels = pixels;
+	}
+	// unsupported format
+	else {
+		fclose(fp);
+		png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+		avdl_log("avdl: AssetManager: LoadTexturePNG: error while parsing '%s': unsupported format: color_type: %d", filename, color_type);
+		return -1;
+	}
+
+	// clean-up
+	fclose(fp);
+	png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+
+	return 0;
+}
+
+void avdl_assetManager_CleanTexture(struct avdl_assetManager_texture *t) {
+	t->uses--;
+	if (t->uses == 0) {
+		for (int i = 0; i < dd_da_count(&textureCache); i++) {
+			struct avdl_assetManager_texture *tempTex = dd_da_getDeref(&textureCache, i);
+			if (tempTex == t) {
+				avdl_string_clean(&t->filename);
+				if (t->pixels) {
+					free(t->pixels);
+					t->pixels = 0;
+				}
+				free(t);
+				dd_da_remove(&textureCache, 1, i);
+				break;
+			}
+		}
+	}
 }

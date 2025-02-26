@@ -21,19 +21,27 @@ void avdl_component_terrain_create(struct avdl_component_terrain *o) {
 	o->texture3_name = 0;
 	o->isEditor = 0;
 	o->parent.Copy = avdl_component_terrain_Copy;
+	o->parent.clean = avdl_component_terrain_clean;
 
 	o->scaleZ = 1.0;
 
 	avdl_terrain_create(&o->terrain);
-	dd_image_create(&o->img);
-	dd_image_create(&o->img_extra_0);
-	dd_image_create(&o->img_extra_1);
-	dd_image_create(&o->img_extra_2);
-	dd_image_create(&o->img_extra_3);
+	avdl_texture_create(&o->img);
+	avdl_texture_create(&o->img_extra_0);
+	avdl_texture_create(&o->img_extra_1);
+	avdl_texture_create(&o->img_extra_2);
+	avdl_texture_create(&o->img_extra_3);
 
 }
 
 void avdl_component_terrain_clean(struct avdl_component_terrain *o) {
+	avdl_terrain_clean(&o->terrain);
+	avdl_texture_clean(&o->img);
+	avdl_texture_clean(&o->img_extra_0);
+	avdl_texture_clean(&o->img_extra_1);
+	avdl_texture_clean(&o->img_extra_2);
+	avdl_texture_clean(&o->img_extra_3);
+	avdl_component_clean(o);
 }
 
 void avdl_component_terrain_after_create(struct avdl_component_terrain *o) {
@@ -43,52 +51,48 @@ void avdl_component_terrain_after_create(struct avdl_component_terrain *o) {
 			avdl_terrain_loadLocal(&o->terrain, o->asset_name);
 
 			if (o->texture_main_name) {
-				dd_image_setLocal(&o->img, o->texture_main_name, AVDL_IMAGETYPE_PNG);
+				avdl_texture_setLocal(&o->img, o->texture_main_name, AVDL_IMAGETYPE_PNG);
 				o->terrain.setTextureIndex(&o->terrain, &o->img, 0);
 			}
 
 			if (o->texture0_name) {
-				dd_image_setLocal(&o->img_extra_0, o->texture0_name, AVDL_IMAGETYPE_PNG);
+				avdl_texture_setLocal(&o->img_extra_0, o->texture0_name, AVDL_IMAGETYPE_PNG);
 				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
 			}
 			if (o->texture1_name) {
-				dd_image_setLocal(&o->img_extra_1, o->texture1_name, AVDL_IMAGETYPE_PNG);
+				avdl_texture_setLocal(&o->img_extra_1, o->texture1_name, AVDL_IMAGETYPE_PNG);
 				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_1, 2);
 			}
 			if (o->texture2_name) {
-				dd_image_setLocal(&o->img_extra_2, o->texture2_name, AVDL_IMAGETYPE_PNG);
+				avdl_texture_setLocal(&o->img_extra_2, o->texture2_name, AVDL_IMAGETYPE_PNG);
 				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_2, 3);
 			}
 			if (o->texture3_name) {
-				dd_image_setLocal(&o->img_extra_3, o->texture3_name, AVDL_IMAGETYPE_PNG);
+				avdl_texture_setLocal(&o->img_extra_3, o->texture3_name, AVDL_IMAGETYPE_PNG);
 				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_3, 4);
 			}
 		}
 		else {
 			o->terrain.load(&o->terrain, o->asset_name);
 			if (o->texture_main_name) {
-				dd_image_set(&o->img, o->texture_main_name, AVDL_IMAGETYPE_PNG);
+				avdl_texture_set(&o->img, o->texture_main_name, AVDL_IMAGETYPE_PNG);
 				o->terrain.setTextureIndex(&o->terrain, &o->img, 0);
 			}
 
 			if (o->texture0_name) {
-				dd_image_set(&o->img_extra_0, o->texture0_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
-			}
-			if (o->texture0_name) {
-				dd_image_set(&o->img_extra_0, o->texture0_name, AVDL_IMAGETYPE_PNG);
+				avdl_texture_set(&o->img_extra_0, o->texture0_name, AVDL_IMAGETYPE_PNG);
 				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
 			}
 			if (o->texture1_name) {
-				dd_image_set(&o->img_extra_1, o->texture1_name, AVDL_IMAGETYPE_PNG);
+				avdl_texture_set(&o->img_extra_1, o->texture1_name, AVDL_IMAGETYPE_PNG);
 				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_1, 2);
 			}
 			if (o->texture2_name) {
-				dd_image_set(&o->img_extra_2, o->texture2_name, AVDL_IMAGETYPE_PNG);
+				avdl_texture_set(&o->img_extra_2, o->texture2_name, AVDL_IMAGETYPE_PNG);
 				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_2, 3);
 			}
 			if (o->texture3_name) {
-				dd_image_set(&o->img_extra_3, o->texture3_name, AVDL_IMAGETYPE_PNG);
+				avdl_texture_set(&o->img_extra_3, o->texture3_name, AVDL_IMAGETYPE_PNG);
 				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_3, 4);
 			}
 		}

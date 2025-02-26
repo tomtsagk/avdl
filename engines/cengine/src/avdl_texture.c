@@ -1,4 +1,4 @@
-#include "dd_image.h"
+#include "avdl_texture.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "avdl_log.h"
@@ -23,7 +23,7 @@ struct Subpixel {
 	int height;
 };
 
-void dd_image_create(struct dd_image *o) {
+void avdl_texture_create(struct avdl_texture *o) {
 	o->tex = 0;
 	o->width = 0;
 	o->height = 0;
@@ -33,16 +33,18 @@ void dd_image_create(struct dd_image *o) {
 	o->assetType = 0;
 	o->openglContextId = -1;
 	o->pixelFormat = 0;
+	o->texture = 0;
+	o->dirtyTexture = 0;
 
-	o->bind = dd_image_bind;
-	o->bindIndex = dd_image_bindIndex;
-	o->bindIndexArray = dd_image_bindIndexArray;
-	o->unbind = dd_image_unbind;
-	o->unbindIndex = dd_image_unbindIndex;
-	o->unbindIndexArray = dd_image_unbindIndexArray;
-	o->clean = dd_image_clean;
-	o->set = dd_image_set;
-	o->isLoaded = dd_image_isLoaded;
+	o->bind = avdl_texture_bind;
+	o->bindIndex = avdl_texture_bindIndex;
+	o->bindIndexArray = avdl_texture_bindIndexArray;
+	o->unbind = avdl_texture_unbind;
+	o->unbindIndex = avdl_texture_unbindIndex;
+	o->unbindIndexArray = avdl_texture_unbindIndexArray;
+	o->clean = avdl_texture_clean;
+	o->set = avdl_texture_set;
+	o->isLoaded = avdl_texture_isLoaded;
 
 	#if !defined( AVDL_DIRECT3D11 )
 	dd_da_init(&o->subpixels, sizeof(struct Subpixel));
@@ -54,9 +56,11 @@ extern avdl_texture_id avdl_graphics_loadDDS(char *filename);
 extern FILE* avdl_filetomesh_openFile(char* filename);
 #endif
 
-int dd_image_load_png(struct dd_image *img, const char *filename) {
+int avdl_texture_load_png(struct avdl_texture *img, const char *filename) {
 
-	dd_image_clean(img);
+	avdl_texture_clean(img);
+
+	avdl_log("load png manual: %s", filename);
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	#elif defined( AVDL_DIRECT3D11 )
@@ -86,7 +90,7 @@ int dd_image_load_png(struct dd_image *img, const char *filename) {
 	FILE* fp = fopen(filename, "rb");
 	#endif
 	if (!fp) {
-		avdl_log("dd_image_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
+		avdl_log("avdl_texture_load_png: error opening file: '%s': '%s'", filename, strerror(errno));
 		return -1;
 	}
 	char header[9];
@@ -216,7 +220,21 @@ int dd_image_load_png(struct dd_image *img, const char *filename) {
 
 }
 
-void dd_image_load_bmp(struct dd_image *img, const char *filename) {
+int avdl_texture_load_FromAsset(struct avdl_texture *img, struct avdl_assetManager_texture *t) {
+/*
+	img->pixelFormat = t->pixelFormat;
+	img->pixels = t->pixels;
+	img->width = t->width;
+	img->height = t->height;
+	*/
+	img->texture = t;
+	img->dirtyTexture = 0;
+	return 0;
+}
+
+void avdl_texture_load_bmp(struct avdl_texture *img, const char *filename) {
+
+	avdl_log("load bmp: %s", filename);
 
 	#ifdef AVDL_DIRECT3D11
 	#else
@@ -245,7 +263,7 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	// on Unix system, "r" is enough, on windows "rb" is needed
 	FILE *f = fopen(filename, "rb");
 	if (!f) {
-		avdl_log("dd_image_load_bmp: error opening file: '%s': '%s'", filename, strerror(errno));
+		avdl_log("avdl_texture_load_bmp: error opening file: '%s': '%s'", filename, strerror(errno));
 		exit(-1);
 	}
 
@@ -256,7 +274,7 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 	fread(&header.offset, sizeof(unsigned int), 1, f);
 
 	if (fread(&headerinfo, sizeof(struct bmp_headerinfo), 1, f) != 1) {
-		avdl_log("dd_image_load_bmp: error reading info header: '%s'", filename);
+		avdl_log("avdl_texture_load_bmp: error reading info header: '%s'", filename);
 	}
 
 	fseek(f, header.offset, SEEK_SET);
@@ -286,7 +304,23 @@ void dd_image_load_bmp(struct dd_image *img, const char *filename) {
 
 }
 
-void dd_image_clean(struct dd_image *o) {
+void avdl_texture_clean(struct avdl_texture *o) {
+
+	// cached texture - do not clean
+	if (o->texture && !o->dirtyTexture) {
+		avdl_assetManager_CleanTexture(o->texture);
+	}
+
+	if (o->texture && o->dirtyTexture) {
+		if (o->texture->pixels) {
+			free(o->texture->pixels);
+			o->texture->pixels = 0;
+		}
+		if (o->texture->tex) {
+			avdl_graphics_DeleteTexture(o->texture->tex);
+		}
+	}
+
 	if (o->pixels) {
 		free(o->pixels);
 		o->pixels = 0;
@@ -310,13 +344,30 @@ void dd_image_clean(struct dd_image *o) {
 	#endif
 }
 
-void dd_image_bind(struct dd_image *o) {
-	dd_image_bindIndex(o, 0);
+void avdl_texture_bind(struct avdl_texture *o) {
+	avdl_texture_bindIndex(o, 0);
 }
 
-void dd_image_bindIndex(struct dd_image *o, int index) {
+void avdl_texture_bindIndex(struct avdl_texture *o, int index) {
+
+	if (o->texture) {
+		if (o->texture->pixels) {
+			// check tex ?
+			#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+			o->texture->tex = avdl_graphics_ImageToGpu(o->texture->pixels, o->texture->pixelFormat, o->texture->width, o->texture->height);
+			free(o->texture->pixels);
+			o->texture->pixels = 0;
+			#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+			#endif
+		}
+		if (o->texture->graphicsContextId == avdl_graphics_getContextId() && o->texture->tex) {
+			avdl_graphics_BindTextureIndex(o->texture->tex, index);
+		}
+		return;
+	}
 
 	#ifdef AVDL_DIRECT3D11
+	/*
 	// send texture to GPU if needed
 	if (o->pixels) {
 		o->tex = avdl_graphics_ImageToGpu(o->pixels, o->pixelFormat, o->width, o->height);
@@ -328,6 +379,7 @@ void dd_image_bindIndex(struct dd_image *o, int index) {
 	//if (o->openglContextId == avdl_graphics_getContextId()) {
 		avdl_graphics_BindTexture(o->tex);
 	//}
+	*/
 	#else
 	// manually made texture
 	if (o->openglContextId != avdl_graphics_getContextId() && !o->assetName) {
@@ -414,13 +466,43 @@ void dd_image_bindIndex(struct dd_image *o, int index) {
 	#endif
 }
 
-void dd_image_bindIndexArray(struct dd_image *o, int index, int arraySize, struct dd_image *array[]) {
+void avdl_texture_bindIndexArray(struct avdl_texture *o, int index, int arraySize, struct avdl_texture *array[]) {
+
+	if (o->texture) {
+		int isLoaded = 1;
+		for (int i = 0; i < arraySize; i++) {
+			if (!array[i]->texture || !array[i]->texture->pixels) {
+				isLoaded = 0;
+				break;
+			}
+		}
+		if (isLoaded) {
+			
+			// check tex ?
+			#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+			o->texture->tex = avdl_graphics_ImageArrayToGpuStart(o->texture->pixels, o->texture->pixelFormat, o->texture->width, o->texture->height, arraySize);
+			for (int i = 0; i < arraySize; i++) {
+				avdl_graphics_ImageArrayToGpuInstance(array[i]->texture->pixels, o->texture->pixelFormat, o->texture->width, o->texture->height, i);
+			}
+			avdl_graphics_ImageArrayToGpuEnd();
+			free(o->texture->pixels);
+			o->texture->pixels = 0;
+			#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+			#endif
+		}
+
+		// texture is valid in this opengl context, bind it
+		if (o->texture->graphicsContextId == avdl_graphics_getContextId() && o->texture->tex) {
+			avdl_graphics_BindTextureArrayIndex(o->texture->tex, index);
+		}
+		return;
+	}
 
 	#ifdef AVDL_DIRECT3D11
 	#else
 	int isLoaded = 1;
 	for (int i = 0; i < arraySize; i++) {
-		if (!array[i]->isLoaded(o)) {
+		if (!array[i]->isLoaded(array[i])) {
 			//avdl_log("one or more images from array are not loaded");
 			isLoaded = 0;
 			break;
@@ -435,7 +517,7 @@ void dd_image_bindIndexArray(struct dd_image *o, int index, int arraySize, struc
 			avdl_graphics_ImageArrayToGpuInstance(array[i]->pixels, o->pixelFormat, o->width, o->height, i);
 		}
 		avdl_graphics_ImageArrayToGpuEnd();
-		free(o->pixels);
+		//free(o->pixels);
 		o->pixels = 0;
 		#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 		/*
@@ -465,11 +547,11 @@ void dd_image_bindIndexArray(struct dd_image *o, int index, int arraySize, struc
 	#endif
 }
 
-void dd_image_unbind(struct dd_image *o) {
-	dd_image_unbindIndex(o, 0);
+void avdl_texture_unbind(struct avdl_texture *o) {
+	avdl_texture_unbindIndex(o, 0);
 }
 
-void dd_image_unbindIndex(struct dd_image *o, int index) {
+void avdl_texture_unbindIndex(struct avdl_texture *o, int index) {
 	#ifdef AVDL_DIRECT3D11
 	#else
 	if (o->tex) {
@@ -478,7 +560,7 @@ void dd_image_unbindIndex(struct dd_image *o, int index) {
 	#endif
 }
 
-void dd_image_unbindIndexArray(struct dd_image *o, int index) {
+void avdl_texture_unbindIndexArray(struct avdl_texture *o, int index) {
 	#ifdef AVDL_DIRECT3D11
 	#else
 	if (o->tex) {
@@ -487,20 +569,16 @@ void dd_image_unbindIndexArray(struct dd_image *o, int index) {
 	#endif
 }
 
-void dd_image_set(struct dd_image *o, const char *filename, int type) {
-	#ifdef AVDL_DIRECT3D11
-	o->assetName = filename;
-	o->assetType = type;
-	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
-	#else
+void avdl_texture_set(struct avdl_texture *o, const char *filename, int type) {
+	#ifndef AVDL_DIRECT3D11
 	o->openglContextId = avdl_graphics_getContextId();
+	#endif
 	o->assetName = filename;
 	o->assetType = type;
-	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
-	#endif
+	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type, avdl_texture_load_FromAsset);
 }
 
-void dd_image_setLocal(struct dd_image *o, const char *filename, int type) {
+void avdl_texture_setLocal(struct avdl_texture *o, const char *filename, int type) {
 	#ifdef AVDL_DIRECT3D11
 	o->assetName = filename;
 	o->assetType = type;
@@ -513,7 +591,9 @@ void dd_image_setLocal(struct dd_image *o, const char *filename, int type) {
 	#endif
 }
 
-void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, int x, int y, int w, int h) {
+void avdl_texture_addSubpixels(struct avdl_texture *o, void *pixels, int pixel_format, int x, int y, int w, int h) {
+
+	avdl_log("add subpixels?");
 
 	#if defined( AVDL_DIRECT3D11 )
 	return;
@@ -550,13 +630,13 @@ void dd_image_addSubpixels(struct dd_image *o, void *pixels, int pixel_format, i
 
 }
 
-int dd_image_isLoaded(struct dd_image *o) {
+int avdl_texture_isLoaded(struct avdl_texture *o) {
 	return o->pixels || o->pixelsb;
 }
 
-void dd_image_cleanNonGpuData(struct dd_image *o) {
+void avdl_texture_cleanNonGpuData(struct avdl_texture *o) {
 	if (o->pixels) {
-		free(o->pixels);
+		//free(o->pixels);
 		o->pixels = 0;
 	}
 }

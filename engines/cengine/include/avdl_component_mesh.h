@@ -3,7 +3,7 @@
 
 #include "avdl_component.h"
 #include "avdl_mesh.h"
-#include "dd_image.h"
+#include "avdl_texture.h"
 
 struct avdl_component_mesh {
 
@@ -12,7 +12,7 @@ struct avdl_component_mesh {
 	struct avdl_mesh mesh;
 	char *mesh_name;
 
-	struct dd_image image;
+	struct avdl_texture image;
 	char *texture_name;
 
 	int hasTransparency;

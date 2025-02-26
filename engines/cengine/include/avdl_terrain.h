@@ -2,7 +2,7 @@
 #define AVDL_TERRAIN_H
 
 #include "avdl_mesh.h"
-#include "dd_image.h"
+#include "avdl_texture.h"
 
 struct avdl_terrain {
 
@@ -10,7 +10,7 @@ struct avdl_terrain {
 	struct avdl_mesh mesh;
 
 	// the terrain's image
-	struct dd_image img;
+	struct avdl_texture img;
 
 	int width;
 	int height;
@@ -38,7 +38,7 @@ struct avdl_terrain {
 
 	int (*setScaleZ)(struct avdl_terrain *o, float scale);
 
-	int (*setTextureIndex)(struct avdl_terrain *o, struct dd_image *img, int index);
+	int (*setTextureIndex)(struct avdl_terrain *o, struct avdl_texture *img, int index);
 };
 
 void avdl_terrain_create(struct avdl_terrain *o);
@@ -56,6 +56,6 @@ int avdl_terrain_isLoaded(struct avdl_terrain *o);
 
 int avdl_terrain_setScaleZ(struct avdl_terrain *o, float scale);
 
-int avdl_terrain_setTextureIndex(struct avdl_terrain *o, struct dd_image *img, int index);
+int avdl_terrain_setTextureIndex(struct avdl_terrain *o, struct avdl_texture *img, int index);
 
 #endif

@@ -10,6 +10,7 @@ void avdl_component_create(struct avdl_component *o) {
 	o->GetType = avdl_component_GetType;
 	o->Copy = avdl_component_Copy;
 	o->after_create = avdl_component_after_create;
+	o->clean = avdl_component_clean;
 
 	o->type = AVDL_COMPONENT_INAVLID_ENUM;
 	o->node = 0;

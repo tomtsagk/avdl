@@ -22,6 +22,7 @@ void avdl_collider_aabb_create(struct avdl_collider_aabb *o) {
 }
 
 void avdl_collider_aabb_clean(struct avdl_collider_aabb *o) {
+	avdl_mesh_clean(&o->mesh);
 }
 
 void avdl_collider_aabb_setMin(struct avdl_collider_aabb *o, float x, float y, float z) {

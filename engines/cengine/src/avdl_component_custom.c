@@ -7,12 +7,14 @@ void avdl_component_custom_create(struct avdl_component_custom *o) {
 	avdl_component_create(o);
 	o->parent.type = AVDL_COMPONENT_CUSTOM_EDITOR_ENUM;
 	o->parent.Copy = avdl_component_custom_Copy;
+	o->parent.clean = avdl_component_custom_clean;
 
 	avdl_string_create(&o->name, 100);
 	dd_da_init(&o->values, sizeof(struct avdl_string *));
 }
 
 void avdl_component_custom_clean(struct avdl_component_custom *o) {
+	avdl_component_clean(o);
 }
 
 void avdl_component_custom_SetName(struct avdl_component_custom *o, const char *name) {

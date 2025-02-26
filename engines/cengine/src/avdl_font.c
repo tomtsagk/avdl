@@ -49,7 +49,7 @@ void avdl_font_create(struct avdl_font *o) {
 		o->glyphs[i].uses = 0;
 	}
 
-	dd_image_create(&o->texture);
+	avdl_texture_create(&o->texture);
 	o->texture.width = FONT_ATLAS_WIDTH;
 	o->texture.height = FONT_ATLAS_HEIGHT;
 	#if defined( AVDL_DIRECT3D11)
@@ -108,7 +108,7 @@ static void CleanFontFace(struct avdl_font *o) {
 }
 
 void avdl_font_clean(struct avdl_font *o) {
-	dd_image_clean(&o->texture);
+	avdl_texture_clean(&o->texture);
 
 	CleanFontData(o);
 	CleanFontFace(o);
@@ -349,14 +349,14 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		GL(glBindTexture(GL_TEXTURE_2D, o->texture.tex));
 
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-		dd_image_addSubpixels(&o->texture, pixels, GL_RGBA,
+		avdl_texture_addSubpixels(&o->texture, pixels, GL_RGBA,
 			(glyph_id%FONT_MAX_GLYPHS_COLUMNS) *FONT_GLYPH_SIZE,
 			((glyph_id/FONT_MAX_GLYPHS_ROWS) *FONT_GLYPH_SIZE),
 			FONT_GLYPH_SIZE,
 			FONT_GLYPH_SIZE
 		);
 		#else
-		dd_image_addSubpixels(&o->texture, pixels, GL_FLOAT,
+		avdl_texture_addSubpixels(&o->texture, pixels, GL_FLOAT,
 			(glyph_id%FONT_MAX_GLYPHS_COLUMNS) *FONT_GLYPH_SIZE,
 			((glyph_id/FONT_MAX_GLYPHS_ROWS) *FONT_GLYPH_SIZE),
 			FONT_GLYPH_SIZE,
@@ -368,7 +368,7 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		#endif
 	}
 	else {
-		//avdl_log("dd_image has error state ?");
+		//avdl_log("avdl_texture has error state ?");
 	}
 
 	o->glyphs[glyph_id].id = unicode_hex;
@@ -618,7 +618,7 @@ int avdl_font_needsRefresh(struct avdl_font *o) {
 	return 0;
 }
 
-void avdl_font_addCustomIcon(struct avdl_font *o, const char *keyword, struct dd_image *image) {
+void avdl_font_addCustomIcon(struct avdl_font *o, const char *keyword, struct avdl_texture *image) {
 	#if !defined( AVDL_DIRECT3D11 )
 	if (o->customIconCount >= 10) {
 		avdl_log("avdl error: too many custom icons in font");

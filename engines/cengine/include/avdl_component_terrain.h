@@ -4,7 +4,7 @@
 #include "avdl_component.h"
 #include "avdl_transform.h"
 #include "avdl_terrain.h"
-#include "dd_image.h"
+#include "avdl_texture.h"
 #include "avdl_shaders.h"
 
 struct avdl_component_terrain {
@@ -14,11 +14,11 @@ struct avdl_component_terrain {
 	struct avdl_terrain terrain;
 	char *asset_name;
 
-	struct dd_image img;
-	struct dd_image img_extra_0;
-	struct dd_image img_extra_1;
-	struct dd_image img_extra_2;
-	struct dd_image img_extra_3;
+	struct avdl_texture img;
+	struct avdl_texture img_extra_0;
+	struct avdl_texture img_extra_1;
+	struct avdl_texture img_extra_2;
+	struct avdl_texture img_extra_3;
 
 	char *texture_main_name;
 	char *texture0_name;

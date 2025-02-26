@@ -22,7 +22,7 @@
 #include "dd_vec4.h"
 #include "dd_mouse.h"
 #include "dd_string3d.h"
-#include "dd_image.h"
+#include "avdl_texture.h"
 #include "avdl_skybox.h"
 #include "avdl_shaders.h"
 #include "dd_log.h"

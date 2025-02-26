@@ -14,7 +14,7 @@ enum avdl_primitives {
 
 #include "avdl_graphics.h"
 #include "dd_matrix.h"
-#include "dd_image.h"
+#include "avdl_texture.h"
 #include "dd_filetomesh.h"
 
 #define TEXTURES_COUNT 5
@@ -58,9 +58,9 @@ struct avdl_mesh {
 
 	// textures
 	// texture to be used
-	struct dd_image *img;
-	struct dd_image *img_normal;
-	struct dd_image *img_extra[TEXTURES_COUNT];
+	struct avdl_texture *img;
+	struct avdl_texture *img_normal;
+	struct avdl_texture *img_extra[TEXTURES_COUNT];
 
 	// transparency
 	int hasTransparency;
@@ -81,9 +81,9 @@ struct avdl_mesh {
 	void (*set_colour)(struct avdl_mesh *m, float r, float g, float b);
 
 	void (*set_primitive_texcoords)(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY);
-	void (*setTexture)(struct avdl_mesh *o, struct dd_image *img);
-	void (*setTextureNormal)(struct avdl_mesh *o, struct dd_image *img);
-	void (*setTextureIndex)(struct avdl_mesh *o, struct dd_image *img, int index);
+	void (*setTexture)(struct avdl_mesh *o, struct avdl_texture *img);
+	void (*setTextureNormal)(struct avdl_mesh *o, struct avdl_texture *img);
+	void (*setTextureIndex)(struct avdl_mesh *o, struct avdl_texture *img, int index);
 	int (*hasTexture)(struct avdl_mesh *o);
 	void (*setTransparency)(struct avdl_mesh *o, int transparency);
 
@@ -115,9 +115,9 @@ void avdl_mesh_scalef(struct avdl_mesh *o, float x, float y, float z);
 
 void avdl_mesh_set_colour(struct avdl_mesh *m, float r, float g, float b);
 
-void avdl_mesh_setTexture(struct avdl_mesh *o, struct dd_image *tex);
-void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct dd_image *tex);
-void avdl_mesh_setTextureIndex(struct avdl_mesh *o, struct dd_image *tex, int index);
+void avdl_mesh_setTexture(struct avdl_mesh *o, struct avdl_texture *tex);
+void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct avdl_texture *tex);
+void avdl_mesh_setTextureIndex(struct avdl_mesh *o, struct avdl_texture *tex, int index);
 void avdl_mesh_setTransparency(struct avdl_mesh *o, int transparency);
 void avdl_mesh_set_primitive_texcoords(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY);
 

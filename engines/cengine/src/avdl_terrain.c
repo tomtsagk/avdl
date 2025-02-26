@@ -17,7 +17,7 @@ void avdl_terrain_create(struct avdl_terrain *o) {
 	o->setTextureIndex = avdl_terrain_setTextureIndex;
 
 	avdl_mesh_create(&o->mesh);
-	dd_image_create(&o->img);
+	avdl_texture_create(&o->img);
 
 	o->heights = 0;
 	o->width = 0;
@@ -34,32 +34,32 @@ void avdl_terrain_clean(struct avdl_terrain *o) {
 		o->heights = 0;
 	}
 
-	dd_image_clean(&o->img);
+	avdl_texture_clean(&o->img);
 	avdl_mesh_clean(&o->mesh);
 
 	o->loaded = 0;
 }
 
 void avdl_terrain_load(struct avdl_terrain *o, const char *filename) {
-	dd_image_load_png(&o->img, filename);
+	avdl_texture_load_png(&o->img, filename);
 }
 
 void avdl_terrain_loadLocal(struct avdl_terrain *o, const char *filename) {
-	dd_image_load_png(&o->img, filename);
+	avdl_texture_load_png(&o->img, filename);
 }
 
 void avdl_terrain_draw(struct avdl_terrain *o) {
 	if (o->img.isLoaded(&o->img)) {
 		if (o->img.width == 0 || o->img.height == 0) {
 			avdl_log("image doesn't have width or height: %dx%d", o->img.width, o->img.height);
-			dd_image_clean(&o->img);
+			avdl_texture_clean(&o->img);
 			return;
 		}
 
 		if (o->img.pixelFormat != GL_RGB) {
 			avdl_log("image has wrong format (non RGB): %d", o->img.pixelFormat);
 			avdl_log("image width height: %dx%d", o->img.width, o->img.height);
-			dd_image_clean(&o->img);
+			avdl_texture_clean(&o->img);
 			return;
 		}
 		int pixelStride = 3;
@@ -229,7 +229,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 		}
 
-		dd_image_clean(&o->img);
+		avdl_texture_clean(&o->img);
 	}
 
 	avdl_mesh_draw(&o->mesh);
@@ -291,7 +291,7 @@ int avdl_terrain_setScaleZ(struct avdl_terrain *o, float scale) {
 	o->scaleZ = scale;
 }
 
-int avdl_terrain_setTextureIndex(struct avdl_terrain *o, struct dd_image *img, int index) {
+int avdl_terrain_setTextureIndex(struct avdl_terrain *o, struct avdl_texture *img, int index) {
 	if (index == 0) {
 		o->mesh.setTexture(&o->mesh, img);
 	}
