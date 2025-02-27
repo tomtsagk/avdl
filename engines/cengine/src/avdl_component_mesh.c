@@ -27,7 +27,11 @@ void avdl_component_mesh_clean(struct avdl_component_mesh *o) {
 
 void avdl_component_mesh_after_create(struct avdl_component_mesh *o) {
 	if (!o->mesh_name) {
-		avdl_log("avdl_component_mesh_after_create: no mesh name");
+		//avdl_log("avdl_component_mesh_after_create: no mesh name");
+		if (o->parent.node) {
+			struct avdl_node *n = &o->parent.node;
+			//avdl_log("	-> node name: %s", avdl_node_GetName(n));
+		}
 		return;
 	}
 	if (o->mesh_name) {

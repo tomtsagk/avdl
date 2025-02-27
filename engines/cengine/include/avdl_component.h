@@ -1,6 +1,8 @@
 #ifndef AVDL_COMPONENT_H
 #define AVDL_COMPONENT_H
 
+#include "avdl_node.h"
+
 #include <stddef.h>
 
 enum AVDL_COMPONENTS {
