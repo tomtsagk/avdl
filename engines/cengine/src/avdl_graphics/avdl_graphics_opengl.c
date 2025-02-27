@@ -389,6 +389,7 @@ void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, in
 		pixels
 	));
 	#endif
+	GL(glGenerateMipmap(GL_TEXTURE_2D));
 
 	GL(glBindTexture(GL_TEXTURE_2D, 0));
 

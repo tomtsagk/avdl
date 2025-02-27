@@ -593,8 +593,6 @@ void avdl_texture_setLocal(struct avdl_texture *o, const char *filename, int typ
 
 void avdl_texture_addSubpixels(struct avdl_texture *o, void *pixels, int pixel_format, int x, int y, int w, int h) {
 
-	avdl_log("add subpixels?");
-
 	#if defined( AVDL_DIRECT3D11 )
 	return;
 	#else
