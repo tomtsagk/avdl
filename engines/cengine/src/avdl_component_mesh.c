@@ -26,6 +26,10 @@ void avdl_component_mesh_clean(struct avdl_component_mesh *o) {
 }
 
 void avdl_component_mesh_after_create(struct avdl_component_mesh *o) {
+	if (!o->mesh_name) {
+		avdl_log("avdl_component_mesh_after_create: no mesh name");
+		return;
+	}
 	if (o->mesh_name) {
 		if (o->isEditor) {
 			avdl_mesh_loadLocal(&o->mesh, o->mesh_name, DD_PLY);
@@ -120,9 +124,11 @@ int avdl_component_mesh_SetPropertyString(struct avdl_component_mesh *c, const c
 		if (strcmp(property_name, avdl_component_mesh_property_array[i].name) == 0) {
 			if (avdl_component_mesh_property_array[i].type == AVDL_COMPONENT_PROPERTY_TYPE_STRING) {
 				char *prop;
-				prop = malloc(sizeof(char) *strlen(value));
+				prop = malloc(sizeof(char) *strlen(value) +1);
 				strcpy(prop, value);
-				memcpy(((void *)c) +avdl_component_mesh_property_array[i].offset, &prop, sizeof(char *));
+				strcat(prop, "\0");
+				char **p = (char **) ((char *)c +avdl_component_mesh_property_array[i].offset);
+				*p = prop;
 				return 0;
 			}
 			return -1;

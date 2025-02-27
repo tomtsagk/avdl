@@ -153,9 +153,9 @@ void avdl_assetManager_remove(int index) {
 	avdl_log("remove asset: %d", index);
 }
 
-void avdl_assetManager_addLocal(void *object, int meshType, const char *assetname, int type) {
+int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname, int type, int (*callback)(void *obj, void *data)) {
 	if (lockLoading) {
-		return;
+		return -1;
 	}
 	//#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	/*
@@ -169,6 +169,7 @@ void avdl_assetManager_addLocal(void *object, int meshType, const char *assetnam
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
 	meshToLoad.type = type;
+	meshToLoad.callback = callback;
 	strcpy_s(meshToLoad.filename, 300, assetname);
 	dd_da_push(&meshesToLoad, &meshToLoad);
 	#else
@@ -177,6 +178,7 @@ void avdl_assetManager_addLocal(void *object, int meshType, const char *assetnam
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
 	meshToLoad.type = type;
+	meshToLoad.callback = callback;
 	#if defined(_WIN32) || defined(WIN32)
 	strcpy(meshToLoad.filename, assetname);
 	//avdl_log("add asset: %s\n", meshToLoad.filename);
@@ -186,12 +188,14 @@ void avdl_assetManager_addLocal(void *object, int meshType, const char *assetnam
 	#else
 	strcpy(meshToLoad.filename, assetname);
 	//printf("add asset: %s\n", meshToLoad.filename);
-	//avdl_log("add asset: %s\n", meshToLoad.filename);
+	//avdl_log("add asset: %s", meshToLoad.filename);
 	#endif
 	dd_da_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
 	#endif
+
+	return 0;
 
 }
 

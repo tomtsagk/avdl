@@ -587,7 +587,7 @@ void avdl_texture_setLocal(struct avdl_texture *o, const char *filename, int typ
 	o->openglContextId = avdl_graphics_getContextId();
 	o->assetName = filename;
 	o->assetType = type;
-	avdl_assetManager_addLocal(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
+	avdl_assetManager_addLocal(o, AVDL_ASSETMANAGER_TEXTURE, filename, type, avdl_texture_load_FromAsset);
 	#endif
 }
 

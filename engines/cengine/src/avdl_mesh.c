@@ -618,7 +618,7 @@ void avdl_mesh_loadLocal(struct avdl_mesh *m, const char *asset, int type) {
 	avdl_mesh_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_addLocal(m, AVDL_ASSETMANAGER_MESH2, asset, type);
+	avdl_assetManager_addLocal(m, AVDL_ASSETMANAGER_MESH2, asset, type, 0);
 
 }
 
