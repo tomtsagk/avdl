@@ -22,6 +22,7 @@ void struct_table_init() {
 	struct_table_push_member("input", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_matrix", 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_mesh", 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -42,6 +43,7 @@ void struct_table_init() {
 	struct_table_push_member("PlayAnimation", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("PlayAnimationInstant", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetOnAnimationDone", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_mesh", 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -50,9 +52,11 @@ void struct_table_init() {
 	struct_table_push_member("copy", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_meshColour", "dd_mesh");
 	struct_table_push_member("set_colour", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_meshRising", "dd_meshColour");
 	struct_table_push_member("set_animation_max", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("set_animation_current", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_meshTexture", "dd_meshColour");
 	struct_table_push_member("preloadTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("applyTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -61,6 +65,7 @@ void struct_table_init() {
 	struct_table_push_member("copyTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setTexture", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setTransparency", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_texture", 0);
 	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("bind", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -84,6 +89,7 @@ void struct_table_init() {
 	struct_table_push_member("getX", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getY", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_vec4", 0);
 	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getX", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -91,6 +97,7 @@ void struct_table_init() {
 	struct_table_push_member("getZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getW", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("print", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_string3d", 0);
 	struct_table_push_member("setAlign", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setAlignVertical", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -130,10 +137,12 @@ void struct_table_init() {
 	struct_table_push_member("setParticleScale", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setParticleScaleFuzz", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setParticlesTotal", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_localisation", 0);
 	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getValue", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getValueUnicode", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_multiplayer_identity", 0);
 	struct_table_push("avdl_physics", 0);
 	struct_table_push_member("update", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -142,8 +151,10 @@ void struct_table_init() {
 	struct_table_push_member("clearObjects", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("addConstantForcef", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("clearConstantForce", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_collider_collision", 0);
 	struct_table_push_member("overlap", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_collider", 0);
 	struct_table_push("avdl_collider_aabb", "avdl_collider");
 	struct_table_push_member("setMin", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -152,9 +163,11 @@ void struct_table_init() {
 	struct_table_push_member("getMaxY", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("getMaxZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_collider_sphere", "avdl_collider");
 	struct_table_push_member("setRadius", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_rigidbody", 0);
 	struct_table_push_member("setPositionf", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setMass", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -169,10 +182,13 @@ void struct_table_init() {
 	struct_table_push_member("getPositionZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("reset", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("hasJustCollided", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_font", 0);
 	struct_table_push_member("set", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("addCustomIcon", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("dd_dynamic_array", 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_ui_element", 0);
 	struct_table_push_member("SetSize", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetPosition", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -205,6 +221,7 @@ void struct_table_init() {
 	struct_table_push_member("setScaleZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setTextureIndex", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("setMesh", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_transform", 0);
 	struct_table_push_member("SetPosition", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetPosition3f", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -219,6 +236,7 @@ void struct_table_init() {
 	struct_table_push_member("GetPosition", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetRotation", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetScale", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_node", 0);
 	struct_table_push_member("GetGlobalMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetGlobalInverseMatrix", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -234,7 +252,9 @@ void struct_table_init() {
 	struct_table_push_member("GetParent", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("Copy", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("Duplicate", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_component", 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("after_create", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("GetNode", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("SetType", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -244,6 +264,7 @@ void struct_table_init() {
 	struct_table_push_member("texture_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0); // variable
 	struct_table_push_member("hasTransparency", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_component_terrain", "avdl_component");
 	struct_table_push_member("asset_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0); // variable
 	struct_table_push_member("draw", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
@@ -256,7 +277,9 @@ void struct_table_init() {
 	struct_table_push_member("texture1_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("texture2_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("texture3_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_time", 0);
+	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }
 
