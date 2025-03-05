@@ -551,6 +551,119 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 
 		return 0;
 	}
+	else
+	if (o1->type == AVDL_COLLIDER_TYPE_AABB && o2->type == AVDL_COLLIDER_TYPE_SPHERE) {
+
+		struct avdl_collider_aabb *col1 = o1;
+		struct avdl_collider_sphere *col2 = o2;
+
+		struct dd_vec4 vertices1[8];
+		dd_vec4_set(&vertices1[0],
+			avdl_collider_aabb_getMinX(col1),
+			avdl_collider_aabb_getMinY(col1),
+			avdl_collider_aabb_getMinZ(col1),
+			1
+		);
+		dd_vec4_set(&vertices1[1],
+			avdl_collider_aabb_getMinX(col1),
+			avdl_collider_aabb_getMaxY(col1),
+			avdl_collider_aabb_getMinZ(col1),
+			1
+		);
+		dd_vec4_set(&vertices1[2],
+			avdl_collider_aabb_getMinX(col1),
+			avdl_collider_aabb_getMinY(col1),
+			avdl_collider_aabb_getMaxZ(col1),
+			1
+		);
+		dd_vec4_set(&vertices1[3],
+			avdl_collider_aabb_getMinX(col1),
+			avdl_collider_aabb_getMaxY(col1),
+			avdl_collider_aabb_getMaxZ(col1),
+			1
+		);
+		dd_vec4_set(&vertices1[4],
+			avdl_collider_aabb_getMaxX(col1),
+			avdl_collider_aabb_getMinY(col1),
+			avdl_collider_aabb_getMinZ(col1),
+			1
+		);
+		dd_vec4_set(&vertices1[5],
+			avdl_collider_aabb_getMaxX(col1),
+			avdl_collider_aabb_getMaxY(col1),
+			avdl_collider_aabb_getMinZ(col1),
+			1
+		);
+		dd_vec4_set(&vertices1[6],
+			avdl_collider_aabb_getMaxX(col1),
+			avdl_collider_aabb_getMinY(col1),
+			avdl_collider_aabb_getMaxZ(col1),
+			1
+		);
+		dd_vec4_set(&vertices1[7],
+			avdl_collider_aabb_getMaxX(col1),
+			avdl_collider_aabb_getMaxY(col1),
+			avdl_collider_aabb_getMaxZ(col1),
+			1
+		);
+		struct dd_vec4 vertex2;
+		dd_vec4_set(&vertex2, 0, 0, 0, 1);
+		dd_vec4_multiply(&vertex2, avdl_node_GetGlobalMatrix(n2));
+		dd_vec4_multiply(&vertex2, avdl_node_GetGlobalInverseMatrix(n1));
+
+		// collect radius
+		struct dd_vec4 rad2;
+		dd_vec4_set(&rad2, 0, 0, col2->radius, 1);
+		dd_vec4_multiply(&rad2, avdl_node_GetGlobalMatrix(n2));
+		dd_vec4_multiply(&rad2, avdl_node_GetGlobalInverseMatrix(n1));
+		float rad2f = dd_vec4_distance(&vertex2, &rad2);
+
+		struct dd_vec4 closest_point;
+		dd_vec4_set(&closest_point,
+//			dd_vec4_getX(&vertex2) < avdl_collider_aabb_getMinX(col1) +(avdl_collider_aabb_getMaxX(col1) -avdl_collider_aabb_getMinX(col1))/2 ?
+//				avdl_collider_aabb_getMinX(col1) : avdl_collider_aabb_getMaxX(col1),
+//			dd_vec4_getY(&vertex2) < avdl_collider_aabb_getMinY(col1) +(avdl_collider_aabb_getMaxY(col1) -avdl_collider_aabb_getMinY(col1))/2 ?
+//				avdl_collider_aabb_getMinY(col1) : avdl_collider_aabb_getMaxY(col1),
+//			dd_vec4_getZ(&vertex2) < avdl_collider_aabb_getMinZ(col1) +(avdl_collider_aabb_getMaxZ(col1) -avdl_collider_aabb_getMinZ(col1))/2 ?
+//				avdl_collider_aabb_getMinZ(col1) : avdl_collider_aabb_getMaxZ(col1),
+			dd_math_max(dd_math_min(dd_vec4_getX(&vertex2), avdl_collider_aabb_getMaxX(col1)), avdl_collider_aabb_getMinX(col1)),
+			dd_math_max(dd_math_min(dd_vec4_getY(&vertex2), avdl_collider_aabb_getMaxY(col1)), avdl_collider_aabb_getMinY(col1)),
+			dd_math_max(dd_math_min(dd_vec4_getZ(&vertex2), avdl_collider_aabb_getMaxZ(col1)), avdl_collider_aabb_getMinZ(col1)),
+			1
+		);
+
+		float distance = dd_vec4_distance(&closest_point, &vertex2);
+
+		// TODO:
+		// Closest point should be on surface of box
+		// if sphere is inside box, do a different calculation for overlap
+		if (distance < rad2f) {
+
+			// distance 0 is edge case?
+			if (collision) {
+				dd_vec4_set(&collision->overlap,
+					dd_vec4_getX(&closest_point) -dd_vec4_getX(&vertex2),
+					dd_vec4_getY(&closest_point) -dd_vec4_getY(&vertex2),
+					dd_vec4_getZ(&closest_point) -dd_vec4_getZ(&vertex2),
+					dd_vec4_getW(&closest_point) -dd_vec4_getW(&vertex2)
+				);
+				// here it becomes nan
+				dd_vec4_normalise(&collision->overlap);
+				dd_vec4_multiplyFloat(&collision->overlap, rad2f -distance);
+				if (distance <= 0) {
+					avdl_log("Edge case!");
+					return 0;
+				}
+			}
+			return 1;
+		}
+
+		return 0;
+	}
+	else
+	if (o1->type == AVDL_COLLIDER_TYPE_SPHERE && o2->type == AVDL_COLLIDER_TYPE_AABB) {
+		return avdl_collider_collisionNode(o2, n2, o1, n1, collision);
+	}
 
 	avdl_log("collision not supported");
 	return 0;
