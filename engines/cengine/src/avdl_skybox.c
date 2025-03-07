@@ -2,6 +2,7 @@
 #include "avdl_graphics.h"
 #include "avdl_assetManager.h"
 #include "avdl_shaders.h"
+#include "avdl_log.h"
 
 extern GLuint skyboxProgram;
 
@@ -58,6 +59,10 @@ void avdl_skybox_unbind(struct avdl_skybox *o) {
 }
 
 void avdl_skybox_bind(struct avdl_skybox *o) {
+
+	avdl_log("skybox needs to use new texture system");
+	return;
+	/*
 
 	// skybox needs to be loaded into the gpu
 	if (o->graphics_contextid == -1 || o->graphics_contextid != avdl_graphics_getContextId()) {
@@ -139,6 +144,7 @@ void avdl_skybox_bind(struct avdl_skybox *o) {
 //	}
 //	#endif
 
+	*/
 }
 
 void avdl_skybox_draw(struct avdl_skybox *o) {

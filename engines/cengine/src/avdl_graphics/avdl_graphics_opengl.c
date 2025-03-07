@@ -106,6 +106,7 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 	strcat(filename, "assets/icon_64x64.png");
 	#endif
 
+	/*
 	struct avdl_texture img;
 	avdl_texture_create(&img);
 	avdl_texture_load_png(&img, filename);
@@ -135,6 +136,7 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 		free(pixels);
 		avdl_texture_clean(&img);
 	}
+	*/
 	#endif
 
 	avdl_graphics_PrintInfo();

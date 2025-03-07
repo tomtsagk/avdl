@@ -50,46 +50,11 @@ void avdl_font_create(struct avdl_font *o) {
 	}
 
 	avdl_texture_create(&o->texture);
-	o->texture.width = FONT_ATLAS_WIDTH;
-	o->texture.height = FONT_ATLAS_HEIGHT;
-	#if defined( AVDL_DIRECT3D11)
-	o->texture.pixelFormat = 0;
-	#else
-	o->texture.pixelFormat = GL_RGBA;
-	#endif
-	o->texture.openglContextId = avdl_graphics_getContextId();
+	avdl_texture_CreateTexture(&o->texture, FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT, GL_RGBA);
 	o->outline_thickness = 0;
 	o->fontData = 0;
 
-	o->openglContextId = o->texture.openglContextId;
-
-	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	o->texture.pixelsb = malloc(sizeof(GLubyte) *4 *o->texture.width *o->texture.height);
-
-	// clean the texture
-	for (int x = 0; x < o->texture.width ; x++)
-	for (int y = 0; y < o->texture.height; y++) {
-		o->texture.pixelsb[(y*o->texture.width*4) +x*4+0] = 0;
-		o->texture.pixelsb[(y*o->texture.width*4) +x*4+1] = 0;
-		o->texture.pixelsb[(y*o->texture.width*4) +x*4+2] = 0;
-		o->texture.pixelsb[(y*o->texture.width*4) +x*4+3] = 0;
-	}
-
-	#else
-
-	o->texture.pixels = malloc(sizeof(float) *4 *o->texture.width *o->texture.height);
-
-	// clean the texture
-	for (int x = 0; x < o->texture.width ; x++)
-	for (int y = 0; y < o->texture.height; y++) {
-		o->texture.pixels[(y*o->texture.width*4) +x*4+0] = 1;
-		o->texture.pixels[(y*o->texture.width*4) +x*4+1] = 1;
-		o->texture.pixels[(y*o->texture.width*4) +x*4+2] = 1;
-		o->texture.pixels[(y*o->texture.width*4) +x*4+3] = 0;
-	}
-
-	#endif
-
+	o->openglContextId = avdl_graphics_getContextId();
 	o->face = 0;
 
 }
@@ -321,55 +286,13 @@ int avdl_font_registerGlyph(struct avdl_font *o, int unicode_hex) {
 		#endif
 	}
 
-	// pixels available, draw directly on them
-	if (o->texture.pixelsb || o->texture.pixels) {
-		for (int x = 0; x < FONT_GLYPH_SIZE; x++)
-		for (int y = 0; y < FONT_GLYPH_SIZE; y++) {
-			int ry = y;
-			int index = (ry*o->texture.width*4) +x*4+0 +(glyph_id%FONT_MAX_GLYPHS_COLUMNS)*FONT_GLYPH_SIZE*4 +((glyph_id/FONT_MAX_GLYPHS_ROWS)*o->texture.width*4*FONT_GLYPH_SIZE);
-			int indexPixel = y *FONT_GLYPH_SIZE *4 +x*4;
-			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-			o->texture.pixelsb[index+0] = pixels[indexPixel +0];
-			o->texture.pixelsb[index+1] = pixels[indexPixel +1];
-			o->texture.pixelsb[index+2] = pixels[indexPixel +2];
-			o->texture.pixelsb[index+3] = pixels[indexPixel +3];
-			#else
-			o->texture.pixels[index+0] = pixels[indexPixel +0];
-			o->texture.pixels[index+1] = pixels[indexPixel +1];
-			o->texture.pixels[index+2] = pixels[indexPixel +2];
-			o->texture.pixels[index+3] = pixels[indexPixel +3];
-			#endif
-		}
-	}
-	else
-	// texture already made, pass sub texture to draw
-	if (o->texture.tex) {
-		#if defined( AVDL_DIRECT3D11 )
-		#else
-		GL(glBindTexture(GL_TEXTURE_2D, o->texture.tex));
-
-		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-		avdl_texture_addSubpixels(&o->texture, pixels, GL_RGBA,
-			(glyph_id%FONT_MAX_GLYPHS_COLUMNS) *FONT_GLYPH_SIZE,
-			((glyph_id/FONT_MAX_GLYPHS_ROWS) *FONT_GLYPH_SIZE),
-			FONT_GLYPH_SIZE,
-			FONT_GLYPH_SIZE
-		);
-		#else
-		avdl_texture_addSubpixels(&o->texture, pixels, GL_FLOAT,
-			(glyph_id%FONT_MAX_GLYPHS_COLUMNS) *FONT_GLYPH_SIZE,
-			((glyph_id/FONT_MAX_GLYPHS_ROWS) *FONT_GLYPH_SIZE),
-			FONT_GLYPH_SIZE,
-			FONT_GLYPH_SIZE
-		);
-		#endif
-
-		GL(glBindTexture(GL_TEXTURE_2D, 0));
-		#endif
-	}
-	else {
-		//avdl_log("avdl_texture has error state ?");
-	}
+	// update texture
+	avdl_texture_addSubpixels(&o->texture, pixels, GL_FLOAT,
+		(glyph_id%FONT_MAX_GLYPHS_COLUMNS) *FONT_GLYPH_SIZE,
+		((glyph_id/FONT_MAX_GLYPHS_ROWS) *FONT_GLYPH_SIZE),
+		FONT_GLYPH_SIZE,
+		FONT_GLYPH_SIZE
+	);
 
 	o->glyphs[glyph_id].id = unicode_hex;
 	o->glyphs[glyph_id].uses++;
@@ -606,6 +529,7 @@ float avdl_font_getGlyphAdvance(struct avdl_font *o, int glyph_id) {
 int avdl_font_needsRefresh(struct avdl_font *o) {
 
 	#if !defined( AVDL_DIRECT3D11 )
+	/*
 	// font needs to refresh
 	if (o->openglContextId != o->texture.openglContextId) {
 		//avdl_log("font needs refresh");
@@ -613,6 +537,7 @@ int avdl_font_needsRefresh(struct avdl_font *o) {
 		avdl_font_releaseAllGlyphs(o);
 		return 1;
 	}
+	*/
 	#endif
 
 	return 0;

@@ -41,38 +41,45 @@ void avdl_terrain_clean(struct avdl_terrain *o) {
 }
 
 void avdl_terrain_load(struct avdl_terrain *o, const char *filename) {
-	avdl_texture_load_png(&o->img, filename);
+	//avdl_texture_load_png(&o->img, filename);
+	avdl_texture_set(&o->img, filename, AVDL_IMAGETYPE_PNG);
 }
 
 void avdl_terrain_loadLocal(struct avdl_terrain *o, const char *filename) {
-	avdl_texture_load_png(&o->img, filename);
+	avdl_texture_setLocal(&o->img, filename, AVDL_IMAGETYPE_PNG);
+	//avdl_texture_load_png(&o->img, filename);
 }
 
 void avdl_terrain_draw(struct avdl_terrain *o) {
 	if (o->img.isLoaded(&o->img)) {
-		if (o->img.width == 0 || o->img.height == 0) {
-			avdl_log("image doesn't have width or height: %dx%d", o->img.width, o->img.height);
-			avdl_texture_clean(&o->img);
+		if (avdl_texture_GetWidth(&o->img) == 0 || avdl_texture_GetHeight(&o->img) == 0) {
+			avdl_log("image doesn't have width or height: %dx%d", avdl_texture_GetWidth(&o->img), avdl_texture_GetHeight(&o->img));
+			//avdl_texture_clean(&o->img);
 			return;
 		}
 
-		if (o->img.pixelFormat != GL_RGB) {
-			avdl_log("image has wrong format (non RGB): %d", o->img.pixelFormat);
-			avdl_log("image width height: %dx%d", o->img.width, o->img.height);
-			avdl_texture_clean(&o->img);
+		if (avdl_texture_GetPixelFormat(&o->img) != GL_RGB) {
+			avdl_log("image has wrong format (non RGB): %d", avdl_texture_GetPixelFormat(&o->img));
+			avdl_log("image width height: %dx%d", avdl_texture_GetWidth(&o->img), avdl_texture_GetHeight(&o->img));
+			//avdl_texture_clean(&o->img);
 			return;
 		}
 		int pixelStride = 3;
 
 		o->loaded = 1;
-		o->width = o->img.width;
-		o->height = o->img.height;
-		o->heights = malloc(sizeof(float) *o->img.width *o->img.height);
-		for (int i = 0; i < o->img.width *o->img.height; i++) {
-			o->heights[i] = o->img.pixels[i*pixelStride] *o->scaleZ;
+		o->width = avdl_texture_GetWidth(&o->img);
+		o->height = avdl_texture_GetHeight(&o->img);
+		o->heights = malloc(sizeof(float) *o->width *o->height);
+		float *pixels = avdl_texture_GetPixels(&o->img);
+		if (!pixels) {
+			avdl_log("terrain heightmap texture could not get pixels");
+			return;
+		}
+		for (int i = 0; i < o->width *o->height; i++) {
+			o->heights[i] = pixels[i*pixelStride] *o->scaleZ;
 		}
 
-		o->mesh.vcount = ((o->img.width -1) *(o->img.height -1)) *6;
+		o->mesh.vcount = ((o->width -1) *(o->height -1)) *6;
 		o->mesh.v = malloc(sizeof(float) *o->mesh.vcount *3);
 		o->mesh.dirtyVertices = 1;
 		o->mesh.c = malloc(sizeof(float) *o->mesh.vcount *3);
@@ -80,16 +87,16 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 		o->mesh.t = malloc(sizeof(float) *o->mesh.vcount *2);
 		o->mesh.dirtyTextures = 1;
 
-		for (int x = 0; x < o->img.width -1; x++)
-		for (int y = 0; y < o->img.height-1; y++) {
+		for (int x = 0; x < o->width -1; x++)
+		for (int y = 0; y < o->height-1; y++) {
 
-			int index = ((y *(o->img.width-1)) +x) *18;
-			int pixelIndex = ((y *(o->img.width-0) *3) +(x *3));
+			int index = ((y *(o->width-1)) +x) *18;
+			int pixelIndex = ((y *(o->width-0) *3) +(x *3));
 			//int pixelIndex = (x *3);
 			int pixelIndexRight = pixelIndex +3;
-			int pixelIndexTop = pixelIndex +((o->img.width-0)*3);
+			int pixelIndexTop = pixelIndex +((o->width-0)*3);
 			int pixelIndexTopRight = pixelIndexTop +3;
-			int indexT = ((y *(o->img.width-1)) +x) *12;
+			int indexT = ((y *(o->width-1)) +x) *12;
 
 			int invertTX = (y%5 +y*3%3 +x%3) %2;
 			int invertTY = (y%2 +y*4%6 +x*2%5) %2;
@@ -109,13 +116,13 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			cornersY[2] = cornersY[0] +0.25 +dd_math_randf(0.25);
 			*/
 
-			cornersX[0] = (float) x /o->img.width ;
-			cornersY[0] = (float) y /o->img.height;
+			cornersX[0] = (float) x /o->width ;
+			cornersY[0] = (float) y /o->height;
 			//cornersX[0] = 0.0;
 			//cornersY[0] = 0.0;
 
-			cornersX[2] = (x+1.0) /o->img.width ;
-			cornersY[2] = (y+1.0) /o->img.height;
+			cornersX[2] = (x+1.0) /o->width ;
+			cornersY[2] = (y+1.0) /o->height;
 			//cornersX[2] = 1.0;
 			//cornersY[2] = 1.0;
 
@@ -143,7 +150,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 1 - bottom left
 			o->mesh.v[index +0] = x *1;
-			o->mesh.v[index +1] = o->img.pixels[pixelIndex] *o->scaleZ;
+			o->mesh.v[index +1] = pixels[pixelIndex] *o->scaleZ;
 			o->mesh.v[index +2] = y *-1;
 			o->mesh.c[index +0] = 0;
 			o->mesh.c[index +1] = 0;
@@ -157,7 +164,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 2
 			o->mesh.v[index +3] = x *1 +1;
-			o->mesh.v[index +4] = o->img.pixels[pixelIndexTopRight] *o->scaleZ;
+			o->mesh.v[index +4] = pixels[pixelIndexTopRight] *o->scaleZ;
 			o->mesh.v[index +5] = y *-1 -1;
 			o->mesh.c[index +3] = 0;
 			o->mesh.c[index +4] = 0;
@@ -171,7 +178,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 3
 			o->mesh.v[index +6] = x *1;
-			o->mesh.v[index +7] = o->img.pixels[pixelIndexTop] *o->scaleZ;
+			o->mesh.v[index +7] = pixels[pixelIndexTop] *o->scaleZ;
 			o->mesh.v[index +8] = y *-1 -1;
 			o->mesh.c[index +6] = 0;
 			o->mesh.c[index +7] = 0;
@@ -187,7 +194,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 1
 			o->mesh.v[index +9] = x *1;
-			o->mesh.v[index +10] = o->img.pixels[pixelIndex] *o->scaleZ;
+			o->mesh.v[index +10] = pixels[pixelIndex] *o->scaleZ;
 			o->mesh.v[index +11] = y *-1;
 			o->mesh.c[index +9] = 0;
 			o->mesh.c[index +10] = 0;
@@ -201,7 +208,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 2
 			o->mesh.v[index +12] = x *1 +1;
-			o->mesh.v[index +13] = o->img.pixels[pixelIndexRight] *o->scaleZ;
+			o->mesh.v[index +13] = pixels[pixelIndexRight] *o->scaleZ;
 			o->mesh.v[index +14] = y *-1;
 			o->mesh.c[index +12] = 0;
 			o->mesh.c[index +13] = 0;
@@ -215,7 +222,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 3
 			o->mesh.v[index +15] = x *1 +1;
-			o->mesh.v[index +16] = o->img.pixels[pixelIndexTopRight] *o->scaleZ;
+			o->mesh.v[index +16] = pixels[pixelIndexTopRight] *o->scaleZ;
 			o->mesh.v[index +17] = y *-1 -1;
 			o->mesh.c[index +15] = 0;
 			o->mesh.c[index +16] = 0;

@@ -15,25 +15,13 @@ enum AVDL_IMAGETYPE {
 };
 
 struct avdl_texture {
-	#ifdef AVDL_DIRECT3D11
-	avdl_texture_id tex;
-	int *pixelsb;
-	#else
-	GLuint tex;
-	GLubyte *pixelsb;
-	struct dd_dynamic_array subpixels;
-	#endif
-	int width, height;
-	float *pixels;
-	const char *assetName;
-	int assetType;
-	int openglContextId;
-
-	int pixelFormat;
 
 	// new image
 	struct avdl_assetManager_texture *texture;
 	int dirtyTexture;
+
+	// updating parts of the image
+	struct dd_dynamic_array subpixels;
 
 	void (*bind)(struct avdl_texture *o);
 	void (*bindIndex)(struct avdl_texture *o, int index);
@@ -47,6 +35,9 @@ struct avdl_texture {
 	void (*addSubpixels)(struct avdl_texture *o, void *pixels, int pixel_format, int x, int y, int w, int h);
 
 	int (*isLoaded)(struct avdl_texture *o);
+	int (*UnLoad)(struct avdl_texture *o);
+
+	int (*CreateTexture)(struct avdl_texture *o, int width, int height, int pixelFormat);
 };
 
 void avdl_texture_create(struct avdl_texture *o);
@@ -75,8 +66,16 @@ void avdl_texture_clean(struct avdl_texture *o);
 void avdl_texture_addSubpixels(struct avdl_texture *o, void *pixels, int pixel_format, int x, int y, int w, int h);
 
 int avdl_texture_isLoaded(struct avdl_texture *o);
+int avdl_texture_UnLoad(struct avdl_texture *o);
 
 void avdl_texture_cleanNonGpuData(struct avdl_texture *o);
+
+int avdl_texture_CreateTexture(struct avdl_texture *o, int width, int height, int pixelFormat);
+
+int avdl_texture_GetWidth(struct avdl_texture *o);
+int avdl_texture_GetHeight(struct avdl_texture *o);
+int avdl_texture_GetPixelFormat(struct avdl_texture *o);
+void *avdl_texture_GetPixels(struct avdl_texture *o);
 
 #ifdef __cplusplus
 }
