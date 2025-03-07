@@ -46,13 +46,17 @@ void avdl_component_custom_AddVariableValue(struct avdl_component_custom *o, cha
 }
 
 int avdl_component_custom_Copy(struct avdl_component *o, struct avdl_component *target) {
+	if (!target) {
+		avdl_log("avdl_component_custom_Copy: no target");
+		return -1;
+	}
 	avdl_component_Copy(o, target);
 	struct avdl_component_custom *c = o;
 	struct avdl_component_custom *t = target;
 	avdl_string_copy(&c->name, &t->name);
 	for (int i = 0; i < dd_da_count(&t->values); i++) {
 		struct avdl_string *str = malloc(sizeof(struct avdl_string));
-		struct avdl_string *str_target = dd_da_get(&t->values, i);
+		struct avdl_string *str_target = dd_da_getDeref(&t->values, i);
 		avdl_string_create(str, str_target->maxCharacters);
 		avdl_string_copy(str, str_target);
 		dd_da_push(&c->values, &str);
