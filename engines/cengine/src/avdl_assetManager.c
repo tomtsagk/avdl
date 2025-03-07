@@ -74,6 +74,7 @@ int totalAssetsLoaded;
 static int lockLoading;
 
 static int interruptLoading;
+static int exitLoading;
 
 static int LoadTexturePNG(struct avdl_assetManager_texture *o, const char *filename);
 static struct avdl_assetManager_texture *FindTexture(const char *filename);
@@ -85,12 +86,20 @@ void avdl_assetManager_init() {
 	lockLoading = 0;
 	interruptLoading = 0;
 	desiredLoadedPercentage = 1.0;
+	exitLoading = 0;
 
 	// texture cache
 	dd_da_init(&textureCache, sizeof(struct avdl_assetManager_texture *));
 }
 
 void avdl_assetManager_deinit() {
+	exitLoading = 1;
+	#ifdef AVDL_DIRECT3D11
+	#elif defined( AVDL_WINDOWS )
+	WaitForSingleObject(updateDrawMutex, INFINITE);
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
+	pthread_mutex_lock(&updateDrawMutex);
+	#endif
 	dd_da_free(&meshesToLoad );
 	dd_da_free(&meshesLoading);
 
@@ -102,6 +111,13 @@ void avdl_assetManager_deinit() {
 		}
 	}
 	dd_da_free(&textureCache);
+	#ifdef AVDL_DIRECT3D11
+	#elif defined( AVDL_WINDOWS )
+	ReleaseMutex(updateDrawMutex);
+	CloseHandle(thread);
+	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
+	pthread_mutex_unlock(&updateDrawMutex);
+	#endif
 }
 
 int avdl_assetManager_add(void *object, int meshType, const char *assetname, int type, int (*callback)(void *obj, void *data)) {
@@ -340,24 +356,33 @@ void avdl_assetManager_loadAssets() {
 					dd_da_push(&textureCache, &t);
 				}
 
-				if (m->callback) {
-					t->uses++;
-					#if defined( AVDL_DIRECT3D11 )
-					#elif defined( AVDL_WINDOWS )
-					WaitForSingleObject(updateDrawMutex, INFINITE);
-					#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
-					pthread_mutex_lock(&updateDrawMutex);
-					#endif
-					if (m->callback(mesh, t) != 0) {
-						avdl_log("avdl: AssetManager: error loading texture %s", m->filename);
-					}
+				#if defined( AVDL_DIRECT3D11 )
+				#elif defined( AVDL_WINDOWS )
+				WaitForSingleObject(updateDrawMutex, INFINITE);
+				#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
+				pthread_mutex_lock(&updateDrawMutex);
+				#endif
+				if (exitLoading) {
 					#if defined( AVDL_DIRECT3D11 )
 					#elif defined( AVDL_WINDOWS )
 					ReleaseMutex(updateDrawMutex);
 					#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 					pthread_mutex_unlock(&updateDrawMutex);
 					#endif
+					return;
 				}
+				if (m->callback) {
+					t->uses++;
+					if (m->callback(mesh, t) != 0) {
+						avdl_log("avdl: AssetManager: error loading texture %s", m->filename);
+					}
+				}
+				#if defined( AVDL_DIRECT3D11 )
+				#elif defined( AVDL_WINDOWS )
+				ReleaseMutex(updateDrawMutex);
+				#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
+				pthread_mutex_unlock(&updateDrawMutex);
+				#endif
 			}
 			#endif
 		}
@@ -379,6 +404,15 @@ void avdl_assetManager_loadAssets() {
 					#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 					pthread_mutex_lock(&updateDrawMutex);
 					#endif
+					if (exitLoading) {
+						#if defined( AVDL_DIRECT3D11 )
+						#elif defined( AVDL_WINDOWS )
+						ReleaseMutex(updateDrawMutex);
+						#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
+						pthread_mutex_unlock(&updateDrawMutex);
+						#endif
+						return;
+					}
 					mesh->LoadFromLoadedMesh(mesh, &lm);
 					#if defined( AVDL_DIRECT3D11 )
 					#elif defined( AVDL_WINDOWS )
@@ -455,7 +489,15 @@ void avdl_assetManager_loadAssets() {
 		#endif
 
 		totalAssetsLoaded++;
-		if (interruptLoading) break;
+		if (interruptLoading) {
+			#if defined( AVDL_DIRECT3D11 )
+			#elif defined( AVDL_WINDOWS )
+			ReleaseMutex(updateDrawMutex);
+			#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
+			pthread_mutex_unlock(&updateDrawMutex);
+			#endif
+			break;
+		}
 		//avdl_log("assets loaded: %d / %d", totalAssetsLoaded, totalAssets);
 		#ifdef AVDL_DIRECT3D11
 		#elif defined( AVDL_WINDOWS )
@@ -466,16 +508,26 @@ void avdl_assetManager_loadAssets() {
 
 		//avdl_log("done");
 	}
-	dd_da_empty(&meshesLoading);
-	//avdl_log("finished all loading");
-
 	#ifdef AVDL_DIRECT3D11
 	#elif defined( AVDL_WINDOWS )
 	WaitForSingleObject(updateDrawMutex, INFINITE);
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 	pthread_mutex_lock(&updateDrawMutex);
 	#endif
+	if (exitLoading) {
+		#ifdef AVDL_DIRECT3D11
+		#elif defined( AVDL_WINDOWS )
+		ReleaseMutex(updateDrawMutex);
+		CloseHandle(thread);
+		#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
+		pthread_mutex_unlock(&updateDrawMutex);
+		#endif
+		return;
+	}
+	dd_da_empty(&meshesLoading);
+	//avdl_log("finished all loading");
 	assetManagerLoading = 0;
+	loadAssetsThread = 0;
 	#ifdef AVDL_DIRECT3D11
 	#elif defined( AVDL_WINDOWS )
 	ReleaseMutex(updateDrawMutex);
@@ -483,7 +535,6 @@ void avdl_assetManager_loadAssets() {
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 	pthread_mutex_unlock(&updateDrawMutex);
 	#endif
-
 }
 
 void avdl_assetManager_loadAll() {
