@@ -54,14 +54,14 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 	if (o->img.isLoaded(&o->img)) {
 		if (avdl_texture_GetWidth(&o->img) == 0 || avdl_texture_GetHeight(&o->img) == 0) {
 			avdl_log("image doesn't have width or height: %dx%d", avdl_texture_GetWidth(&o->img), avdl_texture_GetHeight(&o->img));
-			//avdl_texture_clean(&o->img);
+			avdl_texture_UnLoad(&o->img);
 			return;
 		}
 
 		if (avdl_texture_GetPixelFormat(&o->img) != GL_RGB) {
 			avdl_log("image has wrong format (non RGB): %d", avdl_texture_GetPixelFormat(&o->img));
 			avdl_log("image width height: %dx%d", avdl_texture_GetWidth(&o->img), avdl_texture_GetHeight(&o->img));
-			//avdl_texture_clean(&o->img);
+			avdl_texture_UnLoad(&o->img);
 			return;
 		}
 		int pixelStride = 3;
@@ -236,7 +236,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 		}
 
-		avdl_texture_clean(&o->img);
+		avdl_texture_UnLoad(&o->img);
 	}
 
 	avdl_mesh_draw(&o->mesh);
