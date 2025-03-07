@@ -336,6 +336,7 @@ void avdl_assetManager_loadAssets() {
 					t->index = dd_da_count(&textureCache);
 					t->graphicsContextId = avdl_graphics_getContextId();
 					t->uses = 0;
+					t->tex = 0;
 					dd_da_push(&textureCache, &t);
 				}
 

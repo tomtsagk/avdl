@@ -406,10 +406,12 @@ void avdl_texture_unbindIndexArray(struct avdl_texture *o, int index) {
 }
 
 void avdl_texture_set(struct avdl_texture *o, const char *filename, int type) {
+	avdl_texture_UnLoad(o);
 	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type, avdl_texture_load_FromAsset);
 }
 
 void avdl_texture_setLocal(struct avdl_texture *o, const char *filename, int type) {
+	avdl_texture_UnLoad(o);
 	#ifdef AVDL_DIRECT3D11
 	avdl_assetManager_add(o, AVDL_ASSETMANAGER_TEXTURE, filename, type);
 	#else
