@@ -562,6 +562,7 @@ int avdl_texture_UnLoad(struct avdl_texture *o) {
 		if (o->texture->tex) {
 			avdl_graphics_DeleteTexture(o->texture->tex);
 		}
+		free(o->texture);
 		o->texture = 0;
 		o->dirtyTexture = 0;
 	}
