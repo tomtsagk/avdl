@@ -371,7 +371,7 @@ void struct_table_print() {
 	printf("struct table start\n");
 	for (int i = 0; i <= struct_table_current; i++) {
 		struct struct_table_entry *s = &struct_table[i];
-		printf("struct: %s", s->name);
+		printf("struct: %s (%d)", s->name, i);
 		if (s->parent >= 0) {
 			printf(":%s", struct_table_get_name(s->parent));
 		}

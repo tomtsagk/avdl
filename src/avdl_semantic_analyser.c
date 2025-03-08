@@ -806,12 +806,13 @@ static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 
 		// add struct's members to new symbol table
 		symtable_push();
+		//struct_table_print();
 		for (unsigned int j = 0; j < struct_table_get_member_total(symEntry->value); j++) {
 			/*
 			printf("	member: %s %d %s\n",
-				struct_table_get_member_name(e->value, j),
-				struct_table_get_member_type(e->value, j),
-				struct_table_get_member_nametype(e->value, j)
+				struct_table_get_member_name(symEntry->value, j),
+				struct_table_get_member_type(symEntry->value, j),
+				struct_table_get_member_nametype(symEntry->value, j)
 			);
 			*/
 
@@ -829,9 +830,8 @@ static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 		struct ast_node *child = expect_identifier(l);
 
 		// child not inside current symbol table - possibly belongs to a parent class
-		int childSymId = symtable_lookup(ast_getLex(child));
-		if (childSymId < 0) {
-			int parentDepth = struct_table_is_member_parent(symEntry->value, ast_getLex(child));
+		int parentDepth = struct_table_is_member_parent(symEntry->value, ast_getLex(child));
+		if (parentDepth > 0) {
 
 			// child not part of that struct, or any of its parent classes
 			if (parentDepth < 0) {
