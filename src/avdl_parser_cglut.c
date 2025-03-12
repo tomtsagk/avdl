@@ -288,24 +288,6 @@ static void print_command_custom(FILE *fd, struct ast_node *n) {
 	print_identifier(fd, cmdname, 0);
 	fprintf(fd, "(");
 	int hasArgs = 0;
-	if (strcmp(cmdname->lex, "this") == 0) {
-
-		int chainCount = getIdentifierChainCount(cmdname);
-		struct ast_node *semilast = getIdentifierInChain(cmdname, chainCount-1);
-
-		struct ast_node *last = getIdentifierInChain(cmdname, chainCount);
-
-		// ignore function listeners which are references
-		if (!last->isRef) {
-			// not dereferencing "this" hack
-			if (chainCount-1 > 0 && !semilast->isRef) {
-				fprintf(fd, "&");
-			}
-
-			print_identifier(fd, cmdname, 1);
-			hasArgs = 1;
-		}
-	}
 	for (int i = 1; i < n->children.elements; i++) {
 		struct ast_node *child = avdl_da_get(&n->children, i);
 

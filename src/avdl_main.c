@@ -554,7 +554,6 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 	write(fd, component_name, strlen(component_name));
 	content = ".after_create ";
 	write(fd, content, strlen(content));
-	write(fd, component_name, strlen(component_name));
 	content = ")\n";
 	write(fd, content, strlen(content));
 
@@ -604,8 +603,6 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 		write(fd, content, strlen(content));
 		content = ".AddChild ";
 		write(fd, content, strlen(content));
-		content = node_parent_name;
-		write(fd, content, strlen(content));
 		content = "))\n\n";
 		write(fd, content, strlen(content));
 
@@ -630,13 +627,11 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 		write(fd, content, strlen(content));
 		content = transform_name;
 		write(fd, content, strlen(content));
-		content = "( ";
+		content = " ( ";
 		write(fd, content, strlen(content));
 		content = node_name;
 		write(fd, content, strlen(content));
 		content = ".GetLocalTransform ";
-		write(fd, content, strlen(content));
-		content = node_name;
 		write(fd, content, strlen(content));
 		content = "))\n\n";
 		write(fd, content, strlen(content));
@@ -665,8 +660,6 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 				write(fd, content, strlen(content));
 				content = ".SetName ";
 				write(fd, content, strlen(content));
-				content = node_name;
-				write(fd, content, strlen(content));
 				content = " \"";
 				write(fd, content, strlen(content));
 				content = avdl_json_getTokenString(json);
@@ -687,8 +680,6 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 			content = transform_name;
 			write(fd, content, strlen(content));
 			content = ".SetPosition3f ";
-			write(fd, content, strlen(content));
-			content = transform_name;
 			write(fd, content, strlen(content));
 
 			char numbuffer[100];
@@ -724,8 +715,6 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 			write(fd, content, strlen(content));
 			content = ".SetRotation3f ";
 			write(fd, content, strlen(content));
-			content = transform_name;
-			write(fd, content, strlen(content));
 
 			char numbuffer[100];
 
@@ -759,8 +748,6 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 			content = transform_name;
 			write(fd, content, strlen(content));
 			content = ".SetScale3f ";
-			write(fd, content, strlen(content));
-			content = transform_name;
 			write(fd, content, strlen(content));
 
 			char numbuffer[100];

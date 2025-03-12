@@ -1139,10 +1139,10 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 				ast_setLex(arg, chain->lex);
 				arg->value = DD_VARIABLE_TYPE_STRUCT;
 				arg->isRef = chain->isRef;
-				int c = ast_addChild(prevChain, arg);
+				ast_addChild(prevChain, arg);
 
 				chain = avdl_da_get(&chain->children, 0);
-				prevChain = ast_getChild(prevChain, c);
+				prevChain = ast_getChild(prevChain, avdl_da_count(&prevChain->children)-1);
 			}
 
 			avdl_string_clean(&str);
@@ -1150,6 +1150,19 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		// plain pass-through
 		else {
 			ast_addChild(cmd, cmdname);
+
+			struct ast_node *chain = ast_getChild(cmd, avdl_da_count(&cmd->children)-1);
+			struct ast_node *prevChain = cmd;
+			while (chain->children.elements > 0) {
+				struct ast_node *arg = ast_create(AST_IDENTIFIER);
+				ast_setLex(arg, chain->lex);
+				arg->value = DD_VARIABLE_TYPE_STRUCT;
+				arg->isRef = chain->isRef;
+				ast_addChild(prevChain, arg);
+
+				chain = avdl_da_get(&chain->children, 0);
+				prevChain = ast_getChild(prevChain, avdl_da_count(&prevChain->children)-1);
+			}
 		}
 
 		while (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
