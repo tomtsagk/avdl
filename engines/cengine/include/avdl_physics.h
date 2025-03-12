@@ -3,7 +3,7 @@
 
 #include "avdl_collider.h"
 #include "avdl_rigidbody.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +12,7 @@ extern "C" {
 struct avdl_physics {
 	struct avdl_rigidbody *object[1010];
 	int object_count;
-	struct dd_vec3 constant_force;
+	struct avdl_vec3 constant_force;
 
 	void (*addObject)(struct avdl_physics *, struct avdl_rigidbody *);
 	void (*clearObjects)(struct avdl_physics *);

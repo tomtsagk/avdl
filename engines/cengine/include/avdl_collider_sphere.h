@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "avdl_collider.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 
 struct avdl_collider_sphere {
 	struct avdl_collider parent;

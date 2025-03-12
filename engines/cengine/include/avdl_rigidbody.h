@@ -2,7 +2,7 @@
 #define AVDL_RIGIDBODY_H
 
 #include "avdl_collider.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include "dd_matrix.h"
 
 #ifdef __cplusplus
@@ -14,13 +14,13 @@ struct avdl_rigidbody {
 	struct avdl_collider *collider;
 
 	// movement
-	struct dd_vec3 position;
-	struct dd_vec3 velocity;
+	struct avdl_vec3 position;
+	struct avdl_vec3 velocity;
 
 	// rotation
 	struct dd_matrix rotation;
 	struct dd_matrix angularVelocity;
-	struct dd_vec3 angularVelocityVec3;
+	struct avdl_vec3 angularVelocityVec3;
 
 	float mass;
 	float mass_inv;

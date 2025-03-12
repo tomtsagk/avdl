@@ -13,6 +13,7 @@
 #include "avdl_settings.h"
 #include "avdl_json.h"
 #include "avdl_ast_node.h"
+#include "avdl_string.h"
 
 // TODO: Possibly remove this
 enum AVDL_PLATFORM avdl_platform_temp;
@@ -1087,7 +1088,69 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		cmd = ast_create(0);
 		ast_setValuei(cmd, 0);
 		cmd->node_type = AST_COMMAND_CUSTOM;
-		ast_addChild(cmd, cmdname);
+
+		// inline functions
+		struct ast_node *lastChild = cmdname;
+		while (lastChild->children.elements > 0) {
+			lastChild = avdl_da_get(&lastChild->children, 0);
+		}
+		if (lastChild != cmdname && lastChild->value == AVDL_VARIABLE_TYPE_FUNCTION_INLINE) {
+
+			// For example turn something like this:
+			//     this.myvar.myfunc(...)
+			// into
+			//     myvar_myfunc(&this.myvar, ...);
+
+			// start from the symtable and climb up the struct references
+			struct entry *e = symtable_lookupEntry(cmdname->lex);
+			cmdname->isRef = e->isRef;
+			int structIndex = e->value;
+
+			// find the final child's name and its parent's struct name
+			struct ast_node *parent = cmdname;
+			struct ast_node *child = avdl_da_get(&parent->children, 0);
+			while (child->children.elements > 0) {
+				int memberIndex = struct_table_get_member(structIndex, child->lex);
+				if (struct_table_get_member_type(structIndex, memberIndex) != DD_VARIABLE_TYPE_STRUCT) {
+					avdl_log("non struct found in identifier chain? %s %d", child->lex, struct_table_get_member_type(structIndex, memberIndex));
+					return 0;
+				}
+				structIndex = struct_table_get_index(struct_table_get_member_nametype(structIndex, memberIndex));
+				parent = child;
+				child = avdl_da_get(&child->children, 0);
+			}
+
+			// assemble inline function's name
+			struct avdl_string str;
+			avdl_string_create(&str, 1024);
+			avdl_string_cat(&str, struct_table_get_name(structIndex));
+			avdl_string_cat(&str, "_");
+			avdl_string_cat(&str, child->lex);
+
+			// ast to call the inline function
+			struct ast_node *newcmd = ast_create(AST_COMMAND_CUSTOM);
+			ast_setLex(newcmd, avdl_string_toCharPtr(&str));
+			ast_addChild(cmd, newcmd);
+
+			struct ast_node *chain = cmdname;
+			struct ast_node *prevChain = cmd;
+			while (chain != child) {
+				struct ast_node *arg = ast_create(AST_IDENTIFIER);
+				ast_setLex(arg, chain->lex);
+				arg->value = DD_VARIABLE_TYPE_STRUCT;
+				arg->isRef = chain->isRef;
+				int c = ast_addChild(prevChain, arg);
+
+				chain = avdl_da_get(&chain->children, 0);
+				prevChain = ast_getChild(prevChain, c);
+			}
+
+			avdl_string_clean(&str);
+		}
+		// plain pass-through
+		else {
+			ast_addChild(cmd, cmdname);
+		}
 
 		while (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
 			ast_addChild(cmd, expect_command_arg(l));

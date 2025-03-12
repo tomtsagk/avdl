@@ -2,7 +2,7 @@
 #include "avdl_log.h"
 #include "avdl_component.h"
 #include "avdl_json.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -167,7 +167,7 @@ static void avdl_node_printInternal(struct avdl_node *o, int tabs) {
 		printf("* ");
 	}
 
-	struct dd_vec3 *pos = avdl_transform_GetPosition(&o->localTransform);
+	struct avdl_vec3 *pos = avdl_transform_GetPosition(&o->localTransform);
 	printf("%s | position %f %f %f\n", avdl_string_toCharPtr(&o->name), pos->x, pos->y, pos->z);
 	if (dd_da_count(&o->components) > 0) {
 		for (int i = 0; i < tabs+1; i++) {
@@ -258,7 +258,7 @@ static int NodeToJson_PrintTabs(int fd, int tabs) {
 	#endif
 }
 
-static int NodeToJson_PrintVec3(int fd, struct dd_vec3 *v) {
+static int NodeToJson_PrintVec3(int fd, struct avdl_vec3 *v) {
 	#if defined( AVDL_LINUX )
 	char *content;
 	char buffer[100];
@@ -518,7 +518,7 @@ static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 	struct avdl_transform *t = avdl_node_GetLocalTransform(o);
 
 	// position
-	struct dd_vec3 *pos = avdl_transform_GetPosition(t);
+	struct avdl_vec3 *pos = avdl_transform_GetPosition(t);
 	NodeToJson_PrintTabs(fd, tabs+1);
 	content = "\"position\": [ ";
 	write(fd, content, strlen(content));
@@ -527,7 +527,7 @@ static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 	write(fd, content, strlen(content));
 
 	// rotation
-	struct dd_vec3 *rot = avdl_transform_GetRotation(t);
+	struct avdl_vec3 *rot = avdl_transform_GetRotation(t);
 	NodeToJson_PrintTabs(fd, tabs+1);
 	content = "\"rotation\": [ ";
 	write(fd, content, strlen(content));
@@ -536,7 +536,7 @@ static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 	write(fd, content, strlen(content));
 
 	// scale
-	struct dd_vec3 *scale = avdl_transform_GetScale(t);
+	struct avdl_vec3 *scale = avdl_transform_GetScale(t);
 	NodeToJson_PrintTabs(fd, tabs+1);
 	content = "\"scale\": [ ";
 	write(fd, content, strlen(content));
@@ -814,7 +814,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 	return 0;
 }
 
-static int json_expect_array3f(struct avdl_json_object *json, struct dd_vec3 *v) {
+static int json_expect_array3f(struct avdl_json_object *json, struct avdl_vec3 *v) {
 	#if defined( AVDL_LINUX )
 
 	if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
@@ -877,7 +877,7 @@ static int json_expect_node(struct avdl_json_object *json, struct avdl_node *nod
 		else
 		if (strcmp(avdl_json_getTokenString(json), "position") == 0) {
 			avdl_json_next(json);
-			struct dd_vec3 v;
+			struct avdl_vec3 v;
 			json_expect_array3f(json, &v);
 			//avdl_log("got position: %f %f %f", v.x, v.y, v.z);
 			t->SetPosition(t, &v);
@@ -885,7 +885,7 @@ static int json_expect_node(struct avdl_json_object *json, struct avdl_node *nod
 		else
 		if (strcmp(avdl_json_getTokenString(json), "rotation") == 0) {
 			avdl_json_next(json);
-			struct dd_vec3 v;
+			struct avdl_vec3 v;
 			json_expect_array3f(json, &v);
 			//avdl_log("got rotation: %f %f %f", v.x, v.y, v.z);
 			t->SetRotation(t, &v);
@@ -893,7 +893,7 @@ static int json_expect_node(struct avdl_json_object *json, struct avdl_node *nod
 		else
 		if (strcmp(avdl_json_getTokenString(json), "scale") == 0) {
 			avdl_json_next(json);
-			struct dd_vec3 v;
+			struct avdl_vec3 v;
 			json_expect_array3f(json, &v);
 			//avdl_log("got scale: %f %f %f", v.x, v.y, v.z);
 			t->SetScale(t, &v);

@@ -6,14 +6,14 @@ extern "C" {
 #endif
 
 #include "avdl_collider.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include "avdl_mesh.h"
 
 struct avdl_collider_aabb {
 	struct avdl_collider parent;
 
-	struct dd_vec3 min;
-	struct dd_vec3 max;
+	struct avdl_vec3 min;
+	struct avdl_vec3 max;
 
 	struct avdl_mesh mesh;
 

@@ -5,7 +5,7 @@
 #include "dd_dynamic_array.h"
 #include "avdl_log.h"
 #include <string.h>
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include "dd_vec4.h"
 
 void dd_matrix_create(struct dd_matrix *m) {}
@@ -527,24 +527,24 @@ struct dd_matrix *dd_matrix_globalGet() {
  */
 void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float targetZ) {
 
-	struct dd_vec3 forward;
-	dd_vec3_create(&forward);
-	dd_vec3_setf(&forward, targetX, targetY, targetZ);
-	dd_vec3_normalise(&forward);
+	struct avdl_vec3 forward;
+	avdl_vec3_create(&forward);
+	avdl_vec3_Setf(&forward, targetX, targetY, targetZ);
+	avdl_vec3_Normalise(&forward);
 
-	struct dd_vec3 fakeup;
-	dd_vec3_create(&fakeup);
-	dd_vec3_setf(&fakeup, 0, 1, 0);
+	struct avdl_vec3 fakeup;
+	avdl_vec3_create(&fakeup);
+	avdl_vec3_Setf(&fakeup, 0, 1, 0);
 
-	struct dd_vec3 right;
-	dd_vec3_create(&right);
-	dd_vec3_cross(&right, &fakeup, &forward);
-	dd_vec3_normalise(&right);
+	struct avdl_vec3 right;
+	avdl_vec3_create(&right);
+	avdl_vec3_Cross(&right, &fakeup, &forward);
+	avdl_vec3_Normalise(&right);
 
-	struct dd_vec3 up;
-	dd_vec3_create(&up);
-	dd_vec3_cross(&up, &forward, &right);
-	dd_vec3_normalise(&up);
+	struct avdl_vec3 up;
+	avdl_vec3_create(&up);
+	avdl_vec3_Cross(&up, &forward, &right);
+	avdl_vec3_Normalise(&up);
 
 	#if defined( AVDL_DIRECT3D11 ) || defined( AVDL_QUEST2 )
 	float rot_mat[] = {

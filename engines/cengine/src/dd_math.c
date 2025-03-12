@@ -78,7 +78,7 @@ float dd_math_dot2(struct dd_vec2 *v1, struct dd_vec2 *v2) {
 	return v1->x *v2->x +v1->y *v2->y;
 }
 
-float dd_math_dot3(struct dd_vec3 *v1, struct dd_vec3 *v2) {
+float dd_math_dot3(struct avdl_vec3 *v1, struct avdl_vec3 *v2) {
 	return v1->x *v2->x +v1->y *v2->y +v1->z *v2->z;
 }
 

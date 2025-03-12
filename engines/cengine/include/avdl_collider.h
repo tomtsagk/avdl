@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include "dd_vec4.h"
 #include "dd_mesh.h"
 #include "avdl_node.h"

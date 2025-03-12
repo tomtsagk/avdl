@@ -7,7 +7,7 @@
 
 struct manifold {
 	int collide;
-	struct dd_vec3 normal;
+	struct avdl_vec3 normal;
 	float penetration;
 };
 
@@ -51,8 +51,8 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 	*/
 
 	// vector from obj A to obj B
-	struct dd_vec3 diff;
-	dd_vec3_setf(&diff,
+	struct avdl_vec3 diff;
+	avdl_vec3_Setf(&diff,
 		b->position.x -a->position.x,
 		b->position.y -a->position.y,
 		b->position.z -a->position.z
@@ -65,16 +65,16 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 	*/
 
 	// find closest point on aabb
-	struct dd_vec3 closest;
-	dd_vec3_setf(&closest,
+	struct avdl_vec3 closest;
+	avdl_vec3_Setf(&closest,
 		dd_math_clamp(a->position.x +a_col->min.x, a->position.x +a_col->max.x, a->position.x +diff.x),
 		dd_math_clamp(a->position.y +a_col->min.y, a->position.y +a_col->max.y, a->position.y +diff.y),
 		dd_math_clamp(a->position.z +a_col->min.z, a->position.z +a_col->max.z, a->position.z +diff.z)
 	);
 	//avdl_log("closest: %f - %f - %f", closest.x, closest.y, closest.z);
 
-	struct dd_vec3 normal;
-	dd_vec3_setf(&normal,
+	struct avdl_vec3 normal;
+	avdl_vec3_Setf(&normal,
 		//diff.x -closest.x,
 		//diff.y -closest.y,
 		//diff.z -closest.z
@@ -82,14 +82,14 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 		b->position.y -closest.y,
 		b->position.z -closest.z
 	);
-	if (dd_vec3_magnitude(&normal) == 0) {
-		dd_vec3_setf(&normal, 0, 1, 0);
+	if (avdl_vec3_Magnitude(&normal) == 0) {
+		avdl_vec3_Setf(&normal, 0, 1, 0);
 	}
 	//avdl_log("normal: %f - %f - %f", normal.x, normal.y, normal.z);
 
 	float r = b_col->radius;
 	//avdl_log("radius: %f", b_col->radius);
-	float d = dd_vec3_magnitude(&normal);
+	float d = avdl_vec3_Magnitude(&normal);
 	//avdl_log("magnit: %f", d);
 
 	if ( r < d
@@ -101,8 +101,8 @@ void avdl_physics_collision_aabbVSsphere(struct manifold *m, struct avdl_rigidbo
 	}
 	else {
 		m->collide = 1;
-		dd_vec3_set(&m->normal, &normal);
-		dd_vec3_normalise(&m->normal);
+		avdl_vec3_Set(&m->normal, &normal);
+		avdl_vec3_Normalise(&m->normal);
 		m->penetration = r -d;
 
 		//avdl_log("m->normal: %f - %f - %f", m->normal.x, m->normal.y, m->normal.z);
@@ -156,29 +156,29 @@ void avdl_physics_collision_sphereVSsphere(struct manifold *m, struct avdl_rigid
 	*/
 
 	// vector from obj A to obj B
-	struct dd_vec3 diff;
-	dd_vec3_setf(&diff,
+	struct avdl_vec3 diff;
+	avdl_vec3_Setf(&diff,
 		b->position.x -a->position.x,
 		b->position.y -a->position.y,
 		b->position.z -a->position.z
 	);
 	//avdl_log("diff: %f - %f - %f", diff.x, diff.y, diff.z);
 
-	float distance = dd_vec3_magnitude(&diff);
+	float distance = avdl_vec3_Magnitude(&diff);
 
 	/*
 	*/
 	// find closest point on aabb
-	struct dd_vec3 contact;
-	dd_vec3_setf(&contact,
+	struct avdl_vec3 contact;
+	avdl_vec3_Setf(&contact,
 		a->position.x +(diff.x /2),
 		a->position.y +(diff.y /2),
 		a->position.z +(diff.z /2)
 	);
 	//avdl_log("closest: %f - %f - %f", closest.x, closest.y, closest.z);
 
-	struct dd_vec3 normal;
-	dd_vec3_setf(&normal,
+	struct avdl_vec3 normal;
+	avdl_vec3_Setf(&normal,
 		b->position.x -contact.x,
 		b->position.y -contact.y,
 		b->position.z -contact.z
@@ -188,8 +188,8 @@ void avdl_physics_collision_sphereVSsphere(struct manifold *m, struct avdl_rigid
 	// collision!
 	if (distance < a_col->radius +b_col->radius) {
 		m->collide = 1;
-		dd_vec3_set(&m->normal, &normal);
-		dd_vec3_normalise(&m->normal);
+		avdl_vec3_Set(&m->normal, &normal);
+		avdl_vec3_Normalise(&m->normal);
 		m->penetration = distance -( a_col->radius + b_col->radius );
 	}
 	// no collision
@@ -204,8 +204,8 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 	// move objects
 	for (int i = 0; i < o->object_count; i++) {
 		// calculate this frame's acceleration
-		struct dd_vec3 acceleration;
-		dd_vec3_setf(&acceleration, 0, 0, 0);
+		struct avdl_vec3 acceleration;
+		avdl_vec3_Setf(&acceleration, 0, 0, 0);
 
 		// static objects
 		if (o->object[i]->mass_inv == 0) {
@@ -213,17 +213,17 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 		}
 
 		// constant force
-		dd_vec3_addf(&acceleration,
+		avdl_vec3_Addf(&acceleration,
 			o->constant_force.x *o->object[i]->mass_inv *dt,
 			o->constant_force.y *o->object[i]->mass_inv *dt,
 			o->constant_force.z *o->object[i]->mass_inv *dt
 		);
 
 		// add acceleration to velocity
-		dd_vec3_add(&o->object[i]->velocity, &o->object[i]->velocity, &acceleration);
+		avdl_vec3_Add(&o->object[i]->velocity, &o->object[i]->velocity, &acceleration);
 
 		// apply velocity to position
-		dd_vec3_add(&o->object[i]->position, &o->object[i]->position, &o->object[i]->velocity);
+		avdl_vec3_Add(&o->object[i]->position, &o->object[i]->position, &o->object[i]->velocity);
 
 		// rotation
 		struct dd_matrix m;
@@ -296,8 +296,8 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				float mass_total = o->object[i]->mass +o->object[j]->mass;
 
 				// relative velocity
-				struct dd_vec3 rv;
-				dd_vec3_setf(&rv,
+				struct avdl_vec3 rv;
+				avdl_vec3_Setf(&rv,
 					o->object[j]->velocity.x -o->object[i]->velocity.x,
 					o->object[j]->velocity.y -o->object[i]->velocity.y,
 					o->object[j]->velocity.z -o->object[i]->velocity.z
@@ -306,7 +306,7 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 
 				// elasticity - lowest of two
 				float e = dd_math_min(o->object[i]->restitution, o->object[j]->restitution);
-				float velAlongNormal = dd_vec3_dot(&rv, &m.normal);
+				float velAlongNormal = avdl_vec3_Dot(&rv, &m.normal);
 				float z = -(1 +e) *velAlongNormal;
 				z /= o->object[i]->mass_inv +o->object[j]->mass_inv;
 
@@ -317,8 +317,8 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				float angularImpact2 = 130;
 
 				// calculate impulse
-				struct dd_vec3 impulse;
-				dd_vec3_setf(&impulse,
+				struct avdl_vec3 impulse;
+				avdl_vec3_Setf(&impulse,
 					m.normal.x *z -(o->object[j]->angularVelocityVec3.z -o->object[i]->angularVelocityVec3.z) *angularImpact,
 					m.normal.y *z +(o->object[j]->angularVelocityVec3.y -o->object[i]->angularVelocityVec3.y) *angularImpact,
 					m.normal.z *z +(o->object[j]->angularVelocityVec3.x -o->object[i]->angularVelocityVec3.x) *angularImpact
@@ -327,46 +327,46 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				//avdl_log("impulse: %f - %f - %f", impulse.x, impulse.y, impulse.z);
 
 				// apply impulse
-				dd_vec3_setf(&o->object[i]->velocity,
+				avdl_vec3_Setf(&o->object[i]->velocity,
 					(o->object[i]->velocity.x - o->object[i]->mass_inv *impulse.x) *0.99,
 					(o->object[i]->velocity.y - o->object[i]->mass_inv *impulse.y) *0.99,
 					(o->object[i]->velocity.z - o->object[i]->mass_inv *impulse.z) *0.99
 				);
 
-				dd_vec3_setf(&o->object[j]->velocity,
+				avdl_vec3_Setf(&o->object[j]->velocity,
 					(o->object[j]->velocity.x + o->object[j]->mass_inv *impulse.x) *0.99,
 					(o->object[j]->velocity.y + o->object[j]->mass_inv *impulse.y) *0.99,
 					(o->object[j]->velocity.z + o->object[j]->mass_inv *impulse.z) *0.99
 				);
 
 				// apply friction impulse
-				dd_vec3_addf(&o->object[i]->velocity,
+				avdl_vec3_Addf(&o->object[i]->velocity,
 					((o->object[i]->velocity.x - o->object[i]->mass_inv *impulse.x) *0.99) *-0.1,
 					((o->object[i]->velocity.y - o->object[i]->mass_inv *impulse.y) *0.99) *-0.1,
 					((o->object[i]->velocity.z - o->object[i]->mass_inv *impulse.z) *0.99) *-0.1
 				);
 
-				dd_vec3_addf(&o->object[j]->velocity,
+				avdl_vec3_Addf(&o->object[j]->velocity,
 					((o->object[j]->velocity.x + o->object[j]->mass_inv *impulse.x) *0.99) *-0.1,
 					((o->object[j]->velocity.y + o->object[j]->mass_inv *impulse.y) *0.99) *-0.1,
 					((o->object[j]->velocity.z + o->object[j]->mass_inv *impulse.z) *0.99) *-0.1
 				);
 
 				// correct position so objects don't collide
-				struct dd_vec3 correction;
-				dd_vec3_setf(&correction,
+				struct avdl_vec3 correction;
+				avdl_vec3_Setf(&correction,
 					m.normal.x *m.penetration,
 					m.normal.y *m.penetration,
 					m.normal.z *m.penetration
 				);
 				//avdl_log("correction: %f - %f - %f", correction.x, correction.y, correction.z);
 
-				dd_vec3_setf(&o->object[i]->position,
+				avdl_vec3_Setf(&o->object[i]->position,
 					o->object[i]->position.x + o->object[i]->mass_inv *correction.x,
 					o->object[i]->position.y + o->object[i]->mass_inv *correction.y,
 					o->object[i]->position.z + o->object[i]->mass_inv *correction.z
 				);
-				dd_vec3_setf(&o->object[j]->position,
+				avdl_vec3_Setf(&o->object[j]->position,
 					o->object[j]->position.x - o->object[j]->mass_inv *correction.x,
 					o->object[j]->position.y - o->object[j]->mass_inv *correction.y,
 					o->object[j]->position.z - o->object[j]->mass_inv *correction.z
@@ -435,11 +435,11 @@ void avdl_physics_clearObjects(struct avdl_physics *o) {
 }
 
 void avdl_physics_addConstantForcef(struct avdl_physics *o, float x, float y, float z) {
-	dd_vec3_addf(&o->constant_force, x, y, z);
+	avdl_vec3_Addf(&o->constant_force, x, y, z);
 }
 
 void avdl_physics_clearConstantForce(struct avdl_physics *o) {
-	dd_vec3_setf(&o->constant_force, 0, 0, 0);
+	avdl_vec3_Setf(&o->constant_force, 0, 0, 0);
 }
 
 int avdl_physics_isCollision(struct avdl_rigidbody *o1, struct avdl_rigidbody *o2) {

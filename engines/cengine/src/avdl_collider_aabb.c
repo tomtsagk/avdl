@@ -3,8 +3,8 @@
 void avdl_collider_aabb_create(struct avdl_collider_aabb *o) {
 	avdl_collider_create(&o->parent);
 	o->parent.type = AVDL_COLLIDER_TYPE_AABB;
-	dd_vec3_setf(&o->min, -0.5, -0.5, -0.5);
-	dd_vec3_setf(&o->max,  0.5,  0.5,  0.5);
+	avdl_vec3_Setf(&o->min, -0.5, -0.5, -0.5);
+	avdl_vec3_Setf(&o->max,  0.5,  0.5,  0.5);
 
 	avdl_mesh_create(&o->mesh);
 	avdl_mesh_set_primitive(&o->mesh, AVDL_PRIMITIVE_BOX);
@@ -65,14 +65,14 @@ void avdl_collider_aabb_draw(struct avdl_collider_aabb *o) {
 
 	dd_matrix_push();
 	dd_translatef(
-		dd_vec3_getX(&o->min) +(dd_vec3_getX(&o->max) -dd_vec3_getX(&o->min))/2,
-		dd_vec3_getY(&o->min) +(dd_vec3_getY(&o->max) -dd_vec3_getY(&o->min))/2,
-		dd_vec3_getZ(&o->min) +(dd_vec3_getZ(&o->max) -dd_vec3_getZ(&o->min))/2
+		avdl_vec3_X(&o->min) +(avdl_vec3_X(&o->max) -avdl_vec3_X(&o->min))/2,
+		avdl_vec3_Y(&o->min) +(avdl_vec3_Y(&o->max) -avdl_vec3_Y(&o->min))/2,
+		avdl_vec3_Z(&o->min) +(avdl_vec3_Z(&o->max) -avdl_vec3_Z(&o->min))/2
 	);
 	dd_scalef(
-		dd_vec3_getX(&o->max) -dd_vec3_getX(&o->min),
-		dd_vec3_getY(&o->max) -dd_vec3_getY(&o->min),
-		dd_vec3_getZ(&o->max) -dd_vec3_getZ(&o->min)
+		avdl_vec3_X(&o->max) -avdl_vec3_X(&o->min),
+		avdl_vec3_Y(&o->max) -avdl_vec3_Y(&o->min),
+		avdl_vec3_Z(&o->max) -avdl_vec3_Z(&o->min)
 	);
 	avdl_mesh_draw(&o->mesh);
 	dd_matrix_pop();

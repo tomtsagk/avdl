@@ -1,7 +1,7 @@
 #include "avdl_skeleton.h"
 #include "string.h"
 #include "avdl_log.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include "dd_math.h"
 #include "dd_matrix.h"
 
@@ -147,8 +147,8 @@ static void interpolate_position(struct avdl_skeleton *o, int index, struct dd_m
 		}
 	}
 
-	struct dd_vec3 *pos;
-	struct dd_vec3 *pos2;
+	struct avdl_vec3 *pos;
+	struct avdl_vec3 *pos2;
 	float animationLength;
 	// mixing
 	if (o->currentTime < 0) {
@@ -244,7 +244,7 @@ static void interpolate_position(struct avdl_skeleton *o, int index, struct dd_m
 
 	// save mix bones for mixing, only when not mixing
 	if (o->currentTime >= 0) {
-		dd_vec3_setf(&o->mixBones[i].position,
+		avdl_vec3_Setf(&o->mixBones[i].position,
 			pos->x +(pos2->x -pos->x) *animationLength,
 			pos->y +(pos2->y -pos->y) *animationLength,
 			pos->z +(pos2->z -pos->z) *animationLength
@@ -339,10 +339,10 @@ void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, s
 	
 			// positions
 			animBone->keyframe_count_positions = dd_da_count(&animBoneSrc->keyframes_position);
-			animBone->positions = malloc(sizeof(struct dd_vec3) *animBone->keyframe_count_positions);
+			animBone->positions = malloc(sizeof(struct avdl_vec3) *animBone->keyframe_count_positions);
 			animBone->positions_time = malloc(sizeof(float) *animBone->keyframe_count_positions);
 			for (int k = 0; k < animBone->keyframe_count_positions; k++) {
-				struct dd_vec3 *pos = &animBone->positions[k];
+				struct avdl_vec3 *pos = &animBone->positions[k];
 				struct dd_keyframe_vec3 *target = dd_da_get(&animBoneSrc->keyframes_position, k);
 				animBone->positions_time[k] = target->time;
 				pos->x = target->value.x;
@@ -354,7 +354,7 @@ void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, s
 
 				// init mix bone
 				if (k == 0) {
-					dd_vec3_setf(&o->mixBones[j].position, pos->x, pos->y, pos->z);
+					avdl_vec3_Setf(&o->mixBones[j].position, pos->x, pos->y, pos->z);
 				}
 			}
 	

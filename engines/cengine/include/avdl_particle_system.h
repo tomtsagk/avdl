@@ -14,7 +14,7 @@
  */
 
 #include "avdl_mesh.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 
 /*
  * the maximum number of particles that can
@@ -61,12 +61,12 @@ struct avdl_particle_system {
 	// values to be given to each new particle
 	struct avdl_mesh *particleMesh;
 	float particleLife;
-	struct dd_vec3 particlePosition;
-	struct dd_vec3 particlePositionFuzz;
-	struct dd_vec3 particleRotation;
-	struct dd_vec3 particleRotationFuzz;
-	struct dd_vec3 particleScale;
-	struct dd_vec3 particleScaleFuzz;
+	struct avdl_vec3 particlePosition;
+	struct avdl_vec3 particlePositionFuzz;
+	struct avdl_vec3 particleRotation;
+	struct avdl_vec3 particleRotationFuzz;
+	struct avdl_vec3 particleScale;
+	struct avdl_vec3 particleScaleFuzz;
 
 	/*
 	 * functions to allow variable values

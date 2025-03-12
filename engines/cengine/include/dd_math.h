@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "dd_vec2.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include <math.h>
 #include <stdlib.h>
 
@@ -65,7 +65,7 @@ int dd_math_removeTrailingZeroes(int num);
 
 // vector math
 float dd_math_dot2(struct dd_vec2 *v1, struct dd_vec2 *v2);
-float dd_math_dot3(struct dd_vec3 *v1, struct dd_vec3 *v2);
+float dd_math_dot3(struct avdl_vec3 *v1, struct avdl_vec3 *v2);
 
 #include "dd_vec4.h"
 

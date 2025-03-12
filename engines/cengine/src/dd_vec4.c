@@ -127,7 +127,7 @@ void dd_vec4_print(struct dd_vec4 *o) {
 }
 
 void dd_vec4_normalise(struct dd_vec4 *o) {
-	float magn = dd_vec3_magnitude(o);
+	float magn = dd_vec4_magnitude(o);
 	o->cell[0] /= magn;
 	o->cell[1] /= magn;
 	o->cell[2] /= magn;
