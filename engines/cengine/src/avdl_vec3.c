@@ -6,6 +6,7 @@ void avdl_vec3_create(struct avdl_vec3 *o) {
 	o->x = 0;
 	o->y = 0;
 	o->z = 0;
+	o->clean = avdl_vec3_clean;
 }
 
 void avdl_vec3_Set(struct avdl_vec3 *o, struct avdl_vec3 *src) {

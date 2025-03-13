@@ -18,9 +18,12 @@ struct avdl_vec3 {
 		float z;
 		float b;
 	};
+
+	void (*clean)(struct avdl_vec3 *o);
 };
 
 void avdl_vec3_create(struct avdl_vec3 *o);
+void avdl_vec3_clean(struct avdl_vec3 *o);
 
 void avdl_vec3_Set(struct avdl_vec3 *o, struct avdl_vec3 *src);
 void avdl_vec3_Setf(struct avdl_vec3 *o, float x, float y, float z);
@@ -42,8 +45,6 @@ void avdl_vec3_Dividef(struct avdl_vec3 *o, float x, float y, float z);
 float avdl_vec3_X(struct avdl_vec3 *o);
 float avdl_vec3_Y(struct avdl_vec3 *o);
 float avdl_vec3_Z(struct avdl_vec3 *o);
-
-void avdl_vec3_clean(struct avdl_vec3 *o);
 
 // more math
 void avdl_vec3_Cross(struct avdl_vec3 *o, struct avdl_vec3 *v1, struct avdl_vec3 *v2);

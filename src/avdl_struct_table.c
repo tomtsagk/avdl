@@ -520,6 +520,12 @@ static int struct_table_is_member_parent_search(int structIndex, const char *mem
 	// is member of this struct
 	if (struct_table_has_member(structIndex, membername)) {
 		parent_level_current = parent_level;
+
+		// for inline functions return the first struct found
+		int memberIndex = struct_table_get_member(structIndex, membername);
+		if (struct_table_get_member_type(structIndex, memberIndex) == AVDL_VARIABLE_TYPE_FUNCTION_INLINE) {
+			return parent_level_current;
+		}
 	}
 
 	if (t->parent == -1) {

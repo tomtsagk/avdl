@@ -350,6 +350,15 @@ static struct ast_node *expect_command_functionDefinition(struct avdl_lexer *l) 
 		ast_delete(optionalModifier);
 		optionalModifier = expect_identifier(l);
 	}
+	else
+	if (strcmp(ast_getLex(optionalModifier), "virtual") == 0) {
+		// apply modifier
+		function->isVirtual = 1;
+
+		// get new optional modifier
+		ast_delete(optionalModifier);
+		optionalModifier = expect_identifier(l);
+	}
 
 	struct ast_node *functionName = expect_identifier(l);
 	struct ast_node *args = expect_command(l);
@@ -451,6 +460,8 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 		}
 		// new function
 		else {
+			int function_type = DD_VARIABLE_TYPE_FUNCTION;
+
 			/*
 			 * there's a subclass, check if new function is
 			 * overriding another one
@@ -466,9 +477,12 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 			if (child->isRef) {
 				//avdl_log("is ref: %s %d", ast_getLex(child), child->isRef);
 			}
+			if (child->isVirtual) {
+				function_type = AVDL_VARIABLE_TYPE_FUNCTION_INLINE;
+			}
 
 			// add function to struct table
-			struct_table_push_member(ast_getLex(name), DD_VARIABLE_TYPE_FUNCTION, 0, child->isRef);
+			struct_table_push_member(ast_getLex(name), function_type, 0, child->isRef);
 		}
 	}
 	symtable_pop();
@@ -805,27 +819,32 @@ static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 			semantic_error(l, "identifier '%s' not a struct, so it can't own objects", ast_getLex(identifier));
 		}
 
-		// add struct's members to new symbol table
+		// add struct's members (and struct's parents) to new symbol table
 		symtable_push();
 		//struct_table_print();
-		for (unsigned int j = 0; j < struct_table_get_member_total(symEntry->value); j++) {
-			/*
-			printf("	member: %s %d %s\n",
-				struct_table_get_member_name(symEntry->value, j),
-				struct_table_get_member_type(symEntry->value, j),
-				struct_table_get_member_nametype(symEntry->value, j)
-			);
-			*/
+		int structIndex = symEntry->value;
+		do {
+			for (unsigned int j = 0; j < struct_table_get_member_total(structIndex); j++) {
+				/*
+				printf("	member: %s %d %s\n",
+					struct_table_get_member_name(structIndex, j),
+					struct_table_get_member_type(structIndex, j),
+					struct_table_get_member_nametype(structIndex, j)
+				);
+				*/
 
-			struct entry *e2 = symtable_entryat(symtable_insert(
-				struct_table_get_member_name(symEntry->value, j),
-				struct_table_get_member_type(symEntry->value, j))
-			);
-			if (struct_table_get_member_type(symEntry->value, j) == DD_VARIABLE_TYPE_STRUCT) {
-				e2->value = struct_table_get_index(struct_table_get_member_nametype(symEntry->value, j));
+				struct entry *e2 = symtable_entryat(symtable_insert(
+					struct_table_get_member_name(structIndex, j),
+					struct_table_get_member_type(structIndex, j))
+				);
+				if (struct_table_get_member_type(structIndex, j) == DD_VARIABLE_TYPE_STRUCT) {
+					e2->value = struct_table_get_index(struct_table_get_member_nametype(structIndex, j));
+				}
+				e2->isRef = struct_table_getMemberIsRef(structIndex, j);
 			}
-			e2->isRef = struct_table_getMemberIsRef(symEntry->value, j);
-		}
+
+			structIndex = struct_table_get_parent(structIndex);
+		} while (structIndex >= 0);
 
 		// get the owned object's name
 		struct ast_node *child = expect_identifier(l);
@@ -1107,16 +1126,26 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 			int structIndex = e->value;
 
 			// find the final child's name and its parent's struct name
-			struct ast_node *parent = cmdname;
-			struct ast_node *child = avdl_da_get(&parent->children, 0);
+			struct ast_node *child = avdl_da_get(&cmdname->children, 0);
 			while (child->children.elements > 0) {
+
+				// `parent` is a special keyword for parent struct
+				if (strcmp(child->lex, "parent") == 0) {
+					structIndex = struct_table_get_parent(structIndex);
+					child = avdl_da_get(&child->children, 0);
+					continue;
+				}
+
 				int memberIndex = struct_table_get_member(structIndex, child->lex);
+				if (memberIndex < 0) {
+					avdl_log("no member %s in struct %s", child->lex, struct_table_get_name(structIndex));
+					return 0;
+				}
 				if (struct_table_get_member_type(structIndex, memberIndex) != DD_VARIABLE_TYPE_STRUCT) {
 					avdl_log("non struct found in identifier chain? %s %d", child->lex, struct_table_get_member_type(structIndex, memberIndex));
 					return 0;
 				}
 				structIndex = struct_table_get_index(struct_table_get_member_nametype(structIndex, memberIndex));
-				parent = child;
 				child = avdl_da_get(&child->children, 0);
 			}
 
