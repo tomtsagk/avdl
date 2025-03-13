@@ -121,12 +121,12 @@ int avdl_component_terrain_IsOnTerrain(struct avdl_component_terrain *o, struct 
 
 	struct avdl_node *terrain_node = o->parent.node;
 
-	struct dd_vec4 position;
-	dd_vec4_set(&position, 0, 0, 0, 1);
-	dd_vec4_multiply(&position, n->GetGlobalMatrix(n));
-	dd_vec4_multiply(&position, terrain_node->GetGlobalInverseMatrix(terrain_node));
+	struct avdl_vec4 position;
+	avdl_vec4_Setf(&position, 0, 0, 0, 1);
+	avdl_vec4_MultiplyMatrix(&position, n->GetGlobalMatrix(n));
+	avdl_vec4_MultiplyMatrix(&position, terrain_node->GetGlobalInverseMatrix(terrain_node));
 
-	return avdl_terrain_isOnTerrain(&o->terrain, position.cell[0], -position.cell[2]);
+	return avdl_terrain_isOnTerrain(&o->terrain, avdl_vec4_X(&position), -avdl_vec4_Z(&position));
 
 }
 
@@ -144,12 +144,12 @@ float avdl_component_terrain_GetSpot(struct avdl_component_terrain *o, struct av
 
 	struct avdl_node *terrain_node = o->parent.node;
 
-	struct dd_vec4 position;
-	dd_vec4_set(&position, 0, 0, 0, 1);
-	dd_vec4_multiply(&position, n->GetGlobalMatrix(n));
-	dd_vec4_multiply(&position, terrain_node->GetGlobalInverseMatrix(terrain_node));
+	struct avdl_vec4 position;
+	avdl_vec4_Setf(&position, 0, 0, 0, 1);
+	avdl_vec4_MultiplyMatrix(&position, n->GetGlobalMatrix(n));
+	avdl_vec4_MultiplyMatrix(&position, terrain_node->GetGlobalInverseMatrix(terrain_node));
 
-	return avdl_terrain_getSpot(&o->terrain, position.cell[0], -position.cell[2]);
+	return avdl_terrain_getSpot(&o->terrain, avdl_vec4_X(&position), -avdl_vec4_Z(&position));
 
 }
 

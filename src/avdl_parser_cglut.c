@@ -716,7 +716,7 @@ static void print_command_enum(FILE *fd, struct ast_node *n) {
 
 	int i = 1;
 	struct ast_node *enumvalue = 0;
-	while (enumvalue = avdl_da_get(&n->children, i)) {
+	while ((enumvalue = avdl_da_get(&n->children, i))) {
 		fprintf(fd, "%s,\n", enumvalue->lex);
 		i++;
 	}

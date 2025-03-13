@@ -19,7 +19,7 @@
 #include "dd_fov.h"
 #include "dd_game.h"
 #include "avdl_vec3.h"
-#include "dd_vec4.h"
+#include "avdl_vec4.h"
 #include "dd_mouse.h"
 #include "dd_string3d.h"
 #include "avdl_texture.h"

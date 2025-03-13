@@ -220,10 +220,10 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 		);
 
 		// add acceleration to velocity
-		avdl_vec3_Add(&o->object[i]->velocity, &o->object[i]->velocity, &acceleration);
+		avdl_vec3_Add(&o->object[i]->velocity, &acceleration);
 
 		// apply velocity to position
-		avdl_vec3_Add(&o->object[i]->position, &o->object[i]->position, &o->object[i]->velocity);
+		avdl_vec3_Add(&o->object[i]->position, &o->object[i]->velocity);
 
 		// rotation
 		struct dd_matrix m;

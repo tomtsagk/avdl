@@ -39,10 +39,10 @@ void avdl_vec3_Addf(struct avdl_vec3 *o1, float x, float y, float z) {
 	o1->z += z;
 }
 
-void avdl_vec3_Add(struct avdl_vec3 *o, struct avdl_vec3 *a, struct avdl_vec3 *b) {
-	o->x = a->x +b->x;
-	o->y = a->y +b->y;
-	o->z = a->z +b->z;
+void avdl_vec3_Add(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {
+	o1->x += o2->x;
+	o1->y += o2->y;
+	o1->z += o2->z;
 }
 
 void avdl_vec3_Cross(struct avdl_vec3 *o, struct avdl_vec3 *v1, struct avdl_vec3 *v2) {
@@ -74,10 +74,10 @@ float avdl_vec3_Dot(struct avdl_vec3 *a, struct avdl_vec3 *b) {
 	return a->x *b->x + a->y *b->y + a->z *b->z;
 }
 
-void avdl_vec3_Subtract(struct avdl_vec3 *o, struct avdl_vec3 *a, struct avdl_vec3 *b) {
-	o->x = a->x -b->x;
-	o->y = a->y -b->y;
-	o->z = a->z -b->z;
+void avdl_vec3_Subtract(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {
+	o1->x -= o2->x;
+	o1->y -= o2->y;
+	o1->z -= o2->z;
 }
 
 void avdl_vec3_Subtractf(struct avdl_vec3 *o, float x, float y, float z) {
@@ -86,10 +86,10 @@ void avdl_vec3_Subtractf(struct avdl_vec3 *o, float x, float y, float z) {
 	o->z -= z;
 }
 
-void avdl_vec3_Multiply(struct avdl_vec3 *o, struct avdl_vec3 *a, struct avdl_vec3 *b) {
-	o->x = a->x *b->x;
-	o->y = a->y *b->y;
-	o->z = a->z *b->z;
+void avdl_vec3_Multiply(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {
+	o1->x *= o2->x;
+	o1->y *= o2->y;
+	o1->z *= o2->z;
 }
 
 void avdl_vec3_Multiplyf(struct avdl_vec3 *o, float x, float y, float z) {
@@ -98,10 +98,10 @@ void avdl_vec3_Multiplyf(struct avdl_vec3 *o, float x, float y, float z) {
 	o->z *= z;
 }
 
-void avdl_vec3_Divide(struct avdl_vec3 *o, struct avdl_vec3 *a, struct avdl_vec3 *b) {
-	o->x = a->x /b->x;
-	o->y = a->y /b->y;
-	o->z = a->z /b->z;
+void avdl_vec3_Divide(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {
+	o1->x /= o2->x;
+	o1->y /= o2->y;
+	o1->z /= o2->z;
 }
 
 void avdl_vec3_Dividef(struct avdl_vec3 *o, float x, float y, float z) {

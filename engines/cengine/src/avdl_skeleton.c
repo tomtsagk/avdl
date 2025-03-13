@@ -61,35 +61,35 @@ void avdl_skeleton_clean(struct avdl_skeleton *o) {
 }
 
 #define QUATERNION_EPS (1e-4)
-static void quaternion_slerp(struct dd_vec4 *q1, struct dd_vec4 *q2, float t, struct dd_vec4 *output) {
+static void quaternion_slerp(struct avdl_vec4 *q1, struct avdl_vec4 *q2, float t, struct avdl_vec4 *output) {
 
 	float dot =
-		q1->cell[0] * q2->cell[0] +
-		q1->cell[1] * q2->cell[1] +
-		q1->cell[2] * q2->cell[2] +
-		q1->cell[3] * q2->cell[3];
-	struct dd_vec4 q2temp;
-	q2temp.cell[0] = q2->cell[0];
-	q2temp.cell[1] = q2->cell[1];
-	q2temp.cell[2] = q2->cell[2];
-	q2temp.cell[3] = q2->cell[3];
+		q1->x * q2->x +
+		q1->y * q2->y +
+		q1->z * q2->z +
+		q1->w * q2->w;
+	struct avdl_vec4 q2temp;
+	q2temp.x = q2->x;
+	q2temp.y = q2->y;
+	q2temp.z = q2->z;
+	q2temp.w = q2->w;
 	if (dot < 0.0) {
-		q2temp.cell[0] *= -1;
-		q2temp.cell[1] *= -1;
-		q2temp.cell[2] *= -1;
-		q2temp.cell[3] *= -1;
+		q2temp.x *= -1;
+		q2temp.y *= -1;
+		q2temp.z *= -1;
+		q2temp.w *= -1;
 	}
 
 	// Calculate angle between them.
 	double cosHalfTheta =
-		q1->cell[3] * q2temp.cell[3] + q1->cell[0] * q2temp.cell[0] + q1->cell[1] * q2temp.cell[1] + q1->cell[2] * q2temp.cell[2];
+		q1->w * q2temp.w + q1->x * q2temp.x + q1->y * q2temp.y + q1->z * q2temp.z;
 
 	// if qa=qb or qa=-qb then theta = 0 and we can return qa
 	if ( fabs( cosHalfTheta ) >= 1.0 ) {
-		output->cell[0] = q1->cell[0];
-		output->cell[1] = q1->cell[1];
-		output->cell[2] = q1->cell[2];
-		output->cell[3] = q1->cell[3];
+		output->x = q1->x;
+		output->y = q1->y;
+		output->z = q1->z;
+		output->w = q1->w;
 		return;
 	}
 
@@ -100,20 +100,20 @@ static void quaternion_slerp(struct dd_vec4 *q1, struct dd_vec4 *q2, float t, st
 	// if theta = 180 degrees then result is not fully defined
 	// we could rotate around any axis normal to qa or qb
 	if ( fabs( sinHalfTheta ) < 0.001 ) { // fabs is floating point absolute
-		output->cell[3] = ( q1->cell[3] * 0.5 + q2temp.cell[3] * 0.5 );
-		output->cell[0] = ( q1->cell[0] * 0.5 + q2temp.cell[0] * 0.5 );
-		output->cell[1] = ( q1->cell[1] * 0.5 + q2temp.cell[1] * 0.5 );
-		output->cell[2] = ( q1->cell[2] * 0.5 + q2temp.cell[2] * 0.5 );
+		output->w = ( q1->w * 0.5 + q2temp.w * 0.5 );
+		output->x = ( q1->x * 0.5 + q2temp.x * 0.5 );
+		output->y = ( q1->y * 0.5 + q2temp.y * 0.5 );
+		output->z = ( q1->z * 0.5 + q2temp.z * 0.5 );
 		return;
 	}
 
 	double ratioA = sin( ( 1 - t ) * halfTheta ) / sinHalfTheta;
 	double ratioB = sin( t * halfTheta ) / sinHalfTheta;
 	// calculate Quaternion.
-	output->cell[3] = ( q1->cell[3] * ratioA + q2temp.cell[3] * ratioB );
-	output->cell[0] = ( q1->cell[0] * ratioA + q2temp.cell[0] * ratioB );
-	output->cell[1] = ( q1->cell[1] * ratioA + q2temp.cell[1] * ratioB );
-	output->cell[2] = ( q1->cell[2] * ratioA + q2temp.cell[2] * ratioB );
+	output->w = ( q1->w * ratioA + q2temp.w * ratioB );
+	output->x = ( q1->x * ratioA + q2temp.x * ratioB );
+	output->y = ( q1->y * ratioA + q2temp.y * ratioB );
+	output->z = ( q1->z * ratioA + q2temp.z * ratioB );
 }
 
 static void interpolate_position(struct avdl_skeleton *o, int index, struct dd_matrix *parentTransform) {
@@ -192,8 +192,8 @@ static void interpolate_position(struct avdl_skeleton *o, int index, struct dd_m
 			break;
 		}
 	}
-	struct dd_vec4 *rot;
-	struct dd_vec4 *rot2;
+	struct avdl_vec4 *rot;
+	struct avdl_vec4 *rot2;
 	float animationRotationLength;
 	// mixing
 	if (o->currentTime < 0) {
@@ -223,7 +223,7 @@ static void interpolate_position(struct avdl_skeleton *o, int index, struct dd_m
 	}
 
 	// interpolate rotations
-	struct dd_vec4 slerped;
+	struct avdl_vec4 slerped;
 	quaternion_slerp(rot, rot2, animationRotationLength, &slerped);
 	struct dd_matrix rotMat;
 	dd_matrix_create(&rotMat);
@@ -249,11 +249,11 @@ static void interpolate_position(struct avdl_skeleton *o, int index, struct dd_m
 			pos->y +(pos2->y -pos->y) *animationLength,
 			pos->z +(pos2->z -pos->z) *animationLength
 		);
-		dd_vec4_set(&o->mixBones[i].rotation,
-			slerped.cell[0],
-			slerped.cell[1],
-			slerped.cell[2],
-			slerped.cell[3]
+		avdl_vec4_Setf(&o->mixBones[i].rotation,
+			slerped.x,
+			slerped.y,
+			slerped.z,
+			slerped.w
 		);
 	}
 
@@ -360,23 +360,23 @@ void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, s
 	
 			// rotations
 			animBone->keyframe_count_rotations = dd_da_count(&animBoneSrc->keyframes_rotation);
-			animBone->rotations = malloc(sizeof(struct dd_vec4) *animBone->keyframe_count_rotations);
+			animBone->rotations = malloc(sizeof(struct avdl_vec4) *animBone->keyframe_count_rotations);
 			animBone->rotations_time = malloc(sizeof(float) *animBone->keyframe_count_rotations);
 			for (int k = 0; k < animBone->keyframe_count_rotations; k++) {
-				struct dd_vec4 *rot = &animBone->rotations[k];
+				struct avdl_vec4 *rot = &animBone->rotations[k];
 				struct dd_keyframe_vec4 *target = dd_da_get(&animBoneSrc->keyframes_rotation, k);
 				animBone->rotations_time[k] = target->time;
-				rot->cell[0] = target->value.cell[0];
-				rot->cell[1] = target->value.cell[1];
-				rot->cell[2] = target->value.cell[2];
-				rot->cell[3] = target->value.cell[3];
+				rot->x = target->value.x;
+				rot->y = target->value.y;
+				rot->z = target->value.z;
+				rot->w = target->value.w;
 				if (anim->duration < target->time) {
 					anim->duration = target->time;
 				}
 
 				// init mix bone
 				if (k == 0) {
-					dd_vec4_set(&o->mixBones[j].rotation, rot->cell[0], rot->cell[1], rot->cell[2], rot->cell[3]);
+					avdl_vec4_Setf(&o->mixBones[j].rotation, rot->x, rot->y, rot->z, rot->w);
 				}
 			}
 			dd_da_free(&animBoneSrc->keyframes_position);

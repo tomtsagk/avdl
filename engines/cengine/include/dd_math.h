@@ -67,10 +67,10 @@ int dd_math_removeTrailingZeroes(int num);
 float dd_math_dot2(struct dd_vec2 *v1, struct dd_vec2 *v2);
 float dd_math_dot3(struct avdl_vec3 *v1, struct avdl_vec3 *v2);
 
-#include "dd_vec4.h"
+#include "avdl_vec4.h"
 
-int dd_math_plane_ray_intersect(struct dd_vec4 *rayPos, struct dd_vec4 *rayDir,
-	struct dd_vec4 *planePos, struct dd_vec4 *planeNormal, struct dd_vec4 *out);
+int dd_math_plane_ray_intersect(struct avdl_vec4 *rayPos, struct avdl_vec4 *rayDir,
+	struct avdl_vec4 *planePos, struct avdl_vec4 *planeNormal, struct avdl_vec4 *out);
 
 #ifdef __cplusplus
 }

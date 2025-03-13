@@ -19,149 +19,149 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 		struct avdl_collider_aabb *col2 = o2;
 
 		// collect vertices
-		struct dd_vec4 vertices1[8];
-		struct dd_vec4 vertices2[8];
-		dd_vec4_set(&vertices1[0],
+		struct avdl_vec4 vertices1[8];
+		struct avdl_vec4 vertices2[8];
+		avdl_vec4_Setf(&vertices1[0],
 			avdl_collider_aabb_getMinX(col1),
 			avdl_collider_aabb_getMinY(col1),
 			avdl_collider_aabb_getMinZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[1],
+		avdl_vec4_Setf(&vertices1[1],
 			avdl_collider_aabb_getMinX(col1),
 			avdl_collider_aabb_getMaxY(col1),
 			avdl_collider_aabb_getMinZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[2],
+		avdl_vec4_Setf(&vertices1[2],
 			avdl_collider_aabb_getMinX(col1),
 			avdl_collider_aabb_getMinY(col1),
 			avdl_collider_aabb_getMaxZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[3],
+		avdl_vec4_Setf(&vertices1[3],
 			avdl_collider_aabb_getMinX(col1),
 			avdl_collider_aabb_getMaxY(col1),
 			avdl_collider_aabb_getMaxZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[4],
+		avdl_vec4_Setf(&vertices1[4],
 			avdl_collider_aabb_getMaxX(col1),
 			avdl_collider_aabb_getMinY(col1),
 			avdl_collider_aabb_getMinZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[5],
+		avdl_vec4_Setf(&vertices1[5],
 			avdl_collider_aabb_getMaxX(col1),
 			avdl_collider_aabb_getMaxY(col1),
 			avdl_collider_aabb_getMinZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[6],
+		avdl_vec4_Setf(&vertices1[6],
 			avdl_collider_aabb_getMaxX(col1),
 			avdl_collider_aabb_getMinY(col1),
 			avdl_collider_aabb_getMaxZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[7],
+		avdl_vec4_Setf(&vertices1[7],
 			avdl_collider_aabb_getMaxX(col1),
 			avdl_collider_aabb_getMaxY(col1),
 			avdl_collider_aabb_getMaxZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices2[0],
+		avdl_vec4_Setf(&vertices2[0],
 			avdl_collider_aabb_getMinX(col2),
 			avdl_collider_aabb_getMinY(col2),
 			avdl_collider_aabb_getMinZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[1],
+		avdl_vec4_Setf(&vertices2[1],
 			avdl_collider_aabb_getMinX(col2),
 			avdl_collider_aabb_getMaxY(col2),
 			avdl_collider_aabb_getMinZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[2],
+		avdl_vec4_Setf(&vertices2[2],
 			avdl_collider_aabb_getMinX(col2),
 			avdl_collider_aabb_getMinY(col2),
 			avdl_collider_aabb_getMaxZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[3],
+		avdl_vec4_Setf(&vertices2[3],
 			avdl_collider_aabb_getMinX(col2),
 			avdl_collider_aabb_getMaxY(col2),
 			avdl_collider_aabb_getMaxZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[4],
+		avdl_vec4_Setf(&vertices2[4],
 			avdl_collider_aabb_getMaxX(col2),
 			avdl_collider_aabb_getMinY(col2),
 			avdl_collider_aabb_getMinZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[5],
+		avdl_vec4_Setf(&vertices2[5],
 			avdl_collider_aabb_getMaxX(col2),
 			avdl_collider_aabb_getMaxY(col2),
 			avdl_collider_aabb_getMinZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[6],
+		avdl_vec4_Setf(&vertices2[6],
 			avdl_collider_aabb_getMaxX(col2),
 			avdl_collider_aabb_getMinY(col2),
 			avdl_collider_aabb_getMaxZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[7],
+		avdl_vec4_Setf(&vertices2[7],
 			avdl_collider_aabb_getMaxX(col2),
 			avdl_collider_aabb_getMaxY(col2),
 			avdl_collider_aabb_getMaxZ(col2),
 			1
 		);
 		for (int i = 0; i < 8; i++) {
-			dd_vec4_multiply(&vertices1[i], m1);
-			dd_vec4_multiply(&vertices2[i], m2);
+			avdl_vec4_MultiplyMatrix(&vertices1[i], m1);
+			avdl_vec4_MultiplyMatrix(&vertices2[i], m2);
 		}
 
 /*
-		struct dd_vec4 min1;
-		dd_vec4_set(&min1,
+		struct avdl_vec4 min1;
+		avdl_vec4_Setf(&min1,
 			avdl_collider_aabb_getMinX(col1),
 			avdl_collider_aabb_getMinY(col1),
 			avdl_collider_aabb_getMinZ(col1),
 			1
 		);
-		dd_vec4_multiply(&min1, m1);
-		struct dd_vec4 max1;
-		dd_vec4_set(&max1,
+		avdl_vec4_MultiplyMatrix(&min1, m1);
+		struct avdl_vec4 max1;
+		avdl_vec4_Setf(&max1,
 			avdl_collider_aabb_getMaxX(col1),
 			avdl_collider_aabb_getMaxY(col1),
 			avdl_collider_aabb_getMaxZ(col1),
 			1
 		);
-		dd_vec4_multiply(&max1, m1);
+		avdl_vec4_MultiplyMatrix(&max1, m1);
 		avdl_log("min/max 1");
-		dd_vec4_print(&min1);
-		dd_vec4_print(&max1);
+		avdl_vec4_print(&min1);
+		avdl_vec4_print(&max1);
 
-		struct dd_vec4 min2;
-		dd_vec4_set(&min2,
+		struct avdl_vec4 min2;
+		avdl_vec4_Setf(&min2,
 			avdl_collider_aabb_getMinX(col2),
 			avdl_collider_aabb_getMinY(col2),
 			avdl_collider_aabb_getMinZ(col2),
 			1
 		);
-		dd_vec4_multiply(&min2, m2);
-		struct dd_vec4 max2;
-		dd_vec4_set(&max2,
+		avdl_vec4_MultiplyMatrix(&min2, m2);
+		struct avdl_vec4 max2;
+		avdl_vec4_Setf(&max2,
 			avdl_collider_aabb_getMaxX(col2),
 			avdl_collider_aabb_getMaxY(col2),
 			avdl_collider_aabb_getMaxZ(col2),
 			1
 		);
-		dd_vec4_multiply(&max2, m2);
+		avdl_vec4_MultiplyMatrix(&max2, m2);
 		avdl_log("min/max 2");
-		dd_vec4_print(&min2);
-		dd_vec4_print(&max2);
+		avdl_vec4_print(&min2);
+		avdl_vec4_print(&max2);
 		*/
 
 		// mult by 90 degrees matrix to find normal
@@ -170,56 +170,56 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 
 		// normals: up, right, front
 		int total_normals = 6;
-		struct dd_vec4 normals[15];
-		dd_vec4_set(&normals[0], 0, 1, 0, 1);
-		dd_vec4_set(&normals[1], 1, 0, 0, 1);
-		dd_vec4_set(&normals[2], 0, 0, 1, 1);
+		struct avdl_vec4 normals[15];
+		avdl_vec4_Setf(&normals[0], 0, 1, 0, 1);
+		avdl_vec4_Setf(&normals[1], 1, 0, 0, 1);
+		avdl_vec4_Setf(&normals[2], 0, 0, 1, 1);
 
-		dd_vec4_set(&normals[3], 0, 1, 0, 1);
-		dd_vec4_set(&normals[4], 1, 0, 0, 1);
-		dd_vec4_set(&normals[5], 0, 0, 1, 1);
+		avdl_vec4_Setf(&normals[3], 0, 1, 0, 1);
+		avdl_vec4_Setf(&normals[4], 1, 0, 0, 1);
+		avdl_vec4_Setf(&normals[5], 0, 0, 1, 1);
 
 		for (int i = 0; i < 6; i++) {
 			if (i < 3) {
-				dd_vec4_multiply(&normals[i], nm1);
+				avdl_vec4_MultiplyMatrix(&normals[i], nm1);
 			}
 			else {
-				dd_vec4_multiply(&normals[i], nm2);
+				avdl_vec4_MultiplyMatrix(&normals[i], nm2);
 			}
 		}
 
 		for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++) {
-			if (dd_vec4_getX(&normals[i]) == dd_vec4_getX(&normals[3 +j])
-			&&  dd_vec4_getY(&normals[i]) == dd_vec4_getY(&normals[3 +j])
-			&&  dd_vec4_getZ(&normals[i]) == dd_vec4_getZ(&normals[3 +j])) {
+			if (avdl_vec4_X(&normals[i]) == avdl_vec4_X(&normals[3 +j])
+			&&  avdl_vec4_Y(&normals[i]) == avdl_vec4_Y(&normals[3 +j])
+			&&  avdl_vec4_Z(&normals[i]) == avdl_vec4_Z(&normals[3 +j])) {
 				continue;
 			}
 			int index = total_normals;//6 +(i*3 +j);
 			//avdl_log("set normal index: %d", index);
-			dd_vec4_set(&normals[index],
-				dd_vec4_getX(&normals[i]),
-				dd_vec4_getY(&normals[i]),
-				dd_vec4_getZ(&normals[i]),
-				dd_vec4_getW(&normals[i])
+			avdl_vec4_Setf(&normals[index],
+				avdl_vec4_X(&normals[i]),
+				avdl_vec4_Y(&normals[i]),
+				avdl_vec4_Z(&normals[i]),
+				avdl_vec4_W(&normals[i])
 			);
-			//dd_vec4_print(&normals[index]);
-			//dd_vec4_print(&normals[3 +j]);
-			dd_vec4_cross(&normals[index], &normals[3 +j]);
+			//avdl_vec4_print(&normals[index]);
+			//avdl_vec4_print(&normals[3 +j]);
+			avdl_vec4_Cross(&normals[index], &normals[3 +j]);
 			total_normals++;
 		}
 
 		//avdl_log("~~~ Normal checks");
 		for (int i = 0; i < total_normals; i++) {
 			//avdl_log("Normal %d", i);
-			if (dd_vec4_getX(&normals[i]) == 0
-			&&  dd_vec4_getY(&normals[i]) == 0
-			&&  dd_vec4_getZ(&normals[i]) == 0) {
+			if (avdl_vec4_X(&normals[i]) == 0
+			&&  avdl_vec4_Y(&normals[i]) == 0
+			&&  avdl_vec4_Z(&normals[i]) == 0) {
 				//avdl_log("skip");
 				continue;
 			}
-			//dd_vec4_print(&normals[i]);
-			dd_vec4_normalise(&normals[i]);
+			//avdl_vec4_print(&normals[i]);
+			avdl_vec4_Normalise(&normals[i]);
 
 			int haslimits = 0;
 			float finalMin1 = 0;
@@ -229,11 +229,11 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 
 			for (int j = 0; j < 8; j++) {
 				//avdl_log("vertex: %d", j);
-				//dd_vec4_print(&vertices1[j]);
-				//dd_vec4_print(&vertices2[j]);
+				//avdl_vec4_print(&vertices1[j]);
+				//avdl_vec4_print(&vertices2[j]);
 				// just dot it to get the min/max along this axis.
-				float dotValMin1 = dd_vec4_dot(&normals[i], &vertices1[j]);
-				float dotValMin2 = dd_vec4_dot(&normals[i], &vertices2[j]);
+				float dotValMin1 = avdl_vec4_Dot(&normals[i], &vertices1[j]);
+				float dotValMin2 = avdl_vec4_Dot(&normals[i], &vertices2[j]);
 
 				if (!haslimits) {
 					finalMin1 = dotValMin1;
@@ -263,7 +263,7 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 			}
 
 			//avdl_log("inv %d - %f %f - %f %f", i, finalMin1, finalMax1, finalMin2, finalMax2);
-			//dd_vec4_print(&normals[i]);
+			//avdl_vec4_print(&normals[i]);
 
 			// aabb collision
 			if ((finalMax2 -finalMin1 > 0) != (finalMin2 -finalMax1 > 0)) {
@@ -300,154 +300,154 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 		struct avdl_collider_aabb *col2 = o2;
 
 		// collect vertices
-		struct dd_vec4 vertices1[8];
-		struct dd_vec4 vertices2[8];
-		dd_vec4_set(&vertices1[0],
+		struct avdl_vec4 vertices1[8];
+		struct avdl_vec4 vertices2[8];
+		avdl_vec4_Setf(&vertices1[0],
 			avdl_collider_aabb_getMinX(col1),
 			avdl_collider_aabb_getMinY(col1),
 			avdl_collider_aabb_getMinZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[1],
+		avdl_vec4_Setf(&vertices1[1],
 			avdl_collider_aabb_getMinX(col1),
 			avdl_collider_aabb_getMaxY(col1),
 			avdl_collider_aabb_getMinZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[2],
+		avdl_vec4_Setf(&vertices1[2],
 			avdl_collider_aabb_getMinX(col1),
 			avdl_collider_aabb_getMinY(col1),
 			avdl_collider_aabb_getMaxZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[3],
+		avdl_vec4_Setf(&vertices1[3],
 			avdl_collider_aabb_getMinX(col1),
 			avdl_collider_aabb_getMaxY(col1),
 			avdl_collider_aabb_getMaxZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[4],
+		avdl_vec4_Setf(&vertices1[4],
 			avdl_collider_aabb_getMaxX(col1),
 			avdl_collider_aabb_getMinY(col1),
 			avdl_collider_aabb_getMinZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[5],
+		avdl_vec4_Setf(&vertices1[5],
 			avdl_collider_aabb_getMaxX(col1),
 			avdl_collider_aabb_getMaxY(col1),
 			avdl_collider_aabb_getMinZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[6],
+		avdl_vec4_Setf(&vertices1[6],
 			avdl_collider_aabb_getMaxX(col1),
 			avdl_collider_aabb_getMinY(col1),
 			avdl_collider_aabb_getMaxZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices1[7],
+		avdl_vec4_Setf(&vertices1[7],
 			avdl_collider_aabb_getMaxX(col1),
 			avdl_collider_aabb_getMaxY(col1),
 			avdl_collider_aabb_getMaxZ(col1),
 			1
 		);
-		dd_vec4_set(&vertices2[0],
+		avdl_vec4_Setf(&vertices2[0],
 			avdl_collider_aabb_getMinX(col2),
 			avdl_collider_aabb_getMinY(col2),
 			avdl_collider_aabb_getMinZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[1],
+		avdl_vec4_Setf(&vertices2[1],
 			avdl_collider_aabb_getMinX(col2),
 			avdl_collider_aabb_getMaxY(col2),
 			avdl_collider_aabb_getMinZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[2],
+		avdl_vec4_Setf(&vertices2[2],
 			avdl_collider_aabb_getMinX(col2),
 			avdl_collider_aabb_getMinY(col2),
 			avdl_collider_aabb_getMaxZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[3],
+		avdl_vec4_Setf(&vertices2[3],
 			avdl_collider_aabb_getMinX(col2),
 			avdl_collider_aabb_getMaxY(col2),
 			avdl_collider_aabb_getMaxZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[4],
+		avdl_vec4_Setf(&vertices2[4],
 			avdl_collider_aabb_getMaxX(col2),
 			avdl_collider_aabb_getMinY(col2),
 			avdl_collider_aabb_getMinZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[5],
+		avdl_vec4_Setf(&vertices2[5],
 			avdl_collider_aabb_getMaxX(col2),
 			avdl_collider_aabb_getMaxY(col2),
 			avdl_collider_aabb_getMinZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[6],
+		avdl_vec4_Setf(&vertices2[6],
 			avdl_collider_aabb_getMaxX(col2),
 			avdl_collider_aabb_getMinY(col2),
 			avdl_collider_aabb_getMaxZ(col2),
 			1
 		);
-		dd_vec4_set(&vertices2[7],
+		avdl_vec4_Setf(&vertices2[7],
 			avdl_collider_aabb_getMaxX(col2),
 			avdl_collider_aabb_getMaxY(col2),
 			avdl_collider_aabb_getMaxZ(col2),
 			1
 		);
 		for (int i = 0; i < 8; i++) {
-			dd_vec4_multiply(&vertices1[i], avdl_node_GetGlobalMatrix(n1));
-			dd_vec4_multiply(&vertices2[i], avdl_node_GetGlobalMatrix(n2));
+			avdl_vec4_MultiplyMatrix(&vertices1[i], avdl_node_GetGlobalMatrix(n1));
+			avdl_vec4_MultiplyMatrix(&vertices2[i], avdl_node_GetGlobalMatrix(n2));
 		}
 
 		// normals: up, right, front
 		int total_normals = 6;
-		struct dd_vec4 normals[15];
-		dd_vec4_set(&normals[0], 0, 1, 0, 1);
-		dd_vec4_set(&normals[1], 1, 0, 0, 1);
-		dd_vec4_set(&normals[2], 0, 0, 1, 1);
+		struct avdl_vec4 normals[15];
+		avdl_vec4_Setf(&normals[0], 0, 1, 0, 1);
+		avdl_vec4_Setf(&normals[1], 1, 0, 0, 1);
+		avdl_vec4_Setf(&normals[2], 0, 0, 1, 1);
 
-		dd_vec4_set(&normals[3], 0, 1, 0, 1);
-		dd_vec4_set(&normals[4], 1, 0, 0, 1);
-		dd_vec4_set(&normals[5], 0, 0, 1, 1);
+		avdl_vec4_Setf(&normals[3], 0, 1, 0, 1);
+		avdl_vec4_Setf(&normals[4], 1, 0, 0, 1);
+		avdl_vec4_Setf(&normals[5], 0, 0, 1, 1);
 
 		for (int i = 0; i < 6; i++) {
 			if (i < 3) {
-				dd_vec4_multiply(&normals[i], avdl_node_GetGlobalNormalMatrix(n1));
+				avdl_vec4_MultiplyMatrix(&normals[i], avdl_node_GetGlobalNormalMatrix(n1));
 			}
 			else {
-				dd_vec4_multiply(&normals[i], avdl_node_GetGlobalNormalMatrix(n2));
+				avdl_vec4_MultiplyMatrix(&normals[i], avdl_node_GetGlobalNormalMatrix(n2));
 			}
 		}
 
 		for (int i = 0; i < 3; i++)
 		for (int j = 0; j < 3; j++) {
-			if (dd_vec4_getX(&normals[i]) == dd_vec4_getX(&normals[3 +j])
-			&&  dd_vec4_getY(&normals[i]) == dd_vec4_getY(&normals[3 +j])
-			&&  dd_vec4_getZ(&normals[i]) == dd_vec4_getZ(&normals[3 +j])) {
+			if (avdl_vec4_X(&normals[i]) == avdl_vec4_X(&normals[3 +j])
+			&&  avdl_vec4_Y(&normals[i]) == avdl_vec4_Y(&normals[3 +j])
+			&&  avdl_vec4_Z(&normals[i]) == avdl_vec4_Z(&normals[3 +j])) {
 				continue;
 			}
 			int index = total_normals;
-			dd_vec4_set(&normals[index],
-				dd_vec4_getX(&normals[i]),
-				dd_vec4_getY(&normals[i]),
-				dd_vec4_getZ(&normals[i]),
-				dd_vec4_getW(&normals[i])
+			avdl_vec4_Setf(&normals[index],
+				avdl_vec4_X(&normals[i]),
+				avdl_vec4_Y(&normals[i]),
+				avdl_vec4_Z(&normals[i]),
+				avdl_vec4_W(&normals[i])
 			);
-			dd_vec4_cross(&normals[index], &normals[3 +j]);
+			avdl_vec4_Cross(&normals[index], &normals[3 +j]);
 			total_normals++;
 		}
 
 		for (int i = 0; i < total_normals; i++) {
-			if (dd_vec4_getX(&normals[i]) == 0
-			&&  dd_vec4_getY(&normals[i]) == 0
-			&&  dd_vec4_getZ(&normals[i]) == 0) {
+			if (avdl_vec4_X(&normals[i]) == 0
+			&&  avdl_vec4_Y(&normals[i]) == 0
+			&&  avdl_vec4_Z(&normals[i]) == 0) {
 				continue;
 			}
-			dd_vec4_normalise(&normals[i]);
+			avdl_vec4_Normalise(&normals[i]);
 
 			int haslimits = 0;
 			float finalMin1 = 0;
@@ -457,8 +457,8 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 
 			for (int j = 0; j < 8; j++) {
 				// just dot it to get the min/max along this axis.
-				float dotValMin1 = dd_vec4_dot(&normals[i], &vertices1[j]);
-				float dotValMin2 = dd_vec4_dot(&normals[i], &vertices2[j]);
+				float dotValMin1 = avdl_vec4_Dot(&normals[i], &vertices1[j]);
+				float dotValMin2 = avdl_vec4_Dot(&normals[i], &vertices2[j]);
 
 				if (!haslimits) {
 					finalMin1 = dotValMin1;
@@ -514,36 +514,36 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 		struct avdl_collider_sphere *col2 = o2;
 
 		// collect vertices
-		struct dd_vec4 vertex1;
-		struct dd_vec4 vertex2;
-		dd_vec4_set(&vertex1, 0, 0, 0, 1);
-		dd_vec4_set(&vertex2, 0, 0, 0, 1);
-		dd_vec4_multiply(&vertex1, avdl_node_GetGlobalMatrix(n1));
-		dd_vec4_multiply(&vertex2, avdl_node_GetGlobalMatrix(n2));
+		struct avdl_vec4 vertex1;
+		struct avdl_vec4 vertex2;
+		avdl_vec4_Setf(&vertex1, 0, 0, 0, 1);
+		avdl_vec4_Setf(&vertex2, 0, 0, 0, 1);
+		avdl_vec4_MultiplyMatrix(&vertex1, avdl_node_GetGlobalMatrix(n1));
+		avdl_vec4_MultiplyMatrix(&vertex2, avdl_node_GetGlobalMatrix(n2));
 
 		// collect radius
-		struct dd_vec4 rad1;
-		struct dd_vec4 rad2;
-		dd_vec4_set(&rad1, 0, 0, col1->radius, 1);
-		dd_vec4_set(&rad2, 0, 0, col2->radius, 1);
-		dd_vec4_multiply(&rad1, avdl_node_GetGlobalMatrix(n1));
-		dd_vec4_multiply(&rad2, avdl_node_GetGlobalMatrix(n2));
-		float rad1f = dd_vec4_distance(&vertex1, &rad1);
-		float rad2f = dd_vec4_distance(&vertex2, &rad2);
+		struct avdl_vec4 rad1;
+		struct avdl_vec4 rad2;
+		avdl_vec4_Setf(&rad1, 0, 0, col1->radius, 1);
+		avdl_vec4_Setf(&rad2, 0, 0, col2->radius, 1);
+		avdl_vec4_MultiplyMatrix(&rad1, avdl_node_GetGlobalMatrix(n1));
+		avdl_vec4_MultiplyMatrix(&rad2, avdl_node_GetGlobalMatrix(n2));
+		float rad1f = avdl_vec4_Distance(&vertex1, &rad1);
+		float rad2f = avdl_vec4_Distance(&vertex2, &rad2);
 
-		float distance = dd_vec4_distance(&vertex1, &vertex2);
+		float distance = avdl_vec4_Distance(&vertex1, &vertex2);
 
 		if (distance < rad1f +rad2f) {
 
 			if (collision) {
-				dd_vec4_set(&collision->overlap,
-					dd_vec4_getX(&vertex2) -dd_vec4_getX(&vertex1),
-					dd_vec4_getY(&vertex2) -dd_vec4_getY(&vertex1),
-					dd_vec4_getZ(&vertex2) -dd_vec4_getZ(&vertex1),
-					dd_vec4_getW(&vertex2) -dd_vec4_getW(&vertex1)
+				avdl_vec4_Setf(&collision->overlap,
+					avdl_vec4_X(&vertex2) -avdl_vec4_X(&vertex1),
+					avdl_vec4_Y(&vertex2) -avdl_vec4_Y(&vertex1),
+					avdl_vec4_Z(&vertex2) -avdl_vec4_Z(&vertex1),
+					avdl_vec4_W(&vertex2) -avdl_vec4_W(&vertex1)
 				);
-				dd_vec4_normalise(&collision->overlap);
-				dd_vec4_multiplyFloat(&collision->overlap, rad1f +rad2f -distance);
+				avdl_vec4_Normalise(&collision->overlap);
+				avdl_vec4_Multiply1f(&collision->overlap, rad1f +rad2f -distance);
 			}
 
 			return 1;
@@ -557,38 +557,38 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 		struct avdl_collider_aabb *col1 = o1;
 		struct avdl_collider_sphere *col2 = o2;
 
-		struct dd_vec4 vertex2;
-		dd_vec4_set(&vertex2, 0, 0, 0, 1);
-		dd_vec4_multiply(&vertex2, avdl_node_GetGlobalMatrix(n2));
-		dd_vec4_multiply(&vertex2, avdl_node_GetGlobalInverseMatrix(n1));
+		struct avdl_vec4 vertex2;
+		avdl_vec4_Setf(&vertex2, 0, 0, 0, 1);
+		avdl_vec4_MultiplyMatrix(&vertex2, avdl_node_GetGlobalMatrix(n2));
+		avdl_vec4_MultiplyMatrix(&vertex2, avdl_node_GetGlobalInverseMatrix(n1));
 
 		// collect radius
-		struct dd_vec4 rad2;
-		dd_vec4_set(&rad2, col2->radius, 0, 0, 1);
-		dd_vec4_multiply(&rad2, avdl_node_GetGlobalMatrix(n2));
-		dd_vec4_multiply(&rad2, avdl_node_GetGlobalInverseMatrix(n1));
-		float rad2f = dd_vec4_distance(&vertex2, &rad2);
+		struct avdl_vec4 rad2;
+		avdl_vec4_Setf(&rad2, col2->radius, 0, 0, 1);
+		avdl_vec4_MultiplyMatrix(&rad2, avdl_node_GetGlobalMatrix(n2));
+		avdl_vec4_MultiplyMatrix(&rad2, avdl_node_GetGlobalInverseMatrix(n1));
+		float rad2f = avdl_vec4_Distance(&vertex2, &rad2);
 		//float rad2fx = rad2f;
-		dd_vec4_set(&rad2, 0, col2->radius, 0, 1);
-		dd_vec4_multiply(&rad2, avdl_node_GetGlobalMatrix(n2));
-		dd_vec4_multiply(&rad2, avdl_node_GetGlobalInverseMatrix(n1));
-		rad2f = dd_math_max(dd_vec4_distance(&vertex2, &rad2), rad2f);
+		avdl_vec4_Setf(&rad2, 0, col2->radius, 0, 1);
+		avdl_vec4_MultiplyMatrix(&rad2, avdl_node_GetGlobalMatrix(n2));
+		avdl_vec4_MultiplyMatrix(&rad2, avdl_node_GetGlobalInverseMatrix(n1));
+		rad2f = dd_math_max(avdl_vec4_Distance(&vertex2, &rad2), rad2f);
 		//float rad2fy = rad2f;
-		dd_vec4_set(&rad2, 0, 0, col2->radius, 1);
-		dd_vec4_multiply(&rad2, avdl_node_GetGlobalMatrix(n2));
-		dd_vec4_multiply(&rad2, avdl_node_GetGlobalInverseMatrix(n1));
-		rad2f = dd_math_max(dd_vec4_distance(&vertex2, &rad2), rad2f);
+		avdl_vec4_Setf(&rad2, 0, 0, col2->radius, 1);
+		avdl_vec4_MultiplyMatrix(&rad2, avdl_node_GetGlobalMatrix(n2));
+		avdl_vec4_MultiplyMatrix(&rad2, avdl_node_GetGlobalInverseMatrix(n1));
+		rad2f = dd_math_max(avdl_vec4_Distance(&vertex2, &rad2), rad2f);
 		//float rad2fz = rad2f;
 
-		struct dd_vec4 closest_point;
-		dd_vec4_set(&closest_point,
-			dd_math_max(dd_math_min(dd_vec4_getX(&vertex2), avdl_collider_aabb_getMaxX(col1)), avdl_collider_aabb_getMinX(col1)),
-			dd_math_max(dd_math_min(dd_vec4_getY(&vertex2), avdl_collider_aabb_getMaxY(col1)), avdl_collider_aabb_getMinY(col1)),
-			dd_math_max(dd_math_min(dd_vec4_getZ(&vertex2), avdl_collider_aabb_getMaxZ(col1)), avdl_collider_aabb_getMinZ(col1)),
+		struct avdl_vec4 closest_point;
+		avdl_vec4_Setf(&closest_point,
+			dd_math_max(dd_math_min(avdl_vec4_X(&vertex2), avdl_collider_aabb_getMaxX(col1)), avdl_collider_aabb_getMinX(col1)),
+			dd_math_max(dd_math_min(avdl_vec4_Y(&vertex2), avdl_collider_aabb_getMaxY(col1)), avdl_collider_aabb_getMinY(col1)),
+			dd_math_max(dd_math_min(avdl_vec4_Z(&vertex2), avdl_collider_aabb_getMaxZ(col1)), avdl_collider_aabb_getMinZ(col1)),
 			1
 		);
 
-		float distance = dd_vec4_distance(&closest_point, &vertex2);
+		float distance = avdl_vec4_Distance(&closest_point, &vertex2);
 
 		// TODO:
 		// Closest point should be on surface of box
@@ -597,16 +597,16 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 
 			// distance 0 is edge case?
 			if (collision) {
-				dd_vec4_set(&collision->overlap,
-					dd_vec4_getX(&closest_point) -dd_vec4_getX(&vertex2),
-					dd_vec4_getY(&closest_point) -dd_vec4_getY(&vertex2),
-					dd_vec4_getZ(&closest_point) -dd_vec4_getZ(&vertex2),
-					dd_vec4_getW(&closest_point) -dd_vec4_getW(&vertex2)
+				avdl_vec4_Setf(&collision->overlap,
+					avdl_vec4_X(&closest_point) -avdl_vec4_X(&vertex2),
+					avdl_vec4_Y(&closest_point) -avdl_vec4_Y(&vertex2),
+					avdl_vec4_Z(&closest_point) -avdl_vec4_Z(&vertex2),
+					avdl_vec4_W(&closest_point) -avdl_vec4_W(&vertex2)
 				);
-				dd_vec4_multiply(&collision->overlap, avdl_node_GetGlobalNormalMatrix(n1));
+				avdl_vec4_MultiplyMatrix(&collision->overlap, avdl_node_GetGlobalNormalMatrix(n1));
 				// here it becomes nan
-				dd_vec4_normalise(&collision->overlap);
-				dd_vec4_multiplyFloat(&collision->overlap, rad2f -distance);
+				avdl_vec4_Normalise(&collision->overlap);
+				avdl_vec4_Multiply1f(&collision->overlap, rad2f -distance);
 				if (distance <= 0) {
 					avdl_log("Edge case!");
 					return 0;
@@ -632,6 +632,6 @@ void avdl_collider_collision_create(struct avdl_collider_collision *o) {
 void avdl_collider_collision_clean(struct avdl_collider_collision *o) {
 }
 
-struct dd_vec4 *avdl_collider_collision_GetOverlap(struct avdl_collider_collision *o) {
+struct avdl_vec4 *avdl_collider_collision_GetOverlap(struct avdl_collider_collision *o) {
 	return &o->overlap;
 }
