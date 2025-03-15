@@ -229,28 +229,12 @@ void avdl_mesh_create(struct avdl_mesh *m) {
 	}
 	m->hasTransparency = 0;
 
-	m->draw = avdl_mesh_draw;
 	m->clean = avdl_mesh_clean;
-	m->set_primitive = avdl_mesh_set_primitive;
-	m->load = avdl_mesh_load;
-	m->copy = avdl_mesh_copy;
-
-	m->set_colour = avdl_mesh_set_colour;
 
 	#if !defined( AVDL_DIRECT3D11 )
 	m->buffer = 0;
 	m->array = 0;
 	#endif
-
-	m->set_primitive_texcoords = avdl_mesh_set_primitive_texcoords;
-	m->setTexture = avdl_mesh_setTexture;
-	m->setTextureNormal = avdl_mesh_setTextureNormal;
-	m->setTextureIndex = avdl_mesh_setTextureIndex;
-	m->hasTexture = avdl_mesh_hasTexture;
-	m->setTransparency = avdl_mesh_setTransparency;
-
-	m->setWireframe = avdl_mesh_setWireframe;
-	m->setSolid = avdl_mesh_setSolid;
 
 	m->vertexBuffer = 0;
 	m->LoadFromLoadedMesh = avdl_mesh_LoadFromLoadedMesh;
@@ -502,14 +486,14 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	}
 
 	if (m->img) {
-		m->img->bindIndex(m->img, 0);
+		avdl_texture_bindIndex(m->img, 0);
 		GLuint loc = glGetUniformLocation(currentProgram, "image");
 		if (loc != -1) {
 			GL(glUniform1i(loc, 0));
 		}
 	}
 	if (m->img_normal) {
-		m->img_normal->bindIndex(m->img_normal, 1);
+		avdl_texture_bindIndex(m->img_normal, 1);
 		GLuint loc = glGetUniformLocation(currentProgram, "image_normal");
 		if (loc != -1) {
 			GL(glUniform1i(loc, 1));
@@ -525,7 +509,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 		}
 	}
 	if (activeTextures > 0) {
-		m->img_extra[0]->bindIndexArray(m->img_extra[0], 2, activeTextures, m->img_extra);
+		avdl_texture_bindIndexArray(m->img_extra[0], 2, activeTextures, m->img_extra);
 		GLuint loc = -1;
 		loc = glGetUniformLocation(currentProgram, "image_extra");
 		if (loc != -1) {
@@ -582,15 +566,15 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	GL(glBindVertexArray(0));
 
 	if (m->img) {
-		m->img->unbindIndex(m->img, 0);
+		avdl_texture_unbindIndex(m->img, 0);
 	}
 
 	if (m->img_normal) {
-		m->img_normal->unbindIndex(m->img_normal, 1);
+		avdl_texture_unbindIndex(m->img_normal, 1);
 	}
 
 	if (activeTextures > 0) {
-		m->img_extra[0]->unbindIndexArray(m->img_extra[0], 2);
+		avdl_texture_unbindIndexArray(m->img_extra[0], 2);
 	}
 
 	if (m->hasTransparency) {

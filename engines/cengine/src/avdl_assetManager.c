@@ -637,7 +637,7 @@ static int LoadTexturePNG(struct avdl_assetManager_texture *o, const char *filen
 		avdl_log("avdl: AssetManager: LoadTexturePNG: error opening file: '%s': '%s'", filename, strerror(errno));
 		return -1;
 	}
-	char header[9];
+	unsigned char header[9];
 	fread(header, 1, 8, fp);
 	header[8] = '\0';
 	int is_png = !png_sig_cmp(header, 0, 8);

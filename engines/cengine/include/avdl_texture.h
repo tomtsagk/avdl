@@ -23,21 +23,7 @@ struct avdl_texture {
 	// updating parts of the image
 	struct dd_dynamic_array subpixels;
 
-	void (*bind)(struct avdl_texture *o);
-	void (*bindIndex)(struct avdl_texture *o, int index);
-	void (*bindIndexArray)(struct avdl_texture *o, int index, int arraySize, struct avdl_texture *array[]);
-	void (*unbind)(struct avdl_texture *o);
-	void (*unbindIndex)(struct avdl_texture *o, int index);
-	void (*unbindIndexArray)(struct avdl_texture *o, int index);
 	void (*clean)(struct avdl_texture *o);
-	void (*set)(struct avdl_texture *o, const char *filename, int type);
-
-	void (*addSubpixels)(struct avdl_texture *o, void *pixels, int pixel_format, int x, int y, int w, int h);
-
-	int (*isLoaded)(struct avdl_texture *o);
-	int (*UnLoad)(struct avdl_texture *o);
-
-	int (*CreateTexture)(struct avdl_texture *o, int width, int height, int pixelFormat);
 };
 
 void avdl_texture_create(struct avdl_texture *o);

@@ -66,29 +66,7 @@ struct avdl_mesh {
 	int hasTransparency;
 
 	// init mesh
-	void (*set_primitive)(struct avdl_mesh *m, enum avdl_primitives shape);
-	void (*load)(struct avdl_mesh *m, const char *filename, int type);
-
-	void (*draw)(struct avdl_mesh *);
 	void (*clean)(struct avdl_mesh *);
-	void (*copy)(struct avdl_mesh *, struct avdl_mesh *);
-
-	void (*combine)(struct avdl_mesh *dst, struct avdl_mesh *src, float offsetX, float offsetY, float offsetZ);
-
-	void (*translatef)(struct avdl_mesh *, float x, float y, float z);
-	void (*scalef)(struct avdl_mesh *, float x, float y, float z);
-
-	void (*set_colour)(struct avdl_mesh *m, float r, float g, float b);
-
-	void (*set_primitive_texcoords)(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY);
-	void (*setTexture)(struct avdl_mesh *o, struct avdl_texture *img);
-	void (*setTextureNormal)(struct avdl_mesh *o, struct avdl_texture *img);
-	void (*setTextureIndex)(struct avdl_mesh *o, struct avdl_texture *img, int index);
-	int (*hasTexture)(struct avdl_mesh *o);
-	void (*setTransparency)(struct avdl_mesh *o, int transparency);
-
-	void (*setWireframe)(struct avdl_mesh *o);
-	void (*setSolid)(struct avdl_mesh *o);
 
 	void (*LoadFromLoadedMesh)(struct avdl_mesh *o, struct dd_loaded_mesh *lm);
 

@@ -19,9 +19,6 @@ struct avdl_component_mesh {
 
 	int isEditor;
 
-	void (*after_create)(struct avdl_component_mesh *);
-	void (*draw)(struct avdl_component_mesh *);
-
 };
 
 void avdl_component_mesh_create(struct avdl_component_mesh *o);

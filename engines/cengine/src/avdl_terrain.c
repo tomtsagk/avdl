@@ -3,18 +3,8 @@
 #include "dd_math.h"
 
 void avdl_terrain_create(struct avdl_terrain *o) {
-	o->load = avdl_terrain_load;
-	o->draw = avdl_terrain_draw;
-	o->getSpot = avdl_terrain_getSpot;
-	o->isOnTerrain = avdl_terrain_isOnTerrain;
 
-	o->getWidth = avdl_terrain_getWidth;
-	o->getHeight = avdl_terrain_getHeight;
-	o->isLoaded = avdl_terrain_isLoaded;
-
-	o->setScaleZ = avdl_terrain_setScaleZ;
-
-	o->setTextureIndex = avdl_terrain_setTextureIndex;
+	o->clean = avdl_terrain_clean;
 
 	avdl_mesh_create(&o->mesh);
 	avdl_texture_create(&o->img);
@@ -51,7 +41,7 @@ void avdl_terrain_loadLocal(struct avdl_terrain *o, const char *filename) {
 }
 
 void avdl_terrain_draw(struct avdl_terrain *o) {
-	if (o->img.isLoaded(&o->img)) {
+	if (avdl_texture_isLoaded(&o->img)) {
 		if (avdl_texture_GetWidth(&o->img) == 0 || avdl_texture_GetHeight(&o->img) == 0) {
 			avdl_log("image doesn't have width or height: %dx%d", avdl_texture_GetWidth(&o->img), avdl_texture_GetHeight(&o->img));
 			avdl_texture_UnLoad(&o->img);
@@ -98,12 +88,14 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			int pixelIndexTopRight = pixelIndexTop +3;
 			int indexT = ((y *(o->width-1)) +x) *12;
 
+			/*
 			int invertTX = (y%5 +y*3%3 +x%3) %2;
 			int invertTY = (y%2 +y*4%6 +x*2%5) %2;
 			float fromTX = (x+0) *1.0;
 			float toTX   = (x+1) *1.0;
 			float fromTY = 0;
 			float toTY   = 1;
+			*/
 
 			// rotate
 			float cornersX[4];
@@ -296,13 +288,15 @@ int avdl_terrain_isLoaded(struct avdl_terrain *o) {
 
 int avdl_terrain_setScaleZ(struct avdl_terrain *o, float scale) {
 	o->scaleZ = scale;
+	return 0;
 }
 
 int avdl_terrain_setTextureIndex(struct avdl_terrain *o, struct avdl_texture *img, int index) {
 	if (index == 0) {
-		o->mesh.setTexture(&o->mesh, img);
+		avdl_mesh_setTexture(&o->mesh, img);
 	}
 	else {
-		o->mesh.setTextureIndex(&o->mesh, img, index-1);
+		avdl_mesh_setTextureIndex(&o->mesh, img, index-1);
 	}
+	return 0;
 }

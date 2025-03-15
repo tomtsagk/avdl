@@ -30,12 +30,6 @@ struct avdl_component_terrain {
 
 	int isEditor;
 
-	void (*after_create)(struct avdl_component_terrain *);
-	void (*draw)(struct avdl_component_terrain *);
-	int (*IsOnTerrain)(struct avdl_component_terrain *, struct avdl_node *n);
-	float (*GetSpot)(struct avdl_component_terrain *, struct avdl_node *n);
-
-	struct avdl_terrain *(*GetTerrain)(struct avdl_component_terrain *);
 };
 
 void avdl_component_terrain_create(struct avdl_component_terrain *o);

@@ -54,8 +54,6 @@ struct avdl_font {
 	int customIconCount;
 
 	void (*clean)(struct avdl_font *);
-	void (*set)(struct avdl_font *, const char *name, int filetype, int outline_thickness);
-	void (*addCustomIcon)(struct avdl_font *, const char *keyword, struct avdl_texture *);
 };
 
 int avdl_font_init();

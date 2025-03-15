@@ -13,18 +13,10 @@ struct avdl_physics {
 	struct avdl_rigidbody *object[1010];
 	int object_count;
 	struct avdl_vec3 constant_force;
-
-	void (*addObject)(struct avdl_physics *, struct avdl_rigidbody *);
-	void (*clearObjects)(struct avdl_physics *);
-	void (*update)(struct avdl_physics *, float dt);
-
-	void (*addConstantForcef)(struct avdl_physics *, float, float, float);
-	void (*clearConstantForce)(struct avdl_physics *);
 };
 
 void avdl_physics_create(struct avdl_physics *o);
 void avdl_physics_update(struct avdl_physics *o, float dt);
-void avdl_physics_clean(struct avdl_physics *o);
 void avdl_physics_addObject(struct avdl_physics *o, struct avdl_rigidbody *obj);
 void avdl_physics_clearObjects(struct avdl_physics *o);
 

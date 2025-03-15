@@ -50,8 +50,6 @@ float avdl_vec4_Y(struct avdl_vec4 *o);
 float avdl_vec4_Z(struct avdl_vec4 *o);
 float avdl_vec4_W(struct avdl_vec4 *o);
 
-void avdl_vec4_clean(struct avdl_vec4 *o);
-
 float avdl_vec4_Dot(struct avdl_vec4 *a, struct avdl_vec4 *b);
 void avdl_vec4_Cross(struct avdl_vec4 *a, struct avdl_vec4 *b);
 float avdl_vec4_Distance(struct avdl_vec4 *a, struct avdl_vec4 *b);

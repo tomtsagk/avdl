@@ -11,10 +11,6 @@ void avdl_skybox_create(struct avdl_skybox *o) {
 	o->assetType = 0;
 	o->graphics_contextid = -1;
 	o->clean = avdl_skybox_clean;
-	o->set = avdl_skybox_set;
-	o->bind = avdl_skybox_bind;
-	o->unbind = avdl_skybox_unbind;
-	o->draw = avdl_skybox_draw;
 
 	// mesh
 	avdl_mesh_create(&o->mesh);
@@ -49,7 +45,7 @@ void avdl_skybox_set(struct avdl_skybox *o, const char *assetname[]) {
 
 	// load textures
 	for (int i = 0; i < 6; i++) {
-		o->img[i].set(&o->img[i], assetname[i], AVDL_IMAGETYPE_PNG);
+		avdl_texture_set(&o->img[i], assetname[i], AVDL_IMAGETYPE_PNG);
 	}
 
 }
@@ -152,11 +148,11 @@ void avdl_skybox_draw(struct avdl_skybox *o) {
 	dd_matrix_push();
 	dd_scalef(4, 4, 4);
 
-	o->bind(o);
+	avdl_skybox_bind(o);
 	avdl_useProgram(&o->program);
-	o->mesh.draw(&o->mesh);
+	avdl_mesh_draw(&o->mesh);
 	avdl_useProgram(0);
-	o->unbind(o);
+	avdl_skybox_unbind(o);
 
 	dd_matrix_pop();
 }

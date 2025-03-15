@@ -38,25 +38,7 @@ void avdl_particle_system_create(struct avdl_particle_system *o) {
 	avdl_vec3_Setf(&o->particleScale, 1, 1, 1);
 	avdl_vec3_Setf(&o->particleScaleFuzz, 0, 0, 0);
 
-	o->assignAsset = avdl_particle_system_assignAsset;
-	o->update = avdl_particle_system_update;
-	o->draw = avdl_particle_system_draw;
-
-	o->setDelay = avdl_particle_system_setDelay;
-	o->setParticleLife = avdl_particle_system_setParticleLife;
-	o->setParticlePositionXFunc = avdl_particle_system_setParticlePositionXFunc;
-	o->setParticlePositionYFunc = avdl_particle_system_setParticlePositionYFunc;
-	o->setParticlePositionZFunc = avdl_particle_system_setParticlePositionZFunc;
-	o->setParticleScaleFunc = avdl_particle_system_setParticleScaleFunc;
-
-	// init values setters functions
-	o->setParticlePosition = avdl_particle_system_setParticlePosition;
-	o->setParticlePositionFuzz = avdl_particle_system_setParticlePositionFuzz;
-	o->setParticleRotation = avdl_particle_system_setParticleRotation;
-	o->setParticleRotationFuzz = avdl_particle_system_setParticleRotationFuzz;
-	o->setParticleScale = avdl_particle_system_setParticleScale;
-	o->setParticleScaleFuzz = avdl_particle_system_setParticleScaleFuzz;
-	o->setParticlesTotal = avdl_particle_system_setParticlesTotal;
+	o->clean = avdl_particle_system_clean;
 }
 
 void avdl_particle_system_clean(struct avdl_particle_system *o) {
@@ -176,7 +158,7 @@ void avdl_particle_system_draw(struct avdl_particle_system *o) {
 				float t = o->particleScaleFunction(1 -(o->particles[index].life /o->particleLife));
 				dd_scalef(t, t, t);
 			}
-			o->particles[index].mesh->draw(o->particles[index].mesh);
+			avdl_mesh_draw(o->particles[index].mesh);
 			dd_matrix_pop();
 		}
 	}

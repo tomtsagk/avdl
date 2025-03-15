@@ -31,29 +31,7 @@ struct avdl_node {
 	// children nodes
 	struct dd_dynamic_array children;
 
-	void (*create)(struct avdl_node *);
 	void (*clean)(struct avdl_node *);
-
-	struct avdl_transform *(*GetLocalTransform)(struct avdl_node *);
-	struct avdl_transform *(*GetGlobalMatrix)(struct avdl_node *);
-	struct avdl_transform *(*GetGlobalNormalMatrix)(struct avdl_node *);
-	struct avdl_transform *(*GetGlobalInverseMatrix)(struct avdl_node *);
-	struct avdl_transform *(*GetGlobalNormalInverseMatrix)(struct avdl_node *);
-
-	struct avdl_node *(*AddChild)(struct avdl_node *);
-	int (*RemoveChild)(struct avdl_node *, struct avdl_node *);
-	struct avdl_node *(*GetParent)(struct avdl_node *);
-	void (*SetName)(struct avdl_node *, const char *name);
-	const char *(*GetName)(struct avdl_node *);
-
-	int (*GetChildrenCount)(struct avdl_node *);
-	struct avdl_node *(*GetChild)(struct avdl_node *, int index);
-
-	void (*AddComponentsToArray)(struct avdl_node *, struct dd_dynamic_array *array, int component_type);
-
-	int (*Copy)(struct avdl_node *o, struct avdl_node *target);
-
-	struct avdl_node *(*Duplicate)(struct avdl_node *o, struct avdl_node *newParent);
 
 };
 

@@ -14,9 +14,6 @@ struct avdl_program {
 	int program;
 
 	void (*clean)(struct avdl_program *);
-	void (*setVertexShader)(struct avdl_program *, char *source);
-	void (*setFragmentShader)(struct avdl_program *, char *source);
-	void (*useProgram)(struct avdl_program *);
 };
 
 void avdl_program_create(struct avdl_program *);

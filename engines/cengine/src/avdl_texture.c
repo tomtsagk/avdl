@@ -28,15 +28,7 @@ void avdl_texture_create(struct avdl_texture *o) {
 	o->dirtyTexture = 0;
 	dd_da_init(&o->subpixels, sizeof(struct Subpixel));
 
-	o->bind = avdl_texture_bind;
-	o->bindIndex = avdl_texture_bindIndex;
-	o->bindIndexArray = avdl_texture_bindIndexArray;
-	o->unbind = avdl_texture_unbind;
-	o->unbindIndex = avdl_texture_unbindIndex;
-	o->unbindIndexArray = avdl_texture_unbindIndexArray;
 	o->clean = avdl_texture_clean;
-	o->set = avdl_texture_set;
-	o->isLoaded = avdl_texture_isLoaded;
 
 }
 
@@ -501,12 +493,18 @@ int avdl_texture_CreateTexture(struct avdl_texture *o, int width, int height, in
 
 	o->dirtyTexture = 1;
 
-	o->texture = malloc(sizeof(struct avdl_texture));
+	o->texture = malloc(sizeof(struct avdl_assetManager_texture));
 	o->texture->width = width;
 	o->texture->height = height;
 	o->texture->pixelFormat = pixelFormat;
 	o->texture->pixels = malloc(sizeof(float) *4 *o->texture->width *o->texture->height);
 	o->texture->graphicsContextId = avdl_graphics_getContextId();
+	o->texture->tex = 0;
+	o->texture->uses = 0;
+	o->texture->index = -1;
+
+	avdl_string_create(&o->texture->filename, 1024);
+	avdl_string_cat(&o->texture->filename, "manual_font_texture");
 
 	// clean the texture
 	for (int x = 0; x < o->texture->width ; x++)
@@ -516,6 +514,7 @@ int avdl_texture_CreateTexture(struct avdl_texture *o, int width, int height, in
 		o->texture->pixels[(y*o->texture->width*4) +x*4+2] = 1;
 		o->texture->pixels[(y*o->texture->width*4) +x*4+3] = 0;
 	}
+	return 0;
 }
 
 int avdl_texture_GetWidth(struct avdl_texture *o) {
@@ -562,6 +561,7 @@ int avdl_texture_UnLoad(struct avdl_texture *o) {
 		if (o->texture->tex) {
 			avdl_graphics_DeleteTexture(o->texture->tex);
 		}
+		avdl_string_clean(&o->texture->filename);
 		free(o->texture);
 		o->texture = 0;
 		o->dirtyTexture = 0;

@@ -6,10 +6,13 @@ void avdl_vec3_create(struct avdl_vec3 *o) {
 	o->x = 0;
 	o->y = 0;
 	o->z = 0;
-	o->clean = avdl_vec3_clean;
 }
 
 void avdl_vec3_Set(struct avdl_vec3 *o, struct avdl_vec3 *src) {
+	if (!src) {
+		avdl_vec3_Setf(o, 0, 0, 0);
+		return;
+	}
 	o->x = src->x;
 	o->y = src->y;
 	o->z = src->z;
@@ -29,9 +32,6 @@ float avdl_vec3_Y(struct avdl_vec3 *o) {
 }
 float avdl_vec3_Z(struct avdl_vec3 *o) {
 	return o->z;
-}
-
-void avdl_vec3_clean(struct avdl_vec3 *o) {
 }
 
 void avdl_vec3_Addf(struct avdl_vec3 *o1, float x, float y, float z) {
@@ -119,7 +119,7 @@ void avdl_vec3_Print(struct avdl_vec3 *o) {
 	);
 }
 
-float avdl_vec3_RotateX(struct avdl_vec3 *o, float rad) {
+void avdl_vec3_RotateX(struct avdl_vec3 *o, float rad) {
 	float x = o->x;
 	float y = o->y;
 	float z = o->z;
@@ -129,7 +129,7 @@ float avdl_vec3_RotateX(struct avdl_vec3 *o, float rad) {
 	o->z = y *dd_math_sin(rad) +z *dd_math_cos(rad);
 }
 
-float avdl_vec3_RotateY(struct avdl_vec3 *o, float rad) {
+void avdl_vec3_RotateY(struct avdl_vec3 *o, float rad) {
 	float x = o->x;
 	float y = o->y;
 	float z = o->z;
@@ -139,7 +139,7 @@ float avdl_vec3_RotateY(struct avdl_vec3 *o, float rad) {
 	o->z = -x *dd_math_sin(rad) +z *dd_math_cos(rad);
 }
 
-float avdl_vec3_RotateZ(struct avdl_vec3 *o, float rad) {
+void avdl_vec3_RotateZ(struct avdl_vec3 *o, float rad) {
 	float x = o->x;
 	float y = o->y;
 	float z = o->z;

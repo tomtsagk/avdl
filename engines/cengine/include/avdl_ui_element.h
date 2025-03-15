@@ -44,33 +44,7 @@ struct avdl_ui_element {
 	void (*SetOnClick)(struct avdl_ui_element *, void (*func)(), void *data);
 	void *onClickData;
 
-	// ui positional functions
-	void (*SetSize)(struct avdl_ui_element *, float, float);
-	void (*SetPosition)(struct avdl_ui_element *, float, float);
-	void (*SetPositionZ)(struct avdl_ui_element *, float);
-	void (*SetAnchor)(struct avdl_ui_element *, float, float);
-
-	void (*create)(struct avdl_ui_element *);
-	void (*update)(struct avdl_ui_element *, float dt);
-	void (*applyTransform)(struct avdl_ui_element *);
-	void (*drawDebug)(struct avdl_ui_element *);
 	void (*clean)(struct avdl_ui_element *);
-	void (*resize)(struct avdl_ui_element *);
-
-	int (*mouse_input)(struct avdl_ui_element *, int, int);
-	int (*hasMouseCollided)(struct avdl_ui_element *);
-
-	void (*disable)(struct avdl_ui_element *);
-
-	int (*IsSelected)(struct avdl_ui_element *);
-	int (*IsClicked)(struct avdl_ui_element *);
-
-	float (*GetPositionX)(struct avdl_ui_element *);
-	float (*GetPositionY)(struct avdl_ui_element *);
-	float (*GetPositionZ)(struct avdl_ui_element *);
-
-	int (*IsVisible)(struct avdl_ui_element *);
-	void (*SetVisible)(struct avdl_ui_element *, int value);
 
 };
 

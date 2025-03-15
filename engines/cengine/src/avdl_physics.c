@@ -14,13 +14,6 @@ struct manifold {
 void avdl_physics_create(struct avdl_physics *o) {
 	o->object_count = 0;
 	avdl_physics_clearConstantForce(o);
-
-	o->update = avdl_physics_update;
-	o->addObject = avdl_physics_addObject;
-	o->clearObjects = avdl_physics_clearObjects;
-
-	o->addConstantForcef = avdl_physics_addConstantForcef;
-	o->clearConstantForce = avdl_physics_clearConstantForce;
 }
 
 void avdl_physics_collision_aabbVSaabb(struct manifold *m, struct avdl_rigidbody *a, struct avdl_rigidbody *b) {
@@ -247,7 +240,6 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 				continue;
 			}
 
-			int collision = 0;
 			struct manifold m;
 			m.collide = 0;
 			// aabb
@@ -293,7 +285,7 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 			if (m.collide) {
 
 				// total mass
-				float mass_total = o->object[i]->mass +o->object[j]->mass;
+				//float mass_total = o->object[i]->mass +o->object[j]->mass;
 
 				// relative velocity
 				struct avdl_vec3 rv;
@@ -415,9 +407,6 @@ void avdl_physics_update(struct avdl_physics *o, float dt) {
 		}
 	}
 
-}
-
-void avdl_physics_clean(struct avdl_physics *o) {
 }
 
 void avdl_physics_addObject(struct avdl_physics *o, struct avdl_rigidbody *obj) {

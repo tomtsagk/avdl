@@ -19,11 +19,9 @@ struct avdl_vec3 {
 		float b;
 	};
 
-	void (*clean)(struct avdl_vec3 *o);
 };
 
 void avdl_vec3_create(struct avdl_vec3 *o);
-void avdl_vec3_clean(struct avdl_vec3 *o);
 
 void avdl_vec3_Set(struct avdl_vec3 *o, struct avdl_vec3 *src);
 void avdl_vec3_Setf(struct avdl_vec3 *o, float x, float y, float z);
@@ -52,9 +50,9 @@ float avdl_vec3_Dot(struct avdl_vec3 *a, struct avdl_vec3 *b);
 void avdl_vec3_Normalise(struct avdl_vec3 *o);
 float avdl_vec3_Magnitude(struct avdl_vec3 *o);
 
-float avdl_vec3_RotateX(struct avdl_vec3 *o, float rad);
-float avdl_vec3_RotateY(struct avdl_vec3 *o, float rad);
-float avdl_vec3_RotateZ(struct avdl_vec3 *o, float rad);
+void avdl_vec3_RotateX(struct avdl_vec3 *o, float rad);
+void avdl_vec3_RotateY(struct avdl_vec3 *o, float rad);
+void avdl_vec3_RotateZ(struct avdl_vec3 *o, float rad);
 
 void avdl_vec3_Print(struct avdl_vec3 *);
 

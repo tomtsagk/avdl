@@ -11,8 +11,6 @@ enum avdl_locale AVDL_LOCALE_CURRENT = AVDL_LOCALE_DEFAULT;
 
 void avdl_localisation_create(struct avdl_localisation *o) {
 	o->count = 0;
-	o->set = avdl_localisation_set;
-	o->getValue = avdl_localisation_getValue;
 }
 
 void avdl_localisation_clean(struct avdl_localisation *o) {

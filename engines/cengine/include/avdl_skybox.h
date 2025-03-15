@@ -29,10 +29,6 @@ struct avdl_skybox {
 	avdl_texture_id tex;
 
 	void (*clean)(struct avdl_skybox *o);
-	void (*set)(struct avdl_skybox *o, const char *assets[]);
-	void (*bind)(struct avdl_skybox *o);
-	void (*unbind)(struct avdl_skybox *o);
-	void (*draw)(struct avdl_skybox *o);
 };
 
 void avdl_skybox_create(struct avdl_skybox *o);

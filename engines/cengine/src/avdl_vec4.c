@@ -17,6 +17,10 @@ void avdl_vec4_Setf(struct avdl_vec4 *o, float x, float y, float z, float w) {
 }
 
 void avdl_vec4_Set(struct avdl_vec4 *o1, struct avdl_vec4 *o2) {
+	if (!o2) {
+		avdl_vec4_Setf(o1, 0, 0, 0, 0);
+		return;
+	}
 	o1->x = o2->x;
 	o1->y = o2->y;
 	o1->z = o2->z;
@@ -97,9 +101,6 @@ void avdl_vec4_Dividef(struct avdl_vec4 *o, float x, float y, float z, float w) 
 	o->y /= y;
 	o->z /= z;
 	o->w /= w;
-}
-
-void avdl_vec4_clean(struct avdl_vec4 *o) {
 }
 
 void avdl_vec4_MultiplyMatrix(struct avdl_vec4 *o, struct dd_matrix *m) {

@@ -423,6 +423,18 @@ static void print_command_classFunction(FILE *fd, struct ast_node *n) {
 				int arrayCount = struct_table_getMemberArrayCount(structIndex, i);
 				int isRef = struct_table_getMemberIsRef(structIndex, i);
 				if (isRef) continue;
+
+				// check if member indeed has a clean function
+				int hasClean = 0;
+				int varIndex = struct_table_get_index(memberType);
+				if (varIndex == -1) {
+					avdl_log("class '%s' could not be found in struct table", struct_table_get_name(varIndex));
+					continue;
+				}
+				if (!struct_table_has_member(varIndex, "clean")) {
+					continue;
+				}
+
 				if (arrayCount > 1) {
 					fprintf(fd, "for (int i = 0; i < %d; i++) {\n", arrayCount);
 					fprintf(fd, "	%s_clean(&this->%s[i]);\n", memberType, memberName);
@@ -431,6 +443,17 @@ static void print_command_classFunction(FILE *fd, struct ast_node *n) {
 				else {
 					fprintf(fd, "%s_clean(&this->%s);\n", memberType, memberName);
 				}
+			}
+		}
+
+		// subclass init
+		int subclassIndex = struct_table_get_parent(structIndex);
+		if (subclassIndex >= 0) {
+
+			// only call subclass's `clean` if it exists
+			// every object is forced to have `clean`, but some very basic classes do not
+			if (struct_table_has_member(subclassIndex, "clean")) {
+				fprintf(fd, "%s_clean(this);\n", struct_table_get_name(subclassIndex));
 			}
 		}
 	}

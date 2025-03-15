@@ -165,6 +165,7 @@ static int avdl_string_incrementIndexInt(struct avdl_string *o, int index) {
 		avdl_string_cat(o, "0");
 		return 0;
 	}
+	return 0;
 }
 
 int avdl_string_incrementEndingInt(struct avdl_string *o) {
@@ -179,7 +180,6 @@ int avdl_string_incrementEndingInt(struct avdl_string *o) {
 
 	char *p = avdl_string_toCharPtr(o);
 	int length = strlen(p);
-	char *lastdigit = p +(length -1);
 	avdl_string_incrementIndexInt(o, length-1);
 
 	return 0;

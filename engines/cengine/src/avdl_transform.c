@@ -2,21 +2,6 @@
 #include "avdl_log.h"
 
 void avdl_transform_create(struct avdl_transform *o) {
-	o->clean = avdl_transform_clean;
-	o->SetPosition = avdl_transform_SetPosition;
-	o->SetPosition3f = avdl_transform_SetPosition3f;
-	o->SetRotation = avdl_transform_SetRotation;
-	o->SetRotation3f = avdl_transform_SetRotation3f;
-	o->SetScale = avdl_transform_SetScale;
-	o->SetScale3f = avdl_transform_SetScale3f;
-
-	o->GetMatrix = avdl_transform_GetMatrix;
-	o->GetInverseMatrix = avdl_transform_GetInverseMatrix;
-	o->GetNormalMatrix = avdl_transform_GetNormalMatrix;
-	o->GetNormalInverseMatrix = avdl_transform_GetNormalInverseMatrix;
-	o->GetPosition = avdl_transform_GetPosition;
-	o->GetRotation = avdl_transform_GetRotation;
-	o->GetScale = avdl_transform_GetScale;
 
 	avdl_vec3_Setf(&o->position, 0, 0, 0);
 	avdl_vec3_Setf(&o->rotation, 0, 0, 0);
@@ -30,9 +15,6 @@ void avdl_transform_create(struct avdl_transform *o) {
 	o->matrix_inverse_dirty = 0;
 	o->matrix_normal_dirty = 0;
 	o->matrix_normal_inverse_dirty = 0;
-}
-
-void avdl_transform_clean(struct avdl_transform *o) {
 }
 
 void avdl_transform_SetPosition(struct avdl_transform *o, struct avdl_vec3 *src) {
@@ -164,4 +146,5 @@ int avdl_transform_Copy(struct avdl_transform *o, struct avdl_transform *target)
 	avdl_transform_SetPosition(o, &target->position);
 	avdl_transform_SetRotation(o, &target->rotation);
 	avdl_transform_SetScale(o, &target->scale);
+	return 0;
 }

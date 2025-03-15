@@ -175,7 +175,7 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 	}
 
 	if (m->img) {
-		m->img->bind(m->img);
+		avdl_texture_bind(m->img);
 	}
 
 	GL(glBindVertexArray(m->parent.parent.array));
@@ -207,7 +207,7 @@ void dd_meshTexture_draw(struct dd_meshTexture *m) {
 	GL(glBindVertexArray(0));
 
 	if (m->img) {
-		m->img->unbind(m->img);
+		avdl_texture_unbind(m->img);
 	}
 
 	if (m->hasTransparency) {

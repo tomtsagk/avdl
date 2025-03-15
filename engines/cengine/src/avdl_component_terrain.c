@@ -7,10 +7,6 @@
 void avdl_component_terrain_create(struct avdl_component_terrain *o) {
 	avdl_component_create(o);
 
-	o->draw = avdl_component_terrain_draw;
-	o->GetTerrain = avdl_component_terrain_GetTerrain;
-	o->IsOnTerrain = avdl_component_terrain_IsOnTerrain;
-	o->GetSpot = avdl_component_terrain_GetSpot;
 	o->parent.after_create = avdl_component_terrain_after_create;
 	o->parent.type = AVDL_COMPONENT_TERRAIN_ENUM;
 	o->asset_name = 0;
@@ -45,62 +41,62 @@ void avdl_component_terrain_clean(struct avdl_component_terrain *o) {
 }
 
 void avdl_component_terrain_after_create(struct avdl_component_terrain *o) {
-	o->terrain.setScaleZ(&o->terrain, o->scaleZ);
+	avdl_terrain_setScaleZ(&o->terrain, o->scaleZ);
 	if (o->asset_name) {
 		if (o->isEditor) {
 			avdl_terrain_loadLocal(&o->terrain, o->asset_name);
 
 			if (o->texture_main_name) {
 				avdl_texture_setLocal(&o->img, o->texture_main_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img, 0);
+				avdl_terrain_setTextureIndex(&o->terrain, &o->img, 0);
 			}
 
 			if (o->texture0_name) {
 				avdl_texture_setLocal(&o->img_extra_0, o->texture0_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
+				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_0, 1);
 			}
 			if (o->texture1_name) {
 				avdl_texture_setLocal(&o->img_extra_1, o->texture1_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_1, 2);
+				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_1, 2);
 			}
 			if (o->texture2_name) {
 				avdl_texture_setLocal(&o->img_extra_2, o->texture2_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_2, 3);
+				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_2, 3);
 			}
 			if (o->texture3_name) {
 				avdl_texture_setLocal(&o->img_extra_3, o->texture3_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_3, 4);
+				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_3, 4);
 			}
 		}
 		else {
-			o->terrain.load(&o->terrain, o->asset_name);
+			avdl_terrain_load(&o->terrain, o->asset_name);
 			if (o->texture_main_name) {
 				avdl_texture_set(&o->img, o->texture_main_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img, 0);
+				avdl_terrain_setTextureIndex(&o->terrain, &o->img, 0);
 			}
 
 			if (o->texture0_name) {
 				avdl_texture_set(&o->img_extra_0, o->texture0_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_0, 1);
+				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_0, 1);
 			}
 			if (o->texture1_name) {
 				avdl_texture_set(&o->img_extra_1, o->texture1_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_1, 2);
+				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_1, 2);
 			}
 			if (o->texture2_name) {
 				avdl_texture_set(&o->img_extra_2, o->texture2_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_2, 3);
+				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_2, 3);
 			}
 			if (o->texture3_name) {
 				avdl_texture_set(&o->img_extra_3, o->texture3_name, AVDL_IMAGETYPE_PNG);
-				o->terrain.setTextureIndex(&o->terrain, &o->img_extra_3, 4);
+				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_3, 4);
 			}
 		}
 	}
 }
 
 void avdl_component_terrain_draw(struct avdl_component_terrain *o) {
-	o->terrain.draw(&o->terrain);
+	avdl_terrain_draw(&o->terrain);
 }
 
 struct avdl_terrain *avdl_component_terrain_GetTerrain(struct avdl_component_terrain *o) {
@@ -123,8 +119,8 @@ int avdl_component_terrain_IsOnTerrain(struct avdl_component_terrain *o, struct 
 
 	struct avdl_vec4 position;
 	avdl_vec4_Setf(&position, 0, 0, 0, 1);
-	avdl_vec4_MultiplyMatrix(&position, n->GetGlobalMatrix(n));
-	avdl_vec4_MultiplyMatrix(&position, terrain_node->GetGlobalInverseMatrix(terrain_node));
+	avdl_vec4_MultiplyMatrix(&position, avdl_node_GetGlobalMatrix(n));
+	avdl_vec4_MultiplyMatrix(&position, avdl_node_GetGlobalInverseMatrix(terrain_node));
 
 	return avdl_terrain_isOnTerrain(&o->terrain, avdl_vec4_X(&position), -avdl_vec4_Z(&position));
 
@@ -146,8 +142,8 @@ float avdl_component_terrain_GetSpot(struct avdl_component_terrain *o, struct av
 
 	struct avdl_vec4 position;
 	avdl_vec4_Setf(&position, 0, 0, 0, 1);
-	avdl_vec4_MultiplyMatrix(&position, n->GetGlobalMatrix(n));
-	avdl_vec4_MultiplyMatrix(&position, terrain_node->GetGlobalInverseMatrix(terrain_node));
+	avdl_vec4_MultiplyMatrix(&position, avdl_node_GetGlobalMatrix(n));
+	avdl_vec4_MultiplyMatrix(&position, avdl_node_GetGlobalInverseMatrix(terrain_node));
 
 	return avdl_terrain_getSpot(&o->terrain, avdl_vec4_X(&position), -avdl_vec4_Z(&position));
 

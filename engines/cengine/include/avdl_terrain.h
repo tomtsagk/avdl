@@ -21,24 +21,8 @@ struct avdl_terrain {
 	float scaleZ;
 
 	// constructor/destructor
-	void (*create)(struct avdl_terrain *);
 	void (*clean)(struct avdl_terrain *);
 
-	// load terrain texture
-	void (*load)(struct avdl_terrain *o, const char *filename);
-
-	void (*draw)(struct avdl_terrain *o);
-
-	int (*isOnTerrain)(struct avdl_terrain *o, float x, float z);
-	float (*getSpot)(struct avdl_terrain *o, float x, float z);
-
-	int (*getWidth)(struct avdl_terrain *o);
-	int (*getHeight)(struct avdl_terrain *o);
-	int (*isLoaded)(struct avdl_terrain *o);
-
-	int (*setScaleZ)(struct avdl_terrain *o, float scale);
-
-	int (*setTextureIndex)(struct avdl_terrain *o, struct avdl_texture *img, int index);
 };
 
 void avdl_terrain_create(struct avdl_terrain *o);

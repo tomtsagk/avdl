@@ -40,8 +40,7 @@ int avdl_font_deinit() {
 void avdl_font_create(struct avdl_font *o) {
 
 	// functions
-	o->set = avdl_font_set;
-	o->addCustomIcon = avdl_font_addCustomIcon;
+	o->clean = avdl_font_clean;
 
 	o->customIconCount = 0;
 
@@ -51,6 +50,7 @@ void avdl_font_create(struct avdl_font *o) {
 
 	avdl_texture_create(&o->texture);
 	avdl_texture_CreateTexture(&o->texture, FONT_ATLAS_WIDTH, FONT_ATLAS_HEIGHT, GL_RGBA);
+
 	o->outline_thickness = 0;
 	o->fontData = 0;
 

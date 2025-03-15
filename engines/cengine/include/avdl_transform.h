@@ -19,26 +19,6 @@ struct avdl_transform {
 	int matrix_normal_inverse_dirty;
 	struct dd_matrix matrix_normal_inverse;
 
-	// setters
-	void (*SetPosition)(struct avdl_transform *, struct avdl_vec3 *src);
-	void (*SetPosition3f)(struct avdl_transform *, float x, float y, float z);
-	void (*SetRotation)(struct avdl_transform *, struct avdl_vec3 *src);
-	void (*SetRotation3f)(struct avdl_transform *, float x, float y, float z);
-	void (*SetScale)(struct avdl_transform *, struct avdl_vec3 *src);
-	void (*SetScale3f)(struct avdl_transform *, float x, float y, float z);
-
-	// getters
-	struct dd_matrix *(*GetMatrix)(struct avdl_transform *);
-	struct dd_matrix *(*GetInverseMatrix)(struct avdl_transform *);
-	struct dd_matrix *(*GetNormalMatrix)(struct avdl_transform *);
-	struct dd_matrix *(*GetNormalInverseMatrix)(struct avdl_transform *);
-	struct avdl_vec3 *(*GetPosition)(struct avdl_transform *);
-	struct avdl_vec3 *(*GetRotation)(struct avdl_transform *);
-	struct avdl_vec3 *(*GetScale)(struct avdl_transform *);
-
-	void (*create)(struct avdl_transform *);
-	void (*clean)(struct avdl_transform *);
-
 };
 
 void avdl_transform_SetPosition(struct avdl_transform *o, struct avdl_vec3 *src);
@@ -59,6 +39,5 @@ struct avdl_vec3 *avdl_transform_GetScale(struct avdl_transform *o);
 int avdl_transform_Copy(struct avdl_transform *o, struct avdl_transform *target);
 
 void avdl_transform_create(struct avdl_transform *o);
-void avdl_transform_clean(struct avdl_transform *o);
 
 #endif

@@ -82,4 +82,8 @@ int struct_table_count();
 
 int struct_table_exists(const char *structname);
 
+// does member exist in any of the struct's parents? (excluding itself)
+int struct_table_HasMemberInAnyParent(int structIndex, const char *member);
+int struct_table_GetNearestParentWithMember(int structIndex, const char *member);
+
 #endif

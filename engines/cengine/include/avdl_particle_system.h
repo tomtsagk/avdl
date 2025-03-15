@@ -80,28 +80,6 @@ struct avdl_particle_system {
 	 * basic functions
 	 */
 	void (*clean)(struct avdl_particle_system *);
-	void (*update)(struct avdl_particle_system *, float dt);
-	void (*draw)(struct avdl_particle_system *);
-
-	/*
-	 * setters for particle data
-	 */
-	void (*assignAsset)(struct avdl_particle_system *, struct avdl_mesh *);
-	void (*setDelay)(struct avdl_particle_system *, float);
-	void (*setParticleLife)(struct avdl_particle_system *, float);
-	void (*setParticlePositionXFunc)(struct avdl_particle_system *, float (*)(float));
-	void (*setParticlePositionYFunc)(struct avdl_particle_system *, float (*)(float));
-	void (*setParticlePositionZFunc)(struct avdl_particle_system *, float (*)(float));
-	void (*setParticleScaleFunc)(struct avdl_particle_system *, float (*)(float));
-	void (*setParticlesTotal)(struct avdl_particle_system *, int);
-
-	// initial value setters
-	void (*setParticlePosition)(struct avdl_particle_system *, float, float, float);
-	void (*setParticlePositionFuzz)(struct avdl_particle_system *, float, float, float);
-	void (*setParticleRotation)(struct avdl_particle_system *, float, float, float);
-	void (*setParticleRotationFuzz)(struct avdl_particle_system *, float, float, float);
-	void (*setParticleScale)(struct avdl_particle_system *, float, float, float);
-	void (*setParticleScaleFuzz)(struct avdl_particle_system *, float, float, float);
 
 }; // particle system
 

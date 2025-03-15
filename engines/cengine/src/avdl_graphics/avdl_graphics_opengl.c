@@ -328,11 +328,13 @@ avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, int pixel_forma
 
 avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, int pixel_format, int width, int height, int index) {
 	GL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, width, height, 1, pixel_format, GL_FLOAT, pixels));
+	return 0;
 }
 
 avdl_texture_id avdl_graphics_ImageArrayToGpuEnd() {
 	GL(glGenerateMipmap(GL_TEXTURE_2D_ARRAY));
 	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, 0));
+	return 0;
 }
 
 avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], int width[], int height[]) {

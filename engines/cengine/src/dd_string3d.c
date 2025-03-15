@@ -30,22 +30,7 @@ void dd_string3d_create(struct dd_string3d *o) {
 	o->text = 0;
 	o->textw = 0;
 
-	o->setAlign = dd_string3d_setAlign;
-	o->setAlignVertical = dd_string3d_setAlignVertical;
 	o->clean = dd_string3d_clean;
-	o->draw = dd_string3d_draw;
-	o->drawInt = dd_string3d_drawInt;
-	o->drawIntPadded = dd_string3d_drawIntPadded;
-	o->drawLimit = dd_string3d_drawLimit;
-	o->drawLimitTypewriter = dd_string3d_drawLimitTypewriter;
-	o->drawTypewriter = dd_string3d_drawTypewriter;
-	o->setText = dd_string3d_setText;
-	o->setTextInt = dd_string3d_setTextInt;
-	o->setFont = dd_string3d_setFont;
-
-	o->getWidth = dd_string3d_getWidth;
-	o->getWidthInt = dd_string3d_getWidthInt;
-
 }
 
 void dd_string3d_setAlign(struct dd_string3d *o, enum dd_string3d_align al) {
@@ -138,13 +123,13 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 		GLint MatrixID = avdl_graphics_GetUniformLocation(defaultProgram, "matrix");
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 
-		dd_meshTexture_draw(m);
+		dd_meshTexture_draw(&m->m);
 
 		dd_translatef(m->widthf, 0, 0);
 
 		// draw `.` every 3 digits
 		if ((num_len -i -1) %3 == 0 && (num_len -i -1) != 0) {
-			dd_meshTexture_draw(mDot);
+			dd_meshTexture_draw(&mDot->m);
 			dd_translatef(mDot->widthf, 0, 0);
 		}
 
@@ -448,9 +433,7 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 
 	float space_size = SPACE_SIZE;
 
-	int length;
 	do {
-		length = 0;
 
 		// ignore whitespace
 		while (!isunicode(t[0]) && (t[0] == ' ' || t[0] == '\t')) {
@@ -538,8 +521,6 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 			dd_meshTexture_create(&m2);
 			dd_meshTexture_set_primitive(&m2, DD_PRIMITIVE_RECTANGLE);
 
-			int error;
-
 			if (o->isOnce) {
 				dd_meshTexture_set_primitive_texcoords(&m2, 0, 0, 1, 1);
 			}
@@ -606,11 +587,7 @@ void dd_string3d_setFont(struct dd_string3d *o, struct avdl_font *font) {
 }
 
 float dd_string3d_getWidth(struct dd_string3d *o) {
-	int wordsTotal = 0;
 	int linesTotal = 0;
-	int drawnWords = 0;
-
-	float biggestLineWidth = 0;
 
 	int lineWords = 0;
 	float lineWidth = 0;

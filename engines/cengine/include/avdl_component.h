@@ -26,15 +26,8 @@ struct avdl_component {
 	struct avdl_node *node;
 
 	void (*clean)(struct avdl_component *);
-
 	void (*after_create)(struct avdl_component *);
-
-	void (*SetType)(struct avdl_component *, int type);
-	int (*GetType)(struct avdl_component *);
-
 	int (*Copy)(struct avdl_component *, struct avdl_component *);
-
-	struct avdl_node *(*GetNode)(struct avdl_component *);
 };
 
 // Store component property data

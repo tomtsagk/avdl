@@ -6,22 +6,8 @@ void avdl_rigidbody_create(struct avdl_rigidbody *o) {
 	o->has_just_collided = 0;
 	o->has_just_collided_old = 0;
 
-	o->matrixMultiply = avdl_rigidbody_matrixMultiply;
-	o->setPositionf = avdl_rigidbody_setPositionf;
-	o->setMass = avdl_rigidbody_setMass;
-	o->setRestitution = avdl_rigidbody_setRestitution;
-	o->setCollider = avdl_rigidbody_setCollider;
-	o->addAngularVelocityf = avdl_rigidbody_addAngularVelocityf;
-	o->addVelocityf = avdl_rigidbody_addVelocityf;
-	o->setVelocityf = avdl_rigidbody_setVelocityf;
-	o->getPositionX = avdl_rigidbody_getPositionX;
-	o->getPositionY = avdl_rigidbody_getPositionY;
-	o->getPositionZ = avdl_rigidbody_getPositionZ;
-	o->reset = avdl_rigidbody_reset;
-	o->hasJustCollided = avdl_rigidbody_hasJustCollided;
-
-	o->setMass(o, 1);
-	o->setRestitution(o, 1);
+	avdl_rigidbody_setMass(o, 1);
+	avdl_rigidbody_setRestitution(o, 1);
 
 	avdl_vec3_Setf(&o->position, 0, 0, 0);
 	avdl_vec3_Setf(&o->velocity, 0, 0, 0);
@@ -29,9 +15,6 @@ void avdl_rigidbody_create(struct avdl_rigidbody *o) {
 	dd_matrix_identity(&o->rotation);
 	dd_matrix_identity(&o->angularVelocity);
 	avdl_vec3_Setf(&o->angularVelocityVec3, 0, 0, 0);
-}
-
-void avdl_rigidbody_clean(struct avdl_rigidbody *o) {
 }
 
 void avdl_rigidbody_matrixMultiply(struct avdl_rigidbody *o) {
