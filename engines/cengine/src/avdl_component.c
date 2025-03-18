@@ -9,7 +9,6 @@ void avdl_component_create(struct avdl_component *o) {
 	o->after_create = avdl_component_after_create;
 	o->clean = avdl_component_clean;
 
-	o->type = AVDL_COMPONENT_INAVLID_ENUM;
 	o->node = 0;
 }
 
@@ -20,25 +19,15 @@ struct avdl_node *avdl_component_GetNode(struct avdl_component *o) {
 	return o->node;
 }
 
-void avdl_component_SetType(struct avdl_component *o, int type) {
-	o->type = AVDL_COMPONENT_CUSTOM_ENUM +type;
-}
-
 void avdl_component_after_create(struct avdl_component *o) {
 }
 
-int avdl_component_GetType(struct avdl_component *o) {
-	return o->type;
-}
-
 int avdl_component_Copy(struct avdl_component *o, struct avdl_component *target) {
-	o->type = target->type;
 	return 0;
 }
 
 // Array of modifiable properties
 static struct avdl_component_property property_array[] = {
-	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component, type, AVDL_COMPONENT_PROPERTY_TYPE_INT),
 };
 static int property_array_count = sizeof(property_array) /sizeof(struct avdl_component_property);;
 

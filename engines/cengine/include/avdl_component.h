@@ -5,15 +5,6 @@
 
 #include <stddef.h>
 
-enum AVDL_COMPONENTS {
-	AVDL_COMPONENT_CUSTOM_ENUM,
-
-	AVDL_COMPONENT_MESH_ENUM = 200,
-	AVDL_COMPONENT_TERRAIN_ENUM,
-	AVDL_COMPONENT_CUSTOM_EDITOR_ENUM,
-	AVDL_COMPONENT_INAVLID_ENUM,
-};
-
 enum AVDL_COMPONENT_PROPERTY_TYPE {
 	AVDL_COMPONENT_PROPERTY_TYPE_INT,
 	AVDL_COMPONENT_PROPERTY_TYPE_FLOAT,
@@ -22,7 +13,6 @@ enum AVDL_COMPONENT_PROPERTY_TYPE {
 
 struct avdl_component {
 
-	enum AVDL_COMPONENTS type;
 	struct avdl_node *node;
 
 	void (*clean)(struct avdl_component *);
@@ -34,7 +24,7 @@ struct avdl_component {
 struct avdl_component_property {
 	char *name;
 	size_t offset;
-	int type;
+	enum AVDL_COMPONENT_PROPERTY_TYPE type;
 };
 
 #define AVDL_COMPONENT_PROPERTY_ELEMENT(x, y, z) {#y, offsetof(x, y), z}
@@ -44,8 +34,6 @@ void avdl_component_clean(struct avdl_component *o);
 void avdl_component_after_create(struct avdl_component *o);
 
 struct avdl_node *avdl_component_GetNode(struct avdl_component *o);
-void avdl_component_SetType(struct avdl_component *o, int type);
-int avdl_component_GetType(struct avdl_component *o);
 
 int avdl_component_Copy(struct avdl_component *o, struct avdl_component *target);
 

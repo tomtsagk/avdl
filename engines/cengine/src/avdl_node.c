@@ -203,21 +203,21 @@ const char *avdl_node_GetName(struct avdl_node *o) {
 	*/
 }
 
-void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array *array, int component_type) {
+void avdl_node_AddComponentsToArray_Internal(struct avdl_node *o, struct dd_dynamic_array *array, void (*fnc)(struct avdl_component *)) {
 
-	// Print components
+	// Collect components
 	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
 		struct avdl_component *c = *((struct avdl_component **) dd_da_get(&o->components, i));
 
-		if (c->type == component_type) {
+		if (c->clean == fnc) {
 			dd_da_push(array, &c);
 		}
 	}
 
-	// Print children
+	// Check children
 	for (unsigned int i = 0; i < dd_da_count(&o->children); i++) {
 		struct avdl_node *child = dd_da_getDeref(&o->children, i);
-		avdl_node_AddComponentsToArray(child, array, component_type);
+		avdl_node_AddComponentsToArray_Internal(child, array, fnc);
 	}
 }
 
