@@ -5,7 +5,6 @@
 
 void avdl_component_custom_create(struct avdl_component_custom *o) {
 	avdl_component_create(o);
-	o->parent.type = AVDL_COMPONENT_CUSTOM_EDITOR_ENUM;
 	o->parent.Copy = avdl_component_custom_Copy;
 	o->parent.clean = avdl_component_custom_clean;
 

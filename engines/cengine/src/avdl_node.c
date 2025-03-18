@@ -283,7 +283,7 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 	NodeToJson_PrintTabs(fd, tabs);
 	content = "\"name\": \"";
 	write(fd, content, strlen(content));
-	if (o->type == AVDL_COMPONENT_MESH_ENUM) {
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_mesh_clean) {
 		content = "avdl_component_mesh";
 		write(fd, content, strlen(content));
 		content = "\",\n";
@@ -347,7 +347,7 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 		}
 	}
 	else
-	if (o->type == AVDL_COMPONENT_TERRAIN_ENUM) {
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_terrain_clean) {
 		content = "avdl_component_terrain";
 		write(fd, content, strlen(content));
 		content = "\",\n";
@@ -411,7 +411,7 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 		}
 	}
 	else
-	if (o->type == AVDL_COMPONENT_CUSTOM_EDITOR_ENUM) {
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_custom_clean) {
 		struct avdl_component_custom *c = o;
 		content = avdl_component_custom_GetName(c);
 		write(fd, content, strlen(content));
@@ -598,7 +598,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 	}
 
 	struct avdl_component *c = 0;
-	int component_type = -1;
+	void (*component_type_func)() = 0;
 
 	/*
 	char component_name[100];
@@ -637,7 +637,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					struct avdl_component_mesh *mesh = avdl_node_AddComponent(node, avdl_component_mesh);
 					mesh->isEditor = 1;
 					c = mesh;
-					component_type = AVDL_COMPONENT_MESH_ENUM;
+					component_type_func = avdl_component_mesh_clean;
 				}
 				else
 				if (strcmp(avdl_json_getTokenString(json), "avdl_component_terrain") == 0) {
@@ -645,13 +645,13 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					struct avdl_component_terrain *terrain = avdl_node_AddComponent(node, avdl_component_terrain);
 					terrain->isEditor = 1;
 					c = terrain;
-					component_type = AVDL_COMPONENT_TERRAIN_ENUM;
+					component_type_func = avdl_component_terrain_clean;
 				}
 				else {
 					struct avdl_component_custom *custom = avdl_node_AddComponent(node, avdl_component_custom);
 					avdl_component_custom_SetName(custom, avdl_json_getTokenString(json));
 					c = custom;
-					component_type = AVDL_COMPONENT_CUSTOM_EDITOR_ENUM;
+					component_type_func = avdl_component_custom_clean;
 				}
 			}
 			else {
@@ -660,7 +660,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 			}
 		}
 		else {
-			if (!c || component_type < 0) {
+			if (!c || !component_type_func) {
 				avdl_logError("component name should come first: %s", avdl_json_getTokenString(json));
 				return -1;
 			}
@@ -670,7 +670,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 			}
 			//avdl_log("component variable name: %s", avdl_json_getTokenString(json));
 
-			if (component_type == AVDL_COMPONENT_MESH_ENUM) {
+			if (component_type_func == avdl_component_mesh_clean) {
 				struct avdl_component_mesh *mesh = c;
 
 				struct avdl_string property_name;
@@ -717,7 +717,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				avdl_string_clean(&property_name);
 			}
 			else
-			if (component_type == AVDL_COMPONENT_TERRAIN_ENUM) {
+			if (component_type_func == avdl_component_terrain_clean) {
 				//struct avdl_component_terrain *terrain = c;
 
 				struct avdl_string property_name;
@@ -966,13 +966,13 @@ int avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
 	return 0;
 }
 
-struct avdl_component *avdl_node_GetComponent(struct avdl_node *o, int component_type) {
+struct avdl_component *avdl_node_GetComponent_Internal(struct avdl_node *o, void (*fnc)(struct avdl_component *)) {
 
 	// Get first component
 	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
 		struct avdl_component *c = dd_da_getDeref(&o->components, i);
 
-		if (c->type == component_type) {
+		if (c->clean == fnc) {
 			return c;
 		}
 	}
@@ -998,21 +998,16 @@ static struct avdl_component *DuplicateComponent(struct avdl_component *o, struc
 	}
 
 	struct avdl_component *component = 0;
-	if (avdl_component_GetType(o) == AVDL_COMPONENT_MESH_ENUM) {
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_mesh_clean) {
 		component = avdl_node_AddComponent(newParent, avdl_component_mesh);
 	}
 	else
-	if (avdl_component_GetType(o) == AVDL_COMPONENT_TERRAIN_ENUM) {
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_terrain_clean) {
 		component = avdl_node_AddComponent(newParent, avdl_component_terrain);
 	}
 	else
-	if (avdl_component_GetType(o) == AVDL_COMPONENT_CUSTOM_EDITOR_ENUM) {
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_custom_clean) {
 		component = avdl_node_AddComponent(newParent, avdl_component_custom);
-	}
-	else
-	if (avdl_component_GetType(o) == AVDL_COMPONENT_INAVLID_ENUM) {
-		avdl_log("avdl_node DuplicateComponent: invalid component type");
-		return 0;
 	}
 	else {
 		avdl_log("avdl_node DuplicateComponent: cannot duplicate custom components for now");

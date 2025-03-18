@@ -5,7 +5,6 @@ void avdl_component_mesh_create(struct avdl_component_mesh *o) {
 	avdl_component_create(o);
 
 	o->parent.after_create = avdl_component_mesh_after_create;
-	o->parent.type = AVDL_COMPONENT_MESH_ENUM;
 	o->mesh_name = 0;
 	o->texture_name = 0;
 	o->hasTransparency = 0;

@@ -8,7 +8,6 @@ void avdl_component_terrain_create(struct avdl_component_terrain *o) {
 	avdl_component_create(o);
 
 	o->parent.after_create = avdl_component_terrain_after_create;
-	o->parent.type = AVDL_COMPONENT_TERRAIN_ENUM;
 	o->asset_name = 0;
 	o->texture_main_name = 0;
 	o->texture0_name = 0;
