@@ -47,7 +47,7 @@ int avdl_component_SetPropertyInt(struct avdl_component *c, const char *property
 			return -1;
 		}
 	}
-	return 0;
+	return -1;
 }
 
 int avdl_component_SetPropertyFloat(struct avdl_component *c, const char *property_name, float value) {
@@ -60,7 +60,7 @@ int avdl_component_SetPropertyFloat(struct avdl_component *c, const char *proper
 			return -1;
 		}
 	}
-	return 0;
+	return -1;
 }
 
 int avdl_component_SetPropertyString(struct avdl_component *c, const char *property_name, const char *value) {
@@ -76,5 +76,5 @@ int avdl_component_SetPropertyString(struct avdl_component *c, const char *prope
 			return -1;
 		}
 	}
-	return 0;
+	return -1;
 }

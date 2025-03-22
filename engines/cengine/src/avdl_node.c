@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "avdl_component_mesh.h"
+#include "avdl_component_skinned_mesh.h"
 #include "avdl_component_terrain.h"
 #include "avdl_component_custom.h"
 
@@ -347,6 +348,70 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 		}
 	}
 	else
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_skinned_mesh_clean) {
+		content = "avdl_component_skinned_mesh";
+		write(fd, content, strlen(content));
+		content = "\",\n";
+		write(fd, content, strlen(content));
+
+		struct avdl_component_skinned_mesh *mesh = o;
+		for (int i = 0; i < avdl_component_skinned_mesh_property_array_count; i++) {
+			struct avdl_component_property *p = &avdl_component_skinned_mesh_property_array[i];
+
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_INT) {
+				int val = avdl_component_skinned_mesh_GetPropertyIndexInt(mesh, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%d", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_FLOAT) {
+				float val = avdl_component_skinned_mesh_GetPropertyIndexFloat(mesh, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%f", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_STRING) {
+				char *val = avdl_component_skinned_mesh_GetPropertyIndexString(mesh, i);
+				if (val) {
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": \"";
+					write(fd, content, strlen(content));
+					write(fd, val, strlen(val));
+					content = "\",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+		}
+	}
+	else
 	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_terrain_clean) {
 		content = "avdl_component_terrain";
 		write(fd, content, strlen(content));
@@ -462,6 +527,9 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 				return -1;
 			}
 		}
+	}
+	else {
+		avdl_logError("unrecognized component");
 	}
 
 	// end
@@ -640,6 +708,14 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					component_type_func = avdl_component_mesh_clean;
 				}
 				else
+				if (strcmp(avdl_json_getTokenString(json), "avdl_component_skinned_mesh") == 0) {
+					//avdl_log("found skinned mesh component");
+					struct avdl_component_skinned_mesh *mesh = avdl_node_AddComponent(node, avdl_component_skinned_mesh);
+					mesh->isEditor = 1;
+					c = mesh;
+					component_type_func = avdl_component_skinned_mesh_clean;
+				}
+				else
 				if (strcmp(avdl_json_getTokenString(json), "avdl_component_terrain") == 0) {
 					//avdl_log("found terrain component");
 					struct avdl_component_terrain *terrain = avdl_node_AddComponent(node, avdl_component_terrain);
@@ -709,6 +785,53 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				else
 				if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
 					if (avdl_component_mesh_SetPropertyFloat(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json)) != 0) {
+						avdl_logError("unable to set float property '%s' for mesh component to value '%f'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json));
+						return -1;
+					}
+				}
+				avdl_string_clean(&property_name);
+			}
+			else
+			if (component_type_func == avdl_component_skinned_mesh_clean) {
+				struct avdl_component_skinned_mesh *mesh = c;
+
+				struct avdl_string property_name;
+				avdl_string_create(&property_name, 1024);
+				avdl_string_cat(&property_name, avdl_json_getTokenString(json));
+				if (!avdl_string_isValid(&property_name)) {
+					avdl_logError("Unable to construct property name");
+					return -1;
+				}
+
+				avdl_json_next(json);
+				if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+					struct avdl_string property_value;
+					avdl_string_create(&property_value, 1024);
+					avdl_string_cat(&property_value, avdl_json_getTokenString(json));
+					if (!avdl_string_isValid(&property_value)) {
+						avdl_logError("Unable to construct property value");
+						return -1;
+					}
+
+					if (avdl_component_skinned_mesh_SetPropertyString(mesh, avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value)) != 0) {
+						avdl_logError("unable to set string property '%s' for mesh component to value '%s'",
+							avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value));
+						return -1;
+					}
+					avdl_string_clean(&property_value);
+				}
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+					if (avdl_component_skinned_mesh_SetPropertyInt(mesh, avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json)) != 0) {
+						avdl_logError("unable to set int property '%s' for mesh component to value '%d'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json));
+						return -1;
+					}
+				}
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+					if (avdl_component_skinned_mesh_SetPropertyFloat(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json)) != 0) {
 						avdl_logError("unable to set float property '%s' for mesh component to value '%f'",
 							avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json));
 						return -1;
@@ -1000,6 +1123,10 @@ static struct avdl_component *DuplicateComponent(struct avdl_component *o, struc
 	struct avdl_component *component = 0;
 	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_mesh_clean) {
 		component = avdl_node_AddComponent(newParent, avdl_component_mesh);
+	}
+	else
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_skinned_mesh_clean) {
+		component = avdl_node_AddComponent(newParent, avdl_component_skinned_mesh);
 	}
 	else
 	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_terrain_clean) {

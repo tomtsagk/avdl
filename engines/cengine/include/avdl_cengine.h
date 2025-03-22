@@ -51,6 +51,7 @@
 #include "avdl_terrain.h"
 #include "avdl_component.h"
 #include "avdl_component_mesh.h"
+#include "avdl_component_skinned_mesh.h"
 #include "avdl_component_terrain.h"
 #include "avdl_time.h"
 
