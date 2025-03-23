@@ -15,6 +15,8 @@
 #include "avdl_ast_node.h"
 #include "avdl_string.h"
 
+#include "avdl_ast/avdl_ast_command_definition.h"
+
 // TODO: Possibly remove this
 enum AVDL_PLATFORM avdl_platform_temp;
 extern struct AvdlSettings *avdl_settings_ptr;
@@ -1223,7 +1225,7 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		// inline functions
 		struct ast_node *lastChild = cmdname;
 		while (lastChild->children.elements > 0) {
-			lastChild = avdl_da_get(&lastChild->children, 0);
+			lastChild = avdl_da_get(&lastChild->children, avdl_da_count(&lastChild->children) -1);
 		}
 		if (lastChild != cmdname && lastChild->value == AVDL_VARIABLE_TYPE_FUNCTION_INLINE) {
 
@@ -1238,13 +1240,13 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 			int structIndex = e->value;
 
 			// find the final child's name and its parent's struct name
-			struct ast_node *child = avdl_da_get(&cmdname->children, 0);
+			struct ast_node *child = avdl_da_get(&cmdname->children, -1);
 			while (child->children.elements > 0) {
 
 				// `parent` is a special keyword for parent struct
 				if (strcmp(child->lex, "parent") == 0) {
 					structIndex = struct_table_get_parent(structIndex);
-					child = avdl_da_get(&child->children, 0);
+					child = avdl_da_get(&child->children, -1);
 					continue;
 				}
 
@@ -1258,7 +1260,7 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 					return 0;
 				}
 				structIndex = struct_table_get_index(struct_table_get_member_nametype(structIndex, memberIndex));
-				child = avdl_da_get(&child->children, 0);
+				child = avdl_da_get(&child->children, -1);
 			}
 
 			// assemble inline function's name
@@ -1273,17 +1275,29 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 			ast_setLex(newcmd, avdl_string_toCharPtr(&str));
 			ast_addChild(cmd, newcmd);
 
-			struct ast_node *chain = cmdname;
-			struct ast_node *prevChain = cmd;
-			while (chain != child) {
-				struct ast_node *arg = ast_create(AST_IDENTIFIER);
-				ast_setLex(arg, chain->lex);
-				arg->value = DD_VARIABLE_TYPE_STRUCT;
-				arg->isRef = chain->isRef;
-				ast_addChild(prevChain, arg);
+			// copy first arg
+			struct ast_node *from = cmdname;
+			struct ast_node *to = cmd;
 
-				chain = avdl_da_get(&chain->children, 0);
-				prevChain = ast_getChild(prevChain, avdl_da_count(&prevChain->children)-1);
+			//ast_print(cmdname);
+			while (from != child) {
+
+				struct ast_node *arg = ast_create(AST_IDENTIFIER);
+				ast_setLex(arg, from->lex);
+				arg->value = DD_VARIABLE_TYPE_STRUCT;
+				arg->isRef = from->isRef;
+
+				ast_addChild(to, arg);
+
+				// array handling
+				if (avdl_da_count(&from->children) > 1) {
+					struct ast_node *c = avdl_da_get(&from->children, 0);
+					struct ast_node *to2 = ast_getChild(to, avdl_da_count(&to->children)-1);
+					ast_addChild(to2, c);
+				}
+
+				from = avdl_da_get(&from->children, -1);
+				to = ast_getChild(to, avdl_da_count(&to->children)-1);
 			}
 
 			avdl_string_clean(&str);
@@ -1301,7 +1315,7 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 				arg->isRef = chain->isRef;
 				ast_addChild(prevChain, arg);
 
-				chain = avdl_da_get(&chain->children, 0);
+				chain = avdl_da_get(&chain->children, -1);
 				prevChain = ast_getChild(prevChain, avdl_da_count(&prevChain->children)-1);
 			}
 		}
