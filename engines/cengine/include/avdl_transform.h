@@ -33,8 +33,17 @@ struct dd_matrix *avdl_transform_GetInverseMatrix(struct avdl_transform *o);
 struct dd_matrix *avdl_transform_GetNormalMatrix(struct avdl_transform *o);
 struct dd_matrix *avdl_transform_GetNormalInverseMatrix(struct avdl_transform *o);
 struct avdl_vec3 *avdl_transform_GetPosition(struct avdl_transform *o);
+float avdl_transform_GetPositionX(struct avdl_transform *o);
+float avdl_transform_GetPositionY(struct avdl_transform *o);
+float avdl_transform_GetPositionZ(struct avdl_transform *o);
 struct avdl_vec3 *avdl_transform_GetRotation(struct avdl_transform *o);
+float avdl_transform_GetRotationX(struct avdl_transform *o);
+float avdl_transform_GetRotationY(struct avdl_transform *o);
+float avdl_transform_GetRotationZ(struct avdl_transform *o);
 struct avdl_vec3 *avdl_transform_GetScale(struct avdl_transform *o);
+float avdl_transform_GetScaleX(struct avdl_transform *o);
+float avdl_transform_GetScaleY(struct avdl_transform *o);
+float avdl_transform_GetScaleZ(struct avdl_transform *o);
 
 int avdl_transform_Copy(struct avdl_transform *o, struct avdl_transform *target);
 

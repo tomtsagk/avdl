@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "dd_matrix.h"
+#include "avdl_vec3.h"
 
 struct avdl_vec4 {
 	union {
@@ -29,6 +30,11 @@ struct avdl_vec4 {
 void avdl_vec4_create(struct avdl_vec4 *o);
 void avdl_vec4_Setf(struct avdl_vec4 *o, float x, float y, float z, float w);
 void avdl_vec4_Set(struct avdl_vec4 *o, struct avdl_vec4 *o2);
+void avdl_vec4_SetVec3(struct avdl_vec4 *o, struct avdl_vec3 *o2);
+void avdl_vec4_SetX(struct avdl_vec4 *o, float value);
+void avdl_vec4_SetY(struct avdl_vec4 *o, float value);
+void avdl_vec4_SetZ(struct avdl_vec4 *o, float value);
+void avdl_vec4_SetW(struct avdl_vec4 *o, float value);
 
 // math
 void avdl_vec4_Add (struct avdl_vec4 *o1, struct avdl_vec4 *o2);

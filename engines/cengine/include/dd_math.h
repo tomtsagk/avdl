@@ -47,6 +47,7 @@ void dd_math_ease_catmullrom2d(struct dd_vec2 *point, float t, struct dd_vec2 p0
 #define dd_math_asin(val) asinf(val)
 #define dd_math_acos(val) acosf(val)
 #define dd_math_atan(val) atanf(val)
+#define dd_math_atan2(val1, val2) atan2f(val1, val2)
 #define dd_math_floor(val) floorf(val)
 #define dd_math_ceil(val) ceilf(val)
 #define dd_math_clamp(a, b, v) (v < a ? a : v > b ? b : v)

@@ -134,12 +134,48 @@ struct avdl_vec3 *avdl_transform_GetPosition(struct avdl_transform *o) {
 	return &o->position;
 }
 
+float avdl_transform_GetPositionX(struct avdl_transform *o) {
+	return avdl_vec3_X(&o->position);
+}
+
+float avdl_transform_GetPositionY(struct avdl_transform *o) {
+	return avdl_vec3_Y(&o->position);
+}
+
+float avdl_transform_GetPositionZ(struct avdl_transform *o) {
+	return avdl_vec3_Z(&o->position);
+}
+
 struct avdl_vec3 *avdl_transform_GetRotation(struct avdl_transform *o) {
 	return &o->rotation;
 }
 
+float avdl_transform_GetRotationX(struct avdl_transform *o) {
+	return avdl_vec3_X(&o->rotation);
+}
+
+float avdl_transform_GetRotationY(struct avdl_transform *o) {
+	return avdl_vec3_Y(&o->rotation);
+}
+
+float avdl_transform_GetRotationZ(struct avdl_transform *o) {
+	return avdl_vec3_Z(&o->rotation);
+}
+
 struct avdl_vec3 *avdl_transform_GetScale(struct avdl_transform *o) {
 	return &o->scale;
+}
+
+float avdl_transform_GetScaleX(struct avdl_transform *o) {
+	return avdl_vec3_X(&o->scale);
+}
+
+float avdl_transform_GetScaleY(struct avdl_transform *o) {
+	return avdl_vec3_Y(&o->scale);
+}
+
+float avdl_transform_GetScaleZ(struct avdl_transform *o) {
+	return avdl_vec3_Z(&o->scale);
 }
 
 int avdl_transform_Copy(struct avdl_transform *o, struct avdl_transform *target) {

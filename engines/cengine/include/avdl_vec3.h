@@ -25,6 +25,9 @@ void avdl_vec3_create(struct avdl_vec3 *o);
 
 void avdl_vec3_Set(struct avdl_vec3 *o, struct avdl_vec3 *src);
 void avdl_vec3_Setf(struct avdl_vec3 *o, float x, float y, float z);
+void avdl_vec3_SetX(struct avdl_vec3 *o, float value);
+void avdl_vec3_SetY(struct avdl_vec3 *o, float value);
+void avdl_vec3_SetZ(struct avdl_vec3 *o, float value);
 
 // math
 void avdl_vec3_Add (struct avdl_vec3 *o1, struct avdl_vec3 *o2);

@@ -27,6 +27,33 @@ void avdl_vec4_Set(struct avdl_vec4 *o1, struct avdl_vec4 *o2) {
 	o1->w = o2->w;
 }
 
+void avdl_vec4_SetVec3(struct avdl_vec4 *o1, struct avdl_vec3 *o2) {
+	if (!o2) {
+		avdl_vec4_Setf(o1, 0, 0, 0, 0);
+		return;
+	}
+	o1->x = avdl_vec3_X(o2);
+	o1->y = avdl_vec3_Y(o2);
+	o1->z = avdl_vec3_Z(o2);
+	o1->w = 0;
+}
+
+void avdl_vec4_SetX(struct avdl_vec4 *o, float value) {
+	o->x = value;
+}
+
+void avdl_vec4_SetY(struct avdl_vec4 *o, float value) {
+	o->y = value;
+}
+
+void avdl_vec4_SetZ(struct avdl_vec4 *o, float value) {
+	o->z = value;
+}
+
+void avdl_vec4_SetW(struct avdl_vec4 *o, float value) {
+	o->w = value;
+}
+
 float avdl_vec4_X(struct avdl_vec4 *o) {
 	return o->x;
 }

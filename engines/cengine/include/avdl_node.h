@@ -60,7 +60,7 @@ void avdl_node_AddComponentsToArray_Internal(struct avdl_node *o, struct dd_dyna
 #define avdl_node_AddComponentsToArray(o, array, component) avdl_node_AddComponentsToArray_Internal(o, array, component ## _clean)
 int avdl_node_GetComponentCount(struct avdl_node *o);
 struct avdl_component *avdl_node_GetComponent_Internal(struct avdl_node *o, void (*fnc)(struct avdl_component *));
-#define avdl_node_GetComponent(o, component) avdl_node_GetComponentInternal(o, component ## _clean)
+#define avdl_node_GetComponent(o, component) avdl_node_GetComponent_Internal(o, component ## _clean)
 
 int avdl_node_NodeToJson(struct avdl_node *o, char *filename);
 int avdl_node_JsonToNode(char *filename, struct avdl_node *o);

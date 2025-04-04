@@ -24,6 +24,18 @@ void avdl_vec3_Setf(struct avdl_vec3 *o, float x, float y, float z) {
 	o->z = z;
 }
 
+void avdl_vec3_SetX(struct avdl_vec3 *o, float value) {
+	o->x = value;
+}
+
+void avdl_vec3_SetY(struct avdl_vec3 *o, float value) {
+	o->y = value;
+}
+
+void avdl_vec3_SetZ(struct avdl_vec3 *o, float value) {
+	o->z = value;
+}
+
 float avdl_vec3_X(struct avdl_vec3 *o) {
 	return o->x;
 }

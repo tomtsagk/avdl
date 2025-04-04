@@ -181,6 +181,11 @@ void avdl_component_skinned_mesh_PlayAnimationInstant(struct avdl_component_skin
 	avdl_skinned_mesh_PlayAnimationInstant(&m->mesh, name);
 }
 
+void avdl_component_skinned_mesh_SetOnAnimationDone(struct avdl_component_skinned_mesh *o, void (*func)(void *ctx), void *context) {
+	avdl_log("set on animation done");
+	avdl_skinned_mesh_SetOnAnimationDone(&o->mesh, func, context);
+}
+
 void avdl_component_skinned_mesh_update(struct avdl_component_skinned_mesh *m, float dt) {
 	avdl_skinned_mesh_update(&m->mesh, dt);
 }

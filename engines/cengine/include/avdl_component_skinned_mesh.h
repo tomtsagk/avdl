@@ -34,6 +34,8 @@ int avdl_component_skinned_mesh_Copy(struct avdl_component *o, struct avdl_compo
 void avdl_component_skinned_mesh_PlayAnimation(struct avdl_component_skinned_mesh *m, const char *name);
 void avdl_component_skinned_mesh_PlayAnimationInstant(struct avdl_component_skinned_mesh *m, const char *name);
 
+void avdl_component_skinned_mesh_SetOnAnimationDone(struct avdl_component_skinned_mesh *o, void (*func)(void *ctx), void *context);
+
 int avdl_component_skinned_mesh_SetPropertyInt(struct avdl_component_skinned_mesh *c, const char *property_name, int value);
 int avdl_component_skinned_mesh_SetPropertyFloat(struct avdl_component_skinned_mesh *c, const char *property_name, float value);
 int avdl_component_skinned_mesh_SetPropertyString(struct avdl_component_skinned_mesh *c, const char *property_name, const char *value);
