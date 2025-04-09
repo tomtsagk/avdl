@@ -12,8 +12,10 @@
 #include "avdl_log.h"
 #include "avdl_settings.h"
 #include "avdl_json.h"
-#include "avdl_ast_node.h"
 #include "avdl_string.h"
+
+#include "avdl_ast_node.h"
+#include "avdl_ast/integer.h"
 
 #include "avdl_ast/avdl_ast_command_definition.h"
 
@@ -484,7 +486,7 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 
 				struct ast_node *arrayNum = avdl_da_get(&arrayNode->children, 0);
 
-				if (arrayNum->node_type != AST_NUMBER) {
+				if (!avdl_ast_integer_IsValid(arrayNum)) {
 					semantic_error(l, "array definition should only be a number");
 				}
 				struct_table_push_member_array(ast_getLex(name), dd_variable_type_convert(ast_getLex(type)), ast_getLex(type), arrayNum->value, e->isRef);
@@ -671,7 +673,7 @@ static struct ast_node *expect_command_struct(struct avdl_lexer *l) {
 
 				struct ast_node *arrayNum = avdl_da_get(&arrayNode->children, 0);
 
-				if (arrayNum->node_type != AST_NUMBER) {
+				if (!avdl_ast_integer_IsValid(arrayNum)) {
 					semantic_error(l, "array definition should only be a number");
 				}
 				struct_table_push_member_array(ast_getLex(name), dd_variable_type_convert(ast_getLex(type)), ast_getLex(type), arrayNum->value, e->isRef);
@@ -813,9 +815,7 @@ static struct ast_node *expect_int(struct avdl_lexer *l) {
 		semantic_error(l, "expected integer instead of '%s'", avdl_lexer_getLexToken(l));
 	}
 
-	struct ast_node *integer = ast_create(AST_NUMBER);
-	ast_setValuei(integer, atoi(avdl_lexer_getLexToken(l)));
-	return integer;
+	return avdl_ast_integer_Create(atoi(avdl_lexer_getLexToken(l)));
 }
 
 static struct ast_node *expect_float(struct avdl_lexer *l) {

@@ -10,6 +10,8 @@
 #include "avdl_commands.h"
 #include "avdl_log.h"
 
+#include "avdl_ast/integer.h"
+
 static void print_command_definition(FILE *fd, struct ast_node *n);
 static void print_command_definitionInClass(FILE *fd, struct ast_node *n);
 static void print_command_definitionClassFunction(FILE *fd, struct ast_node *n, const char *classname);
@@ -36,7 +38,6 @@ static void print_command_asset(FILE *fd, struct ast_node *n);
 static void print_binaryOperation(FILE *fd, struct ast_node *n);
 static void print_identifierReference(FILE *fd, struct ast_node *n, int skipLast);
 static void print_identifier(FILE *fd, struct ast_node *n, int skipLast);
-static void print_number(FILE *fd, struct ast_node *n);
 static void print_float(FILE *fd, struct ast_node *n);
 static void print_node(FILE *fd, struct ast_node *n);
 static int getIdentifierChainCount(struct ast_node *n);
@@ -871,10 +872,6 @@ static void print_command_native(FILE *fd, struct ast_node *n) {
 	}
 }
 
-static void print_number(FILE *fd, struct ast_node *n) {
-	fprintf(fd, "%d", n->value);
-}
-
 static void print_float(FILE *fd, struct ast_node *n) {
 	fprintf(fd, "%f", n->fvalue);
 }
@@ -896,7 +893,7 @@ static void print_node(FILE *fd, struct ast_node *n) {
 			break;
 		}
 		case AST_NUMBER: {
-			print_number(fd, n);
+			avdl_ast_integer_PrintToC(n, fd);
 			break;
 		}
 		case AST_IDENTIFIER: {
