@@ -432,8 +432,8 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	GL(glEnable(GL_FRAMEBUFFER_SRGB));
 	#endif
 
-	GL(glEnable(GL_CULL_FACE));
-	GL(glCullFace(GL_BACK));
+	//GL(glEnable(GL_CULL_FACE));
+	//GL(glCullFace(GL_BACK));
 
 	#if defined(AVDL_QUEST2)
 
@@ -448,7 +448,7 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	//GL(glEnable(GL_CULL_FACE));
-	glDisable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
 	//GL(glCullFace(GL_BACK));
 	glDisable(GL_BLEND);
 	glViewport(0, 0, dd_window_width(), dd_window_height());

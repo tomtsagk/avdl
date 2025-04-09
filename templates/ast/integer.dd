@@ -1,0 +1,3 @@
+(function void dd_gameInit () {
+	(log "Here's a number: %d" -8)
+})
