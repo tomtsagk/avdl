@@ -17,8 +17,6 @@
 #include "avdl_ast_node.h"
 #include "avdl_ast/integer.h"
 
-#include "avdl_ast/avdl_ast_command_definition.h"
-
 // TODO: Possibly remove this
 enum AVDL_PLATFORM avdl_platform_temp;
 extern struct AvdlSettings *avdl_settings_ptr;
@@ -34,7 +32,6 @@ static struct ast_node *expect_command_group(struct avdl_lexer *l);
 static struct ast_node *expect_command_functionDefinition(struct avdl_lexer *l);
 static struct ast_node *expect_command_classFunction(struct avdl_lexer *l);
 static struct ast_node *expect_identifier(struct avdl_lexer *l);
-static struct ast_node *expect_int(struct avdl_lexer *l);
 static struct ast_node *expect_float(struct avdl_lexer *l);
 static struct ast_node *expect_string(struct avdl_lexer *l);
 static struct ast_node *expect_command_binaryOperation(struct avdl_lexer *l, const char *binaryOperationLex);
@@ -440,8 +437,8 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 	}
 	// no subclass for this class
 	else {
-		struct ast_node *n = expect_int(l);
-		if (n->value != 0) {
+		struct ast_node *n = avdl_ast_integer_Expect(l);
+		if (avdl_ast_integer_GetValue(n) != 0) {
 			semantic_error(l, "subclass can either be an identifier or '0'");
 		}
 		subclassname = ast_create(AST_EMPTY);
@@ -632,8 +629,8 @@ static struct ast_node *expect_command_struct(struct avdl_lexer *l) {
 	}
 	// no subclass for this class
 	else {
-		struct ast_node *n = expect_int(l);
-		if (n->value != 0) {
+		struct ast_node *n = avdl_ast_integer_Expect(l);
+		if (avdl_ast_integer_GetValue(n) != 0) {
 			semantic_error(l, "subclass can either be an identifier or '0'");
 		}
 		subclassname = ast_create(AST_EMPTY);
@@ -808,16 +805,6 @@ static struct ast_node *expect_command_definitionShort(struct avdl_lexer *l, str
 	return definition;
 }
 
-static struct ast_node *expect_int(struct avdl_lexer *l) {
-
-	// confirm it's an integer
-	if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_INT) {
-		semantic_error(l, "expected integer instead of '%s'", avdl_lexer_getLexToken(l));
-	}
-
-	return avdl_ast_integer_Create(atoi(avdl_lexer_getLexToken(l)));
-}
-
 static struct ast_node *expect_float(struct avdl_lexer *l) {
 
 	// confirm it's a float
@@ -882,7 +869,12 @@ static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 		int token = avdl_lexer_peek(l);
 		// integer as array modifier
 		if (token == LEXER_TOKEN_INT) {
-			ast_addChild(array, expect_int(l));
+			struct ast_node *n = avdl_ast_integer_Expect(l);
+			if (!n) {
+				semantic_error(l, "expected integer instead of '%s'", avdl_lexer_getLexToken(l));
+				return 0;
+			}
+			ast_addChild(array, n);
 		}
 		else
 		// identifier as array modifier
@@ -1008,7 +1000,7 @@ static struct ast_node *expect_command_arg(struct avdl_lexer *l) {
 
 	int token = avdl_lexer_peek(l);
 	if (token == LEXER_TOKEN_INT) {
-		return expect_int(l);
+		return avdl_ast_integer_Expect(l);
 	}
 	else
 	if (token == LEXER_TOKEN_FLOAT) {
