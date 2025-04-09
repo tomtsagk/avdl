@@ -156,6 +156,9 @@ int dd_main(int argc, char *argv[]) {
 		avdl_log("avdl: error initialising engine");
 		return -1;
 	}
+	if (!dd_default_world_constructor) {
+		return 0;
+	}
 	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
 	avdl_state_initialised = 1;
 

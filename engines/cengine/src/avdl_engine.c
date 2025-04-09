@@ -109,6 +109,16 @@ extern int avdl_use_default_locale;
 
 int avdl_engine_init(struct avdl_engine *o) {
 
+	// initialise pre-game data to defaults then to game-specifics
+	dd_gameInitDefault();
+	dd_gameInit();
+
+	// no default world selected - just exit
+	if (dd_default_world_constructor == 0) {
+		avdl_log("avdl: No default world selected, exiting");
+		return 0;
+	}
+
 	// default at 30 FPS
 	avdl_engine_setFPS(30);
 
@@ -182,10 +192,6 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	// start at full volume
 	avdl_sound_setVolume(100);
-
-	// initialise pre-game data to defaults then to game-specifics
-	dd_gameInitDefault();
-	dd_gameInit();
 
 	// audio
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
