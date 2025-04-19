@@ -189,3 +189,7 @@ void avdl_component_skinned_mesh_SetOnAnimationDone(struct avdl_component_skinne
 void avdl_component_skinned_mesh_update(struct avdl_component_skinned_mesh *m, float dt) {
 	avdl_skinned_mesh_update(&m->mesh, dt);
 }
+
+void avdl_component_skinned_mesh_PrintAnimations(struct avdl_component_skinned_mesh *o) {
+	avdl_skinned_mesh_PrintAnimations(&o->mesh);
+}

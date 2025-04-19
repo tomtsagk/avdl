@@ -340,6 +340,7 @@ void struct_table_init() {
 	struct_table_push_member("SetOnAnimationDone", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("update", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("draw", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("PrintAnimations", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_component_terrain", "avdl_component");
 	struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
