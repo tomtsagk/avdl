@@ -27,6 +27,11 @@ void avdl_component_terrain_create(struct avdl_component_terrain *o) {
 	avdl_texture_create(&o->img_extra_2);
 	avdl_texture_create(&o->img_extra_3);
 
+	o->terrainRepeat = 1;
+
+	avdl_collider_terrain_create(&o->collider);
+	avdl_collider_terrain_SetTerrain(&o->collider, &o->terrain);
+
 }
 
 void avdl_component_terrain_clean(struct avdl_component_terrain *o) {
@@ -41,6 +46,7 @@ void avdl_component_terrain_clean(struct avdl_component_terrain *o) {
 
 void avdl_component_terrain_after_create(struct avdl_component_terrain *o) {
 	avdl_terrain_setScaleZ(&o->terrain, o->scaleZ);
+	o->terrain.terrainRepeat = o->terrainRepeat;
 	if (o->asset_name) {
 		if (o->isEditor) {
 			avdl_terrain_loadLocal(&o->terrain, o->asset_name);
@@ -163,6 +169,7 @@ struct avdl_component_property avdl_component_terrain_property_array[] = {
 	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, texture2_name, AVDL_COMPONENT_PROPERTY_TYPE_STRING),
 	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, texture3_name, AVDL_COMPONENT_PROPERTY_TYPE_STRING),
 	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, scaleZ, AVDL_COMPONENT_PROPERTY_TYPE_FLOAT),
+	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_terrain, terrainRepeat, AVDL_COMPONENT_PROPERTY_TYPE_INT),
 };
 int avdl_component_terrain_property_array_count = sizeof(avdl_component_terrain_property_array) /sizeof(struct avdl_component_property);;
 
@@ -256,4 +263,8 @@ char *avdl_component_terrain_GetPropertyIndexString(struct avdl_component_terrai
 	}
 	char **p = ((void *) c) +avdl_component_terrain_property_array[index].offset;
 	return *p;
+}
+
+struct avdl_collider *avdl_component_terrain_GetCollider(struct avdl_component_terrain *o) {
+	return &o->collider;
 }

@@ -3,6 +3,7 @@
 #include "avdl_collider_sphere.h"
 #include "avdl_log.h"
 #include "dd_math.h"
+#include "avdl_component_terrain.h"
 
 void avdl_collider_create(struct avdl_collider *o) {
 	o->type = AVDL_COLLIDER_TYPE_POINT;
@@ -621,6 +622,38 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 	if (o1->type == AVDL_COLLIDER_TYPE_SPHERE && o2->type == AVDL_COLLIDER_TYPE_AABB) {
 		return avdl_collider_collisionNode(o2, n2, o1, n1, collision);
 	}
+	else
+	if (o1->type == AVDL_COLLIDER_TYPE_TERRRAIN && o2->type == AVDL_COLLIDER_TYPE_POINT) {
+		//avdl_log("terrain point collision");
+
+		// get player's position
+		struct avdl_vec4 vertex2;
+		avdl_vec4_Setf(&vertex2, 0, 0, 0, 1);
+		avdl_vec4_MultiplyMatrix(&vertex2, avdl_node_GetGlobalMatrix(n2));
+		avdl_vec4_MultiplyMatrix(&vertex2, avdl_node_GetGlobalInverseMatrix(n1));
+
+		struct avdl_terrain *t;
+		t = avdl_collider_terrain_GetTerrain(o1);
+
+		float terrainSpot = avdl_terrain_getSpot(t, avdl_vec4_X(&vertex2), -avdl_vec4_Z(&vertex2));
+
+		//avdl_log("player position:");
+		//avdl_vec3_Print(&vertex2);
+		//avdl_log("terrain spot: %f", terrainSpot);
+		if (avdl_vec4_Y(&vertex2) < terrainSpot) {
+			avdl_vec4_Setf(&collision->overlap, 0, 0, 0, 0);
+			avdl_vec4_SetY(&collision->overlap, terrainSpot -avdl_vec4_Y(&vertex2));
+
+			avdl_terrain_getNormal(t, avdl_vec4_X(&vertex2), -avdl_vec4_Z(&vertex2), &collision->normal);
+			return 1;
+		}
+
+		return 0;
+	}
+	else
+	if (o1->type == AVDL_COLLIDER_TYPE_POINT && o2->type == AVDL_COLLIDER_TYPE_TERRRAIN) {
+		return avdl_collider_collisionNode(o2, n2, o1, n1, collision);
+	}
 
 	avdl_log("collision not supported");
 	return 0;
@@ -634,4 +667,8 @@ void avdl_collider_collision_clean(struct avdl_collider_collision *o) {
 
 struct avdl_vec4 *avdl_collider_collision_GetOverlap(struct avdl_collider_collision *o) {
 	return &o->overlap;
+}
+
+struct avdl_vec3 *avdl_collider_collision_GetNormal(struct avdl_collider_collision *o) {
+	return &o->normal;
 }

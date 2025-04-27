@@ -2,6 +2,8 @@
 #include "avdl_log.h"
 #include "dd_math.h"
 
+extern GLuint currentProgram;
+
 void avdl_terrain_create(struct avdl_terrain *o) {
 
 	o->clean = avdl_terrain_clean;
@@ -15,6 +17,8 @@ void avdl_terrain_create(struct avdl_terrain *o) {
 	o->loaded = 0;
 
 	o->scaleZ = 1;
+
+	o->terrainRepeat = 1;
 }
 
 void avdl_terrain_clean(struct avdl_terrain *o) {
@@ -231,13 +235,18 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 		avdl_texture_UnLoad(&o->img);
 	}
 
+	GLuint loc = glGetUniformLocation(currentProgram, "terrain_repeat");
+	if (loc != -1) {
+		GL(glUniform1i(loc, o->terrainRepeat));
+	}
+
 	avdl_mesh_draw(&o->mesh);
 }
 
 float avdl_terrain_getSpot(struct avdl_terrain *o, float x, float z) {
 
 	if (!o->loaded) {
-		avdl_log("terrain not loaded yet");
+		//avdl_log("terrain not loaded yet");
 		return 0;
 	}
 
@@ -260,6 +269,53 @@ float avdl_terrain_getSpot(struct avdl_terrain *o, float x, float z) {
 
 	float h_final = h_bottom +((h_top -h_bottom) *factorZ);
 	return h_final;
+}
+
+int avdl_terrain_getNormal(struct avdl_terrain *o, float x, float z, struct avdl_vec3 *out) {
+
+	if (!o->loaded) {
+		//avdl_log("terrain not loaded yet");
+		return 0;
+	}
+
+	// player's tile
+	int tileX = dd_math_min(x, o->width  -2);
+	int tileZ = dd_math_min(z, o->height -2);
+
+	// tile index
+	int index = ((tileZ *o->width) +tileX);
+        int indexRight = index +1;
+	int indexTop = index +o->width;
+	int indexTopRight = index +o->width +1;
+
+	//avdl_log("heights: %f %f %f %f", o->heights[index], o->heights[indexRight], o->heights[indexTop], o->heights[indexTopRight]);
+
+	// triangle 1
+	struct avdl_vec3 v1;
+	avdl_vec3_Setf(&v1, 0, o->heights[indexTop] -o->heights[index], -1);
+	struct avdl_vec3 v2;
+	avdl_vec3_Setf(&v2, 1, o->heights[indexRight] -o->heights[index], 0);
+
+	struct avdl_vec3 v1Result;
+	avdl_vec3_Cross(&v1Result, &v2, &v1);
+	avdl_vec3_Normalise(&v1Result);
+
+	// triangle 2
+	struct avdl_vec3 v3;
+	avdl_vec3_Setf(&v3, -1, o->heights[indexTop] -o->heights[index], -1);
+	struct avdl_vec3 v4;
+	avdl_vec3_Setf(&v4, 0, o->heights[indexTopRight] -o->heights[index], -1);
+
+	struct avdl_vec3 v3Result;
+	avdl_vec3_Cross(&v3Result, &v4, &v3);
+	avdl_vec3_Normalise(&v3Result);
+
+	// average the two triangle's normals
+	avdl_vec3_Add(&v1Result, &v3Result);
+	avdl_vec3_Dividef(&v1Result, 2, 2, 2);
+	avdl_vec3_Set(out, &v1Result);
+
+	return 0;
 }
 
 int avdl_terrain_isOnTerrain(struct avdl_terrain *o, float x, float z) {

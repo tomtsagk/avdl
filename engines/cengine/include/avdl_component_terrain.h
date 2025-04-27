@@ -6,12 +6,14 @@
 #include "avdl_terrain.h"
 #include "avdl_texture.h"
 #include "avdl_shaders.h"
+#include "avdl_collider_terrain.h"
 
 struct avdl_component_terrain {
 
 	struct avdl_component parent;
 
 	struct avdl_terrain terrain;
+	struct avdl_collider_terrain collider;
 	char *asset_name;
 
 	struct avdl_texture img;
@@ -28,6 +30,8 @@ struct avdl_component_terrain {
 
 	float scaleZ;
 
+	int terrainRepeat;
+
 	int isEditor;
 
 };
@@ -42,6 +46,7 @@ struct avdl_terrain *avdl_component_terrain_GetTerrain(struct avdl_component_ter
 
 int avdl_component_terrain_IsOnTerrain(struct avdl_component_terrain *o, struct avdl_node *n);
 float avdl_component_terrain_GetSpot(struct avdl_component_terrain *o, struct avdl_node *n);
+struct avdl_collider *avdl_component_terrain_GetCollider(struct avdl_component_terrain *o);
 
 int avdl_component_terrain_Copy(struct avdl_component *o, struct avdl_component *target);
 

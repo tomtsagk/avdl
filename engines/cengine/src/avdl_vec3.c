@@ -69,6 +69,9 @@ void avdl_vec3_Cross(struct avdl_vec3 *o, struct avdl_vec3 *v1, struct avdl_vec3
 void avdl_vec3_Normalise(struct avdl_vec3 *o) {
 	float magn = avdl_vec3_Magnitude(o);
 	if (magn == 0) {
+		return;
+	}
+	if (magn == 0) {
 		o->x = 0;
 		o->y = 1;
 		o->z = 0;

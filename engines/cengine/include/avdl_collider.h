@@ -14,14 +14,17 @@ extern "C" {
 #define AVDL_COLLIDER_TYPE_AABB 1
 #define AVDL_COLLIDER_TYPE_OBB 2
 #define AVDL_COLLIDER_TYPE_SPHERE 3
+#define AVDL_COLLIDER_TYPE_TERRRAIN 4
 
 struct avdl_collider_collision {
 	struct avdl_vec4 overlap;
+	struct avdl_vec3 normal;
 };
 
 void avdl_collider_collision_create(struct avdl_collider_collision *o);
 void avdl_collider_collision_clean(struct avdl_collider_collision *o);
 struct avdl_vec4 *avdl_collider_collision_GetOverlap(struct avdl_collider_collision *o);
+struct avdl_vec3 *avdl_collider_collision_GetNormal(struct avdl_collider_collision *o);
 
 struct avdl_collider {
 	int type;

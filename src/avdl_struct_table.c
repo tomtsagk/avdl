@@ -202,6 +202,8 @@ void struct_table_init() {
 	struct_table_push_member("clearConstantForce", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push("avdl_collider_collision", 0);
 	struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("GetOverlap", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("GetNormal", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push("avdl_collider", 0);
 	struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push("avdl_collider_aabb", "avdl_collider");
@@ -214,6 +216,8 @@ void struct_table_init() {
 	struct_table_push("avdl_collider_sphere", "avdl_collider");
 	struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("setRadius", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push("avdl_collider_terrain", "avdl_collider");
+	struct_table_push_member("SetTerrain", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push("avdl_rigidbody", 0);
 	struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("setPositionf", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
@@ -350,6 +354,7 @@ void struct_table_init() {
 	struct_table_push_member("GetTerrain", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("IsOnTerrain", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("GetSpot", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("GetCollider", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("scaleZ", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("texture_main_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push_member("texture0_name", DD_VARIABLE_TYPE_FUNCTION, 0, 0);

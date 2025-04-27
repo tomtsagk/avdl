@@ -20,6 +20,8 @@ struct avdl_terrain {
 	// z scale
 	float scaleZ;
 
+	int terrainRepeat;
+
 	// constructor/destructor
 	void (*clean)(struct avdl_terrain *);
 
@@ -33,6 +35,7 @@ void avdl_terrain_load(struct avdl_terrain *o, const char *filename);
 void avdl_terrain_loadLocal(struct avdl_terrain *o, const char *filename);
 
 float avdl_terrain_getSpot(struct avdl_terrain *o, float x, float z);
+int avdl_terrain_getNormal(struct avdl_terrain *o, float x, float z, struct avdl_vec3 *out);
 int avdl_terrain_isOnTerrain(struct avdl_terrain *o, float x, float z);
 int avdl_terrain_getWidth(struct avdl_terrain *o);
 int avdl_terrain_getHeight(struct avdl_terrain *o);
