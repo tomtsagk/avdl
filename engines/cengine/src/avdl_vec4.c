@@ -214,3 +214,10 @@ float avdl_vec4_Distance(struct avdl_vec4 *a, struct avdl_vec4 *b) {
 	);
 	return avdl_vec4_Magnitude(&v);
 }
+
+void avdl_vec4_Invert(struct avdl_vec4 *o) {
+	o->x *= -1;
+	o->y *= -1;
+	o->z *= -1;
+	o->w *= -1;
+}

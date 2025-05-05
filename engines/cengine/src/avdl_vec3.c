@@ -163,3 +163,9 @@ void avdl_vec3_RotateZ(struct avdl_vec3 *o, float rad) {
 	o->y = x *dd_math_sin(rad) +y *dd_math_cos(rad);;
 	o->z = z;
 }
+
+void avdl_vec3_Invert(struct avdl_vec3 *o) {
+	o->x *= -1;
+	o->y *= -1;
+	o->z *= -1;
+}

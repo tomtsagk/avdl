@@ -65,6 +65,8 @@ void avdl_vec4_Print(struct avdl_vec4 *);
 void avdl_vec4_Normalise(struct avdl_vec4 *o);
 float avdl_vec4_Magnitude(struct avdl_vec4 *o);
 
+void avdl_vec4_Invert(struct avdl_vec4 *o);
+
 #ifdef __cplusplus
 }
 #endif

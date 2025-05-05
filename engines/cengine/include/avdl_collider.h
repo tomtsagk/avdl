@@ -18,13 +18,15 @@ extern "C" {
 
 struct avdl_collider_collision {
 	struct avdl_vec4 overlap;
-	struct avdl_vec3 normal;
+	struct avdl_vec3 normal1;
+	struct avdl_vec3 normal2;
 };
 
 void avdl_collider_collision_create(struct avdl_collider_collision *o);
 void avdl_collider_collision_clean(struct avdl_collider_collision *o);
 struct avdl_vec4 *avdl_collider_collision_GetOverlap(struct avdl_collider_collision *o);
-struct avdl_vec3 *avdl_collider_collision_GetNormal(struct avdl_collider_collision *o);
+struct avdl_vec3 *avdl_collider_collision_GetNormal1(struct avdl_collider_collision *o);
+struct avdl_vec3 *avdl_collider_collision_GetNormal2(struct avdl_collider_collision *o);
 
 struct avdl_collider {
 	int type;

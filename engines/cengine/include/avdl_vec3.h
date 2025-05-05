@@ -57,6 +57,8 @@ void avdl_vec3_RotateX(struct avdl_vec3 *o, float rad);
 void avdl_vec3_RotateY(struct avdl_vec3 *o, float rad);
 void avdl_vec3_RotateZ(struct avdl_vec3 *o, float rad);
 
+void avdl_vec3_Invert(struct avdl_vec3 *o);
+
 void avdl_vec3_Print(struct avdl_vec3 *);
 
 /*

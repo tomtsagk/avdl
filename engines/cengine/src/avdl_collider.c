@@ -644,7 +644,8 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 			avdl_vec4_Setf(&collision->overlap, 0, 0, 0, 0);
 			avdl_vec4_SetY(&collision->overlap, terrainSpot -avdl_vec4_Y(&vertex2));
 
-			avdl_terrain_getNormal(t, avdl_vec4_X(&vertex2), -avdl_vec4_Z(&vertex2), &collision->normal);
+			avdl_terrain_getNormal(t, avdl_vec4_X(&vertex2), -avdl_vec4_Z(&vertex2), &collision->normal1);
+			avdl_vec3_Setf(&collision->normal2, 0, 0, 0);
 			return 1;
 		}
 
@@ -652,7 +653,19 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 	}
 	else
 	if (o1->type == AVDL_COLLIDER_TYPE_POINT && o2->type == AVDL_COLLIDER_TYPE_TERRRAIN) {
-		return avdl_collider_collisionNode(o2, n2, o1, n1, collision);
+		if (!avdl_collider_collisionNode(o2, n2, o1, n1, collision)) {
+			return 0;
+		}
+
+		// swap data
+		avdl_vec4_Invert(&collision->overlap);
+
+		struct avdl_vec3 temp;
+		avdl_vec3_Set(&temp, &collision->normal1);
+		avdl_vec3_Set(&collision->normal1, &collision->normal2);
+		avdl_vec3_Set(&collision->normal2, &temp);
+
+		return 1;
 	}
 
 	avdl_log("collision not supported");
@@ -669,6 +682,10 @@ struct avdl_vec4 *avdl_collider_collision_GetOverlap(struct avdl_collider_collis
 	return &o->overlap;
 }
 
-struct avdl_vec3 *avdl_collider_collision_GetNormal(struct avdl_collider_collision *o) {
-	return &o->normal;
+struct avdl_vec3 *avdl_collider_collision_GetNormal1(struct avdl_collider_collision *o) {
+	return &o->normal1;
+}
+
+struct avdl_vec3 *avdl_collider_collision_GetNormal2(struct avdl_collider_collision *o) {
+	return &o->normal2;
 }
