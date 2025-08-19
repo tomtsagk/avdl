@@ -48,11 +48,7 @@ struct dd_sound {
 	#endif
 	int playingChannel;
 
-	void (*load)(struct dd_sound *, const char *filename, enum dd_audio_format format);
 	void (*clean)(struct dd_sound *);
-	void (*play)(struct dd_sound *);
-	void (*playLoop)(struct dd_sound *, int loops);
-	void (*stop)(struct dd_sound *);
 };
 
 void dd_sound_create(struct dd_sound *);

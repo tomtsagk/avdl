@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "dd_image.h"
+#include "avdl_texture.h"
 
 #if defined( AVDL_DIRECT3D11 )
 #define generic GenericFromFreeType
@@ -38,7 +38,7 @@ struct avdl_glyph {
  * designed to load a font from a file and render desired glyphs.
  */
 struct avdl_font {
-	struct dd_image texture;
+	struct avdl_texture texture;
 	int outline_thickness;
 
 	FT_Face face;
@@ -49,13 +49,11 @@ struct avdl_font {
 	int openglContextId;
 
 	// custom icons for drawing special icons in the middle of the font
-	struct dd_image *customIcon[10];
+	struct avdl_texture *customIcon[10];
 	const char *customIconKeyword[10];
 	int customIconCount;
 
 	void (*clean)(struct avdl_font *);
-	void (*set)(struct avdl_font *, const char *name, int filetype, int outline_thickness);
-	void (*addCustomIcon)(struct avdl_font *, const char *keyword, struct dd_image *);
 };
 
 int avdl_font_init();
@@ -84,7 +82,7 @@ float avdl_font_getGlyphAdvance(struct avdl_font *, int);
 
 int avdl_font_needsRefresh(struct avdl_font *);
 
-void avdl_font_addCustomIcon(struct avdl_font *, const char *keyword, struct dd_image *);
+void avdl_font_addCustomIcon(struct avdl_font *, const char *keyword, struct avdl_texture *);
 
 #ifdef __cplusplus
 }

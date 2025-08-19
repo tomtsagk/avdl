@@ -10,6 +10,7 @@ void dd_dynamic_array_create(struct dd_dynamic_array *da) {
 	da->elements = 0;
 	da->array_size = 0;
 	da->element_size = 0;
+	da->clean = dd_dynamic_array_clean;
 }
 
 void dd_dynamic_array_clean(struct dd_dynamic_array *da) {

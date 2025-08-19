@@ -56,7 +56,6 @@ void dd_world_change(int size, void (*constructor)(struct dd_world *)) {
 }
 
 void dd_world_create(struct dd_world *this) {
-	this->create = 0;
 	this->onload = dd_world_onload;
 	this->update = 0;
 	this->resize = 0;

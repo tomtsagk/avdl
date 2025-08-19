@@ -34,13 +34,11 @@ DIRECTORY_TESTS_DEPS=${DIRECTORY_TESTS}/objects
 DIRECTORY_TESTS_CENG=${DIRECTORY_TESTS}/cengine
 DIRECTORY_TESTS_CENG_DEPS=${DIRECTORY_TESTS_CENG}/objects
 DIRECTORY_COVERAGE=coverage/
-DIRECTORY_ALL=${DIRECTORY_BUILD} ${DIRECTORY_EXE} ${DIRECTORY_OBJ} ${DIRECTORY_TESTS} \
-	${DIRECTORY_TESTS_DEPS} ${DIRECTORY_COVERAGE} ${DIRECTORY_TESTS_CENG} ${DIRECTORY_TESTS_CENG_DEPS}
 
 #
 # source files
 #
-SRC=$(wildcard src/*.c)
+SRC=$(shell find src/ -name '*.c')
 OBJ=${SRC:src/%.c=${DIRECTORY_OBJ}/%.o}
 HEADERS=$(wildcard include/*.h)
 
@@ -98,7 +96,8 @@ all: ${EXECUTABLE}
 #
 # build the executable, depends on source files
 #
-${EXECUTABLE}: ${OBJ} | ${DIRECTORY_EXE}
+${EXECUTABLE}: ${OBJ}
+	@mkdir -p $(dir $@)
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} ${OBJ} -o $@
 
 #
@@ -234,15 +233,10 @@ ${DIRECTORY_TESTS_DEPS}/%.o: src/%.c ${DIRECTORY_TESTS_DEPS}
 	@${CC} ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} --coverage -c -o $@ $< -DAVDL_UNIT_TEST
 
 #
-# create needed directories
-#
-${DIRECTORY_ALL}:
-	mkdir -p $@
-
-#
 # compile .c source files
 #
-${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS} | ${DIRECTORY_OBJ}
+${DIRECTORY_OBJ}/%.o: src/%.c ${HEADERS}
+	@mkdir -p $(dir $@)
 	$(CC) ${COMPILER_FLAGS} ${COMPILER_DEFINES} ${COMPILER_INCLUDES} -c $< -o $@
 
 .PHONY: all tarball clean install test test-advance ${TESTS_NAMES} ${SAMPLES}

@@ -8,7 +8,6 @@ extern "C" {
 /* data that each world has
  */
 extern struct dd_world {
-	void (*create)(struct dd_world *);
 	void (*onload)(struct dd_world *);
 	void (*update)(struct dd_world *, float);
 	void (*resize)(struct dd_world *);

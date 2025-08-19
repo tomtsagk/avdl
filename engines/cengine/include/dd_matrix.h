@@ -14,7 +14,7 @@ struct dd_matrix {
 void dd_matrix_create(struct dd_matrix *m);
 void dd_matrix_clean(struct dd_matrix *m);
 
-#include "dd_vec4.h"
+#include "avdl_vec4.h"
 
 /*
  * matrix setters
@@ -47,8 +47,8 @@ extern int dd_cam_index;
 #if defined(AVDL_QUEST2)
 extern struct dd_matrix dd_cam_controllers[];
 extern int dd_cam_controller_active[];
-extern struct dd_vec4 dd_cam_controllers_position[];
-extern struct dd_vec4 dd_cam_controllers_direction[];
+extern struct avdl_vec4 dd_cam_controllers_position[];
+extern struct avdl_vec4 dd_cam_controllers_direction[];
 #endif
 void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m);
 struct dd_matrix *dd_matrix_getControllerMatrix(int controllerIndex);
@@ -56,8 +56,8 @@ void dd_matrix_applyControllerMatrix(int controllerIndex);
 int dd_matrix_hasVisibleControllers();
 int dd_matrix_isControllerVisible(int index);
 void dd_matrix_setControllerVisible(int index, int state);
-struct dd_vec4 *dd_matrix_getControllerPosition(int index);
-struct dd_vec4 *dd_matrix_getControllerDirection(int index);
+struct avdl_vec4 *dd_matrix_getControllerPosition(int index);
+struct avdl_vec4 *dd_matrix_getControllerDirection(int index);
 
 void dd_matrix_globalInit();
 void dd_matrix_push();
@@ -104,7 +104,10 @@ float dd_matrix_x(struct dd_matrix *m);
 float dd_matrix_y(struct dd_matrix *m);
 float dd_matrix_z(struct dd_matrix *m);
 
-void dd_matrix_quaternion_to_rotation_matrix(struct dd_vec4 *q, struct dd_matrix *output);
+void dd_matrix_quaternion_to_rotation_matrix(struct avdl_vec4 *q, struct dd_matrix *output);
+
+extern struct dd_matrix matPerspective;
+#define dd_matrix_Perspective &matPerspective
 
 #ifdef __cplusplus
 }

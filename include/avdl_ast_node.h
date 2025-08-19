@@ -58,6 +58,8 @@ struct ast_node {
 	int isExtern;
 	int isIncluded;
 	int isStruct;
+	int isVirtual;
+	int isOverride;
 
 	// node may have a parent, and any number of children
 	struct avdl_dynamic_array children;

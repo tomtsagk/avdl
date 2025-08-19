@@ -14,7 +14,7 @@
  */
 
 #include "avdl_mesh.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 
 /*
  * the maximum number of particles that can
@@ -61,12 +61,12 @@ struct avdl_particle_system {
 	// values to be given to each new particle
 	struct avdl_mesh *particleMesh;
 	float particleLife;
-	struct dd_vec3 particlePosition;
-	struct dd_vec3 particlePositionFuzz;
-	struct dd_vec3 particleRotation;
-	struct dd_vec3 particleRotationFuzz;
-	struct dd_vec3 particleScale;
-	struct dd_vec3 particleScaleFuzz;
+	struct avdl_vec3 particlePosition;
+	struct avdl_vec3 particlePositionFuzz;
+	struct avdl_vec3 particleRotation;
+	struct avdl_vec3 particleRotationFuzz;
+	struct avdl_vec3 particleScale;
+	struct avdl_vec3 particleScaleFuzz;
 
 	/*
 	 * functions to allow variable values
@@ -80,28 +80,6 @@ struct avdl_particle_system {
 	 * basic functions
 	 */
 	void (*clean)(struct avdl_particle_system *);
-	void (*update)(struct avdl_particle_system *, float dt);
-	void (*draw)(struct avdl_particle_system *);
-
-	/*
-	 * setters for particle data
-	 */
-	void (*assignAsset)(struct avdl_particle_system *, struct avdl_mesh *);
-	void (*setDelay)(struct avdl_particle_system *, float);
-	void (*setParticleLife)(struct avdl_particle_system *, float);
-	void (*setParticlePositionXFunc)(struct avdl_particle_system *, float (*)(float));
-	void (*setParticlePositionYFunc)(struct avdl_particle_system *, float (*)(float));
-	void (*setParticlePositionZFunc)(struct avdl_particle_system *, float (*)(float));
-	void (*setParticleScaleFunc)(struct avdl_particle_system *, float (*)(float));
-	void (*setParticlesTotal)(struct avdl_particle_system *, int);
-
-	// initial value setters
-	void (*setParticlePosition)(struct avdl_particle_system *, float, float, float);
-	void (*setParticlePositionFuzz)(struct avdl_particle_system *, float, float, float);
-	void (*setParticleRotation)(struct avdl_particle_system *, float, float, float);
-	void (*setParticleRotationFuzz)(struct avdl_particle_system *, float, float, float);
-	void (*setParticleScale)(struct avdl_particle_system *, float, float, float);
-	void (*setParticleScaleFuzz)(struct avdl_particle_system *, float, float, float);
 
 }; // particle system
 

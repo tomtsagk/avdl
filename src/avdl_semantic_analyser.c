@@ -12,7 +12,10 @@
 #include "avdl_log.h"
 #include "avdl_settings.h"
 #include "avdl_json.h"
+#include "avdl_string.h"
+
 #include "avdl_ast_node.h"
+#include "avdl_ast/integer.h"
 
 // TODO: Possibly remove this
 enum AVDL_PLATFORM avdl_platform_temp;
@@ -29,7 +32,6 @@ static struct ast_node *expect_command_group(struct avdl_lexer *l);
 static struct ast_node *expect_command_functionDefinition(struct avdl_lexer *l);
 static struct ast_node *expect_command_classFunction(struct avdl_lexer *l);
 static struct ast_node *expect_identifier(struct avdl_lexer *l);
-static struct ast_node *expect_int(struct avdl_lexer *l);
 static struct ast_node *expect_float(struct avdl_lexer *l);
 static struct ast_node *expect_string(struct avdl_lexer *l);
 static struct ast_node *expect_command_binaryOperation(struct avdl_lexer *l, const char *binaryOperationLex);
@@ -91,6 +93,11 @@ static struct ast_node *expect_command_for(struct avdl_lexer *l) {
 	struct ast_node *condition = expect_command(l);
 	struct ast_node *step = expect_command(l);
 	struct ast_node *statements = expect_command(l);
+
+	if (!definition || !condition || !step || !statements) {
+		avdl_log("error parsing command `for` - missing ingredients");
+		return 0;
+	}
 
 	struct ast_node *forcmd = ast_create(AST_COMMAND_NATIVE);
 	ast_setValuei(forcmd, 0);
@@ -319,6 +326,10 @@ static struct ast_node *expect_command_classFunction(struct avdl_lexer *l) {
 	//symtable_print();
 
 	struct ast_node *functionStatements = expect_command(l);
+	if (!functionStatements) {
+		avdl_log("error reading function statements");
+		return 0;
+	}
 	symtable_pop();
 
 	ast_addChild(classFunc, classname);
@@ -349,9 +360,37 @@ static struct ast_node *expect_command_functionDefinition(struct avdl_lexer *l) 
 		ast_delete(optionalModifier);
 		optionalModifier = expect_identifier(l);
 	}
+	else
+	if (strcmp(ast_getLex(optionalModifier), "virtual") == 0) {
+		// apply modifier
+		function->isVirtual = 1;
+
+		// get new optional modifier
+		ast_delete(optionalModifier);
+		optionalModifier = expect_identifier(l);
+	}
+	else
+	if (strcmp(ast_getLex(optionalModifier), "override") == 0) {
+		// apply modifier
+		function->isOverride = 1;
+
+		// get new optional modifier
+		ast_delete(optionalModifier);
+		optionalModifier = expect_identifier(l);
+	}
 
 	struct ast_node *functionName = expect_identifier(l);
 	struct ast_node *args = expect_command(l);
+	/*
+	avdl_log("func: %s", functionName->lex);
+	if (functionName->isVirtual) {
+		avdl_log("func is virtual: %s", functionName->lex);
+	}
+	*/
+	if (!args) {
+		avdl_log("error parsing args");
+		return 0;
+	}
 
 	ast_addChild(function, optionalModifier);
 	ast_addChild(function, functionName);
@@ -398,8 +437,8 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 	}
 	// no subclass for this class
 	else {
-		struct ast_node *n = expect_int(l);
-		if (n->value != 0) {
+		struct ast_node *n = avdl_ast_integer_Expect(l);
+		if (avdl_ast_integer_GetValue(n) != 0) {
 			semantic_error(l, "subclass can either be an identifier or '0'");
 		}
 		subclassname = ast_create(AST_EMPTY);
@@ -418,7 +457,12 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 	}
 
 	struct ast_node *definitions = expect_command(l);
+	if (!definitions) {
+		avdl_log("error parsing definitions");
+		return 0;
+	}
 
+	int foundCreate = 0;
 	for (int i = 0; i < definitions->children.elements; i++) {
 		struct ast_node *child = avdl_da_get(&definitions->children, i);
 		struct ast_node *type = avdl_da_get(&child->children, 0);
@@ -439,7 +483,7 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 
 				struct ast_node *arrayNum = avdl_da_get(&arrayNode->children, 0);
 
-				if (arrayNum->node_type != AST_NUMBER) {
+				if (!avdl_ast_integer_IsValid(arrayNum)) {
 					semantic_error(l, "array definition should only be a number");
 				}
 				struct_table_push_member_array(ast_getLex(name), dd_variable_type_convert(ast_getLex(type)), ast_getLex(type), arrayNum->value, e->isRef);
@@ -449,7 +493,15 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 			}
 		}
 		// new function
-		else {
+		else
+		if (strcmp(ast_getLex(child), "function") == 0) {
+
+			int function_type = AVDL_VARIABLE_TYPE_FUNCTION_INLINE;
+
+			if (strcmp(name->lex, "create") == 0) {
+				foundCreate = 1;
+			}
+
 			/*
 			 * there's a subclass, check if new function is
 			 * overriding another one
@@ -466,11 +518,73 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 				//avdl_log("is ref: %s %d", ast_getLex(child), child->isRef);
 			}
 
+			// virtual and override cannot both appear
+			if (child->isVirtual) {
+				function_type = DD_VARIABLE_TYPE_FUNCTION;
+
+				// function overrides another function but `override` is not present
+				if (struct_table_HasMemberInAnyParent(structIndex, name->lex)) {
+					avdl_log_error("function '" BLU "%s" RESET "' in class '" BLU "%s" RESET "' overrides another function but has `" YEL "virtual" RESET "` instead of `" YEL "override" RESET "` keyword", name->lex, classname->lex);
+					return 0;
+				}
+			}
+			else
+			if (child->isOverride) {
+				child->value = 1;
+
+				// function is marked as override and it indeed overrides a function from a parent class
+				if (struct_table_HasMemberInAnyParent(structIndex, name->lex)) {
+					int parentIndex = struct_table_GetNearestParentWithMember(structIndex, name->lex);
+					int memberIndex = struct_table_get_member(parentIndex, name->lex);
+					function_type = struct_table_get_member_type(parentIndex, memberIndex);
+				}
+				// function is marked as override but does not override anything
+				else {
+					avdl_log_error("function '" BLU "%s" RESET "' in class '" BLU "%s" RESET "' does not override any function but has the `" YEL "oveerride" RESET "` keyword", name->lex, classname->lex);
+					return 0;
+				}
+			}
+			else {
+				// function overrides another function but `override` is not present
+				if (struct_table_HasMemberInAnyParent(structIndex, name->lex)) {
+					avdl_log_error("function '" BLU "%s" RESET "' in class '" BLU "%s" RESET "' overrides another function but does not have the `" YEL "override" RESET "` keyword", name->lex, classname->lex);
+					return 0;
+				}
+			}
+
 			// add function to struct table
-			struct_table_push_member(ast_getLex(name), DD_VARIABLE_TYPE_FUNCTION, 0, child->isRef);
+			struct_table_push_member(ast_getLex(name), function_type, 0, child->isRef);
+		}
+		else {
+			avdl_log_error("unknown command '%s' in class: %s", name->lex, child->lex);
 		}
 	}
 	symtable_pop();
+
+	if (!foundCreate) {
+		/*
+		avdl_log("%s doesn't have create function", classname->lex);
+
+		struct ast_node *child = ast_create(AST_COMMAND_NATIVE);
+		ast_setValuei(child, 1);
+		ast_setLex   (child, "function");
+		struct ast_node *type = ast_create(AST_IDENTIFIER);
+		ast_setValuei(type, 0);
+		ast_setLex   (type, "void");
+		struct ast_node *name = ast_create(AST_IDENTIFIER);
+		ast_setValuei(name, 0);
+		ast_setLex   (name, "create");
+		struct ast_node *args = ast_create(AST_GROUP);
+		ast_setValuei(args, 0);
+		ast_setLex   (args, "group");
+		ast_addChild(child, type);
+		ast_addChild(child, name);
+		ast_addChild(child, args);
+		ast_addChild(definitions, child);
+
+		struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+		*/
+	}
 
 	/* scan definitions
 	 * if a function was defined in any of the subclasses, mark is
@@ -515,8 +629,8 @@ static struct ast_node *expect_command_struct(struct avdl_lexer *l) {
 	}
 	// no subclass for this class
 	else {
-		struct ast_node *n = expect_int(l);
-		if (n->value != 0) {
+		struct ast_node *n = avdl_ast_integer_Expect(l);
+		if (avdl_ast_integer_GetValue(n) != 0) {
 			semantic_error(l, "subclass can either be an identifier or '0'");
 		}
 		subclassname = ast_create(AST_EMPTY);
@@ -531,6 +645,10 @@ static struct ast_node *expect_command_struct(struct avdl_lexer *l) {
 	struct_table_SetStruct(structIndex);
 
 	struct ast_node *definitions = expect_command(l);
+	if (!definitions) {
+		avdl_log("error parsing definitions #2");
+		return 0;
+	}
 
 	for (int i = 0; i < definitions->children.elements; i++) {
 		struct ast_node *child = avdl_da_get(&definitions->children, i);
@@ -552,7 +670,7 @@ static struct ast_node *expect_command_struct(struct avdl_lexer *l) {
 
 				struct ast_node *arrayNum = avdl_da_get(&arrayNode->children, 0);
 
-				if (arrayNum->node_type != AST_NUMBER) {
+				if (!avdl_ast_integer_IsValid(arrayNum)) {
 					semantic_error(l, "array definition should only be a number");
 				}
 				struct_table_push_member_array(ast_getLex(name), dd_variable_type_convert(ast_getLex(type)), ast_getLex(type), arrayNum->value, e->isRef);
@@ -687,18 +805,6 @@ static struct ast_node *expect_command_definitionShort(struct avdl_lexer *l, str
 	return definition;
 }
 
-static struct ast_node *expect_int(struct avdl_lexer *l) {
-
-	// confirm it's an integer
-	if (avdl_lexer_getNextToken(l) != LEXER_TOKEN_INT) {
-		semantic_error(l, "expected integer instead of '%s'", avdl_lexer_getLexToken(l));
-	}
-
-	struct ast_node *integer = ast_create(AST_NUMBER);
-	ast_setValuei(integer, atoi(avdl_lexer_getLexToken(l)));
-	return integer;
-}
-
 static struct ast_node *expect_float(struct avdl_lexer *l) {
 
 	// confirm it's a float
@@ -763,7 +869,12 @@ static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 		int token = avdl_lexer_peek(l);
 		// integer as array modifier
 		if (token == LEXER_TOKEN_INT) {
-			ast_addChild(array, expect_int(l));
+			struct ast_node *n = avdl_ast_integer_Expect(l);
+			if (!n) {
+				semantic_error(l, "expected integer instead of '%s'", avdl_lexer_getLexToken(l));
+				return 0;
+			}
+			ast_addChild(array, n);
 		}
 		else
 		// identifier as array modifier
@@ -775,7 +886,12 @@ static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 		if (token == LEXER_TOKEN_COMMANDSTART) {
 			avdl_lexer_getNextToken(l);
 			while (avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDSTART) {
-				ast_addChild(array, expect_command(l));
+				struct ast_node *c = expect_command(l);
+				if (!c) {
+					avdl_log("error parsing command array");
+					return 0;
+				}
+				ast_addChild(array, c);
 			}
 		}
 		ast_addChild(identifier, array);
@@ -804,34 +920,39 @@ static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 			semantic_error(l, "identifier '%s' not a struct, so it can't own objects", ast_getLex(identifier));
 		}
 
-		// add struct's members to new symbol table
+		// add struct's members (and struct's parents) to new symbol table
 		symtable_push();
-		for (unsigned int j = 0; j < struct_table_get_member_total(symEntry->value); j++) {
-			/*
-			printf("	member: %s %d %s\n",
-				struct_table_get_member_name(e->value, j),
-				struct_table_get_member_type(e->value, j),
-				struct_table_get_member_nametype(e->value, j)
-			);
-			*/
+		//struct_table_print();
+		int structIndex = symEntry->value;
+		do {
+			for (unsigned int j = 0; j < struct_table_get_member_total(structIndex); j++) {
+				/*
+				printf("	member: %s %d %s\n",
+					struct_table_get_member_name(structIndex, j),
+					struct_table_get_member_type(structIndex, j),
+					struct_table_get_member_nametype(structIndex, j)
+				);
+				*/
 
-			struct entry *e2 = symtable_entryat(symtable_insert(
-				struct_table_get_member_name(symEntry->value, j),
-				struct_table_get_member_type(symEntry->value, j))
-			);
-			if (struct_table_get_member_type(symEntry->value, j) == DD_VARIABLE_TYPE_STRUCT) {
-				e2->value = struct_table_get_index(struct_table_get_member_nametype(symEntry->value, j));
+				struct entry *e2 = symtable_entryat(symtable_insert(
+					struct_table_get_member_name(structIndex, j),
+					struct_table_get_member_type(structIndex, j))
+				);
+				if (struct_table_get_member_type(structIndex, j) == DD_VARIABLE_TYPE_STRUCT) {
+					e2->value = struct_table_get_index(struct_table_get_member_nametype(structIndex, j));
+				}
+				e2->isRef = struct_table_getMemberIsRef(structIndex, j);
 			}
-			e2->isRef = struct_table_getMemberIsRef(symEntry->value, j);
-		}
+
+			structIndex = struct_table_get_parent(structIndex);
+		} while (structIndex >= 0);
 
 		// get the owned object's name
 		struct ast_node *child = expect_identifier(l);
 
 		// child not inside current symbol table - possibly belongs to a parent class
-		int childSymId = symtable_lookup(ast_getLex(child));
-		if (childSymId < 0) {
-			int parentDepth = struct_table_is_member_parent(symEntry->value, ast_getLex(child));
+		int parentDepth = struct_table_is_member_parent(symEntry->value, ast_getLex(child));
+		if (parentDepth > 0) {
 
 			// child not part of that struct, or any of its parent classes
 			if (parentDepth < 0) {
@@ -879,7 +1000,7 @@ static struct ast_node *expect_command_arg(struct avdl_lexer *l) {
 
 	int token = avdl_lexer_peek(l);
 	if (token == LEXER_TOKEN_INT) {
-		return expect_int(l);
+		return avdl_ast_integer_Expect(l);
 	}
 	else
 	if (token == LEXER_TOKEN_FLOAT) {
@@ -986,8 +1107,13 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 
 			if (avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDSTART
 			||  avdl_lexer_peek(l) == LEXER_TOKEN_COMMANDSTART_BRACKET) {
+				struct ast_node *c = expect_command(l);
+				if (!cmd) {
+					avdl_log("error parsing command for function");
+					return 0;
+				}
 				// function statements
-				ast_addChild(cmd, expect_command(l));
+				ast_addChild(cmd, c);
 			}
 			symtable_pop();
 
@@ -1087,11 +1213,113 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		cmd = ast_create(0);
 		ast_setValuei(cmd, 0);
 		cmd->node_type = AST_COMMAND_CUSTOM;
-		ast_addChild(cmd, cmdname);
+
+		// inline functions
+		struct ast_node *lastChild = cmdname;
+		while (lastChild->children.elements > 0) {
+			lastChild = avdl_da_get(&lastChild->children, avdl_da_count(&lastChild->children) -1);
+		}
+		if (lastChild != cmdname && lastChild->value == AVDL_VARIABLE_TYPE_FUNCTION_INLINE) {
+
+			// For example turn something like this:
+			//     this.myvar.myfunc(...)
+			// into
+			//     myvar_myfunc(&this.myvar, ...);
+
+			// start from the symtable and climb up the struct references
+			struct entry *e = symtable_lookupEntry(cmdname->lex);
+			cmdname->isRef = e->isRef;
+			int structIndex = e->value;
+
+			// find the final child's name and its parent's struct name
+			struct ast_node *child = avdl_da_get(&cmdname->children, -1);
+			while (child->children.elements > 0) {
+
+				// `parent` is a special keyword for parent struct
+				if (strcmp(child->lex, "parent") == 0) {
+					structIndex = struct_table_get_parent(structIndex);
+					child = avdl_da_get(&child->children, -1);
+					continue;
+				}
+
+				int memberIndex = struct_table_get_member(structIndex, child->lex);
+				if (memberIndex < 0) {
+					avdl_log("no member %s in struct %s", child->lex, struct_table_get_name(structIndex));
+					return 0;
+				}
+				if (struct_table_get_member_type(structIndex, memberIndex) != DD_VARIABLE_TYPE_STRUCT) {
+					avdl_log("non struct found in identifier chain? %s %d", child->lex, struct_table_get_member_type(structIndex, memberIndex));
+					return 0;
+				}
+				structIndex = struct_table_get_index(struct_table_get_member_nametype(structIndex, memberIndex));
+				child = avdl_da_get(&child->children, -1);
+			}
+
+			// assemble inline function's name
+			struct avdl_string str;
+			avdl_string_create(&str, 1024);
+			avdl_string_cat(&str, struct_table_get_name(structIndex));
+			avdl_string_cat(&str, "_");
+			avdl_string_cat(&str, child->lex);
+
+			// ast to call the inline function
+			struct ast_node *newcmd = ast_create(AST_COMMAND_CUSTOM);
+			ast_setLex(newcmd, avdl_string_toCharPtr(&str));
+			ast_addChild(cmd, newcmd);
+
+			// copy first arg
+			struct ast_node *from = cmdname;
+			struct ast_node *to = cmd;
+
+			//ast_print(cmdname);
+			while (from != child) {
+
+				struct ast_node *arg = ast_create(AST_IDENTIFIER);
+				ast_setLex(arg, from->lex);
+				arg->value = DD_VARIABLE_TYPE_STRUCT;
+				arg->isRef = from->isRef;
+
+				ast_addChild(to, arg);
+
+				// array handling
+				if (avdl_da_count(&from->children) > 1) {
+					struct ast_node *c = avdl_da_get(&from->children, 0);
+					struct ast_node *to2 = ast_getChild(to, avdl_da_count(&to->children)-1);
+					ast_addChild(to2, c);
+				}
+
+				from = avdl_da_get(&from->children, -1);
+				to = ast_getChild(to, avdl_da_count(&to->children)-1);
+			}
+
+			avdl_string_clean(&str);
+		}
+		// plain pass-through
+		else {
+			ast_addChild(cmd, cmdname);
+
+			struct ast_node *chain = ast_getChild(cmd, avdl_da_count(&cmd->children)-1);
+			struct ast_node *prevChain = cmd;
+			while (chain->children.elements > 0) {
+				struct ast_node *arg = ast_create(AST_IDENTIFIER);
+				ast_setLex(arg, chain->lex);
+				arg->value = DD_VARIABLE_TYPE_STRUCT;
+				arg->isRef = chain->isRef;
+				ast_addChild(prevChain, arg);
+
+				chain = avdl_da_get(&chain->children, -1);
+				prevChain = ast_getChild(prevChain, avdl_da_count(&prevChain->children)-1);
+			}
+		}
 
 		while (avdl_lexer_peek(l) != LEXER_TOKEN_COMMANDEND) {
 			ast_addChild(cmd, expect_command_arg(l));
 		}
+	}
+
+	if (!cmd) {
+		avdl_log_error("could not parse command");
+		return 0;
 	}
 
 	// get the command's children
@@ -1131,6 +1359,10 @@ int semanticAnalyser_convertToAst(struct ast_node *node, const char *filename) {
 	while (avdl_lexer_peek(&l) == LEXER_TOKEN_COMMANDSTART
 	||     avdl_lexer_peek(&l) == LEXER_TOKEN_COMMANDEND_BRACKET) {
 		struct ast_node *cmd = expect_command(&l);
+		if (!cmd) {
+			avdl_log_error("failed while collecting commands to convert to ast");
+			return -1;
+		}
 
 		if (cmd->node_type == AST_INCLUDE) {
 			if (avdl_lexer_addIncludedFile(&l, ast_getLex(cmd)) != 0) {

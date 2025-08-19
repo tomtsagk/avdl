@@ -2,6 +2,7 @@
 #include "avdl_graphics.h"
 #include "avdl_assetManager.h"
 #include "avdl_shaders.h"
+#include "avdl_log.h"
 
 extern GLuint skyboxProgram;
 
@@ -10,10 +11,6 @@ void avdl_skybox_create(struct avdl_skybox *o) {
 	o->assetType = 0;
 	o->graphics_contextid = -1;
 	o->clean = avdl_skybox_clean;
-	o->set = avdl_skybox_set;
-	o->bind = avdl_skybox_bind;
-	o->unbind = avdl_skybox_unbind;
-	o->draw = avdl_skybox_draw;
 
 	// mesh
 	avdl_mesh_create(&o->mesh);
@@ -21,7 +18,7 @@ void avdl_skybox_create(struct avdl_skybox *o) {
 	avdl_mesh_set_colour(&o->mesh, 0, 0, 0);
 
 	for (int i = 0; i < 6; i++) {
-		dd_image_create(&o->img[i]);
+		avdl_texture_create(&o->img[i]);
 	}
 
 	// program shader
@@ -35,7 +32,7 @@ void avdl_skybox_clean(struct avdl_skybox *o) {
 	avdl_mesh_clean(&o->mesh);
 
 	for (int i = 0; i < 6; i++) {
-		dd_image_clean(&o->img[i]);
+		avdl_texture_clean(&o->img[i]);
 	}
 }
 
@@ -48,7 +45,7 @@ void avdl_skybox_set(struct avdl_skybox *o, const char *assetname[]) {
 
 	// load textures
 	for (int i = 0; i < 6; i++) {
-		o->img[i].set(&o->img[i], assetname[i], AVDL_IMAGETYPE_PNG);
+		avdl_texture_set(&o->img[i], assetname[i], AVDL_IMAGETYPE_PNG);
 	}
 
 }
@@ -58,6 +55,10 @@ void avdl_skybox_unbind(struct avdl_skybox *o) {
 }
 
 void avdl_skybox_bind(struct avdl_skybox *o) {
+
+	avdl_log("skybox needs to use new texture system");
+	return;
+	/*
 
 	// skybox needs to be loaded into the gpu
 	if (o->graphics_contextid == -1 || o->graphics_contextid != avdl_graphics_getContextId()) {
@@ -117,7 +118,7 @@ void avdl_skybox_bind(struct avdl_skybox *o) {
 		o->tex = avdl_graphics_SkyboxToGpu(pixels, pixelFormat, width, height);
 	
 		for (int i = 0; i < 6; i++) {
-			dd_image_cleanNonGpuData(&o->img[i]);
+			avdl_texture_cleanNonGpuData(&o->img[i]);
 		}
 	}
 
@@ -139,6 +140,7 @@ void avdl_skybox_bind(struct avdl_skybox *o) {
 //	}
 //	#endif
 
+	*/
 }
 
 void avdl_skybox_draw(struct avdl_skybox *o) {
@@ -146,11 +148,11 @@ void avdl_skybox_draw(struct avdl_skybox *o) {
 	dd_matrix_push();
 	dd_scalef(4, 4, 4);
 
-	o->bind(o);
+	avdl_skybox_bind(o);
 	avdl_useProgram(&o->program);
-	o->mesh.draw(&o->mesh);
+	avdl_mesh_draw(&o->mesh);
 	avdl_useProgram(0);
-	o->unbind(o);
+	avdl_skybox_unbind(o);
 
 	dd_matrix_pop();
 }

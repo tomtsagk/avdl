@@ -7,7 +7,7 @@
 #include "avdl_log.h"
 #include <stdlib.h>
 #include "avdl_assetManager.h"
-#include "dd_image.h"
+#include "avdl_texture.h"
 #include "avdl_engine.h"
 #include "dd_math.h"
 
@@ -106,9 +106,10 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 	strcat(filename, "assets/icon_64x64.png");
 	#endif
 
-	struct dd_image img;
-	dd_image_create(&img);
-	dd_image_load_png(&img, filename);
+	/*
+	struct avdl_texture img;
+	avdl_texture_create(&img);
+	avdl_texture_load_png(&img, filename);
 	if (img.pixels && img.pixelFormat == GL_RGBA) {
 		SDL_Surface *surface;
 		int size = sizeof(GLubyte) *img.width *img.height *4;
@@ -133,8 +134,9 @@ int avdl_graphics_CreateWindow(struct avdl_graphics *o) {
 		SDL_SetWindowIcon(o->sdl_window, surface);
 		SDL_FreeSurface(surface);
 		free(pixels);
-		dd_image_clean(&img);
+		avdl_texture_clean(&img);
 	}
+	*/
 	#endif
 
 	avdl_graphics_PrintInfo();
@@ -281,29 +283,58 @@ avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int wid
 	GLuint tex;
 	GL(glGenTextures(1, &tex));
 	GL(glBindTexture(GL_TEXTURE_2D, tex));
-	/*
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	*/
 
-	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-
-	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	GL(glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_FLOAT, pixels));
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	GL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
 	GL(glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_UNSIGNED_BYTE, pixels));
 	#endif
+	GL(glGenerateMipmap(GL_TEXTURE_2D));
+	/*
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+	*/
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+	//GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
 	GL(glBindTexture(GL_TEXTURE_2D, 0));
 
 	return tex;
 
+}
+
+avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, int pixel_format, int width, int height, int arraySize) {
+
+	GLuint tex;
+	GL(glGenTextures(1, &tex));
+	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, tex));
+
+	GL(glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, pixel_format, width, height, arraySize, 0, pixel_format, GL_FLOAT, 0));
+
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	//GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+
+	return tex;
+
+}
+
+avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, int pixel_format, int width, int height, int index) {
+	GL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, width, height, 1, pixel_format, GL_FLOAT, pixels));
+	return 0;
+}
+
+avdl_texture_id avdl_graphics_ImageArrayToGpuEnd() {
+	GL(glGenerateMipmap(GL_TEXTURE_2D_ARRAY));
+	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, 0));
+	return 0;
 }
 
 avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], int width[], int height[]) {
@@ -362,6 +393,7 @@ void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, in
 		pixels
 	));
 	#endif
+	GL(glGenerateMipmap(GL_TEXTURE_2D));
 
 	GL(glBindTexture(GL_TEXTURE_2D, 0));
 
@@ -372,13 +404,17 @@ void avdl_graphics_DeleteTexture(avdl_texture_id tex) {
 }
 
 void avdl_graphics_BindTexture(avdl_texture_id tex) {
-	//GL(glBindTexture(GL_TEXTURE_2D, tex));
 	avdl_graphics_BindTextureIndex(tex, 0);
 }
 
 void avdl_graphics_BindTextureIndex(avdl_texture_id tex, int index) {
 	GL(glActiveTexture(GL_TEXTURE0 +index));
 	GL(glBindTexture(GL_TEXTURE_2D, tex));
+}
+
+void avdl_graphics_BindTextureArrayIndex(avdl_texture_id tex, int index) {
+	GL(glActiveTexture(GL_TEXTURE0 +index));
+	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, tex));
 }
 
 void avdl_graphics_BindTextureSkybox(avdl_texture_id tex) {

@@ -109,6 +109,16 @@ extern int avdl_use_default_locale;
 
 int avdl_engine_init(struct avdl_engine *o) {
 
+	// initialise pre-game data to defaults then to game-specifics
+	dd_gameInitDefault();
+	dd_gameInit();
+
+	// no default world selected - just exit
+	if (dd_default_world_constructor == 0) {
+		avdl_log("avdl: No default world selected, exiting");
+		return 0;
+	}
+
 	// default at 30 FPS
 	avdl_engine_setFPS(30);
 
@@ -182,10 +192,6 @@ int avdl_engine_init(struct avdl_engine *o) {
 
 	// start at full volume
 	avdl_sound_setVolume(100);
-
-	// initialise pre-game data to defaults then to game-specifics
-	dd_gameInitDefault();
-	dd_gameInit();
 
 	// audio
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
@@ -367,7 +373,6 @@ int avdl_engine_clean(struct avdl_engine *o) {
 	#ifdef AVDL_DIRECT3D11
 	#else
 	avdl_achievements_clean(o->achievements);
-	avdl_assetManager_deinit();
 
 	if (o->cworld) {
 		o->cworld->clean(o->cworld);
@@ -375,6 +380,7 @@ int avdl_engine_clean(struct avdl_engine *o) {
 		o->cworld = 0;
 	}
 
+	avdl_assetManager_deinit();
 	avdl_font_deinit();
 
 	// destroy window
@@ -426,8 +432,8 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	GL(glEnable(GL_FRAMEBUFFER_SRGB));
 	#endif
 
-	GL(glEnable(GL_CULL_FACE));
-	GL(glCullFace(GL_BACK));
+	//GL(glEnable(GL_CULL_FACE));
+	//GL(glCullFace(GL_BACK));
 
 	#if defined(AVDL_QUEST2)
 
@@ -442,7 +448,7 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	//GL(glEnable(GL_CULL_FACE));
-	glDisable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
 	//GL(glCullFace(GL_BACK));
 	glDisable(GL_BLEND);
 	glViewport(0, 0, dd_window_width(), dd_window_height());
@@ -544,7 +550,7 @@ int avdl_engine_resize(struct avdl_engine *o, int w, int h) {
 	}
 
 	// perspective projection matrix
-	avdl_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 1.0, 200.0, ypriority);
+	avdl_perspective((float *)&matPerspective, dd_fovy_get(), dd_fovaspect_get(), 0.1, 200.0, ypriority);
 
 	if (o->cworld && o->cworld->resize) {
 		o->cworld->resize(o->cworld);

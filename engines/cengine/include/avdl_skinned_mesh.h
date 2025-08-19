@@ -20,12 +20,6 @@ struct avdl_skinned_mesh {
 
 	struct avdl_skeleton skeleton;
 
-	// animation
-	void (*update)(struct avdl_skinned_mesh *, float dt);
-	void (*PlayAnimation)(struct avdl_skinned_mesh *, const char *animName);
-	void (*PlayAnimationInstant)(struct avdl_skinned_mesh *, const char *animName);
-	void (*SetOnAnimationDone)(struct avdl_skinned_mesh *, void (*func)(void *ctx), void *context);
-
 };
 
 // constructor

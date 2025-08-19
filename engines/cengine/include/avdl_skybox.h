@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "dd_image.h"
+#include "avdl_texture.h"
 #include "avdl_mesh.h"
 #include "avdl_shaders.h"
 
@@ -23,16 +23,12 @@ struct avdl_skybox {
 	int assetType;
 
 	// textures
-	struct dd_image img[6];
+	struct avdl_texture img[6];
 
 	// avdl id for skybox
 	avdl_texture_id tex;
 
 	void (*clean)(struct avdl_skybox *o);
-	void (*set)(struct avdl_skybox *o, const char *assets[]);
-	void (*bind)(struct avdl_skybox *o);
-	void (*unbind)(struct avdl_skybox *o);
-	void (*draw)(struct avdl_skybox *o);
 };
 
 void avdl_skybox_create(struct avdl_skybox *o);

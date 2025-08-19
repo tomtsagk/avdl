@@ -14,6 +14,7 @@ struct dd_dynamic_array {
 	unsigned int elements;
 	unsigned int array_size;
 	unsigned int element_size;
+	void (*clean)(struct dd_dynamic_array *);
 };
 
 void dd_dynamic_array_create(struct dd_dynamic_array *da);

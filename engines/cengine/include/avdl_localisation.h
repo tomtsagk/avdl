@@ -23,8 +23,6 @@ struct avdl_localisation {
 	char keys[LOC_MAX_KEYS][LOC_MAX_CHARACTERS];
 	char values[LOC_MAX_KEYS][LOC_MAX_CHARACTERS];
 	int count;
-	void (*set)(struct avdl_localisation *, const char *);
-	char *(*getValue)(struct avdl_localisation *, const char *);
 };
 
 void avdl_localisation_create(struct avdl_localisation *o);

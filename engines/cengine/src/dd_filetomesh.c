@@ -443,7 +443,7 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	//Data for parsing
 	unsigned int vertices = 0, faces = 0;
 
-	struct dd_vec3 {
+	struct avdl_vec3 {
 		float x, y, z;
 	};
 
@@ -454,8 +454,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	/* Vertex positions sorted by index (as they are read)
 	 * and by face (what the final array should look like to render the mesh)
 	 */
-	struct dd_vec3 *v_pos_index = 0;
-	struct dd_vec3 *v_col_index = 0;
+	struct avdl_vec3 *v_pos_index = 0;
+	struct avdl_vec3 *v_col_index = 0;
 	int *v_col_index_d = 0;
 	struct dd_vec2 *v_tex_index = 0;
 
@@ -463,10 +463,10 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	unsigned int *v_pos_face2 = 0;
 
 	struct dd_dynamic_array v_pos_face;
-	dd_da_init(&v_pos_face , sizeof(struct dd_vec3));
+	dd_da_init(&v_pos_face , sizeof(struct avdl_vec3));
 
 	struct dd_dynamic_array v_col_face;
-	dd_da_init(&v_col_face , sizeof(struct dd_vec3));
+	dd_da_init(&v_col_face , sizeof(struct avdl_vec3));
 
 	struct dd_dynamic_array v_tex_face;
 	dd_da_init(&v_tex_face , sizeof(struct dd_vec2));
@@ -570,8 +570,8 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 					goto error;
 				}
 				elements[elementCurrent].amount = vertices;
-				v_pos_index = malloc(sizeof(struct dd_vec3) *vertices);
-				v_col_index = malloc(sizeof(struct dd_vec3) *vertices);
+				v_pos_index = malloc(sizeof(struct avdl_vec3) *vertices);
+				v_col_index = malloc(sizeof(struct avdl_vec3) *vertices);
 				v_col_index_d = malloc(sizeof(int) *vertices *3);
 				memset(v_col_index_d, 0, sizeof(int) *vertices *3);
 				v_tex_index = malloc(sizeof(struct dd_vec2) *vertices);
@@ -643,17 +643,17 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 			if (strcmp(element->name, "vertex") == 0) {
 				if (strcmp(property->name, "x") == 0) {
 					property->target = &v_pos_index->x;
-					property->offsetSize = sizeof(struct dd_vec3);
+					property->offsetSize = sizeof(struct avdl_vec3);
 				}
 				else
 				if (strcmp(property->name, "y") == 0) {
 					property->target = &v_pos_index->y;
-					property->offsetSize = sizeof(struct dd_vec3);
+					property->offsetSize = sizeof(struct avdl_vec3);
 				}
 				else
 				if (strcmp(property->name, "z") == 0) {
 					property->target = &v_pos_index->z;
-					property->offsetSize = sizeof(struct dd_vec3);
+					property->offsetSize = sizeof(struct avdl_vec3);
 				}
 				else
 				if (strcmp(property->name, "s") == 0) {
@@ -764,20 +764,20 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		int colr = v_col_index_d[i*3+0];
 		int colg = v_col_index_d[i*3+1];
 		int colb = v_col_index_d[i*3+2];
-		struct dd_vec3 *cvec = &v_col_index[i];
+		struct avdl_vec3 *cvec = &v_col_index[i];
 		cvec->x = colr /255.0;
 		cvec->y = colg /255.0;
 		cvec->z = colb /255.0;
 	}
 
 	for (int i = 0; i < faces *3; i++) {
-		struct dd_vec3 vertex;
+		struct avdl_vec3 vertex;
 		vertex.x = v_pos_index[v_pos_face2[i]].x;
 		vertex.y = v_pos_index[v_pos_face2[i]].y;
 		vertex.z = v_pos_index[v_pos_face2[i]].z;
 		dd_da_push(&v_pos_face, &vertex);
 
-		struct dd_vec3 cvertex;
+		struct avdl_vec3 cvertex;
 		cvertex.x = v_col_index[v_pos_face2[i]].x;
 		cvertex.y = v_col_index[v_pos_face2[i]].y;
 		cvertex.z = v_col_index[v_pos_face2[i]].z;
@@ -824,14 +824,14 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	for (unsigned int i = 0; i < v_pos_face.elements; i++) {
 		if (settings & DD_FILETOMESH_SETTINGS_POSITION) {
-			struct dd_vec3 *vec = dd_da_get(&v_pos_face, i);
+			struct avdl_vec3 *vec = dd_da_get(&v_pos_face, i);
 			m->v[(i*3)] = vec->x;
 			m->v[(i*3)+1] = vec->y;
 			m->v[(i*3)+2] = vec->z;
 		}
 
 		if (settings & DD_FILETOMESH_SETTINGS_COLOUR) {
-			struct dd_vec3 *col = dd_da_get(&v_col_face, i);
+			struct avdl_vec3 *col = dd_da_get(&v_col_face, i);
 			// convert to linear space for gamma correction
 			m->c[(i*3)]   = dd_math_pow(col->x, 2.2);
 			m->c[(i*3)+1] = dd_math_pow(col->y, 2.2);
@@ -878,15 +878,15 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	//(void) attr;
 
-	struct dd_vec3 {
+	struct avdl_vec3 {
 		float x, y, z;
 	};
 	//Variables
 	struct dd_dynamic_array v_ind, v_out;
 
 	//Init dynamic arrays
-	dd_da_init(&v_ind, sizeof(struct dd_vec3));
-	dd_da_init(&v_out, sizeof(struct dd_vec3));
+	dd_da_init(&v_ind, sizeof(struct avdl_vec3));
+	dd_da_init(&v_out, sizeof(struct avdl_vec3));
 
 	//File
 	FILE *f = fopen(path, "r");
@@ -904,7 +904,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 		//Vertex
 		if (buff[0] == 'v') {
 			//Get vertex xyz
-			struct dd_vec3 v;
+			struct avdl_vec3 v;
 			if ( fscanf(f, "%f %f %f", &v.x, &v.y, &v.z) == EOF ) {
 				goto error;
 			}
@@ -973,7 +973,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 	m->vcount = v_out.elements *3;
 	m->v = malloc(sizeof(float) *v_out.elements *3);
 	for (unsigned int i = 0; i < v_out.elements; i++) {
-		struct dd_vec3 *vec = dd_da_get(&v_out, i);
+		struct avdl_vec3 *vec = dd_da_get(&v_out, i);
 		m->v[(i*3)] = vec->x;
 		m->v[(i*3)+1] = vec->y;
 		m->v[(i*3)+2] = vec->z;
@@ -1560,48 +1560,48 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 	if (m->t) {
 	for (int i = 0; i < m->vcount; i += 3) {
 
-		struct dd_vec3 deltaPos1;
-		dd_vec3_setf(&deltaPos1,
+		struct avdl_vec3 deltaPos1;
+		avdl_vec3_Setf(&deltaPos1,
 			m->v[(i+1)*3 +0] -m->v[(i+0)*3 +0],
 			m->v[(i+1)*3 +1] -m->v[(i+0)*3 +1],
 			m->v[(i+1)*3 +2] -m->v[(i+0)*3 +2]
 		);
-		struct dd_vec3 deltaPos2;
-		dd_vec3_setf(&deltaPos2,
+		struct avdl_vec3 deltaPos2;
+		avdl_vec3_Setf(&deltaPos2,
 			m->v[(i+2)*3 +0] -m->v[(i+0)*3 +0],
 			m->v[(i+2)*3 +1] -m->v[(i+0)*3 +1],
 			m->v[(i+2)*3 +2] -m->v[(i+0)*3 +2]
 		);
 
-		struct dd_vec3 deltaUV1;
-		dd_vec3_setf(&deltaUV1,
+		struct avdl_vec3 deltaUV1;
+		avdl_vec3_Setf(&deltaUV1,
 			m->t[(i+1)*2 +0] -m->t[(i+0)*2 +0],
 			m->t[(i+1)*2 +1] -m->t[(i+0)*2 +1],
 			0
 		);
-		struct dd_vec3 deltaUV2;
-		dd_vec3_setf(&deltaUV2,
+		struct avdl_vec3 deltaUV2;
+		avdl_vec3_Setf(&deltaUV2,
 			m->t[(i+2)*2 +0] -m->t[(i+0)*2 +0],
 			m->t[(i+2)*2 +1] -m->t[(i+0)*2 +1],
 			0
 		);
 
 		float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
-		struct dd_vec3 tangent;
-		dd_vec3_setf(&tangent,
+		struct avdl_vec3 tangent;
+		avdl_vec3_Setf(&tangent,
 			(deltaPos1.x *deltaUV2.y -deltaPos2.x *deltaUV1.y) *r,
 			(deltaPos1.y *deltaUV2.y -deltaPos2.y *deltaUV1.y) *r,
 			(deltaPos1.z *deltaUV2.y -deltaPos2.z *deltaUV1.y) *r
 		);
-		struct dd_vec3 bitangent;
-		dd_vec3_setf(&bitangent,
+		struct avdl_vec3 bitangent;
+		avdl_vec3_Setf(&bitangent,
 			(deltaPos2.x *deltaUV1.x -deltaPos1.x *deltaUV2.x) *r,
 			(deltaPos2.y *deltaUV1.x -deltaPos1.y *deltaUV2.x) *r,
 			(deltaPos2.z *deltaUV1.x -deltaPos1.z *deltaUV2.x) *r
 		);
 
-		dd_vec3_normalise(&tangent);
-		dd_vec3_normalise(&bitangent);
+		avdl_vec3_Normalise(&tangent);
+		avdl_vec3_Normalise(&bitangent);
 
 		// tans
 		m->tan[(i+0)*3 +0] = tangent.x;

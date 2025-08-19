@@ -2,7 +2,8 @@
 #define DD_TEXT_H
 
 #include "avdl_cengine.h"
-#include "dd_image.h"
+#include "avdl_texture.h"
+#include "dd_meshTexture.h"
 #include "avdl_font.h"
 
 #ifdef __cplusplus
@@ -51,23 +52,6 @@ struct dd_string3d {
 	int is_int;
 
 	int openglContextId;
-
-	void (*setText)(struct dd_string3d *, const char *text);
-	void (*setTextInt)(struct dd_string3d *);
-
-	void (*setAlign)(struct dd_string3d *, enum dd_string3d_align);
-	void (*setAlignVertical)(struct dd_string3d *, enum dd_string3d_align_vertical);
-	void (*draw)(struct dd_string3d *);
-	void (*drawInt)(struct dd_string3d *, int num);
-	void (*drawIntPadded)(struct dd_string3d *, int num, int digits);
-	void (*drawLimit)(struct dd_string3d *, int limit);
-	void (*drawLimitTypewriter)(struct dd_string3d *, int limit, int words);
-	void (*drawTypewriter)(struct dd_string3d *, int words);
-
-	float (*getWidth)(struct dd_string3d *);
-	float (*getWidthInt)(struct dd_string3d *, int);
-
-	void (*setFont)(struct dd_string3d *, struct avdl_font *);
 
 	void (*clean)(struct dd_string3d *);
 };

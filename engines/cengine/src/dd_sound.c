@@ -22,11 +22,7 @@ int dd_numberOfAudioChannels = 0;
 int avdl_sound_volume = 100;
 
 void dd_sound_create(struct dd_sound *o) {
-	o->load = dd_sound_load;
 	o->clean = dd_sound_clean;
-	o->play = dd_sound_play;
-	o->playLoop = dd_sound_playLoop;
-	o->stop = dd_sound_stop;
 
 	#if !defined( AVDL_DIRECT3D11 )
 	if (!dd_hasAudio) return;

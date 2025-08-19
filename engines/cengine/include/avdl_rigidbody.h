@@ -2,7 +2,7 @@
 #define AVDL_RIGIDBODY_H
 
 #include "avdl_collider.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include "dd_matrix.h"
 
 #ifdef __cplusplus
@@ -14,13 +14,13 @@ struct avdl_rigidbody {
 	struct avdl_collider *collider;
 
 	// movement
-	struct dd_vec3 position;
-	struct dd_vec3 velocity;
+	struct avdl_vec3 position;
+	struct avdl_vec3 velocity;
 
 	// rotation
 	struct dd_matrix rotation;
 	struct dd_matrix angularVelocity;
-	struct dd_vec3 angularVelocityVec3;
+	struct avdl_vec3 angularVelocityVec3;
 
 	float mass;
 	float mass_inv;
@@ -29,25 +29,9 @@ struct avdl_rigidbody {
 	int has_just_collided;
 	int has_just_collided_old;
 
-	void (*matrixMultiply)(struct avdl_rigidbody *);
-	void (*setPositionf)(struct avdl_rigidbody *, float, float, float);
-	float (*getPositionX)(struct avdl_rigidbody *);
-	float (*getPositionY)(struct avdl_rigidbody *);
-	float (*getPositionZ)(struct avdl_rigidbody *);
-	void (*setMass)(struct avdl_rigidbody *, float);
-	void (*setRestitution)(struct avdl_rigidbody *, float);
-	void (*setCollider)(struct avdl_rigidbody *, struct avdl_collider *);
-
-	void (*setVelocityf)(struct avdl_rigidbody *, float, float, float);
-	void (*addVelocityf)(struct avdl_rigidbody *, float, float, float);
-	void (*addAngularVelocityf)(struct avdl_rigidbody *, float, float, float);
-	int (*hasJustCollided)(struct avdl_rigidbody *);
-
-	void (*reset)(struct avdl_rigidbody *);
 };
 
 void avdl_rigidbody_create(struct avdl_rigidbody *);
-void avdl_rigidbody_clean(struct avdl_rigidbody *);
 
 void avdl_rigidbody_setPositionf(struct avdl_rigidbody *, float, float, float);
 void avdl_rigidbody_setMass(struct avdl_rigidbody *, float);

@@ -29,19 +29,12 @@ void avdl_skinned_mesh_create(struct avdl_skinned_mesh *m) {
 	avdl_mesh_create(&m->parent);
 
 	m->parent.LoadFromLoadedMesh = avdl_skinned_mesh_LoadFromLoadedMesh;
-	m->parent.draw = avdl_skinned_mesh_draw;
 
 	// skeleton
 	m->boneIds = 0;
 	m->dirtyBoneIds = 0;
 	m->weights = 0;
 	m->dirtyWeights = 0;
-
-	// animations
-	m->update = avdl_skinned_mesh_update;
-	m->PlayAnimation = avdl_skinned_mesh_PlayAnimation;
-	m->PlayAnimationInstant = avdl_skinned_mesh_PlayAnimationInstant;
-	m->SetOnAnimationDone = avdl_skinned_mesh_SetOnAnimationDone;
 
 	avdl_skeleton_create(&m->skeleton);
 }
@@ -267,14 +260,14 @@ void avdl_skinned_mesh_draw(struct avdl_skinned_mesh *m) {
 	}
 
 	if (m->parent.img) {
-		m->parent.img->bindIndex(m->parent.img, 0);
+		avdl_texture_bindIndex(m->parent.img, 0);
 		GLuint loc = glGetUniformLocation(currentProgram, "image");
 		if (loc != -1) {
 			GL(glUniform1i(loc, 0));
 		}
 	}
 	if (m->parent.img_normal) {
-		m->parent.img_normal->bindIndex(m->parent.img_normal, 1);
+		avdl_texture_bindIndex(m->parent.img_normal, 1);
 		GLuint loc = glGetUniformLocation(currentProgram, "image_normal");
 		if (loc != -1) {
 			GL(glUniform1i(loc, 1));
@@ -337,11 +330,11 @@ void avdl_skinned_mesh_draw(struct avdl_skinned_mesh *m) {
 	GL(glBindVertexArray(0));
 
 	if (m->parent.img) {
-		m->parent.img->unbind(m->parent.img);
+		avdl_texture_unbind(m->parent.img);
 	}
 
 	if (m->parent.img_normal) {
-		m->parent.img_normal->unbind(m->parent.img_normal);
+		avdl_texture_unbind(m->parent.img_normal);
 	}
 
 	if (m->parent.hasTransparency) {

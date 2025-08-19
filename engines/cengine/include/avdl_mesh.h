@@ -14,7 +14,7 @@ enum avdl_primitives {
 
 #include "avdl_graphics.h"
 #include "dd_matrix.h"
-#include "dd_image.h"
+#include "avdl_texture.h"
 #include "dd_filetomesh.h"
 
 #define TEXTURES_COUNT 5
@@ -58,37 +58,15 @@ struct avdl_mesh {
 
 	// textures
 	// texture to be used
-	struct dd_image *img;
-	struct dd_image *img_normal;
-	struct dd_image *img_extra[TEXTURES_COUNT];
+	struct avdl_texture *img;
+	struct avdl_texture *img_normal;
+	struct avdl_texture *img_extra[TEXTURES_COUNT];
 
 	// transparency
 	int hasTransparency;
 
 	// init mesh
-	void (*set_primitive)(struct avdl_mesh *m, enum avdl_primitives shape);
-	void (*load)(struct avdl_mesh *m, const char *filename, int type);
-
-	void (*draw)(struct avdl_mesh *);
 	void (*clean)(struct avdl_mesh *);
-	void (*copy)(struct avdl_mesh *, struct avdl_mesh *);
-
-	void (*combine)(struct avdl_mesh *dst, struct avdl_mesh *src, float offsetX, float offsetY, float offsetZ);
-
-	void (*translatef)(struct avdl_mesh *, float x, float y, float z);
-	void (*scalef)(struct avdl_mesh *, float x, float y, float z);
-
-	void (*set_colour)(struct avdl_mesh *m, float r, float g, float b);
-
-	void (*set_primitive_texcoords)(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY);
-	void (*setTexture)(struct avdl_mesh *o, struct dd_image *img);
-	void (*setTextureNormal)(struct avdl_mesh *o, struct dd_image *img);
-	void (*setTextureIndex)(struct avdl_mesh *o, struct dd_image *img, int index);
-	int (*hasTexture)(struct avdl_mesh *o);
-	void (*setTransparency)(struct avdl_mesh *o, int transparency);
-
-	void (*setWireframe)(struct avdl_mesh *o);
-	void (*setSolid)(struct avdl_mesh *o);
 
 	void (*LoadFromLoadedMesh)(struct avdl_mesh *o, struct dd_loaded_mesh *lm);
 
@@ -115,9 +93,9 @@ void avdl_mesh_scalef(struct avdl_mesh *o, float x, float y, float z);
 
 void avdl_mesh_set_colour(struct avdl_mesh *m, float r, float g, float b);
 
-void avdl_mesh_setTexture(struct avdl_mesh *o, struct dd_image *tex);
-void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct dd_image *tex);
-void avdl_mesh_setTextureIndex(struct avdl_mesh *o, struct dd_image *tex, int index);
+void avdl_mesh_setTexture(struct avdl_mesh *o, struct avdl_texture *tex);
+void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct avdl_texture *tex);
+void avdl_mesh_setTextureIndex(struct avdl_mesh *o, struct avdl_texture *tex, int index);
 void avdl_mesh_setTransparency(struct avdl_mesh *o, int transparency);
 void avdl_mesh_set_primitive_texcoords(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY);
 

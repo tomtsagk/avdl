@@ -6,25 +6,14 @@ extern "C" {
 #endif
 
 #include "avdl_collider.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include "avdl_mesh.h"
 
 struct avdl_collider_aabb {
 	struct avdl_collider parent;
 
-	struct dd_vec3 min;
-	struct dd_vec3 max;
-
-	struct avdl_mesh mesh;
-
-	void (*setMin)(struct avdl_collider_aabb *, float, float, float);
-	void (*setMax)(struct avdl_collider_aabb *, float, float, float);
-
-	float (*getMaxX)(struct avdl_collider_aabb *);
-	float (*getMaxY)(struct avdl_collider_aabb *);
-	float (*getMaxZ)(struct avdl_collider_aabb *);
-
-	void (*draw)(struct avdl_collider_aabb *);
+	struct avdl_vec3 min;
+	struct avdl_vec3 max;
 };
 
 void avdl_collider_aabb_create(struct avdl_collider_aabb *o);
@@ -40,8 +29,6 @@ float avdl_collider_aabb_getMinZ(struct avdl_collider_aabb *o);
 float avdl_collider_aabb_getMaxX(struct avdl_collider_aabb *o);
 float avdl_collider_aabb_getMaxY(struct avdl_collider_aabb *o);
 float avdl_collider_aabb_getMaxZ(struct avdl_collider_aabb *o);
-
-void avdl_collider_aabb_draw(struct avdl_collider_aabb *o);
 
 #ifdef __cplusplus
 }

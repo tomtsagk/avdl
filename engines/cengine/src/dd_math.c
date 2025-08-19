@@ -74,24 +74,16 @@ float dd_math_ease_bezier(float t, float p0, float p1, float p2) {
 void dd_math_ease_bezier2d(struct dd_vec2 *point, float t, struct dd_vec2 p0, struct dd_vec2 p1, struct dd_vec2 p2) {
 }
 
-float dd_math_dot2(struct dd_vec2 *v1, struct dd_vec2 *v2) {
-	return v1->x *v2->x +v1->y *v2->y;
-}
+int dd_math_plane_ray_intersect(struct avdl_vec4 *rayPos, struct avdl_vec4 *rayDir,
+	struct avdl_vec4 *planePos, struct avdl_vec4 *planeNormal, struct avdl_vec4 *out) {
 
-float dd_math_dot3(struct dd_vec3 *v1, struct dd_vec3 *v2) {
-	return v1->x *v2->x +v1->y *v2->y +v1->z *v2->z;
-}
+	float d = avdl_vec4_Dot(planePos, planeNormal);
+	float t = ((d +avdl_vec4_Dot(rayPos, planeNormal)) *-1) / avdl_vec4_Dot(rayDir, planeNormal);
 
-int dd_math_plane_ray_intersect(struct dd_vec4 *rayPos, struct dd_vec4 *rayDir,
-	struct dd_vec4 *planePos, struct dd_vec4 *planeNormal, struct dd_vec4 *out) {
-
-	float d = dd_vec4_dot(planePos, planeNormal);
-	float t = ((d +dd_vec4_dot(rayPos, planeNormal)) *-1) / dd_vec4_dot(rayDir, planeNormal);
-
-	dd_vec4_set(out,
-		dd_vec4_getX(rayPos) +(dd_vec4_getX(rayDir) *t),
-		dd_vec4_getY(rayPos) +(dd_vec4_getY(rayDir) *t),
-		dd_vec4_getZ(rayPos) +(dd_vec4_getZ(rayDir) *t),
+	avdl_vec4_Setf(out,
+		avdl_vec4_X(rayPos) +(avdl_vec4_X(rayDir) *t),
+		avdl_vec4_Y(rayPos) +(avdl_vec4_Y(rayDir) *t),
+		avdl_vec4_Z(rayPos) +(avdl_vec4_Z(rayDir) *t),
 		0
 	);
 

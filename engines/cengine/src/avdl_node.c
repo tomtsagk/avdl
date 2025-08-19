@@ -2,11 +2,12 @@
 #include "avdl_log.h"
 #include "avdl_component.h"
 #include "avdl_json.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "avdl_component_mesh.h"
+#include "avdl_component_skinned_mesh.h"
 #include "avdl_component_terrain.h"
 #include "avdl_component_custom.h"
 
@@ -19,22 +20,15 @@
 void avdl_node_create(struct avdl_node *o) {
 	o->parent = 0;
 
-	o->name[0] = '\0';
+	//o->name[0] = '\0';
+	avdl_string_create(&o->name, 100);
 
-	o->GetLocalTransform = avdl_node_GetLocalTransform;
-	o->GetGlobalMatrix = avdl_node_GetGlobalMatrix;
-	o->GetGlobalInverseMatrix = avdl_node_GetGlobalInverseMatrix;
-	o->AddChild = avdl_node_AddChild;
-	o->SetName = avdl_node_SetName;
-	o->GetName = avdl_node_GetName;
-	o->AddComponentsToArray = avdl_node_AddComponentsToArray;
-
-	o->GetChildrenCount = avdl_node_GetChildrenCount;
-	o->GetChild = avdl_node_GetChild;
+	o->clean = avdl_node_clean;
 
 	dd_matrix_identity(&o->globalMatrix);
 	dd_matrix_identity(&o->globalNormalMatrix);
 	dd_matrix_identity(&o->globalInverseMatrix);
+	dd_matrix_identity(&o->globalNormalInverseMatrix);
 	avdl_transform_create(&o->localTransform);
 
 	dd_dynamic_array_create(&o->components);
@@ -52,13 +46,17 @@ void avdl_node_clean(struct avdl_node *o) {
 		free(child);
 	}
 	dd_da_empty(&o->children);
+	dd_da_free(&o->children);
 
 	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
 		struct avdl_component *c = dd_da_getDeref(&o->components, i);
-		avdl_component_clean(c);
+		c->clean(c);
 		free(c);
 	}
 	dd_da_empty(&o->components);
+	dd_da_free(&o->components);
+
+	avdl_string_clean(&o->name);
 }
 
 struct avdl_transform *avdl_node_GetLocalTransform(struct avdl_node *o) {
@@ -92,6 +90,15 @@ struct dd_matrix *avdl_node_GetGlobalNormalMatrix(struct avdl_node *o) {
 	return &o->globalNormalMatrix;
 }
 
+struct dd_matrix *avdl_node_GetGlobalNormalInverseMatrix(struct avdl_node *o) {
+	dd_matrix_identity(&o->globalNormalInverseMatrix);
+	dd_matrix_copy(&o->globalNormalInverseMatrix, avdl_transform_GetNormalInverseMatrix(&o->localTransform));
+	if (o->parent) {
+		dd_matrix_mult(&o->globalNormalInverseMatrix, avdl_node_GetGlobalNormalInverseMatrix(o->parent));
+	}
+	return &o->globalNormalInverseMatrix;
+}
+
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {
 	struct avdl_node *child = malloc(sizeof(struct avdl_node));
 	dd_da_push(&o->children, &child);
@@ -99,6 +106,27 @@ struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {
 	avdl_node_create(child);
 	child->parent = o;
 	return child;
+}
+
+int avdl_node_RemoveChild(struct avdl_node *o, struct avdl_node *targetChild) {
+
+	for (unsigned int i = 0; i < dd_da_count(&o->children); i++) {
+		struct avdl_node *child = dd_da_getDeref(&o->children, i);
+
+		if (child != targetChild) {
+			continue;
+		}
+
+		avdl_node_clean(child);
+		dd_da_remove(&o->children, 1, i);
+		free(child);
+	}
+
+	return 0;
+}
+
+struct avdl_node *avdl_node_GetParent(struct avdl_node *o) {
+	return o->parent;
 }
 
 struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int size, void (*constructor)(void *)) {
@@ -125,14 +153,14 @@ static void avdl_node_printInternal(struct avdl_node *o, int tabs) {
 		printf("* ");
 	}
 
-	struct dd_vec3 *pos = avdl_transform_GetPosition(&o->localTransform);
-	printf("%s | position %f %f %f\n", o->name[0] != '\0' ? o->name : "no_node_name", pos->x, pos->y, pos->z);
+	struct avdl_vec3 *pos = avdl_transform_GetPosition(&o->localTransform);
+	printf("%s | position %f %f %f\n", avdl_string_toCharPtr(&o->name), pos->x, pos->y, pos->z);
 	if (dd_da_count(&o->components) > 0) {
 		for (int i = 0; i < tabs+1; i++) {
 			printf("\t");
 		}
 		for (int i = 0; i < dd_da_count(&o->components); i++) {
-			printf("component: %d %x %x\n", i, dd_da_get(&o->components, i), dd_da_getDeref(&o->components, i));
+			printf("component: %d %p %p\n", i, dd_da_get(&o->components, i), dd_da_getDeref(&o->components, i));
 		}
 	}
 
@@ -154,42 +182,43 @@ void avdl_node_print(struct avdl_node *o) {
 	avdl_node_printInternal(o, 0);
 }
 
-void avdl_node_SetName(struct avdl_node *o, char *name) {
+void avdl_node_SetName(struct avdl_node *o, const char *name) {
 
-	if (strlen(name) >= AVDL_NODE_NAME_LENGTH) {
-		avdl_log("cannot copy node name, too big: %s", name);
+	avdl_string_empty(&o->name);
+	avdl_string_cat(&o->name, name);
+	if (!avdl_string_isValid(&o->name)) {
+		avdl_log("failed to set name for node: %s", name);
 		return;
 	}
-
-	//avdl_log("set name to : %s", name);
-	strncpy(o->name, name, AVDL_NODE_NAME_LENGTH-1);
-	o->name[AVDL_NODE_NAME_LENGTH-1] = '\0';
 }
 
-char *avdl_node_GetName(struct avdl_node *o) {
+const char *avdl_node_GetName(struct avdl_node *o) {
+	return avdl_string_toCharPtr(&o->name);
+	/*
 	if (o->name[0] == '\0') {
 		return 0;
 	}
 	else {
 		return o->name;
 	}
+	*/
 }
 
-void avdl_node_AddComponentsToArray(struct avdl_node *o, struct dd_dynamic_array *array, int component_type) {
+void avdl_node_AddComponentsToArray_Internal(struct avdl_node *o, struct dd_dynamic_array *array, void (*fnc)(struct avdl_component *)) {
 
-	// Print components
+	// Collect components
 	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
 		struct avdl_component *c = *((struct avdl_component **) dd_da_get(&o->components, i));
 
-		if (c->type == component_type) {
+		if (c->clean == fnc) {
 			dd_da_push(array, &c);
 		}
 	}
 
-	// Print children
+	// Check children
 	for (unsigned int i = 0; i < dd_da_count(&o->children); i++) {
 		struct avdl_node *child = dd_da_getDeref(&o->children, i);
-		avdl_node_AddComponentsToArray(child, array, component_type);
+		avdl_node_AddComponentsToArray_Internal(child, array, fnc);
 	}
 }
 
@@ -213,9 +242,10 @@ static int NodeToJson_PrintTabs(int fd, int tabs) {
 		write(fd, content, strlen(content));
 	}
 	#endif
+	return 0;
 }
 
-static int NodeToJson_PrintVec3(int fd, struct dd_vec3 *v) {
+static int NodeToJson_PrintVec3(int fd, struct avdl_vec3 *v) {
 	#if defined( AVDL_LINUX )
 	char *content;
 	char buffer[100];
@@ -244,7 +274,7 @@ static int NodeToJson_PrintVec3(int fd, struct dd_vec3 *v) {
 static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs) {
 	#if defined( AVDL_LINUX )
 
-	char *content;
+	const char *content;
 
 	// start
 	NodeToJson_PrintTabs(fd, tabs);
@@ -254,43 +284,199 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 	NodeToJson_PrintTabs(fd, tabs);
 	content = "\"name\": \"";
 	write(fd, content, strlen(content));
-	if (o->type == AVDL_COMPONENT_MESH_ENUM) {
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_mesh_clean) {
 		content = "avdl_component_mesh";
 		write(fd, content, strlen(content));
 		content = "\",\n";
 		write(fd, content, strlen(content));
 
 		struct avdl_component_mesh *mesh = o;
-		if (mesh->mesh_name) {
-			NodeToJson_PrintTabs(fd, tabs);
-			content = "\"mesh_name\": \"";
-			write(fd, content, strlen(content));
-			content = mesh->mesh_name;
-			write(fd, content, strlen(content));
-			content = "\",\n";
-			write(fd, content, strlen(content));
+		for (int i = 0; i < avdl_component_mesh_property_array_count; i++) {
+			struct avdl_component_property *p = &avdl_component_mesh_property_array[i];
+
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_INT) {
+				int val = avdl_component_mesh_GetPropertyIndexInt(mesh, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%d", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_FLOAT) {
+				float val = avdl_component_mesh_GetPropertyIndexFloat(mesh, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%f", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_STRING) {
+				char *val = avdl_component_mesh_GetPropertyIndexString(mesh, i);
+				if (val) {
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": \"";
+					write(fd, content, strlen(content));
+					write(fd, val, strlen(val));
+					content = "\",\n";
+					write(fd, content, strlen(content));
+				}
+			}
 		}
 	}
 	else
-	if (o->type == AVDL_COMPONENT_TERRAIN_ENUM) {
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_skinned_mesh_clean) {
+		content = "avdl_component_skinned_mesh";
+		write(fd, content, strlen(content));
+		content = "\",\n";
+		write(fd, content, strlen(content));
+
+		struct avdl_component_skinned_mesh *mesh = o;
+		for (int i = 0; i < avdl_component_skinned_mesh_property_array_count; i++) {
+			struct avdl_component_property *p = &avdl_component_skinned_mesh_property_array[i];
+
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_INT) {
+				int val = avdl_component_skinned_mesh_GetPropertyIndexInt(mesh, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%d", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_FLOAT) {
+				float val = avdl_component_skinned_mesh_GetPropertyIndexFloat(mesh, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%f", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_STRING) {
+				char *val = avdl_component_skinned_mesh_GetPropertyIndexString(mesh, i);
+				if (val) {
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": \"";
+					write(fd, content, strlen(content));
+					write(fd, val, strlen(val));
+					content = "\",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+		}
+	}
+	else
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_terrain_clean) {
 		content = "avdl_component_terrain";
 		write(fd, content, strlen(content));
 		content = "\",\n";
 		write(fd, content, strlen(content));
 
 		struct avdl_component_terrain *terrain = o;
-		if (terrain->asset_name) {
-			NodeToJson_PrintTabs(fd, tabs);
-			content = "\"asset_name\": \"";
-			write(fd, content, strlen(content));
-			content = terrain->asset_name;
-			write(fd, content, strlen(content));
-			content = "\",\n";
-			write(fd, content, strlen(content));
+		for (int i = 0; i < avdl_component_terrain_property_array_count; i++) {
+			struct avdl_component_property *p = &avdl_component_terrain_property_array[i];
+
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_INT) {
+				int val = avdl_component_terrain_GetPropertyIndexInt(terrain, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%d", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_FLOAT) {
+				float val = avdl_component_terrain_GetPropertyIndexFloat(terrain, i);
+				if (val) {
+					char buffer[100];
+					snprintf(buffer, 90, "%f", val);
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": ";
+					write(fd, content, strlen(content));
+					write(fd, buffer, strlen(buffer));
+					content = ",\n";
+					write(fd, content, strlen(content));
+				}
+			}
+			else
+			if (p->type == AVDL_COMPONENT_PROPERTY_TYPE_STRING) {
+				char *val = avdl_component_terrain_GetPropertyIndexString(terrain, i);
+				if (val) {
+					NodeToJson_PrintTabs(fd, tabs);
+					content = "\"";
+					write(fd, content, strlen(content));
+					content = p->name;
+					write(fd, content, strlen(content));
+					content = "\": \"";
+					write(fd, content, strlen(content));
+					write(fd, val, strlen(val));
+					content = "\",\n";
+					write(fd, content, strlen(content));
+				}
+			}
 		}
 	}
 	else
-	if (o->type == AVDL_COMPONENT_CUSTOM_EDITOR_ENUM) {
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_custom_clean) {
 		struct avdl_component_custom *c = o;
 		content = avdl_component_custom_GetName(c);
 		write(fd, content, strlen(content));
@@ -342,18 +528,22 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 			}
 		}
 	}
+	else {
+		avdl_logError("unrecognized component");
+	}
 
 	// end
 	NodeToJson_PrintTabs(fd, tabs);
 	content = "}\n";
 	write(fd, content, strlen(content));
 	#endif
+	return 0;
 }
 
 static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 
 	#if defined( AVDL_LINUX )
-	char *content;
+	const char *content;
 
 	// start
 	NodeToJson_PrintTabs(fd, tabs);
@@ -383,7 +573,7 @@ static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 	struct avdl_transform *t = avdl_node_GetLocalTransform(o);
 
 	// position
-	struct dd_vec3 *pos = avdl_transform_GetPosition(t);
+	struct avdl_vec3 *pos = avdl_transform_GetPosition(t);
 	NodeToJson_PrintTabs(fd, tabs+1);
 	content = "\"position\": [ ";
 	write(fd, content, strlen(content));
@@ -392,7 +582,7 @@ static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 	write(fd, content, strlen(content));
 
 	// rotation
-	struct dd_vec3 *rot = avdl_transform_GetRotation(t);
+	struct avdl_vec3 *rot = avdl_transform_GetRotation(t);
 	NodeToJson_PrintTabs(fd, tabs+1);
 	content = "\"rotation\": [ ";
 	write(fd, content, strlen(content));
@@ -401,7 +591,7 @@ static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 	write(fd, content, strlen(content));
 
 	// scale
-	struct dd_vec3 *scale = avdl_transform_GetScale(t);
+	struct avdl_vec3 *scale = avdl_transform_GetScale(t);
 	NodeToJson_PrintTabs(fd, tabs+1);
 	content = "\"scale\": [ ";
 	write(fd, content, strlen(content));
@@ -442,6 +632,7 @@ static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 	content = "}\n";
 	write(fd, content, strlen(content));
 	#endif
+	return 0;
 }
 
 int avdl_node_NodeToJson(struct avdl_node *o, char *filename) {
@@ -475,7 +666,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 	}
 
 	struct avdl_component *c = 0;
-	int component_type = -1;
+	void (*component_type_func)() = 0;
 
 	/*
 	char component_name[100];
@@ -514,21 +705,29 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					struct avdl_component_mesh *mesh = avdl_node_AddComponent(node, avdl_component_mesh);
 					mesh->isEditor = 1;
 					c = mesh;
-					component_type = AVDL_COMPONENT_MESH_ENUM;
+					component_type_func = avdl_component_mesh_clean;
+				}
+				else
+				if (strcmp(avdl_json_getTokenString(json), "avdl_component_skinned_mesh") == 0) {
+					//avdl_log("found skinned mesh component");
+					struct avdl_component_skinned_mesh *mesh = avdl_node_AddComponent(node, avdl_component_skinned_mesh);
+					mesh->isEditor = 1;
+					c = mesh;
+					component_type_func = avdl_component_skinned_mesh_clean;
 				}
 				else
 				if (strcmp(avdl_json_getTokenString(json), "avdl_component_terrain") == 0) {
-					avdl_log("found terrain component");
+					//avdl_log("found terrain component");
 					struct avdl_component_terrain *terrain = avdl_node_AddComponent(node, avdl_component_terrain);
 					terrain->isEditor = 1;
 					c = terrain;
-					component_type = AVDL_COMPONENT_TERRAIN_ENUM;
+					component_type_func = avdl_component_terrain_clean;
 				}
 				else {
 					struct avdl_component_custom *custom = avdl_node_AddComponent(node, avdl_component_custom);
 					avdl_component_custom_SetName(custom, avdl_json_getTokenString(json));
 					c = custom;
-					component_type = AVDL_COMPONENT_CUSTOM_EDITOR_ENUM;
+					component_type_func = avdl_component_custom_clean;
 				}
 			}
 			else {
@@ -537,7 +736,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 			}
 		}
 		else {
-			if (!c || component_type < 0) {
+			if (!c || !component_type_func) {
 				avdl_logError("component name should come first: %s", avdl_json_getTokenString(json));
 				return -1;
 			}
@@ -547,35 +746,142 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 			}
 			//avdl_log("component variable name: %s", avdl_json_getTokenString(json));
 
-			if (component_type == AVDL_COMPONENT_MESH_ENUM) {
+			if (component_type_func == avdl_component_mesh_clean) {
 				struct avdl_component_mesh *mesh = c;
 
-				if (strcmp(avdl_json_getTokenString(json), "mesh_name") == 0) {
-					avdl_json_next(json);
-					if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
-						mesh->mesh_name = malloc(sizeof(char) *strlen(avdl_json_getTokenString(json)));
-						strcpy(mesh->mesh_name, avdl_json_getTokenString(json));
+				struct avdl_string property_name;
+				avdl_string_create(&property_name, 1024);
+				avdl_string_cat(&property_name, avdl_json_getTokenString(json));
+				if (!avdl_string_isValid(&property_name)) {
+					avdl_logError("Unable to construct property name");
+					return -1;
+				}
+
+				avdl_json_next(json);
+				if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+					struct avdl_string property_value;
+					avdl_string_create(&property_value, 1024);
+					avdl_string_cat(&property_value, avdl_json_getTokenString(json));
+					if (!avdl_string_isValid(&property_value)) {
+						avdl_logError("Unable to construct property value");
+						return -1;
+					}
+
+					if (avdl_component_mesh_SetPropertyString(mesh, avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value)) != 0) {
+						avdl_logError("unable to set string property '%s' for mesh component to value '%s'",
+							avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value));
+						return -1;
+					}
+					avdl_string_clean(&property_value);
+				}
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+					if (avdl_component_mesh_SetPropertyInt(mesh, avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json)) != 0) {
+						avdl_logError("unable to set int property '%s' for mesh component to value '%d'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json));
+						return -1;
 					}
 				}
-				else {
-					avdl_logError("unknown component variable name: %s", avdl_json_getTokenString(json));
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+					if (avdl_component_mesh_SetPropertyFloat(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json)) != 0) {
+						avdl_logError("unable to set float property '%s' for mesh component to value '%f'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json));
+						return -1;
+					}
 				}
+				avdl_string_clean(&property_name);
 			}
 			else
-			if (component_type == AVDL_COMPONENT_TERRAIN_ENUM) {
-				struct avdl_component_terrain *terrain = c;
+			if (component_type_func == avdl_component_skinned_mesh_clean) {
+				struct avdl_component_skinned_mesh *mesh = c;
 
-				avdl_log("found terrain var component");
+				struct avdl_string property_name;
+				avdl_string_create(&property_name, 1024);
+				avdl_string_cat(&property_name, avdl_json_getTokenString(json));
+				if (!avdl_string_isValid(&property_name)) {
+					avdl_logError("Unable to construct property name");
+					return -1;
+				}
 
-				if (strcmp(avdl_json_getTokenString(json), "asset_name") == 0) {
-					avdl_json_next(json);
-					if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
-						terrain->asset_name = malloc(sizeof(char) *strlen(avdl_json_getTokenString(json)));
-						strcpy(terrain->asset_name, avdl_json_getTokenString(json));
+				avdl_json_next(json);
+				if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+					struct avdl_string property_value;
+					avdl_string_create(&property_value, 1024);
+					avdl_string_cat(&property_value, avdl_json_getTokenString(json));
+					if (!avdl_string_isValid(&property_value)) {
+						avdl_logError("Unable to construct property value");
+						return -1;
+					}
+
+					if (avdl_component_skinned_mesh_SetPropertyString(mesh, avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value)) != 0) {
+						avdl_logError("unable to set string property '%s' for mesh component to value '%s'",
+							avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value));
+						return -1;
+					}
+					avdl_string_clean(&property_value);
+				}
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+					if (avdl_component_skinned_mesh_SetPropertyInt(mesh, avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json)) != 0) {
+						avdl_logError("unable to set int property '%s' for mesh component to value '%d'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json));
+						return -1;
 					}
 				}
-				else {
-					avdl_logError("unknown component variable name: %s", avdl_json_getTokenString(json));
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+					if (avdl_component_skinned_mesh_SetPropertyFloat(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json)) != 0) {
+						avdl_logError("unable to set float property '%s' for mesh component to value '%f'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json));
+						return -1;
+					}
+				}
+				avdl_string_clean(&property_name);
+			}
+			else
+			if (component_type_func == avdl_component_terrain_clean) {
+				//struct avdl_component_terrain *terrain = c;
+
+				struct avdl_string property_name;
+				avdl_string_create(&property_name, 1024);
+				avdl_string_cat(&property_name, avdl_json_getTokenString(json));
+				if (!avdl_string_isValid(&property_name)) {
+					avdl_logError("Unable to construct property name");
+					return -1;
+				}
+
+				avdl_json_next(json);
+				if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
+					struct avdl_string property_value;
+					avdl_string_create(&property_value, 1024);
+					avdl_string_cat(&property_value, avdl_json_getTokenString(json));
+					if (!avdl_string_isValid(&property_value)) {
+						avdl_logError("Unable to construct property value");
+						return -1;
+					}
+
+					if (avdl_component_terrain_SetPropertyString(c, avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value)) != 0) {
+						avdl_logError("unable to set property '%s' for terrain component to value '%s'",
+							avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value));
+						return -1;
+					}
+				}
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+					if (avdl_component_terrain_SetPropertyInt(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json)) != 0) {
+						avdl_logError("unable to set property '%s' for terrain component to value '%d'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json));
+						return -1;
+					}
+				}
+				else
+				if (avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
+					if (avdl_component_terrain_SetPropertyFloat(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json)) != 0) {
+						avdl_logError("unable to set property '%s' for terrain component to value '%f'",
+							avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json));
+						return -1;
+					}
 				}
 			}
 			else {
@@ -619,7 +925,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 	return 0;
 }
 
-static int json_expect_array3f(struct avdl_json_object *json, struct dd_vec3 *v) {
+static int json_expect_array3f(struct avdl_json_object *json, struct avdl_vec3 *v) {
 	#if defined( AVDL_LINUX )
 
 	if (avdl_json_getToken(json) != AVDL_JSON_ARRAY_START) {
@@ -661,7 +967,7 @@ static int json_expect_node(struct avdl_json_object *json, struct avdl_node *nod
 		return -1;
 	}
 
-	struct avdl_transform *t = node->GetLocalTransform(node);
+	struct avdl_transform *t = avdl_node_GetLocalTransform(node);
 
 	avdl_json_next(json);
 	while (avdl_json_getToken(json) != AVDL_JSON_OBJECT_END) {
@@ -676,32 +982,32 @@ static int json_expect_node(struct avdl_json_object *json, struct avdl_node *nod
 			avdl_json_next(json);
 			if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
 				//avdl_log("got string name: %s", avdl_json_getTokenString(json));
-				node->SetName(node, avdl_json_getTokenString(json));
+				avdl_node_SetName(node, avdl_json_getTokenString(json));
 			}
 		}
 		else
 		if (strcmp(avdl_json_getTokenString(json), "position") == 0) {
 			avdl_json_next(json);
-			struct dd_vec3 v;
+			struct avdl_vec3 v;
 			json_expect_array3f(json, &v);
 			//avdl_log("got position: %f %f %f", v.x, v.y, v.z);
-			t->SetPosition(t, &v);
+			avdl_transform_SetPosition(t, &v);
 		}
 		else
 		if (strcmp(avdl_json_getTokenString(json), "rotation") == 0) {
 			avdl_json_next(json);
-			struct dd_vec3 v;
+			struct avdl_vec3 v;
 			json_expect_array3f(json, &v);
 			//avdl_log("got rotation: %f %f %f", v.x, v.y, v.z);
-			t->SetRotation(t, &v);
+			avdl_transform_SetRotation(t, &v);
 		}
 		else
 		if (strcmp(avdl_json_getTokenString(json), "scale") == 0) {
 			avdl_json_next(json);
-			struct dd_vec3 v;
+			struct avdl_vec3 v;
 			json_expect_array3f(json, &v);
 			//avdl_log("got scale: %f %f %f", v.x, v.y, v.z);
-			t->SetScale(t, &v);
+			avdl_transform_SetScale(t, &v);
 		}
 		else
 		if (strcmp(avdl_json_getTokenString(json), "components") == 0) {
@@ -733,7 +1039,7 @@ static int json_expect_node(struct avdl_json_object *json, struct avdl_node *nod
 
 			avdl_json_next(json);
 			while (avdl_json_getToken(json) != AVDL_JSON_ARRAY_END) {
-				struct avdl_node *child = node->AddChild(node);
+				struct avdl_node *child = avdl_node_AddChild(node);
 
 				/*
 				char *content = "\n";
@@ -783,17 +1089,119 @@ int avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
 	return 0;
 }
 
-struct avdl_component *avdl_node_GetComponent(struct avdl_node *o, int component_type) {
+struct avdl_component *avdl_node_GetComponent_Internal(struct avdl_node *o, void (*fnc)(struct avdl_component *)) {
 
 	// Get first component
 	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
 		struct avdl_component *c = dd_da_getDeref(&o->components, i);
 
-		if (c->type == component_type) {
+		if (c->clean == fnc) {
 			return c;
 		}
 	}
 
 	return 0;
 
+}
+
+int avdl_node_Copy(struct avdl_node *o, struct avdl_node *target) {
+	avdl_log("copy");
+	avdl_node_SetName(o, avdl_node_GetName(target));
+
+	// TODO - Copy the rest
+
+	return 0;
+}
+
+static struct avdl_component *DuplicateComponent(struct avdl_component *o, struct avdl_node *newParent) {
+
+	if (!newParent) {
+		avdl_log("avdl_node DuplicateComponent: No parent given, cannot duplicate component");
+		return 0;
+	}
+
+	struct avdl_component *component = 0;
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_mesh_clean) {
+		component = avdl_node_AddComponent(newParent, avdl_component_mesh);
+	}
+	else
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_skinned_mesh_clean) {
+		component = avdl_node_AddComponent(newParent, avdl_component_skinned_mesh);
+	}
+	else
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_terrain_clean) {
+		component = avdl_node_AddComponent(newParent, avdl_component_terrain);
+	}
+	else
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_custom_clean) {
+		component = avdl_node_AddComponent(newParent, avdl_component_custom);
+	}
+	else {
+		avdl_log("avdl_node DuplicateComponent: cannot duplicate custom components for now");
+		return 0;
+	}
+
+	if (!component) {
+		avdl_log("avdl_node DuplicateComponent: could not add component");
+		return 0;
+	}
+
+	if (component->Copy(component, o) != 0) {
+		avdl_log("failed to copy component");
+	}
+	component->after_create(component);
+
+	return component;
+}
+
+struct avdl_node *avdl_node_Duplicate(struct avdl_node *o, struct avdl_node *newParent) {
+
+	// No Parent - duplicate on the same parent
+	if (newParent == 0) {
+		newParent = avdl_node_GetParent(o);
+		if (!newParent) {
+			avdl_log("avdl_node_Duplicate: No parent given, and no parent detected, failed to duplicate");
+			return 0;
+		}
+	}
+
+	// Create new Node
+	struct avdl_node *newNode = avdl_node_AddChild(newParent);
+
+	// Copy name
+	avdl_node_SetName(newNode, avdl_node_GetName(o));
+	if (avdl_string_endsInInt(&newNode->name)) {
+		if (avdl_string_incrementEndingInt(&newNode->name) != 0) {
+			avdl_log("failed to properly rename duplicate node");
+			return 0;
+		}
+	}
+	else {
+		avdl_string_cat(&newNode->name, "_0");
+	}
+
+	// Copy Transform
+	struct avdl_transform *newTransform = avdl_node_GetLocalTransform(newNode);
+	avdl_transform_Copy(newTransform, avdl_node_GetLocalTransform(o));
+
+	// Copy components
+	for (unsigned int i = 0; i < dd_da_count(&o->components); i++) {
+		struct avdl_component *component = dd_da_getDeref(&o->components, i);
+		if (!DuplicateComponent(component, newNode)) {
+			avdl_log("avdl_node_Duplicate: could not duplicate component");
+			continue;
+		}
+	}
+
+	// Copy children
+	for (int i = 0; i < avdl_node_GetChildrenCount(o); i++) {
+		struct avdl_node *child = avdl_node_GetChild(o, i);
+		avdl_node_Duplicate(child, newNode);
+	}
+
+	return newNode;
+}
+
+int avdl_node_GetComponentCount(struct avdl_node *o) {
+	return dd_da_count(&o->components);
 }

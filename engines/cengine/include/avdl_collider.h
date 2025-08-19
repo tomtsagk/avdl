@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-#include "dd_vec3.h"
-#include "dd_vec4.h"
+#include "avdl_vec3.h"
+#include "avdl_vec4.h"
 #include "dd_mesh.h"
 #include "avdl_node.h"
 
@@ -14,14 +14,19 @@ extern "C" {
 #define AVDL_COLLIDER_TYPE_AABB 1
 #define AVDL_COLLIDER_TYPE_OBB 2
 #define AVDL_COLLIDER_TYPE_SPHERE 3
+#define AVDL_COLLIDER_TYPE_TERRRAIN 4
 
 struct avdl_collider_collision {
-	struct dd_vec4 overlap;
+	struct avdl_vec4 overlap;
+	struct avdl_vec3 normal1;
+	struct avdl_vec3 normal2;
 };
 
 void avdl_collider_collision_create(struct avdl_collider_collision *o);
 void avdl_collider_collision_clean(struct avdl_collider_collision *o);
-struct dd_vec4 *avdl_collider_collision_GetOverlap(struct avdl_collider_collision *o);
+struct avdl_vec4 *avdl_collider_collision_GetOverlap(struct avdl_collider_collision *o);
+struct avdl_vec3 *avdl_collider_collision_GetNormal1(struct avdl_collider_collision *o);
+struct avdl_vec3 *avdl_collider_collision_GetNormal2(struct avdl_collider_collision *o);
 
 struct avdl_collider {
 	int type;

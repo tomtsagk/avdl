@@ -229,28 +229,12 @@ void avdl_mesh_create(struct avdl_mesh *m) {
 	}
 	m->hasTransparency = 0;
 
-	m->draw = avdl_mesh_draw;
 	m->clean = avdl_mesh_clean;
-	m->set_primitive = avdl_mesh_set_primitive;
-	m->load = avdl_mesh_load;
-	m->copy = avdl_mesh_copy;
-
-	m->set_colour = avdl_mesh_set_colour;
 
 	#if !defined( AVDL_DIRECT3D11 )
 	m->buffer = 0;
 	m->array = 0;
 	#endif
-
-	m->set_primitive_texcoords = avdl_mesh_set_primitive_texcoords;
-	m->setTexture = avdl_mesh_setTexture;
-	m->setTextureNormal = avdl_mesh_setTextureNormal;
-	m->setTextureIndex = avdl_mesh_setTextureIndex;
-	m->hasTexture = avdl_mesh_hasTexture;
-	m->setTransparency = avdl_mesh_setTransparency;
-
-	m->setWireframe = avdl_mesh_setWireframe;
-	m->setSolid = avdl_mesh_setSolid;
 
 	m->vertexBuffer = 0;
 	m->LoadFromLoadedMesh = avdl_mesh_LoadFromLoadedMesh;
@@ -502,44 +486,34 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	}
 
 	if (m->img) {
-		m->img->bindIndex(m->img, 0);
+		avdl_texture_bindIndex(m->img, 0);
 		GLuint loc = glGetUniformLocation(currentProgram, "image");
 		if (loc != -1) {
 			GL(glUniform1i(loc, 0));
 		}
 	}
 	if (m->img_normal) {
-		m->img_normal->bindIndex(m->img_normal, 1);
+		avdl_texture_bindIndex(m->img_normal, 1);
 		GLuint loc = glGetUniformLocation(currentProgram, "image_normal");
 		if (loc != -1) {
 			GL(glUniform1i(loc, 1));
 		}
 	}
+	int activeTextures = 0;
 	for (int i = 0; i < TEXTURES_COUNT; i++) {
 		if (m->img_extra[i]) {
-			m->img_extra[i]->bindIndex(m->img_extra[i], 2 +i);
-			GLuint loc = -1;
-			switch (i) {
-			case 0:
-				loc = glGetUniformLocation(currentProgram, "image_extra_0");
-				break;
-			case 1:
-				loc = glGetUniformLocation(currentProgram, "image_extra_1");
-				break;
-			case 2:
-				loc = glGetUniformLocation(currentProgram, "image_extra_2");
-				break;
-			case 3:
-				loc = glGetUniformLocation(currentProgram, "image_extra_3");
-				break;
-			default:
-			case 4:
-				loc = glGetUniformLocation(currentProgram, "image_extra_4");
-				break;
-			}
-			if (loc != -1) {
-				GL(glUniform1i(loc, 2 +i));
-			}
+			activeTextures++;
+		}
+		else {
+			break;
+		}
+	}
+	if (activeTextures > 0) {
+		avdl_texture_bindIndexArray(m->img_extra[0], 2, activeTextures, m->img_extra);
+		GLuint loc = -1;
+		loc = glGetUniformLocation(currentProgram, "image_extra");
+		if (loc != -1) {
+			GL(glUniform1i(loc, 2));
 		}
 	}
 
@@ -592,17 +566,15 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	GL(glBindVertexArray(0));
 
 	if (m->img) {
-		m->img->unbind(m->img);
+		avdl_texture_unbindIndex(m->img, 0);
 	}
 
 	if (m->img_normal) {
-		m->img_normal->unbind(m->img_normal);
+		avdl_texture_unbindIndex(m->img_normal, 1);
 	}
 
-	for (int i = 0; i < TEXTURES_COUNT; i++) {
-		if (m->img_extra[i]) {
-			m->img_extra[i]->unbind(m->img_extra[i]);
-		}
+	if (activeTextures > 0) {
+		avdl_texture_unbindIndexArray(m->img_extra[0], 2);
 	}
 
 	if (m->hasTransparency) {
@@ -620,7 +592,7 @@ void avdl_mesh_load(struct avdl_mesh *m, const char *asset, int type) {
 	avdl_mesh_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH2, asset, type);
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH2, asset, type, 0);
 
 }
 
@@ -630,7 +602,7 @@ void avdl_mesh_loadLocal(struct avdl_mesh *m, const char *asset, int type) {
 	avdl_mesh_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_addLocal(m, AVDL_ASSETMANAGER_MESH2, asset, type);
+	avdl_assetManager_addLocal(m, AVDL_ASSETMANAGER_MESH2, asset, type, 0);
 
 }
 
@@ -774,15 +746,15 @@ void avdl_mesh_setTransparency(struct avdl_mesh *o, int transparency) {
 	o->hasTransparency = transparency;
 }
 
-void avdl_mesh_setTexture(struct avdl_mesh *o, struct dd_image *tex) {
+void avdl_mesh_setTexture(struct avdl_mesh *o, struct avdl_texture *tex) {
 	o->img = tex;
 }
 
-void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct dd_image *tex) {
+void avdl_mesh_setTextureNormal(struct avdl_mesh *o, struct avdl_texture *tex) {
 	o->img_normal = tex;
 }
 
-void avdl_mesh_setTextureIndex(struct avdl_mesh *o, struct dd_image *tex, int index) {
+void avdl_mesh_setTextureIndex(struct avdl_mesh *o, struct avdl_texture *tex, int index) {
 	if (index < 0 || index >= TEXTURES_COUNT) {
 		avdl_log("avdl_mesh: texture index out of bounds: %d / %d", index, TEXTURES_COUNT);
 		return;

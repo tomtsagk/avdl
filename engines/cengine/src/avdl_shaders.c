@@ -443,9 +443,6 @@ void avdl_program_create(struct avdl_program *o) {
 	o->program = 0;
 
 	o->clean = avdl_program_clean;
-	o->setVertexShader = avdl_program_setVertexShader;
-	o->setFragmentShader = avdl_program_setFragmentShader;
-	o->useProgram = avdl_program_useProgram;
 }
 
 void avdl_program_clean(struct avdl_program *o) {

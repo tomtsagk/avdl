@@ -5,8 +5,8 @@
 #include "dd_dynamic_array.h"
 #include "avdl_log.h"
 #include <string.h>
-#include "dd_vec3.h"
-#include "dd_vec4.h"
+#include "avdl_vec3.h"
+#include "avdl_vec4.h"
 
 void dd_matrix_create(struct dd_matrix *m) {}
 void dd_matrix_clean(struct dd_matrix *m) {}
@@ -527,24 +527,24 @@ struct dd_matrix *dd_matrix_globalGet() {
  */
 void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float targetZ) {
 
-	struct dd_vec3 forward;
-	dd_vec3_create(&forward);
-	dd_vec3_setf(&forward, targetX, targetY, targetZ);
-	dd_vec3_normalise(&forward);
+	struct avdl_vec3 forward;
+	avdl_vec3_create(&forward);
+	avdl_vec3_Setf(&forward, targetX, targetY, targetZ);
+	avdl_vec3_Normalise(&forward);
 
-	struct dd_vec3 fakeup;
-	dd_vec3_create(&fakeup);
-	dd_vec3_setf(&fakeup, 0, 1, 0);
+	struct avdl_vec3 fakeup;
+	avdl_vec3_create(&fakeup);
+	avdl_vec3_Setf(&fakeup, 0, 1, 0);
 
-	struct dd_vec3 right;
-	dd_vec3_create(&right);
-	dd_vec3_cross(&right, &fakeup, &forward);
-	dd_vec3_normalise(&right);
+	struct avdl_vec3 right;
+	avdl_vec3_create(&right);
+	avdl_vec3_Cross(&right, &fakeup, &forward);
+	avdl_vec3_Normalise(&right);
 
-	struct dd_vec3 up;
-	dd_vec3_create(&up);
-	dd_vec3_cross(&up, &forward, &right);
-	dd_vec3_normalise(&up);
+	struct avdl_vec3 up;
+	avdl_vec3_create(&up);
+	avdl_vec3_Cross(&up, &forward, &right);
+	avdl_vec3_Normalise(&up);
 
 	#if defined( AVDL_DIRECT3D11 ) || defined( AVDL_QUEST2 )
 	float rot_mat[] = {
@@ -572,8 +572,8 @@ void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float t
 #if defined(AVDL_QUEST2)
 struct dd_matrix dd_cam_controllers[2];
 int dd_cam_controller_active[2];
-struct dd_vec4 dd_cam_controllers_position[2];
-struct dd_vec4 dd_cam_controllers_direction[2];
+struct avdl_vec4 dd_cam_controllers_position[2];
+struct avdl_vec4 dd_cam_controllers_direction[2];
 #endif
 
 void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m) {
@@ -587,33 +587,33 @@ void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m) {
 	dd_matrix_copy(&dd_cam_controllers[controllerIndex], m);
 
 	// controller position
-	dd_vec4_set(&dd_cam_controllers_position[controllerIndex],
+	avdl_vec4_Setf(&dd_cam_controllers_position[controllerIndex],
 		0,
 		0,
 		0,
 		1
 	);
-	dd_vec4_multiply(&dd_cam_controllers_position[controllerIndex],
+	avdl_vec4_multiply(&dd_cam_controllers_position[controllerIndex],
 		&dd_cam_controllers[controllerIndex]
 	);
 
 	// controller direction
-	dd_vec4_set(&dd_cam_controllers_direction[controllerIndex],
+	avdl_vec4_Setf(&dd_cam_controllers_direction[controllerIndex],
 		0,
 		0,
 		-1,
 		1
 	);
-	dd_vec4_multiply(&dd_cam_controllers_direction[controllerIndex],
+	avdl_vec4_multiply(&dd_cam_controllers_direction[controllerIndex],
 		&dd_cam_controllers[controllerIndex]
 	);
-	dd_vec4_set(&dd_cam_controllers_direction[controllerIndex],
-		dd_vec4_getX(&dd_cam_controllers_direction[controllerIndex])
-			-dd_vec4_getX(&dd_cam_controllers_position[controllerIndex]),
-		dd_vec4_getY(&dd_cam_controllers_direction[controllerIndex])
-			-dd_vec4_getY(&dd_cam_controllers_position[controllerIndex]),
-		dd_vec4_getZ(&dd_cam_controllers_direction[controllerIndex])
-			-dd_vec4_getZ(&dd_cam_controllers_position[controllerIndex]),
+	avdl_vec4_Setf(&dd_cam_controllers_direction[controllerIndex],
+		avdl_vec4_X(&dd_cam_controllers_direction[controllerIndex])
+			-avdl_vec4_X(&dd_cam_controllers_position[controllerIndex]),
+		avdl_vec4_Y(&dd_cam_controllers_direction[controllerIndex])
+			-avdl_vec4_Y(&dd_cam_controllers_position[controllerIndex]),
+		avdl_vec4_Z(&dd_cam_controllers_direction[controllerIndex])
+			-avdl_vec4_Z(&dd_cam_controllers_position[controllerIndex]),
 		1
 	);
 #endif
@@ -673,7 +673,7 @@ void dd_matrix_setControllerVisible(int index, int state) {
 #endif
 }
 
-struct dd_vec4 *dd_matrix_getControllerPosition(int index) {
+struct avdl_vec4 *dd_matrix_getControllerPosition(int index) {
 #if defined(AVDL_QUEST2)
 	if (index > 2) {
 		return 0;
@@ -685,7 +685,7 @@ struct dd_vec4 *dd_matrix_getControllerPosition(int index) {
 #endif
 }
 
-struct dd_vec4 *dd_matrix_getControllerDirection(int index) {
+struct avdl_vec4 *dd_matrix_getControllerDirection(int index) {
 #if defined(AVDL_QUEST2)
 	if (index > 2) {
 		return 0;
@@ -697,24 +697,24 @@ struct dd_vec4 *dd_matrix_getControllerDirection(int index) {
 #endif
 }
 
-void dd_matrix_quaternion_to_rotation_matrix(struct dd_vec4 *q, struct dd_matrix *output) {
+void dd_matrix_quaternion_to_rotation_matrix(struct avdl_vec4 *q, struct dd_matrix *output) {
 
 	// First row of the rotation matrix
-	output->cell[0] = 1 -(2 * (q->cell[1] * q->cell[1])) -(2 * (q->cell[2] * q->cell[2]));
-	output->cell[4] = 2 * (q->cell[0] * q->cell[1]) -(2 * (q->cell[3] * q->cell[2]));
-	output->cell[8] = 2 * (q->cell[0] * q->cell[2]) +(2 * (q->cell[3] * q->cell[1]));
+	output->cell[0] = 1 -(2 * (q->y * q->y)) -(2 * (q->z * q->z));
+	output->cell[4] = 2 * (q->x * q->y) -(2 * (q->w * q->z));
+	output->cell[8] = 2 * (q->x * q->z) +(2 * (q->w * q->y));
 	output->cell[12] = 0;
 
 	// Second row of the rotation matrix
-	output->cell[1] = 2 * (q->cell[0] * q->cell[1]) +(2 * (q->cell[3] * q->cell[2]));
-	output->cell[5] = 1 -(2 * (q->cell[0] * q->cell[0])) -(2 * (q->cell[2] * q->cell[2]));
-	output->cell[9] = 2 * (q->cell[1] * q->cell[2]) -(2 * (q->cell[3] * q->cell[0]));
+	output->cell[1] = 2 * (q->x * q->y) +(2 * (q->w * q->z));
+	output->cell[5] = 1 -(2 * (q->x * q->x)) -(2 * (q->z * q->z));
+	output->cell[9] = 2 * (q->y * q->z) -(2 * (q->w * q->x));
 	output->cell[13] = 0;
 
 	// Third row of the rotation matrix
-	output->cell[2] = 2 * (q->cell[0] * q->cell[2]) -(2 * (q->cell[3] * q->cell[1]));
-	output->cell[6] = 2 * (q->cell[1] * q->cell[2]) +(2 * (q->cell[3] * q->cell[0]));
-	output->cell[10] = 1 -(2 * (q->cell[0] * q->cell[0])) -(2 * (q->cell[1] * q->cell[1]));
+	output->cell[2] = 2 * (q->x * q->z) -(2 * (q->w * q->y));
+	output->cell[6] = 2 * (q->y * q->z) +(2 * (q->w * q->x));
+	output->cell[10] = 1 -(2 * (q->x * q->x)) -(2 * (q->y * q->y));
 	output->cell[14] = 0;
 
 	// last

@@ -6,7 +6,7 @@
 #include "avdl_input.h"
 
 static void CheckIsSelected(struct avdl_ui_element *o) {
-	if (o->hasMouseCollided(o)) {
+	if (avdl_ui_element_hasMouseCollided(o)) {
 		o->isSelected = 1;
 	}
 	else {
@@ -15,36 +15,10 @@ static void CheckIsSelected(struct avdl_ui_element *o) {
 }
 
 void avdl_ui_element_create(struct avdl_ui_element *o) {
-	o->SetSize = avdl_ui_element_SetSize;
-	o->SetPosition = avdl_ui_element_SetPosition;
-	o->SetPositionZ = avdl_ui_element_SetPositionZ;
-	o->SetAnchor = avdl_ui_element_SetAnchor;
-
-	o->create = avdl_ui_element_create;
-	o->update = avdl_ui_element_update;
-	o->applyTransform = avdl_ui_element_applyTransform;
-	o->drawDebug = avdl_ui_element_drawDebug;
 	o->clean = avdl_ui_element_clean;
-	o->resize = avdl_ui_element_resize;
 
-	o->mouse_input = avdl_ui_element_mouse_input;
-	o->hasMouseCollided = avdl_ui_element_hasMouseCollided;
-
-	o->disable = avdl_ui_element_disable;
-
-	o->IsSelected = avdl_ui_element_IsSelected;
-	o->IsClicked = avdl_ui_element_IsClicked;
-
-	o->SetOnClick = avdl_ui_element_SetOnClick;
 	o->onClick = 0;
 	o->onClickData = 0;
-
-	o->GetPositionX = avdl_ui_element_GetPositionX;
-	o->GetPositionY = avdl_ui_element_GetPositionY;
-	o->GetPositionZ = avdl_ui_element_GetPositionZ;
-
-	o->IsVisible = avdl_ui_element_IsVisible;
-	o->SetVisible = avdl_ui_element_SetVisible;
 
 	// screen anchors
 	o->anchorX = 0.5;
@@ -73,8 +47,8 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 	o->isSelectedClicked = 0;
 
 	avdl_mesh_create(&o->mesh_debug);
-	o->mesh_debug.set_primitive(&o->mesh_debug, AVDL_PRIMITIVE_BOX);
-	o->mesh_debug.setWireframe(&o->mesh_debug);
+	avdl_mesh_set_primitive(&o->mesh_debug, AVDL_PRIMITIVE_BOX);
+	avdl_mesh_setWireframe(&o->mesh_debug);
 }
 
 void avdl_ui_element_SetSize(struct avdl_ui_element *o, float width, float height) {
@@ -114,7 +88,7 @@ void avdl_ui_element_drawDebug(struct avdl_ui_element *o) {
 
 	// debug
 	dd_pushMatrix();
-	o->applyTransform(o);
+	avdl_ui_element_applyTransform(o);
 	dd_scalef(o->sizeW, o->sizeH, 0.01);
 	if (o->isSelected) {
 		dd_scalef(1.2, 1.2, 1.2);
@@ -122,7 +96,7 @@ void avdl_ui_element_drawDebug(struct avdl_ui_element *o) {
 	if (o->isSelectedClicked) {
 		dd_scalef(1.2, 1.2, 1.2);
 	}
-	o->mesh_debug.draw(&o->mesh_debug);
+	avdl_mesh_draw(&o->mesh_debug);
 	dd_popMatrix();
 
 }
@@ -175,34 +149,38 @@ void avdl_ui_element_disable(struct avdl_ui_element *o) {
 void avdl_ui_element_SetAnchor(struct avdl_ui_element *o, float x, float y) {
 	o->anchorX = x;
 	o->anchorY = y;
-	o->resize(o);
+	avdl_ui_element_resize(o);
 }
 
-void avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type) {
+int avdl_ui_element_mouse_input(struct avdl_ui_element *o, int button, int type) {
 	if (o->isVisible == 0) {
-		return;
+		return 0;
 	}
 
 	CheckIsSelected(o);
 
 	// set click state on selected button
 	if (type == AVDL_INPUT_STATE_DOWN) {
-		if (o->isSelected && o->hasMouseCollided(o)) {
+		if (o->isSelected && avdl_ui_element_hasMouseCollided(o)) {
 			o->isSelectedClicked = 1;
+			return 1;
 		}
 	}
 	else
 	// apply selected button if it was clicked
 	if (type == AVDL_INPUT_STATE_UP) {
 	
-		if (o->isSelectedClicked && o->hasMouseCollided(o)) {
+		if (o->isSelectedClicked && avdl_ui_element_hasMouseCollided(o)) {
 			// onclick
 			if (o->onClick) {
 				o->onClick(o->onClickData);
+				o->isSelectedClicked = 0;
+				return 1;
 			}
 		}
 		o->isSelectedClicked = 0;
 	}
+	return 0;
 
 }
 

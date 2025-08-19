@@ -21,6 +21,7 @@ struct avdl_time {
 	double elapsed_sec;
 };
 
+void avdl_time_create(struct avdl_time *o);
 void avdl_time_start(struct avdl_time *o);
 void avdl_time_end(struct avdl_time *o);
 double avdl_time_getTimeDouble(struct avdl_time *o);

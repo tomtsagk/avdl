@@ -5,15 +5,15 @@
 #include "dd_filetomesh.h"
 
 struct avdl_mix_animated_bone {
-	struct dd_vec3 position;
-	struct dd_vec4 rotation;
-	struct dd_vec3 scale;
+	struct avdl_vec3 position;
+	struct avdl_vec4 rotation;
+	struct avdl_vec3 scale;
 };
 
 struct avdl_animated_bone {
-	struct dd_vec3 *positions;
-	struct dd_vec4 *rotations;
-	struct dd_vec3 *scales;
+	struct avdl_vec3 *positions;
+	struct avdl_vec4 *rotations;
+	struct avdl_vec3 *scales;
 	float *positions_time;
 	float *rotations_time;
 	float *scales_time;

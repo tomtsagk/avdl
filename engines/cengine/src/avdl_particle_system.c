@@ -25,38 +25,20 @@ void avdl_particle_system_create(struct avdl_particle_system *o) {
 	o->particleScaleFunction = 0;
 
 	// init vectors
-	dd_vec3_create(&o->particlePosition);
-	dd_vec3_create(&o->particlePositionFuzz);
-	o->particlePosition.setf(&o->particlePosition, 0, 0, 0);
-	o->particlePositionFuzz.setf(&o->particlePositionFuzz, 0, 0, 0);
-	dd_vec3_create(&o->particleRotation);
-	dd_vec3_create(&o->particleRotationFuzz);
-	o->particleRotation.setf(&o->particleRotation, 0, 0, 0);
-	o->particleRotationFuzz.setf(&o->particleRotationFuzz, 0, 0, 0);
-	dd_vec3_create(&o->particleScale);
-	dd_vec3_create(&o->particleScaleFuzz);
-	o->particleScale.setf(&o->particleScale, 1, 1, 1);
-	o->particleScaleFuzz.setf(&o->particleScaleFuzz, 0, 0, 0);
+	avdl_vec3_create(&o->particlePosition);
+	avdl_vec3_create(&o->particlePositionFuzz);
+	avdl_vec3_Setf(&o->particlePosition, 0, 0, 0);
+	avdl_vec3_Setf(&o->particlePositionFuzz, 0, 0, 0);
+	avdl_vec3_create(&o->particleRotation);
+	avdl_vec3_create(&o->particleRotationFuzz);
+	avdl_vec3_Setf(&o->particleRotation, 0, 0, 0);
+	avdl_vec3_Setf(&o->particleRotationFuzz, 0, 0, 0);
+	avdl_vec3_create(&o->particleScale);
+	avdl_vec3_create(&o->particleScaleFuzz);
+	avdl_vec3_Setf(&o->particleScale, 1, 1, 1);
+	avdl_vec3_Setf(&o->particleScaleFuzz, 0, 0, 0);
 
-	o->assignAsset = avdl_particle_system_assignAsset;
-	o->update = avdl_particle_system_update;
-	o->draw = avdl_particle_system_draw;
-
-	o->setDelay = avdl_particle_system_setDelay;
-	o->setParticleLife = avdl_particle_system_setParticleLife;
-	o->setParticlePositionXFunc = avdl_particle_system_setParticlePositionXFunc;
-	o->setParticlePositionYFunc = avdl_particle_system_setParticlePositionYFunc;
-	o->setParticlePositionZFunc = avdl_particle_system_setParticlePositionZFunc;
-	o->setParticleScaleFunc = avdl_particle_system_setParticleScaleFunc;
-
-	// init values setters functions
-	o->setParticlePosition = avdl_particle_system_setParticlePosition;
-	o->setParticlePositionFuzz = avdl_particle_system_setParticlePositionFuzz;
-	o->setParticleRotation = avdl_particle_system_setParticleRotation;
-	o->setParticleRotationFuzz = avdl_particle_system_setParticleRotationFuzz;
-	o->setParticleScale = avdl_particle_system_setParticleScale;
-	o->setParticleScaleFuzz = avdl_particle_system_setParticleScaleFuzz;
-	o->setParticlesTotal = avdl_particle_system_setParticlesTotal;
+	o->clean = avdl_particle_system_clean;
 }
 
 void avdl_particle_system_clean(struct avdl_particle_system *o) {
@@ -92,35 +74,35 @@ void avdl_particle_system_update(struct avdl_particle_system *o, float dt) {
 
 		// position
 		dd_matrix_translate(&o->particles[index].matrix,
-			o->particlePosition.getX(&o->particlePosition)
-				+dd_math_randf(o->particlePositionFuzz.getX(&o->particlePositionFuzz))
-				-o->particlePositionFuzz.getX(&o->particlePositionFuzz)/2,
-			o->particlePosition.getY(&o->particlePosition)
-				+dd_math_randf(o->particlePositionFuzz.getY(&o->particlePositionFuzz))
-				-o->particlePositionFuzz.getY(&o->particlePositionFuzz)/2,
-			o->particlePosition.getZ(&o->particlePosition)
-				+dd_math_randf(o->particlePositionFuzz.getZ(&o->particlePositionFuzz))
-				-o->particlePositionFuzz.getZ(&o->particlePositionFuzz)/2
+			avdl_vec3_X(&o->particlePosition)
+				+dd_math_randf(avdl_vec3_X(&o->particlePositionFuzz))
+				-avdl_vec3_X(&o->particlePositionFuzz)/2,
+			avdl_vec3_Y(&o->particlePosition)
+				+dd_math_randf(avdl_vec3_Y(&o->particlePositionFuzz))
+				-avdl_vec3_Y(&o->particlePositionFuzz)/2,
+			avdl_vec3_Z(&o->particlePosition)
+				+dd_math_randf(avdl_vec3_Z(&o->particlePositionFuzz))
+				-avdl_vec3_Z(&o->particlePositionFuzz)/2
 		);
 
 		// rotation
 		dd_matrix_rotate(&o->particles[index].matrix,
-			o->particleRotation.getX(&o->particleRotation)
-				+ dd_math_randf(o->particleRotationFuzz.getX(&o->particleRotationFuzz)),
+			avdl_vec3_X(&o->particleRotation)
+				+ dd_math_randf(avdl_vec3_X(&o->particleRotationFuzz)),
 			1,
 			0,
 			0
 		);
 		dd_matrix_rotate(&o->particles[index].matrix,
-			o->particleRotation.getY(&o->particleRotation)
-				+ dd_math_randf(o->particleRotationFuzz.getY(&o->particleRotationFuzz)),
+			avdl_vec3_Y(&o->particleRotation)
+				+ dd_math_randf(avdl_vec3_Y(&o->particleRotationFuzz)),
 			0,
 			1,
 			0
 		);
 		dd_matrix_rotate(&o->particles[index].matrix,
-			o->particleRotation.getZ(&o->particleRotation)
-				+ dd_math_randf(o->particleRotationFuzz.getZ(&o->particleRotationFuzz)),
+			avdl_vec3_Z(&o->particleRotation)
+				+ dd_math_randf(avdl_vec3_Z(&o->particleRotationFuzz)),
 			0,
 			0,
 			1
@@ -128,15 +110,15 @@ void avdl_particle_system_update(struct avdl_particle_system *o, float dt) {
 
 		// scale
 		dd_matrix_scale(&o->particles[index].matrix,
-			o->particleScale.getX(&o->particleScale)
-				+dd_math_randf(o->particleScaleFuzz.getX(&o->particleScaleFuzz))
-				-o->particleScaleFuzz.getX(&o->particleScaleFuzz)/2,
-			o->particleScale.getY(&o->particleScale)
-				+dd_math_randf(o->particleScaleFuzz.getY(&o->particleScaleFuzz))
-				-o->particleScaleFuzz.getY(&o->particleScaleFuzz)/2,
-			o->particleScale.getZ(&o->particleScale)
-				+dd_math_randf(o->particleScaleFuzz.getZ(&o->particleScaleFuzz))
-				-o->particleScaleFuzz.getZ(&o->particleScaleFuzz)/2
+			avdl_vec3_X(&o->particleScale)
+				+dd_math_randf(avdl_vec3_X(&o->particleScaleFuzz))
+				-avdl_vec3_X(&o->particleScaleFuzz)/2,
+			avdl_vec3_Y(&o->particleScale)
+				+dd_math_randf(avdl_vec3_Y(&o->particleScaleFuzz))
+				-avdl_vec3_Y(&o->particleScaleFuzz)/2,
+			avdl_vec3_Z(&o->particleScale)
+				+dd_math_randf(avdl_vec3_Z(&o->particleScaleFuzz))
+				-avdl_vec3_Z(&o->particleScaleFuzz)/2
 		);
 
 		// life
@@ -176,7 +158,7 @@ void avdl_particle_system_draw(struct avdl_particle_system *o) {
 				float t = o->particleScaleFunction(1 -(o->particles[index].life /o->particleLife));
 				dd_scalef(t, t, t);
 			}
-			o->particles[index].mesh->draw(o->particles[index].mesh);
+			avdl_mesh_draw(o->particles[index].mesh);
 			dd_matrix_pop();
 		}
 	}
@@ -207,27 +189,27 @@ void avdl_particle_system_setParticleScaleFunc(struct avdl_particle_system *o, f
 }
 
 void avdl_particle_system_setParticlePosition(struct avdl_particle_system *o, float x, float y, float z) {
-	o->particlePosition.setf(&o->particlePosition, x, y, z);
+	avdl_vec3_Setf(&o->particlePosition, x, y, z);
 }
 
 void avdl_particle_system_setParticlePositionFuzz(struct avdl_particle_system *o, float x, float y, float z) {
-	o->particlePositionFuzz.setf(&o->particlePositionFuzz, x, y, z);
+	avdl_vec3_Setf(&o->particlePositionFuzz, x, y, z);
 }
 
 void avdl_particle_system_setParticleRotation(struct avdl_particle_system *o, float x, float y, float z) {
-	o->particleRotation.setf(&o->particleRotation, x, y, z);
+	avdl_vec3_Setf(&o->particleRotation, x, y, z);
 }
 
 void avdl_particle_system_setParticleRotationFuzz(struct avdl_particle_system *o, float x, float y, float z) {
-	o->particleRotationFuzz.setf(&o->particleRotationFuzz, x, y, z);
+	avdl_vec3_Setf(&o->particleRotationFuzz, x, y, z);
 }
 
 void avdl_particle_system_setParticleScale(struct avdl_particle_system *o, float x, float y, float z) {
-	o->particleScale.setf(&o->particleScale, x, y, z);
+	avdl_vec3_Setf(&o->particleScale, x, y, z);
 }
 
 void avdl_particle_system_setParticleScaleFuzz(struct avdl_particle_system *o, float x, float y, float z) {
-	o->particleScaleFuzz.setf(&o->particleScaleFuzz, x, y, z);
+	avdl_vec3_Setf(&o->particleScaleFuzz, x, y, z);
 }
 
 void avdl_particle_system_setParticlesTotal(struct avdl_particle_system *o, int particlesTotal) {

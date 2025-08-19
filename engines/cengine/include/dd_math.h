@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "dd_vec2.h"
-#include "dd_vec3.h"
+#include "avdl_vec3.h"
 #include <math.h>
 #include <stdlib.h>
 
@@ -47,6 +47,7 @@ void dd_math_ease_catmullrom2d(struct dd_vec2 *point, float t, struct dd_vec2 p0
 #define dd_math_asin(val) asinf(val)
 #define dd_math_acos(val) acosf(val)
 #define dd_math_atan(val) atanf(val)
+#define dd_math_atan2(val1, val2) atan2f(val1, val2)
 #define dd_math_floor(val) floorf(val)
 #define dd_math_ceil(val) ceilf(val)
 #define dd_math_clamp(a, b, v) (v < a ? a : v > b ? b : v)
@@ -65,12 +66,12 @@ int dd_math_removeTrailingZeroes(int num);
 
 // vector math
 float dd_math_dot2(struct dd_vec2 *v1, struct dd_vec2 *v2);
-float dd_math_dot3(struct dd_vec3 *v1, struct dd_vec3 *v2);
+float dd_math_dot3(struct avdl_vec3 *v1, struct avdl_vec3 *v2);
 
-#include "dd_vec4.h"
+#include "avdl_vec4.h"
 
-int dd_math_plane_ray_intersect(struct dd_vec4 *rayPos, struct dd_vec4 *rayDir,
-	struct dd_vec4 *planePos, struct dd_vec4 *planeNormal, struct dd_vec4 *out);
+int dd_math_plane_ray_intersect(struct avdl_vec4 *rayPos, struct avdl_vec4 *rayDir,
+	struct avdl_vec4 *planePos, struct avdl_vec4 *planeNormal, struct avdl_vec4 *out);
 
 #ifdef __cplusplus
 }

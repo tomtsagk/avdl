@@ -8,8 +8,8 @@ extern "C" {
 /* Needs mesh, to store data into */
 #include "dd_mesh.h"
 #include "dd_matrix.h"
-#include "dd_vec3.h"
-#include "dd_vec4.h"
+#include "avdl_vec3.h"
+#include "avdl_vec4.h"
 
 /* Files supported */
 #define DD_PLY 0
@@ -31,12 +31,12 @@ extern "C" {
 #include "dd_dynamic_array.h"
 
 struct dd_keyframe_vec3 {
-	struct dd_vec3 value;
+	struct avdl_vec3 value;
 	float time;
 };
 
 struct dd_keyframe_vec4 {
-	struct dd_vec4 value;
+	struct avdl_vec4 value;
 	float time;
 };
 

@@ -27,4 +27,6 @@ char *avdl_component_custom_GetName(struct avdl_component_custom *o);
 void avdl_component_custom_AddVariableName(struct avdl_component_custom *o, char *value);
 void avdl_component_custom_AddVariableValue(struct avdl_component_custom *o, char *value, char *type);
 
+int avdl_component_custom_Copy(struct avdl_component *o, struct avdl_component *target);
+
 #endif
