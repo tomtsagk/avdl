@@ -1,5 +1,5 @@
 #include "avdl_skinned_mesh.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <string.h>
 #include <stdlib.h>
 

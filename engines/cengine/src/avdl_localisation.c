@@ -1,7 +1,7 @@
 #include "avdl_localisation.h"
 #include "avdl_json.h"
 #include <string.h>
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include "dd_game.h"
 #include "avdl_assetManager.h"
 

@@ -28,7 +28,7 @@ extern "C" {
 #define DD_FILETOMESH_SETTINGS_COLOUR 16
 #define DD_FILETOMESH_SETTINGS_TEX_COORD 32
 
-#include "dd_dynamic_array.h"
+#include "shared/avdl_dynamic_array.h"
 
 struct dd_keyframe_vec3 {
 	struct avdl_vec3 value;
@@ -41,9 +41,9 @@ struct dd_keyframe_vec4 {
 };
 
 struct dd_animated_bone {
-	struct dd_dynamic_array keyframes_position;
-	struct dd_dynamic_array keyframes_rotation;
-	struct dd_dynamic_array keyframes_scale;
+	struct avdl_dynamic_array keyframes_position;
+	struct avdl_dynamic_array keyframes_rotation;
+	struct avdl_dynamic_array keyframes_scale;
 };
 
 struct dd_animation {

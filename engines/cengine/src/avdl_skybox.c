@@ -2,7 +2,7 @@
 #include "avdl_graphics.h"
 #include "avdl_assetManager.h"
 #include "avdl_shaders.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 extern GLuint skyboxProgram;
 

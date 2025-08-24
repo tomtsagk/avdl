@@ -1,7 +1,7 @@
 #include "dd_mesh.h"
 #include "dd_filetomesh.h"
-#include "dd_dynamic_array.h"
-#include "avdl_log.h"
+#include "shared/avdl_dynamic_array.h"
+#include "shared/avdl_log.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -462,14 +462,14 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 	int MAX_FACE_VERTICES = 3;
 	unsigned int *v_pos_face2 = 0;
 
-	struct dd_dynamic_array v_pos_face;
-	dd_da_init(&v_pos_face , sizeof(struct avdl_vec3));
+	struct avdl_dynamic_array v_pos_face;
+	avdl_da_init(&v_pos_face , sizeof(struct avdl_vec3));
 
-	struct dd_dynamic_array v_col_face;
-	dd_da_init(&v_col_face , sizeof(struct avdl_vec3));
+	struct avdl_dynamic_array v_col_face;
+	avdl_da_init(&v_col_face , sizeof(struct avdl_vec3));
 
-	struct dd_dynamic_array v_tex_face;
-	dd_da_init(&v_tex_face , sizeof(struct dd_vec2));
+	struct avdl_dynamic_array v_tex_face;
+	avdl_da_init(&v_tex_face , sizeof(struct dd_vec2));
 
 	enum ply_format {
 		PLY_FORMAT_CHAR,
@@ -775,18 +775,18 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		vertex.x = v_pos_index[v_pos_face2[i]].x;
 		vertex.y = v_pos_index[v_pos_face2[i]].y;
 		vertex.z = v_pos_index[v_pos_face2[i]].z;
-		dd_da_push(&v_pos_face, &vertex);
+		avdl_da_push(&v_pos_face, &vertex);
 
 		struct avdl_vec3 cvertex;
 		cvertex.x = v_col_index[v_pos_face2[i]].x;
 		cvertex.y = v_col_index[v_pos_face2[i]].y;
 		cvertex.z = v_col_index[v_pos_face2[i]].z;
-		dd_da_push(&v_col_face, &cvertex);
+		avdl_da_push(&v_col_face, &cvertex);
 
 		struct dd_vec2 tex;
 		tex.x = v_tex_index[v_pos_face2[i]].x;
 		tex.y = v_tex_index[v_pos_face2[i]].y;
-		dd_da_push(&v_tex_face, &tex);
+		avdl_da_push(&v_tex_face, &tex);
 	}
 
 	//Close file
@@ -824,14 +824,14 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 
 	for (unsigned int i = 0; i < v_pos_face.elements; i++) {
 		if (settings & DD_FILETOMESH_SETTINGS_POSITION) {
-			struct avdl_vec3 *vec = dd_da_get(&v_pos_face, i);
+			struct avdl_vec3 *vec = avdl_da_get(&v_pos_face, i);
 			m->v[(i*3)] = vec->x;
 			m->v[(i*3)+1] = vec->y;
 			m->v[(i*3)+2] = vec->z;
 		}
 
 		if (settings & DD_FILETOMESH_SETTINGS_COLOUR) {
-			struct avdl_vec3 *col = dd_da_get(&v_col_face, i);
+			struct avdl_vec3 *col = avdl_da_get(&v_col_face, i);
 			// convert to linear space for gamma correction
 			m->c[(i*3)]   = dd_math_pow(col->x, 2.2);
 			m->c[(i*3)+1] = dd_math_pow(col->y, 2.2);
@@ -839,15 +839,15 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings) {
 		}
 
 		if (settings & DD_FILETOMESH_SETTINGS_TEX_COORD) {
-			struct dd_vec2 *tex = dd_da_get(&v_tex_face, i);
+			struct dd_vec2 *tex = avdl_da_get(&v_tex_face, i);
 			m->t[(i*2)] = tex->x;
 			m->t[(i*2)+1] = tex->y;
 		}
 	}
 
-	dd_da_free(&v_pos_face);
-	dd_da_free(&v_col_face);
-	dd_da_free(&v_tex_face);
+	avdl_da_free(&v_pos_face);
+	avdl_da_free(&v_col_face);
+	avdl_da_free(&v_tex_face);
 
 	//Success!
 	return 0;
@@ -882,11 +882,11 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 		float x, y, z;
 	};
 	//Variables
-	struct dd_dynamic_array v_ind, v_out;
+	struct avdl_dynamic_array v_ind, v_out;
 
 	//Init dynamic arrays
-	dd_da_init(&v_ind, sizeof(struct avdl_vec3));
-	dd_da_init(&v_out, sizeof(struct avdl_vec3));
+	avdl_da_init(&v_ind, sizeof(struct avdl_vec3));
+	avdl_da_init(&v_out, sizeof(struct avdl_vec3));
 
 	//File
 	FILE *f = fopen(path, "r");
@@ -918,7 +918,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 			*/
 
 			//Push vertex
-			dd_da_push(&v_ind, &v);
+			avdl_da_push(&v_ind, &v);
 
 			//Skip until next line
 			fscanf(f, "%*[^\n]%*1c");
@@ -937,9 +937,9 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 			new--;
 
 			/* add first face (assuming each face has at least 3 vertices) */
-			dd_da_push(&v_out, dd_da_get(&v_ind, base));
-			dd_da_push(&v_out, dd_da_get(&v_ind, last));
-			dd_da_push(&v_out, dd_da_get(&v_ind, new ));
+			avdl_da_push(&v_out, avdl_da_get(&v_ind, base));
+			avdl_da_push(&v_out, avdl_da_get(&v_ind, last));
+			avdl_da_push(&v_out, avdl_da_get(&v_ind, new ));
 
 			/* for each extra vertex, add a new face, like a fan */
 			int vert_ind;
@@ -949,9 +949,9 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 				new = vert_ind;
 				//avdl_log("parse extra face %d %d %d", base, last, new);
 
-				dd_da_push(&v_out, dd_da_get(&v_ind, base));
-				dd_da_push(&v_out, dd_da_get(&v_ind, last));
-				dd_da_push(&v_out, dd_da_get(&v_ind, new ));
+				avdl_da_push(&v_out, avdl_da_get(&v_ind, base));
+				avdl_da_push(&v_out, avdl_da_get(&v_ind, last));
+				avdl_da_push(&v_out, avdl_da_get(&v_ind, new ));
 
 			}
 		}
@@ -973,7 +973,7 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 	m->vcount = v_out.elements *3;
 	m->v = malloc(sizeof(float) *v_out.elements *3);
 	for (unsigned int i = 0; i < v_out.elements; i++) {
-		struct avdl_vec3 *vec = dd_da_get(&v_out, i);
+		struct avdl_vec3 *vec = avdl_da_get(&v_out, i);
 		m->v[(i*3)] = vec->x;
 		m->v[(i*3)+1] = vec->y;
 		m->v[(i*3)+2] = vec->z;
@@ -1374,8 +1374,8 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 	if (has_normals) {
 		array_vertex_nor = malloc(sizeof(float) *vertex_count *3);
 	}
-	struct dd_dynamic_array array_vertex_indices;
-	dd_da_init(&array_vertex_indices, sizeof(int));
+	struct avdl_dynamic_array array_vertex_indices;
+	avdl_da_init(&array_vertex_indices, sizeof(int));
 
 	// for each element
 	for (int i = 0; i < elementTotal; i++) {
@@ -1472,7 +1472,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 						else
 						// for the time being no alpha on vertex colours
 						if ( is_vertex && strncmp( property->name, "alpha", strlen("alpha") ) == 0 && has_colours) {
-							//dd_da_push(&array_vertex_alpha, &integer);
+							//avdl_da_push(&array_vertex_alpha, &integer);
 						}
 						//avdl_log("\tuchar: %d", integer);
 					}
@@ -1487,14 +1487,14 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 						if ( is_face_indices && strncmp( property->name, "vertex_indices", strlen("vertex_indices") ) == 0) {
 							if (list_i >= 3) {
 								// do not insert parts of the array in itself, extract numbers first
-								int i1 = ((int*)dd_da_get(&array_vertex_indices, -3 +((list_i -3) *3)))[0];
-								int i2 = ((int*)dd_da_get(&array_vertex_indices, -1))[0];
-								//dd_da_push(&array_vertex_indices, dd_da_get(&array_vertex_indices, -3 +((list_i -3) *3)));
-								//dd_da_push(&array_vertex_indices, dd_da_get(&array_vertex_indices, -2));
-								dd_da_push(&array_vertex_indices, &i1);
-								dd_da_push(&array_vertex_indices, &i2);
+								int i1 = ((int*)avdl_da_get(&array_vertex_indices, -3 +((list_i -3) *3)))[0];
+								int i2 = ((int*)avdl_da_get(&array_vertex_indices, -1))[0];
+								//avdl_da_push(&array_vertex_indices, avdl_da_get(&array_vertex_indices, -3 +((list_i -3) *3)));
+								//avdl_da_push(&array_vertex_indices, avdl_da_get(&array_vertex_indices, -2));
+								avdl_da_push(&array_vertex_indices, &i1);
+								avdl_da_push(&array_vertex_indices, &i2);
 							}
-							dd_da_push(&array_vertex_indices, &integer);
+							avdl_da_push(&array_vertex_indices, &integer);
 						}
 
 						//avdl_log("\tuint: %d", integer);
@@ -1528,7 +1528,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 		m->n = malloc(sizeof(float) *m->vcount *3);
 	}
 	for (int i = 0; i < m->vcount; i++) {
-		int *index = dd_da_get(&array_vertex_indices, i);
+		int *index = avdl_da_get(&array_vertex_indices, i);
 		m->v[i*3 +0] = array_vertex_pos[index[0]*3 +0];
 		m->v[i*3 +1] = array_vertex_pos[index[0]*3 +1];
 		m->v[i*3 +2] = array_vertex_pos[index[0]*3 +2];
@@ -1648,7 +1648,7 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 		free(array_vertex_nor);
 		array_vertex_nor = 0;
 	}
-	dd_da_free(&array_vertex_indices);
+	avdl_da_free(&array_vertex_indices);
 
 	// parse elements to loaded mesh
 
@@ -2261,9 +2261,9 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 		anim->animatedBonesCount = m->boneCount;
 		for (int j = 0; j < m->boneCount; j++) {
 			struct dd_animated_bone *animBone = &anim->animatedBones[j];
-			dd_da_init(&animBone->keyframes_position, sizeof(struct dd_keyframe_vec3));
-			dd_da_init(&animBone->keyframes_rotation, sizeof(struct dd_keyframe_vec4));
-			dd_da_init(&animBone->keyframes_scale, sizeof(struct dd_keyframe_vec3));
+			avdl_da_init(&animBone->keyframes_position, sizeof(struct dd_keyframe_vec3));
+			avdl_da_init(&animBone->keyframes_rotation, sizeof(struct dd_keyframe_vec4));
+			avdl_da_init(&animBone->keyframes_scale, sizeof(struct dd_keyframe_vec3));
 		}
 
 		if (animation->channels_count <= 0) {
@@ -2323,7 +2323,7 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 					struct dd_keyframe_vec3 keyframe;
 					cgltf_accessor_read_float(input, z, &keyframe.time, 1);
 					cgltf_accessor_read_float(output, z, &keyframe.value, 3);
-					dd_da_push(&animBone->keyframes_position, &keyframe);
+					avdl_da_push(&animBone->keyframes_position, &keyframe);
 				}
 			}
 			else
@@ -2360,7 +2360,7 @@ int avdl_load_gltf_internal(struct dd_loaded_mesh *m, cgltf_options *options, cg
 					struct dd_keyframe_vec4 keyframe;
 					cgltf_accessor_read_float(input, z, &keyframe.time, 1);
 					cgltf_accessor_read_float(output, z, &keyframe.value, 4);
-					dd_da_push(&animBone->keyframes_rotation, &keyframe);
+					avdl_da_push(&animBone->keyframes_rotation, &keyframe);
 				}
 
 			}

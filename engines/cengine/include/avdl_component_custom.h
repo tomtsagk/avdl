@@ -3,15 +3,15 @@
 
 #include "avdl_component_custom.h"
 #include "avdl_component.h"
-#include "avdl_string.h"
-#include "dd_dynamic_array.h"
+#include "shared/avdl_string.h"
+#include "shared/avdl_dynamic_array.h"
 
 struct avdl_component_custom {
 
 	struct avdl_component parent;
 
 	struct avdl_string name;
-	struct dd_dynamic_array values;
+	struct avdl_dynamic_array values;
 
 	void (*after_create)(struct avdl_component_custom *);
 	void (*draw)(struct avdl_component_custom *);

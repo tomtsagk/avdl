@@ -1,5 +1,5 @@
 #include "avdl_component_skinned_mesh.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 void avdl_component_skinned_mesh_create(struct avdl_component_skinned_mesh *o) {
 	avdl_component_create(o);

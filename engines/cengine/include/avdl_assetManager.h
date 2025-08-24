@@ -2,7 +2,7 @@
 #define AVDL_ASSETMANAGER_H
 
 #include "dd_meshColour.h"
-#include <avdl_string.h>
+#include "shared/avdl_string.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,7 +43,7 @@ struct dd_meshToLoad {
 	int (*callback)(void *obj, void *data);
 };
 
-extern struct dd_dynamic_array meshesToLoad;
+extern struct avdl_dynamic_array meshesToLoad;
 
 // init-clean
 void avdl_assetManager_init();

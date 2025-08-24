@@ -1,5 +1,5 @@
 #include "avdl_data.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include "dd_game.h"
 #include <stdio.h>
 #include <errno.h>

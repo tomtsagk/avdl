@@ -12,7 +12,7 @@
 #include "avdl_log.h"
 #include "avdl_settings.h"
 #include "avdl_json.h"
-#include "avdl_string.h"
+#include "shared/avdl_string.h"
 
 #include "avdl_ast_node.h"
 #include "avdl_ast/integer.h"

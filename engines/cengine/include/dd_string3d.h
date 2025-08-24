@@ -33,7 +33,7 @@ struct dd_word_mesh {
 
 struct dd_string3d {
 
-	struct dd_dynamic_array textMeshes;
+	struct avdl_dynamic_array textMeshes;
 
 	// Align
 	enum dd_string3d_align align;

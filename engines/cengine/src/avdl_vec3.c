@@ -1,6 +1,6 @@
 #include "avdl_vec3.h"
 #include "dd_math.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 void avdl_vec3_create(struct avdl_vec3 *o) {
 	o->x = 0;

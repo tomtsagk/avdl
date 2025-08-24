@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include "avdl_assetManager.h"
 #include "dd_game.h"
 #include <stdlib.h>

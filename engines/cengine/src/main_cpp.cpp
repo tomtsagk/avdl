@@ -1,6 +1,6 @@
 #include "avdl_engine.h"
 
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 extern "C" int dd_main(int argc, char *argv[]);
 

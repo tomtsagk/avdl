@@ -2,7 +2,7 @@
 #include "dd_math.h"
 #include "dd_fov.h"
 #include <stdio.h>
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include "avdl_engine.h"
 #include "avdl_whereami.h"
 

@@ -1,7 +1,7 @@
 #include "avdl_assetManager.h"
-#include "dd_dynamic_array.h"
+#include "shared/avdl_dynamic_array.h"
 #include "dd_filetomesh.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <string.h>
 #include <stdlib.h>
 #include "dd_meshTexture.h"
@@ -62,9 +62,9 @@ DWORD WINAPI ThreadFunc(void* data) {
 }
 #endif
 
-struct dd_dynamic_array meshesToLoad;
-struct dd_dynamic_array meshesLoading;
-struct dd_dynamic_array textureCache;
+struct avdl_dynamic_array meshesToLoad;
+struct avdl_dynamic_array meshesLoading;
+struct avdl_dynamic_array textureCache;
 
 int assetManagerLoading;
 
@@ -80,8 +80,8 @@ static int LoadTexturePNG(struct avdl_assetManager_texture *o, const char *filen
 static struct avdl_assetManager_texture *FindTexture(const char *filename);
 
 void avdl_assetManager_init() {
-	dd_da_init(&meshesToLoad , sizeof(struct dd_meshToLoad));
-	dd_da_init(&meshesLoading, sizeof(struct dd_meshToLoad));
+	avdl_da_init(&meshesToLoad , sizeof(struct dd_meshToLoad));
+	avdl_da_init(&meshesLoading, sizeof(struct dd_meshToLoad));
 	assetManagerLoading = 0;
 	lockLoading = 0;
 	interruptLoading = 0;
@@ -89,7 +89,7 @@ void avdl_assetManager_init() {
 	exitLoading = 0;
 
 	// texture cache
-	dd_da_init(&textureCache, sizeof(struct avdl_assetManager_texture *));
+	avdl_da_init(&textureCache, sizeof(struct avdl_assetManager_texture *));
 }
 
 void avdl_assetManager_deinit() {
@@ -100,17 +100,17 @@ void avdl_assetManager_deinit() {
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 	pthread_mutex_lock(&updateDrawMutex);
 	#endif
-	dd_da_free(&meshesToLoad );
-	dd_da_free(&meshesLoading);
+	avdl_da_free(&meshesToLoad );
+	avdl_da_free(&meshesLoading);
 
-	if (dd_da_count(&textureCache) > 0) {
-		avdl_log("%d texture(s) were not cleaned", dd_da_count(&textureCache));
-		for (int i = 0; i < dd_da_count(&textureCache); i++) {
-			struct avdl_assetManager_texture *t = dd_da_getDeref(&textureCache, i);
-			avdl_log("texture: %s", avdl_string_toCharPtr(&t));
+	if (avdl_da_count(&textureCache) > 0) {
+		avdl_log("%d texture(s) were not cleaned", avdl_da_count(&textureCache));
+		for (int i = 0; i < avdl_da_count(&textureCache); i++) {
+			struct avdl_assetManager_texture *t = avdl_da_getDeref(&textureCache, i);
+			//avdl_log("texture: %s", avdl_string_toCharPtr(&t));
 		}
 	}
-	dd_da_free(&textureCache);
+	avdl_da_free(&textureCache);
 	#ifdef AVDL_DIRECT3D11
 	#elif defined( AVDL_WINDOWS )
 	ReleaseMutex(updateDrawMutex);
@@ -137,7 +137,7 @@ int avdl_assetManager_add(void *object, int meshType, const char *assetname, int
 	meshToLoad.meshType = meshType;
 	meshToLoad.type = type;
 	strcpy_s(meshToLoad.filename, 300, assetname);
-	dd_da_push(&meshesToLoad, &meshToLoad);
+	avdl_da_push(&meshesToLoad, &meshToLoad);
 	#else
 
 	struct dd_meshToLoad meshToLoad;
@@ -157,7 +157,7 @@ int avdl_assetManager_add(void *object, int meshType, const char *assetname, int
 	strcat(meshToLoad.filename, assetname);
 	//avdl_log("add asset: %s", meshToLoad.filename);
 	#endif
-	dd_da_push(&meshesToLoad, &meshToLoad);
+	avdl_da_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
 	#endif
@@ -187,7 +187,7 @@ int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname
 	meshToLoad.type = type;
 	meshToLoad.callback = callback;
 	strcpy_s(meshToLoad.filename, 300, assetname);
-	dd_da_push(&meshesToLoad, &meshToLoad);
+	avdl_da_push(&meshesToLoad, &meshToLoad);
 	#else
 
 	struct dd_meshToLoad meshToLoad;
@@ -206,7 +206,7 @@ int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname
 	//printf("add asset: %s\n", meshToLoad.filename);
 	//avdl_log("add asset: %s", meshToLoad.filename);
 	#endif
-	dd_da_push(&meshesToLoad, &meshToLoad);
+	avdl_da_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
 	#endif
@@ -220,7 +220,7 @@ void avdl_assetManager_loadAssets() {
 	// load assets here
 	//avdl_log("meshes to load: %d", meshesLoading.elements);
 	for (int i = 0; i < meshesLoading.elements; i++) {
-		struct dd_meshToLoad *m = dd_da_get(&meshesLoading, i);
+		struct dd_meshToLoad *m = avdl_da_get(&meshesLoading, i);
 		//avdl_log("loading asset: %s", m->filename);
 		//wprintf(L"loading asset: %lS", m->filenameW);
 		//avdl_log("loading asset type: %d", m->meshType);
@@ -349,11 +349,11 @@ void avdl_assetManager_loadAssets() {
 						avdl_log("avdl: AssetManager: Unable to load texture: %s", m->filename);
 						continue;
 					}
-					t->index = dd_da_count(&textureCache);
+					t->index = avdl_da_count(&textureCache);
 					t->graphicsContextId = avdl_graphics_getContextId();
 					t->uses = 0;
 					t->tex = 0;
-					dd_da_push(&textureCache, &t);
+					avdl_da_push(&textureCache, &t);
 				}
 
 				#if defined( AVDL_DIRECT3D11 )
@@ -524,7 +524,7 @@ void avdl_assetManager_loadAssets() {
 		#endif
 		return;
 	}
-	dd_da_empty(&meshesLoading);
+	avdl_da_empty(&meshesLoading);
 	//avdl_log("finished all loading");
 	assetManagerLoading = 0;
 	loadAssetsThread = 0;
@@ -540,8 +540,8 @@ void avdl_assetManager_loadAssets() {
 void avdl_assetManager_loadAll() {
 	if (assetManagerLoading) return;
 
-	dd_da_copy(&meshesLoading, &meshesToLoad);
-	dd_da_empty(&meshesToLoad);
+	avdl_da_copy(&meshesLoading, &meshesToLoad);
+	avdl_da_empty(&meshesToLoad);
 
 	totalAssets = meshesLoading.elements;
 	totalAssetsLoaded = 0;
@@ -601,7 +601,7 @@ float avdl_assetManager_getLoadedProportion() {
 
 void avdl_assetManager_clear() {
 	/*
-	dd_da_empty(&meshesToLoad);
+	avdl_da_empty(&meshesToLoad);
 	if (loadAssetsThread) {
 		interruptLoading = 1;
 		pthread_join(&loadAssetsThread, NULL);
@@ -616,8 +616,8 @@ void avdl_assetManager_setPercentage(float percentage) {
 }
 
 static struct avdl_assetManager_texture *FindTexture(const char *filename) {
-	for (int i = 0; i < dd_da_count(&textureCache); i++) {
-		struct avdl_assetManager_texture *t = dd_da_getDeref(&textureCache, i);
+	for (int i = 0; i < avdl_da_count(&textureCache); i++) {
+		struct avdl_assetManager_texture *t = avdl_da_getDeref(&textureCache, i);
 		if (strcmp(avdl_string_toCharPtr(&t->filename), filename) == 0) {
 			return t;
 		}
@@ -764,8 +764,8 @@ static int LoadTexturePNG(struct avdl_assetManager_texture *o, const char *filen
 void avdl_assetManager_CleanTexture(struct avdl_assetManager_texture *t) {
 	t->uses--;
 	if (t->uses == 0) {
-		for (int i = 0; i < dd_da_count(&textureCache); i++) {
-			struct avdl_assetManager_texture *tempTex = dd_da_getDeref(&textureCache, i);
+		for (int i = 0; i < avdl_da_count(&textureCache); i++) {
+			struct avdl_assetManager_texture *tempTex = avdl_da_getDeref(&textureCache, i);
 			if (tempTex == t) {
 				avdl_string_clean(&t->filename);
 				if (t->pixels) {
@@ -773,7 +773,7 @@ void avdl_assetManager_CleanTexture(struct avdl_assetManager_texture *t) {
 					t->pixels = 0;
 				}
 				free(t);
-				dd_da_remove(&textureCache, 1, i);
+				avdl_da_remove(&textureCache, 1, i);
 				break;
 			}
 		}

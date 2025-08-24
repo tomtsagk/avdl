@@ -3,8 +3,8 @@
 
 #include <stdio.h>
 
-#include "avdl_dynamic_array.h"
-#include "avdl_string.h"
+#include "shared/avdl_dynamic_array.h"
+#include "shared/avdl_string.h"
 
 int file_copy(const char *src, const char *dest, int append);
 int file_copy_at(int src_at, const char *src, int dest_at, const char *dest, int append);

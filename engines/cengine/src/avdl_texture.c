@@ -1,7 +1,7 @@
 #include "avdl_texture.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include "avdl_assetManager.h"
 #include <errno.h>
 #include "dd_math.h"
@@ -26,7 +26,7 @@ struct Subpixel {
 void avdl_texture_create(struct avdl_texture *o) {
 	o->texture = 0;
 	o->dirtyTexture = 0;
-	dd_da_init(&o->subpixels, sizeof(struct Subpixel));
+	avdl_da_init(&o->subpixels, sizeof(struct Subpixel));
 
 	o->clean = avdl_texture_clean;
 
@@ -290,7 +290,7 @@ void avdl_texture_load_bmp(struct avdl_texture *img, const char *filename) {
 void avdl_texture_clean(struct avdl_texture *o) {
 
 	avdl_texture_UnLoad(o);
-	dd_da_free(&o->subpixels);
+	avdl_da_free(&o->subpixels);
 
 }
 
@@ -314,7 +314,7 @@ void avdl_texture_bindIndex(struct avdl_texture *o, int index) {
 		if (o->subpixels.elements > 0 && o->texture->tex) {
 	
 			for (int i = 0; i < o->subpixels.elements; i++) {
-				struct Subpixel *subpixel = dd_da_get(&o->subpixels, i);
+				struct Subpixel *subpixel = avdl_da_get(&o->subpixels, i);
 				avdl_graphics_ImageToGpuUpdate(
 					o->texture->tex,
 					subpixel->pixels,
@@ -326,7 +326,7 @@ void avdl_texture_bindIndex(struct avdl_texture *o, int index) {
 				);
 				free(subpixel->pixels);
 			}
-			dd_da_empty(&o->subpixels);
+			avdl_da_empty(&o->subpixels);
 		}
 		if (o->texture->graphicsContextId == avdl_graphics_getContextId() && o->texture->tex) {
 			avdl_graphics_BindTextureIndex(o->texture->tex, index);
@@ -470,7 +470,7 @@ void avdl_texture_addSubpixels(struct avdl_texture *o, void *pixels, int pixel_f
 	subpixel.width = w;
 	subpixel.height = h;
 
-	dd_da_push(&o->subpixels, &subpixel);
+	avdl_da_push(&o->subpixels, &subpixel);
 
 	#endif
 
@@ -569,10 +569,10 @@ int avdl_texture_UnLoad(struct avdl_texture *o) {
 
 	#if !defined( AVDL_DIRECT3D11 )
 	for (int i = 0; i < o->subpixels.elements; i++) {
-		struct Subpixel *subpixel = dd_da_get(&o->subpixels, i);
+		struct Subpixel *subpixel = avdl_da_get(&o->subpixels, i);
 		free(subpixel->pixels);
 	}
-	dd_da_empty(&o->subpixels);
+	avdl_da_empty(&o->subpixels);
 	#endif
 
 	o->texture = 0;

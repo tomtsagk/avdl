@@ -1,7 +1,8 @@
-#include "avdl_string.h"
-#include "avdl_log.h"
+#include "shared/avdl_string.h"
+#include "shared/avdl_log.h"
 #include <string.h>
 #include <stdarg.h>
+#include "shared/avdl_dynamic_array.h"
 
 void avdl_string_create(struct avdl_string *o, int maxCharacters) {
 
@@ -14,8 +15,8 @@ void avdl_string_create(struct avdl_string *o, int maxCharacters) {
 	o->errorCode = 0;
 	o->errorCharacters = 0;
 	o->maxCharacters = maxCharacters;
-	dd_da_init(&o->string, sizeof(char));
-	dd_da_push(&o->string, "\0");
+	avdl_da_init(&o->string, sizeof(char));
+	avdl_da_push(&o->string, "\0");
 }
 
 void avdl_string_cat(struct avdl_string *o, const char *stringToCatenate) {
@@ -32,7 +33,7 @@ void avdl_string_cat(struct avdl_string *o, const char *stringToCatenate) {
 		o->errorCode = 1;
 		return;
 	}
-	dd_da_add(&o->string, stringToCatenate, strlen(stringToCatenate), -2);
+	avdl_da_add(&o->string, stringToCatenate, strlen(stringToCatenate), -2);
 }
 
 int avdl_string_isValid(struct avdl_string *o) {
@@ -64,11 +65,11 @@ char *avdl_string_toCharPtr(struct avdl_string *o) {
 void avdl_string_clean(struct avdl_string *o) {
 
 	if (o->errorCode == -1 ) {
-		avdl_logError("string cleaned twice");
+		avdl_log_error("string cleaned twice");
 		return;
 	}
 
-	dd_da_free(&o->string);
+	avdl_da_free(&o->string);
 	o->errorCode = -1;
 }
 
@@ -98,8 +99,8 @@ void avdl_string_replaceEnding(struct avdl_string *o, const char *fromEnding, co
 	}
 
 	int position = o->string.elements -1 -strlen(fromEnding);
-	dd_da_remove(&o->string, strlen(fromEnding), position);
-	dd_da_add(&o->string, toEnding, strlen(toEnding), position);
+	avdl_da_remove(&o->string, strlen(fromEnding), position);
+	avdl_da_add(&o->string, toEnding, strlen(toEnding), position);
 
 }
 
@@ -114,8 +115,8 @@ void avdl_string_copy(struct avdl_string *o, struct avdl_string *target) {
 }
 
 void avdl_string_empty(struct avdl_string *o) {
-	dd_da_empty(&o->string);
-	dd_da_push(&o->string, "\0");
+	avdl_da_empty(&o->string);
+	avdl_da_push(&o->string, "\0");
 	o->errorCharacters = 0;
 	o->errorCode = 0;
 }

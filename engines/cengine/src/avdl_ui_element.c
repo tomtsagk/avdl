@@ -1,6 +1,6 @@
 #include "avdl_ui_element.h"
 #include "dd_matrix.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include "dd_mouse.h"
 #include "dd_game.h"
 #include "avdl_input.h"

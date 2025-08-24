@@ -70,7 +70,7 @@ public:
 #include <dxgi.h>
 #include <d3dcompiler.h>
 #include <assert.h>
-#include <avdl_log.h>
+#include <shared/avdl_log.h>
 #include "dd_game.h"
 #include "avdl_assetManager.h"
 #include "avdl_steam.h"

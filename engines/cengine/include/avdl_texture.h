@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include "avdl_graphics.h"
-#include "dd_dynamic_array.h"
+#include "shared/avdl_dynamic_array.h"
 #include "avdl_assetManager.h"
 
 enum AVDL_IMAGETYPE {
@@ -21,7 +21,7 @@ struct avdl_texture {
 	int dirtyTexture;
 
 	// updating parts of the image
-	struct dd_dynamic_array subpixels;
+	struct avdl_dynamic_array subpixels;
 
 	void (*clean)(struct avdl_texture *o);
 };

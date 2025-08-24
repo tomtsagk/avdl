@@ -1,5 +1,5 @@
 #include "dd_sound.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <string.h>
 #include "dd_game.h"
 #include "avdl_assetManager.h"

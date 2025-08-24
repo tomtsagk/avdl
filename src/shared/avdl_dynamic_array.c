@@ -2,9 +2,21 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "avdl_dynamic_array.h"
-#include "avdl_std.h"
-#include "avdl_log.h"
+#include "shared/avdl_dynamic_array.h"
+#include "shared/avdl_std.h"
+#include "shared/avdl_log.h"
+
+void avdl_dynamic_array_create(struct avdl_dynamic_array *da) {
+	da->array = 0;
+	da->elements = 0;
+	da->array_size = 0;
+	da->element_size = 0;
+	da->clean = avdl_dynamic_array_clean;
+}
+
+void avdl_dynamic_array_clean(struct avdl_dynamic_array *da) {
+	avdl_da_free(da);
+}
 
 static int set_array_size(struct avdl_dynamic_array *da, int count) {
 
@@ -46,6 +58,10 @@ int avdl_da_init(struct avdl_dynamic_array *da, int el_size) {
 /*
  * Adds one element to the array
  */
+int avdl_da_pushEmpty(struct avdl_dynamic_array *da) {
+	return avdl_da_add(da, 0, 1, -1);
+}
+
 int avdl_da_push(struct avdl_dynamic_array *da, void *data) {
 	return avdl_da_add(da, data, 1, -1);
 }
@@ -89,9 +105,11 @@ int avdl_da_add(struct avdl_dynamic_array *da, const void *data, unsigned int da
 	}
 
 	/* Copy element byte-by-byte (according to element_size) to array */
-	memcpy(((char*)da->array) +(da->element_size *position),
-		data, da->element_size *data_count
-	);
+	if (data) {
+		memcpy(((char*)da->array) +(da->element_size *position),
+			data, da->element_size *data_count
+		);
+	}
 
 	/* Increment elements */
 	da->elements += data_count;
@@ -168,16 +186,30 @@ void avdl_da_free(struct avdl_dynamic_array *da) {
 void *avdl_da_get(struct avdl_dynamic_array *da, int position) {
 
 	if (position < 0) {
-		position = da->elements -1;
+		position = da->elements +position;
 	}
 
 	if (position >= da->elements) {
+		avdl_log("error avdl_da_get: %d", position);
 		return 0;
 	}
 
 	return ((char*)da->array) +(position *da->element_size);
 }
 
+void *avdl_da_getDeref(struct avdl_dynamic_array *da, int position) {
+	return * ((void **)avdl_da_get(da, position));
+}
+
 unsigned int avdl_da_count(struct avdl_dynamic_array *da) {
 	return da->elements;
+}
+
+void avdl_da_empty(struct avdl_dynamic_array *da) {
+	while (da->elements > 0) avdl_da_pop(da);
+}
+void avdl_da_copy(struct avdl_dynamic_array *dest, struct avdl_dynamic_array *src) {
+	for (int i = 0; i < src->elements; i++) {
+		avdl_da_push(dest, avdl_da_get(src, i));
+	}
 }

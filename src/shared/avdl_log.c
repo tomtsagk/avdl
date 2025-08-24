@@ -1,10 +1,18 @@
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include "avdl_settings.h"
 
-#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+#if !defined(AVDL_DIRECT3D11)
+
+#if AVDL_IS_OS(AVDL_OS_WINDOWS) || defined( AVDL_WINDOWS )
 #include <windows.h>
+#endif
+
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+#include <android/log.h>
+#else
+#include <stdio.h>
 #endif
 
 void avdl_log(const char *msg, ...) {
@@ -12,13 +20,9 @@ void avdl_log(const char *msg, ...) {
 	va_list args;
 	va_start(args, msg);
 
-	/*
-	 * avdl is currently not designed to run on android
-	 * (it can compile games for android)
-	#if AVDL_ANDROID
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	__android_log_vprint(ANDROID_LOG_INFO, "avdl", msg, args);
-	 */
-	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	#elif AVDL_IS_OS(AVDL_OS_WINDOWS) || defined( AVDL_WINDOWS )
 	/*
 	char buffer[1024];
 	vsnprintf(buffer, 1024, msg, args);
@@ -34,12 +38,16 @@ void avdl_log(const char *msg, ...) {
 	va_end(args);
 }
 
+#endif // !defined(AVDL_DIRECT3D11)
+
 void avdl_log_error(const char *msg, ...) {
 
 	va_list args;
 	va_start(args, msg);
 
-	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	__android_log_vprint(ANDROID_LOG_ERROR, "avdl", msg, args);
+	#elif AVDL_IS_OS(AVDL_OS_WINDOWS) || defined( AVDL_WINDOWS )
 	/*
 	char buffer[1024];
 	vsnprintf(buffer, 1024, msg, args);

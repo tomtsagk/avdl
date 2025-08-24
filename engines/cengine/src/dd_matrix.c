@@ -2,8 +2,7 @@
 #include "math.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "dd_dynamic_array.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <string.h>
 #include "avdl_vec3.h"
 #include "avdl_vec4.h"

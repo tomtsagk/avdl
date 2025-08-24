@@ -1,6 +1,6 @@
 #include "avdl_webapi.h"
 #include <string.h>
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <stdlib.h>
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )

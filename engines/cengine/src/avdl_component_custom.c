@@ -1,5 +1,5 @@
 #include "avdl_component_custom.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 #include <stdlib.h>
 
@@ -9,7 +9,7 @@ void avdl_component_custom_create(struct avdl_component_custom *o) {
 	o->parent.clean = avdl_component_custom_clean;
 
 	avdl_string_create(&o->name, 100);
-	dd_da_init(&o->values, sizeof(struct avdl_string *));
+	avdl_da_init(&o->values, sizeof(struct avdl_string *));
 }
 
 void avdl_component_custom_clean(struct avdl_component_custom *o) {
@@ -29,19 +29,19 @@ void avdl_component_custom_AddVariableName(struct avdl_component_custom *o, char
 	struct avdl_string *str = malloc(sizeof(struct avdl_string));
 	avdl_string_create(str, 100);
 	avdl_string_cat(str, value);
-	dd_da_push(&o->values, &str);
+	avdl_da_push(&o->values, &str);
 }
 
 void avdl_component_custom_AddVariableValue(struct avdl_component_custom *o, char *value, char *type) {
 	struct avdl_string *str = malloc(sizeof(struct avdl_string));
 	avdl_string_create(str, 100);
 	avdl_string_cat(str, value);
-	dd_da_push(&o->values, &str);
+	avdl_da_push(&o->values, &str);
 
 	struct avdl_string *strType = malloc(sizeof(struct avdl_string));
 	avdl_string_create(strType, 100);
 	avdl_string_cat(strType, type);
-	dd_da_push(&o->values, &strType);
+	avdl_da_push(&o->values, &strType);
 }
 
 int avdl_component_custom_Copy(struct avdl_component *o, struct avdl_component *target) {
@@ -53,12 +53,12 @@ int avdl_component_custom_Copy(struct avdl_component *o, struct avdl_component *
 	struct avdl_component_custom *c = o;
 	struct avdl_component_custom *t = target;
 	avdl_string_copy(&c->name, &t->name);
-	for (int i = 0; i < dd_da_count(&t->values); i++) {
+	for (int i = 0; i < avdl_da_count(&t->values); i++) {
 		struct avdl_string *str = malloc(sizeof(struct avdl_string));
-		struct avdl_string *str_target = dd_da_getDeref(&t->values, i);
+		struct avdl_string *str_target = avdl_da_getDeref(&t->values, i);
 		avdl_string_create(str, str_target->maxCharacters);
 		avdl_string_copy(str, str_target);
-		dd_da_push(&c->values, &str);
+		avdl_da_push(&c->values, &str);
 	}
 	return 0;
 }

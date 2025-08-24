@@ -4,7 +4,7 @@
 #include "dd_filetomesh.h"
 #include <string.h>
 #include "avdl_assetManager.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <stdlib.h>
 #include "avdl_graphics.h"
 

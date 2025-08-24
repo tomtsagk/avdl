@@ -11,13 +11,13 @@
 #include <dxgi.h>
 #include <d3dcompiler.h>
 #include <assert.h>
-#include <avdl_log.h>
+#include <shared/avdl_log.h>
 
 #include <Windows.h>
 
 #include "avdl_shaders.h"
 #include "dd_game.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <stdlib.h>
 */
 using namespace concurrency;

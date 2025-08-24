@@ -1,7 +1,7 @@
 #ifndef AVDL_AST_NODE_H
 #define AVDL_AST_NODE_H
 
-#include "avdl_dynamic_array.h"
+#include "shared/avdl_dynamic_array.h"
 
 /* abstract syntax tree
  * contains nodes that represent logic inside the game

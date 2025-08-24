@@ -135,7 +135,9 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	install -m644 scripts/* ${DESTDIR}${prefix}/share/avdl/scripts
 	@# c engine
 	install -m644 ${ENGINE_FILES_HEADERS} ${DESTDIR}${prefix}/include
+	cp -r ./include/shared ${DESTDIR}${prefix}/include
 	cp -r ${CENGINE_PATH}/src/* ${DESTDIR}${prefix}/share/avdl/cengine
+	cp -r ./src/shared ${DESTDIR}${prefix}/share/avdl/cengine
 	@# android engine
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
 	cp -r engines/cengine/src/* engines/cengine/include/*\

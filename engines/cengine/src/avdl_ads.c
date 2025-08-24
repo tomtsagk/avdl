@@ -1,6 +1,6 @@
 #include "avdl_ads.h"
 #include <string.h>
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <jni.h>

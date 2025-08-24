@@ -5,7 +5,8 @@
 #define AVDL_GAME_VERSION "0.0.0"
 #endif
 
-#include "dd_dynamic_array.h"
+#include "shared/avdl_dynamic_array.h"
+#include "shared/avdl_log.h"
 #include "dd_filetomesh.h"
 #include "dd_matrix.h"
 #include "dd_mesh.h"
@@ -25,7 +26,6 @@
 #include "avdl_texture.h"
 #include "avdl_skybox.h"
 #include "avdl_shaders.h"
-#include "dd_log.h"
 #include "avdl_data.h"
 #include "avdl_assetManager.h"
 #include "avdl_particle_system.h"

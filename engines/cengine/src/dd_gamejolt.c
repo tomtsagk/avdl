@@ -8,7 +8,7 @@
 //#include "dd_json.h"
 //#include <pthread.h>
 //#include "dd_async_call.h"
-//#include "avdl_log.h"
+//#include "shared/avdl_log.h"
 //
 ///*
 // * Data needed for GameJolt functionality

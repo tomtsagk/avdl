@@ -3,8 +3,8 @@
 
 #include "avdl_transform.h"
 #include "dd_matrix.h"
-#include "dd_dynamic_array.h"
-#include "avdl_string.h"
+#include "shared/avdl_dynamic_array.h"
+#include "shared/avdl_string.h"
 
 #define AVDL_NODE_NAME_LENGTH 100
 
@@ -26,10 +26,10 @@ struct avdl_node {
 	struct dd_matrix globalNormalInverseMatrix;
 
 	// component
-	struct dd_dynamic_array components;
+	struct avdl_dynamic_array components;
 
 	// children nodes
-	struct dd_dynamic_array children;
+	struct avdl_dynamic_array children;
 
 	void (*clean)(struct avdl_node *);
 
@@ -56,7 +56,7 @@ int avdl_node_GetChildrenCount(struct avdl_node *o);
 struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index);
 struct avdl_node *avdl_node_GetParent(struct avdl_node *o);
 
-void avdl_node_AddComponentsToArray_Internal(struct avdl_node *o, struct dd_dynamic_array *array, void (*fnc)(struct avdl_component *));
+void avdl_node_AddComponentsToArray_Internal(struct avdl_node *o, struct avdl_dynamic_array *array, void (*fnc)(struct avdl_component *));
 #define avdl_node_AddComponentsToArray(o, array, component) avdl_node_AddComponentsToArray_Internal(o, array, component ## _clean)
 int avdl_node_GetComponentCount(struct avdl_node *o);
 struct avdl_component *avdl_node_GetComponent_Internal(struct avdl_node *o, void (*fnc)(struct avdl_component *));

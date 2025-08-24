@@ -4,7 +4,7 @@
 
 #include "avdl_shaders.h"
 #include "dd_game.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <stdlib.h>
 #include "avdl_assetManager.h"
 #include "avdl_texture.h"

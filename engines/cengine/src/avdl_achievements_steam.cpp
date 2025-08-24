@@ -1,6 +1,6 @@
 #include "avdl_achievements.h"
 #include "avdl_steam.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 #if defined(AVDL_QUEST2)
 #include <OVR_Platform.h>

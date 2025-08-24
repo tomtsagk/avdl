@@ -1,11 +1,11 @@
 #ifndef AVDL_STRING_H
 #define AVDL_STRING_H
 
-#include "dd_dynamic_array.h"
+#include "shared/avdl_dynamic_array.h"
 
 struct avdl_string {
 	int maxCharacters;
-	struct dd_dynamic_array string;
+	struct avdl_dynamic_array string;
 	int errorCode;
 	int errorCharacters;
 };

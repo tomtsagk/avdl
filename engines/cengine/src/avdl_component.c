@@ -1,5 +1,5 @@
 #include "avdl_component.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>

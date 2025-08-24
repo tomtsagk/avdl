@@ -14,7 +14,11 @@ struct avdl_dynamic_array {
 	unsigned int elements;
 	unsigned int array_size;
 	unsigned int element_size;
+	void (*clean)(struct avdl_dynamic_array *);
 };
+
+void avdl_dynamic_array_create(struct avdl_dynamic_array *da);
+void avdl_dynamic_array_clean(struct avdl_dynamic_array *da);
 
 /*
  * init function
@@ -24,12 +28,15 @@ struct avdl_dynamic_array {
  * the array is no longer needed
  */
 int avdl_da_init (struct avdl_dynamic_array *da, int el_size);
+#define avdl_da_initStruct(da, str) avdl_da_init(da, sizeof(struct str))
+#define avdl_da_initStructRef(da, str) avdl_da_init(da, sizeof(struct str *))
 
 /*
  * add functions
  * push : adds one element to end of array
  * add  : adds `data_count` elements at `position`
  */
+int avdl_da_pushEmpty(struct avdl_dynamic_array *da);
 int avdl_da_push(struct avdl_dynamic_array *da, void *data);
 int avdl_da_add (struct avdl_dynamic_array *da, const void *data, unsigned int data_count, int position);
 
@@ -47,10 +54,14 @@ void avdl_da_free(struct avdl_dynamic_array *da);
 
 /* Get element of the array */
 void *avdl_da_get(struct avdl_dynamic_array *da, int position);
+void *avdl_da_getDeref(struct avdl_dynamic_array *da, int position);
 
 /*
  * Get number of elements in array
  */
 unsigned int avdl_da_count(struct avdl_dynamic_array *da);
+
+void avdl_da_empty(struct avdl_dynamic_array *da);
+void avdl_da_copy(struct avdl_dynamic_array *dest, struct avdl_dynamic_array *src);
 
 #endif

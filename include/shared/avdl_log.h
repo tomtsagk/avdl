@@ -1,6 +1,10 @@
 #ifndef AVDL_LOG_H
 #define AVDL_LOG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // terminal colours
 #define RED   "\x1B[31m"
 #define GRN   "\x1B[32m"
@@ -15,5 +19,9 @@
 
 void avdl_log(const char *msg, ...);
 void avdl_log_error(const char *msg, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

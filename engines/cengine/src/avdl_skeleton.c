@@ -1,6 +1,6 @@
 #include "avdl_skeleton.h"
 #include "string.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include "avdl_vec3.h"
 #include "dd_math.h"
 #include "dd_matrix.h"
@@ -338,12 +338,12 @@ void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, s
 			struct dd_animated_bone *animBoneSrc = &animations[i].animatedBones[j];
 	
 			// positions
-			animBone->keyframe_count_positions = dd_da_count(&animBoneSrc->keyframes_position);
+			animBone->keyframe_count_positions = avdl_da_count(&animBoneSrc->keyframes_position);
 			animBone->positions = malloc(sizeof(struct avdl_vec3) *animBone->keyframe_count_positions);
 			animBone->positions_time = malloc(sizeof(float) *animBone->keyframe_count_positions);
 			for (int k = 0; k < animBone->keyframe_count_positions; k++) {
 				struct avdl_vec3 *pos = &animBone->positions[k];
-				struct dd_keyframe_vec3 *target = dd_da_get(&animBoneSrc->keyframes_position, k);
+				struct dd_keyframe_vec3 *target = avdl_da_get(&animBoneSrc->keyframes_position, k);
 				animBone->positions_time[k] = target->time;
 				pos->x = target->value.x;
 				pos->y = target->value.y;
@@ -359,12 +359,12 @@ void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, s
 			}
 	
 			// rotations
-			animBone->keyframe_count_rotations = dd_da_count(&animBoneSrc->keyframes_rotation);
+			animBone->keyframe_count_rotations = avdl_da_count(&animBoneSrc->keyframes_rotation);
 			animBone->rotations = malloc(sizeof(struct avdl_vec4) *animBone->keyframe_count_rotations);
 			animBone->rotations_time = malloc(sizeof(float) *animBone->keyframe_count_rotations);
 			for (int k = 0; k < animBone->keyframe_count_rotations; k++) {
 				struct avdl_vec4 *rot = &animBone->rotations[k];
-				struct dd_keyframe_vec4 *target = dd_da_get(&animBoneSrc->keyframes_rotation, k);
+				struct dd_keyframe_vec4 *target = avdl_da_get(&animBoneSrc->keyframes_rotation, k);
 				animBone->rotations_time[k] = target->time;
 				rot->x = target->value.x;
 				rot->y = target->value.y;
@@ -379,8 +379,8 @@ void avdl_skeleton_SetAnimations(struct avdl_skeleton *o, int animationsCount, s
 					avdl_vec4_Setf(&o->mixBones[j].rotation, rot->x, rot->y, rot->z, rot->w);
 				}
 			}
-			dd_da_free(&animBoneSrc->keyframes_position);
-			dd_da_free(&animBoneSrc->keyframes_rotation);
+			avdl_da_free(&animBoneSrc->keyframes_position);
+			avdl_da_free(&animBoneSrc->keyframes_rotation);
 		}
 		free(animations[i].animatedBones);
 	}

@@ -1,6 +1,6 @@
 #include "avdl_component_terrain.h"
 #include "avdl_component_mesh.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include "avdl_node.h"
 #include "dd_math.h"
 
@@ -116,7 +116,7 @@ int avdl_component_terrain_IsOnTerrain(struct avdl_component_terrain *o, struct 
 	}
 
 	if (!o->parent.node) {
-		avdl_logError("terrain component not attached to any node");
+		avdl_log_error("terrain component not attached to any node");
 		return 0;
 	}
 
@@ -139,7 +139,7 @@ float avdl_component_terrain_GetSpot(struct avdl_component_terrain *o, struct av
 	}
 
 	if (!o->parent.node) {
-		avdl_logError("terrain component not attached to any node");
+		avdl_log_error("terrain component not attached to any node");
 		return 0;
 	}
 

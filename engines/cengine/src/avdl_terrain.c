@@ -1,5 +1,5 @@
 #include "avdl_terrain.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include "dd_math.h"
 
 extern GLuint currentProgram;
@@ -80,6 +80,8 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 		o->mesh.dirtyColours = 1;
 		o->mesh.t = malloc(sizeof(float) *o->mesh.vcount *2);
 		o->mesh.dirtyTextures = 1;
+		o->mesh.n = malloc(sizeof(float) *o->mesh.vcount *3);
+		o->mesh.dirtyNormals = 1;
 
 		for (int x = 0; x < o->width -1; x++)
 		for (int y = 0; y < o->height-1; y++) {
@@ -157,6 +159,13 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			//o->mesh.t[indexT +1] = fromTY;
 			o->mesh.t[indexT +0] = cornersX[0];
 			o->mesh.t[indexT +1] = cornersY[0];
+			/*
+			if (x == 0) {
+				o->mesh.n[index +0] = x *1;
+				o->mesh.n[index +1] = pixels[pixelIndex] *o->scaleZ;
+				o->mesh.n[index +2] = y *-1;
+			}
+			*/
 
 			// vertex 2
 			o->mesh.v[index +3] = x *1 +1;
