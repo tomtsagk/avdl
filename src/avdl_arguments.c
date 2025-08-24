@@ -1,6 +1,6 @@
 #include "avdl_arguments.h"
 
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include <string.h>
 #include "avdl_settings.h"
 

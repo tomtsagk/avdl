@@ -1,6 +1,6 @@
 #include "avdl_ast/integer.h"
 #include "avdl_ast_node.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 struct ast_node *avdl_ast_integer_Expect(struct avdl_lexer *l) {
 

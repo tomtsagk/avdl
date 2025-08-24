@@ -6,7 +6,7 @@
 
 #include "avdl_symtable.h"
 #include "avdl_lexer.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 static char buffer[500];
 

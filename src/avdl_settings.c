@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "avdl_pkg.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 #if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <unistd.h>

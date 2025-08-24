@@ -17,8 +17,14 @@ extern "C" {
 
 #define AVDL_LOG_ERRORSTRING "avdl " RED "error" RESET ": "
 
-void avdl_log(const char *msg, ...);
-void avdl_log_error(const char *msg, ...);
+void avdl_log        (const char *msg, ...);
+void avdl_log_warning(const char *msg, ...);
+void avdl_log_error  (const char *msg, ...);
+
+// Used for the engine to print what it's doing.
+// Useful for when something goes wrong unexpectedly, this can show
+// what was the last thing that happened
+void avdl_log_verbose(const char *msg, ...);
 
 #ifdef __cplusplus
 }

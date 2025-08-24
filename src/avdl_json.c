@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 #include <stdlib.h>
 #include <wchar.h>

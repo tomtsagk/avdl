@@ -9,7 +9,7 @@
 #include "avdl_semantic_analyser.h"
 #include "avdl_lexer.h"
 #include "avdl_pkg.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 #include "avdl_settings.h"
 #include "avdl_json.h"
 #include "shared/avdl_string.h"

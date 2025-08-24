@@ -10,7 +10,7 @@
 #include "avdl_file_op.h"
 #include "avdl_settings.h"
 #include "shared/avdl_string.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 #if AVDL_IS_OS(AVDL_OS_WINDOWS)
 #include <io.h>

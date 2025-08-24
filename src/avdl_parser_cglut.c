@@ -8,7 +8,7 @@
 #include "avdl_symtable.h"
 #include "avdl_struct_table.h"
 #include "avdl_commands.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 #include "avdl_ast/integer.h"
 

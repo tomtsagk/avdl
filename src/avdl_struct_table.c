@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include "avdl_struct_table.h"
-#include "avdl_log.h"
+#include "shared/avdl_log.h"
 
 struct struct_table_entry struct_table[DD_STRUCT_TABLE_TOTAL];
 int struct_table_current = 0;
