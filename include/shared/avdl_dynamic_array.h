@@ -1,5 +1,5 @@
-#ifndef DD_DYNAMIC_ARRAY_H
-#define DD_DYNAMIC_ARRAY_H
+#ifndef AVDL_DYNAMIC_ARRAY_H
+#define AVDL_DYNAMIC_ARRAY_H
 
 /* a dynamic array
  * elements have a custom size (specified inside an init function)

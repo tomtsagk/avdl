@@ -537,12 +537,14 @@ void dd_matrix_lookat(struct dd_matrix *m, float targetX, float targetY, float t
 
 	struct avdl_vec3 right;
 	avdl_vec3_create(&right);
-	avdl_vec3_Cross(&right, &fakeup, &forward);
+	avdl_vec3_Set(&right, &fakeup);
+	avdl_vec3_Cross(&right, &forward);
 	avdl_vec3_Normalise(&right);
 
 	struct avdl_vec3 up;
 	avdl_vec3_create(&up);
-	avdl_vec3_Cross(&up, &forward, &right);
+	avdl_vec3_Set(&up, &forward);
+	avdl_vec3_Cross(&up, &right);
 	avdl_vec3_Normalise(&up);
 
 	#if defined( AVDL_DIRECT3D11 ) || defined( AVDL_QUEST2 )

@@ -168,7 +168,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	dd_gameInit();
 
 	#if DD_PLATFORM_NATIVE || defined(AVDL_DIRECT3D11)
-	avdl_engine_resize(o, dd_window_width(), dd_window_height());
+	avdl_engine_resize(o, avdl_screen_GetWidth(), avdl_screen_GetHeight());
 	#endif
 
 	avdl_graphics_Init();

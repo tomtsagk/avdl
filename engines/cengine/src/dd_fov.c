@@ -1,7 +1,7 @@
 #include "dd_fov.h"
 #include <math.h>
 
-float fovy = 45.0;
+float fovy = 60.0;
 float fov_aspect = 0;
 
 void dd_fovy_set(float val) {

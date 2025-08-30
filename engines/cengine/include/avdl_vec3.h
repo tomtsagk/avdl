@@ -1,6 +1,8 @@
 #ifndef AVDL_VEC3_H
 #define AVDL_VEC3_H
 
+#include "dd_matrix.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -38,6 +40,8 @@ void avdl_vec3_Subtractf(struct avdl_vec3 *o, float x, float y, float z);
 
 void avdl_vec3_Multiply (struct avdl_vec3 *o1, struct avdl_vec3 *o2);
 void avdl_vec3_Multiplyf(struct avdl_vec3 *o, float x, float y, float z);
+void avdl_vec3_Multiply1f(struct avdl_vec3 *o, float x);
+void avdl_vec3_MultiplyMatrix(struct avdl_vec3 *o, struct dd_matrix *mat, float w);
 
 void avdl_vec3_Divide (struct avdl_vec3 *o1, struct avdl_vec3 *o2);
 void avdl_vec3_Dividef(struct avdl_vec3 *o, float x, float y, float z);
@@ -48,7 +52,7 @@ float avdl_vec3_Y(struct avdl_vec3 *o);
 float avdl_vec3_Z(struct avdl_vec3 *o);
 
 // more math
-void avdl_vec3_Cross(struct avdl_vec3 *o, struct avdl_vec3 *v1, struct avdl_vec3 *v2);
+void avdl_vec3_Cross(struct avdl_vec3 *a, struct avdl_vec3 *b);
 float avdl_vec3_Dot(struct avdl_vec3 *a, struct avdl_vec3 *b);
 void avdl_vec3_Normalise(struct avdl_vec3 *o);
 float avdl_vec3_Magnitude(struct avdl_vec3 *o);

@@ -1,5 +1,6 @@
 #include "dd_mouse.h"
 #include "dd_game.h"
+#include "avdl_screen.h"
 #include "avdl_input.h"
 #include "avdl_engine.h"
 
@@ -13,9 +14,9 @@ int dd_mouse_y() {
 }
 
 float dd_mouse_xProportion() {
-	return (float) dd_mouse_x() / (float) dd_window_width();
+	return (float) dd_mouse_x() / (float) avdl_screen_GetWidth();
 }
 
 float dd_mouse_yProportion() {
-	return (float) dd_mouse_y() / (float) dd_window_height();
+	return (float) dd_mouse_y() / (float) avdl_screen_GetHeight();
 }

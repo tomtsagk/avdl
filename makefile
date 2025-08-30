@@ -40,7 +40,7 @@ DIRECTORY_COVERAGE=coverage/
 #
 SRC=$(shell find src/ -name '*.c')
 OBJ=${SRC:src/%.c=${DIRECTORY_OBJ}/%.o}
-HEADERS=$(wildcard include/*.h)
+HEADERS=$(shell find include/ -name '*.h')
 
 #
 # engine files

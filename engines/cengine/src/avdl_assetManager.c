@@ -105,10 +105,12 @@ void avdl_assetManager_deinit() {
 
 	if (avdl_da_count(&textureCache) > 0) {
 		avdl_log("%d texture(s) were not cleaned", avdl_da_count(&textureCache));
+		/*
 		for (int i = 0; i < avdl_da_count(&textureCache); i++) {
 			struct avdl_assetManager_texture *t = avdl_da_getDeref(&textureCache, i);
-			//avdl_log("texture: %s", avdl_string_toCharPtr(&t));
+			avdl_log("texture: %s", avdl_string_toCharPtr(&t));
 		}
+		*/
 	}
 	avdl_da_free(&textureCache);
 	#ifdef AVDL_DIRECT3D11

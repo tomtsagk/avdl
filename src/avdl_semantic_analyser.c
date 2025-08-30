@@ -540,7 +540,7 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 				}
 				// function is marked as override but does not override anything
 				else {
-					avdl_log_error("function '" BLU "%s" RESET "' in class '" BLU "%s" RESET "' does not override any function but has the `" YEL "oveerride" RESET "` keyword", name->lex, classname->lex);
+					avdl_log_error("function '" BLU "%s" RESET "' in class '" BLU "%s" RESET "' does not override any function but has the `" YEL "override" RESET "` keyword", name->lex, classname->lex);
 					return 0;
 				}
 			}

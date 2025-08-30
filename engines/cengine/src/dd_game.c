@@ -5,6 +5,7 @@
 #include "shared/avdl_log.h"
 #include "avdl_engine.h"
 #include "avdl_whereami.h"
+#include "avdl_ray3.h"
 
 extern struct avdl_engine engine;
 
@@ -36,56 +37,6 @@ void dd_gameInitDefault() {
 	dd_gameInitWindowHeight = 480;
 }
 
-#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-int dd_window_width() {
-	int w, h;
-	SDL_GetWindowSize(engine.graphics.sdl_window, &w, &h);
-	return w;
-}
-
-int dd_window_height() {
-	int w, h;
-	SDL_GetWindowSize(engine.graphics.sdl_window, &w, &h);
-	return h;
-}
-#endif
-
-// screen limits
-float dd_screen_width_get (float z) {
-	if (dd_window_width() > dd_window_height()) {
-		return dd_screen_height_get(z) *dd_fovaspect_get();
-	}
-	else {
-		return dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) ) *z *2;
-	}
-}
-
-float dd_screen_height_get(float z) {
-	if (dd_window_width() > dd_window_height()) {
-		return dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) ) *z *2;
-	}
-	else {
-		return dd_screen_width_get(z) *dd_fovaspect_get();
-	}
-}
-
-float dd_screen_distance_getw(float width) {
-	if (dd_window_width() > dd_window_height()) {
-		return dd_screen_distance_geth(width /dd_fovaspect_get());
-	}
-	else {
-		return (width/2) /dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) );
-	}
-}
-
-float dd_screen_distance_geth(float height) {
-	if (dd_window_width() > dd_window_height()) {
-		return (height/2) /dd_math_tan( dd_math_dec2rad(dd_fovy_get() /2) );
-	}
-	else {
-		return dd_screen_distance_getw(height /dd_fovaspect_get());
-	}
-}
 
 #if defined(_WIN32) || defined(WIN32)
 wchar_t dynamicProjectLocationW[1000];

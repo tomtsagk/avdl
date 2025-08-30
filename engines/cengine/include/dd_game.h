@@ -1,6 +1,8 @@
 #ifndef DD_GAME_H
 #define DD_GAME_H
 
+#include "avdl_ray3.h"
+
 #if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 #include "avdl_graphics.h"
 
@@ -33,23 +35,6 @@ extern char *gameTitle;
 // game init size and function for it
 extern int dd_gameInitWindowWidth, dd_gameInitWindowHeight;
 #define dd_setInitWindowSize(w, h) dd_gameInitWindowWidth = w; dd_gameInitWindowHeight = h;
-
-// return screen limits on given `z`
-#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
-extern int dd_width;
-extern int dd_height;
-#define dd_window_width() dd_width
-#define dd_window_height() dd_height
-#else
-int dd_window_width();
-int dd_window_height();
-#endif
-float dd_screen_width_get (float z);
-float dd_screen_height_get(float z);
-
-// return distance from camera, based on given width or height
-float dd_screen_distance_getw(float width);
-float dd_screen_distance_geth(float height);
 
 extern int dd_flag_initialised;
 extern int dd_flag_focused;

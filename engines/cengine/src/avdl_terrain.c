@@ -306,7 +306,8 @@ int avdl_terrain_getNormal(struct avdl_terrain *o, float x, float z, struct avdl
 	avdl_vec3_Setf(&v2, 1, o->heights[indexRight] -o->heights[index], 0);
 
 	struct avdl_vec3 v1Result;
-	avdl_vec3_Cross(&v1Result, &v2, &v1);
+	avdl_vec3_Set(&v1Result, &v2);
+	avdl_vec3_Cross(&v1Result, &v1);
 	avdl_vec3_Normalise(&v1Result);
 
 	// triangle 2
@@ -316,7 +317,8 @@ int avdl_terrain_getNormal(struct avdl_terrain *o, float x, float z, struct avdl
 	avdl_vec3_Setf(&v4, 0, o->heights[indexTopRight] -o->heights[index], -1);
 
 	struct avdl_vec3 v3Result;
-	avdl_vec3_Cross(&v3Result, &v4, &v3);
+	avdl_vec3_Set(&v3Result, &v4);
+	avdl_vec3_Cross(&v3Result, &v3);
 	avdl_vec3_Normalise(&v3Result);
 
 	// average the two triangle's normals

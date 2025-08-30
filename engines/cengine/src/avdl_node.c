@@ -666,7 +666,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 	}
 
 	struct avdl_component *c = 0;
-	void (*component_type_func)() = 0;
+	void (*component_type_func)(void *) = 0;
 
 	/*
 	char component_name[100];
@@ -746,7 +746,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 			}
 			//avdl_log("component variable name: %s", avdl_json_getTokenString(json));
 
-			if (component_type_func == avdl_component_mesh_clean) {
+			if (component_type_func == (void (*)(void*)) avdl_component_mesh_clean) {
 				struct avdl_component_mesh *mesh = c;
 
 				struct avdl_string property_name;
@@ -793,7 +793,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				avdl_string_clean(&property_name);
 			}
 			else
-			if (component_type_func == avdl_component_skinned_mesh_clean) {
+			if (component_type_func == (void (*)(void*)) avdl_component_skinned_mesh_clean) {
 				struct avdl_component_skinned_mesh *mesh = c;
 
 				struct avdl_string property_name;
@@ -840,7 +840,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				avdl_string_clean(&property_name);
 			}
 			else
-			if (component_type_func == avdl_component_terrain_clean) {
+			if (component_type_func == (void (*)(void*)) avdl_component_terrain_clean) {
 				//struct avdl_component_terrain *terrain = c;
 
 				struct avdl_string property_name;

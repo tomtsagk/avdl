@@ -58,11 +58,11 @@ void avdl_vec3_Add(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {
 	o1->z += o2->z;
 }
 
-void avdl_vec3_Cross(struct avdl_vec3 *o, struct avdl_vec3 *v1, struct avdl_vec3 *v2) {
-	avdl_vec3_Setf(o,
-		avdl_vec3_Y(v1) *avdl_vec3_Z(v2) -avdl_vec3_Z(v1) *avdl_vec3_Y(v2),
-		avdl_vec3_Z(v1) *avdl_vec3_X(v2) -avdl_vec3_X(v1) *avdl_vec3_Z(v2),
-		avdl_vec3_X(v1) *avdl_vec3_Y(v2) -avdl_vec3_Y(v1) *avdl_vec3_X(v2)
+void avdl_vec3_Cross(struct avdl_vec3 *a, struct avdl_vec3 *b) {
+	avdl_vec3_Setf(a,
+		avdl_vec4_Y(a) *avdl_vec4_Z(b) -avdl_vec4_Z(a) *avdl_vec4_Y(b),
+		avdl_vec4_Z(a) *avdl_vec4_X(b) -avdl_vec4_X(a) *avdl_vec4_Z(b),
+		avdl_vec4_X(a) *avdl_vec4_Y(b) -avdl_vec4_Y(a) *avdl_vec4_X(b)
 	);
 }
 
@@ -112,6 +112,36 @@ void avdl_vec3_Multiplyf(struct avdl_vec3 *o, float x, float y, float z) {
 	o->x *= x;
 	o->y *= y;
 	o->z *= z;
+}
+
+void avdl_vec3_Multiply1f(struct avdl_vec3 *o, float x) {
+	o->x *= x;
+	o->y *= x;
+	o->z *= x;
+}
+
+void avdl_vec3_MultiplyMatrix(struct avdl_vec3 *o, struct dd_matrix *m, float w) {
+        struct avdl_vec3 new_vec;
+
+	new_vec.x =
+		(o->x *m->cell[(0 %4) +0]) +
+		(o->y *m->cell[(0 %4) +4]) +
+		(o->z *m->cell[(0 %4) +8]) +
+		(w *m->cell[(0 %4) +12]);
+
+	new_vec.y =
+		(o->x *m->cell[(1 %4) +0]) +
+		(o->y *m->cell[(1 %4) +4]) +
+		(o->z *m->cell[(1 %4) +8]) +
+		(w *m->cell[(1 %4) +12]);
+
+	new_vec.z =
+		(o->x *m->cell[(2 %4) +0]) +
+		(o->y *m->cell[(2 %4) +4]) +
+		(o->z *m->cell[(2 %4) +8]) +
+		(w *m->cell[(2 %4) +12]);
+
+	avdl_vec3_Set(o, &new_vec);
 }
 
 void avdl_vec3_Divide(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {

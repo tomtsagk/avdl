@@ -189,8 +189,8 @@ void *avdl_da_get(struct avdl_dynamic_array *da, int position) {
 		position = da->elements +position;
 	}
 
+	// out of bounds, return null
 	if (position >= da->elements) {
-		avdl_log("error avdl_da_get: %d", position);
 		return 0;
 	}
 

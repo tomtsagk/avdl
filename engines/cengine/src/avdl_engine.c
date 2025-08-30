@@ -248,12 +248,12 @@ int avdl_engine_init(struct avdl_engine *o) {
 		o->avdl_vsync = 0;
 	}
 
-	//handleResize(dd_window_width(), dd_window_height());
+	//handleResize(avdl_screen_GetWidth(), avdl_screen_GetHeight());
 
 	#endif
 
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS ) || defined(AVDL_QUEST2)
-	avdl_engine_resize(o, dd_window_width(), dd_window_height());
+	avdl_engine_resize(o, avdl_screen_GetWidth(), avdl_screen_GetHeight());
 	#endif
 
 	/*
@@ -451,8 +451,8 @@ int avdl_engine_draw(struct avdl_engine *o) {
 	//glDisable(GL_CULL_FACE);
 	//GL(glCullFace(GL_BACK));
 	glDisable(GL_BLEND);
-	glViewport(0, 0, dd_window_width(), dd_window_height());
-	glScissor(0, 0, dd_window_width(), dd_window_height());
+	glViewport(0, 0, avdl_screen_GetWidth(), avdl_screen_GetHeight());
+	glScissor(0, 0, avdl_screen_GetWidth(), avdl_screen_GetHeight());
 
 	glUseProgram(defaultProgram);
 

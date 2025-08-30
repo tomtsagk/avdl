@@ -3,6 +3,7 @@
 #include "shared/avdl_log.h"
 #include "dd_mouse.h"
 #include "dd_game.h"
+#include "avdl_screen.h"
 #include "avdl_input.h"
 
 static void CheckIsSelected(struct avdl_ui_element *o) {
