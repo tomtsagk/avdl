@@ -10,12 +10,14 @@ enum avdl_primitives {
 	AVDL_PRIMITIVE_RECTANGLE,
 	AVDL_PRIMITIVE_BOX,
 	AVDL_PRIMITIVE_BOX_FLIP,
+	AVDL_PRIMITIVE_LINE,
 };
 
 #include "avdl_graphics.h"
 #include "dd_matrix.h"
 #include "avdl_texture.h"
 #include "dd_filetomesh.h"
+#include "avdl_vec3.h"
 
 #define TEXTURES_COUNT 5
 
@@ -34,6 +36,10 @@ struct avdl_mesh {
 	float *n;
 	int dirtyNormals;
 
+	// bounds
+	struct avdl_vec3 boundsCenter;
+	struct avdl_vec3 boundsExtend;
+
 	// bump map
 	float *tan;
 	int dirtyTan;
@@ -46,6 +52,7 @@ struct avdl_mesh {
 
 	// draw solid or wireframe
 	int draw_type;
+	float lineWidth;
 
 	// array buffer object
 	#if !defined( AVDL_DIRECT3D11 )
@@ -101,10 +108,14 @@ void avdl_mesh_set_primitive_texcoords(struct avdl_mesh *m, float offsetX, float
 
 void avdl_mesh_setWireframe(struct avdl_mesh *o);
 void avdl_mesh_setSolid(struct avdl_mesh *o);
+void avdl_mesh_SetTypeLine(struct avdl_mesh *o, float lineWidth);
 
 int avdl_mesh_hasTexture(struct avdl_mesh *o);
 
 void avdl_mesh_LoadFromLoadedMesh(struct avdl_mesh *o, struct dd_loaded_mesh *loadedMesh);
+
+struct avdl_vec3 *avdl_mesh_GetBoundsCenter(struct avdl_mesh *o);
+struct avdl_vec3 *avdl_mesh_GetBoundsExtend(struct avdl_mesh *o);
 
 #ifdef __cplusplus
 }

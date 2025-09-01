@@ -74,6 +74,9 @@ struct dd_loaded_mesh {
 	int **children_indices;
 	int *children_indices_count;
 	struct dd_matrix rootMatrix;
+
+	struct avdl_vec3 boundsCenter;
+	struct avdl_vec3 boundsExtend;
 };
 
 #ifdef AVDL_DIRECT3D11

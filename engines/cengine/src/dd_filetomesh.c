@@ -1533,6 +1533,39 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 		m->v[i*3 +1] = array_vertex_pos[index[0]*3 +1];
 		m->v[i*3 +2] = array_vertex_pos[index[0]*3 +2];
 
+		if (i == 0) {
+			avdl_vec3_Setf(&m->boundsCenter,
+				m->v[i*3 +0],
+				m->v[i*3 +1],
+				m->v[i*3 +2]
+			);
+			avdl_vec3_Setf(&m->boundsExtend,
+				m->v[i*3 +0],
+				m->v[i*3 +1],
+				m->v[i*3 +2]
+			);
+		}
+		else {
+			if (avdl_vec3_X(&m->boundsCenter) < m->v[i*3 +0]) {
+				avdl_vec3_SetX(&m->boundsCenter, m->v[i*3 +0]);
+			}
+			if (avdl_vec3_Y(&m->boundsCenter) < m->v[i*3 +1]) {
+				avdl_vec3_SetY(&m->boundsCenter, m->v[i*3 +1]);
+			}
+			if (avdl_vec3_Z(&m->boundsCenter) < m->v[i*3 +2]) {
+				avdl_vec3_SetZ(&m->boundsCenter, m->v[i*3 +2]);
+			}
+			if (avdl_vec3_X(&m->boundsExtend) > m->v[i*3 +0]) {
+				avdl_vec3_SetX(&m->boundsExtend, m->v[i*3 +0]);
+			}
+			if (avdl_vec3_Y(&m->boundsExtend) > m->v[i*3 +1]) {
+				avdl_vec3_SetY(&m->boundsExtend, m->v[i*3 +1]);
+			}
+			if (avdl_vec3_Z(&m->boundsExtend) > m->v[i*3 +2]) {
+				avdl_vec3_SetZ(&m->boundsExtend, m->v[i*3 +2]);
+			}
+		}
+
 		if (has_colours) {
 			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 			m->c[i*3 +0] = array_vertex_col[index[0]*3 +0];
@@ -1556,6 +1589,24 @@ int avdl_load_ply_string(struct dd_loaded_mesh *m, const char *string, int setti
 			m->n[i*3 +2] = array_vertex_nor[index[0]*3 +2];
 		}
 	}
+
+	struct avdl_vec3 boundsCenter;
+	struct avdl_vec3 boundsExtend;
+	avdl_vec3_create(&boundsCenter);
+	avdl_vec3_create(&boundsExtend);
+	avdl_vec3_Setf(&boundsCenter,
+		avdl_vec3_X(&m->boundsExtend) +(avdl_vec3_X(&m->boundsCenter) -avdl_vec3_X(&m->boundsExtend))/2,
+		avdl_vec3_Y(&m->boundsExtend) +(avdl_vec3_Y(&m->boundsCenter) -avdl_vec3_Y(&m->boundsExtend))/2,
+		avdl_vec3_Z(&m->boundsExtend) +(avdl_vec3_Z(&m->boundsCenter) -avdl_vec3_Z(&m->boundsExtend))/2
+	);
+	avdl_vec3_Setf(&boundsExtend,
+		(avdl_vec3_X(&m->boundsCenter) -avdl_vec3_X(&m->boundsExtend))/2,
+		(avdl_vec3_Y(&m->boundsCenter) -avdl_vec3_Y(&m->boundsExtend))/2,
+		(avdl_vec3_Z(&m->boundsCenter) -avdl_vec3_Z(&m->boundsExtend))/2
+	);
+
+	avdl_vec3_Set(&m->boundsCenter, &boundsCenter);
+	avdl_vec3_Set(&m->boundsExtend, &boundsExtend);
 
 	if (m->t) {
 	for (int i = 0; i < m->vcount; i += 3) {

@@ -167,3 +167,11 @@ char *avdl_component_mesh_GetPropertyIndexString(struct avdl_component_mesh *c, 
 	char **p = ((void *) c) +avdl_component_mesh_property_array[index].offset;
 	return *p;
 }
+
+struct avdl_vec3 *avdl_component_mesh_GetBoundsCenter(struct avdl_component_mesh *o) {
+	return avdl_mesh_GetBoundsCenter(&o->mesh);
+}
+
+struct avdl_vec3 *avdl_component_mesh_GetBoundsExtend(struct avdl_component_mesh *o) {
+	return avdl_mesh_GetBoundsExtend(&o->mesh);
+}

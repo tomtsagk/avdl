@@ -142,6 +142,11 @@ static float shape_box_flipped[] = {
 	 0.5,  0.5,  0.5,
 };
 
+static float shape_line[] = {
+	-0.5, 0.0, 0.0,
+	 0.5, 0.0, 0.0,
+};
+
 static void clean_position(struct avdl_mesh *m) {
 	if (m->v && m->dirtyVertices) {
 		free(m->v);
@@ -238,6 +243,14 @@ void avdl_mesh_create(struct avdl_mesh *m) {
 
 	m->vertexBuffer = 0;
 	m->LoadFromLoadedMesh = avdl_mesh_LoadFromLoadedMesh;
+
+	m->lineWidth = 1.0;
+
+	avdl_vec3_create(&m->boundsCenter);
+	avdl_vec3_Setf(&m->boundsCenter, 0, 0, 0);
+	avdl_vec3_create(&m->boundsExtend);
+	avdl_vec3_Setf(&m->boundsExtend, 0, 0, 0);
+
 }
 
 void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
@@ -273,6 +286,11 @@ void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
 		case AVDL_PRIMITIVE_BOX_FLIP:
 			m->v = shape_box_flipped;
 			m->vcount = sizeof(shape_box_flipped) /sizeof(float) /3;
+			break;
+
+		case AVDL_PRIMITIVE_LINE:
+			m->v = shape_line;
+			m->vcount = sizeof(shape_line) /sizeof(float) /2;
 			break;
 	}
 
@@ -558,6 +576,7 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	if (m->draw_type) {
 		// not possible on OpenGL ES
 		//GL(glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ));
+		GL(glLineWidth(m->lineWidth));
 		GL(glDrawArrays(GL_LINES, 0, m->vcount));
 	}
 	else {
@@ -774,12 +793,20 @@ void avdl_mesh_setSolid(struct avdl_mesh *o) {
 	o->draw_type = 0;
 }
 
+void avdl_mesh_SetTypeLine(struct avdl_mesh *o, float lineWidth) {
+	o->draw_type = 1;
+	o->lineWidth = lineWidth;
+}
+
 void avdl_mesh_LoadFromLoadedMesh(struct avdl_mesh *o, struct dd_loaded_mesh *lm) {
 	avdl_mesh_clean(o);
 	o->vcount = lm->vcount;
 	if (lm->v) {
 		o->v = lm->v;
 		o->dirtyVertices = 1;
+
+		avdl_vec3_Set(&o->boundsCenter, &lm->boundsCenter);
+		avdl_vec3_Set(&o->boundsExtend, &lm->boundsExtend);
 	}
 	if (lm->c) {
 		o->c = lm->c;
@@ -811,4 +838,11 @@ void avdl_mesh_LoadFromLoadedMesh(struct avdl_mesh *o, struct dd_loaded_mesh *lm
 			free(lm->bitan);
 		}
 	}
+}
+
+struct avdl_vec3 *avdl_mesh_GetBoundsCenter(struct avdl_mesh *o) {
+	return &o->boundsCenter;
+}
+struct avdl_vec3 *avdl_mesh_GetBoundsExtend(struct avdl_mesh *o) {
+	return &o->boundsExtend;
 }
