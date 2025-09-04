@@ -63,6 +63,28 @@ extern void test_glError(char *file, int line);
 extern "C" {
 #endif
 
+// types
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+typedef GLubyte avdl_graphics_ubyte;
+
+enum avdl_graphics_format_internal {
+	AVDL_GRAPHICS_R8    = GL_R8,
+	AVDL_GRAPHICS_RG8   = GL_RG8,
+	AVDL_GRAPHICS_RGB8  = GL_RGB8,
+	AVDL_GRAPHICS_RGBA8 = GL_RGBA8,
+};
+
+enum avdl_graphics_format {
+	AVDL_GRAPHICS_R    = GL_R,
+	AVDL_GRAPHICS_RG   = GL_RG,
+	AVDL_GRAPHICS_RGB  = GL_RGB,
+	AVDL_GRAPHICS_RGBA = GL_RGBA,
+};
+#else
+typedef unsigned char avdl_graphics_ubyte;
+
+#endif // types
+
 struct avdl_graphics {
 
 	// anti-alias settings
@@ -180,11 +202,11 @@ void avdl_graphics_BindTextureIndex(avdl_texture_id tex, int index);
 void avdl_graphics_BindTextureArrayIndex(avdl_texture_id tex, int index);
 void avdl_graphics_BindTextureSkybox(avdl_texture_id tex);
 
-avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height);
-void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, int pixel_format, int x, int y, int width, int height);
+avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format, int width, int height);
+void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, enum avdl_graphics_format format, int x, int y, int width, int height);
 avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], int width[], int height[]);
-avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, int pixel_format, int width, int height, int arraySize);
-avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, int pixel_format, int width, int height, int index);
+avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format, int width, int height, int arraySize);
+avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, enum avdl_graphics_format format, int width, int height, int index);
 avdl_texture_id avdl_graphics_ImageArrayToGpuEnd();
 
 #if AVDL_DIRECT3D11

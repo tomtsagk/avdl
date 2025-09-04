@@ -278,18 +278,16 @@ int avdl_graphics_GetUniformLocation(int program, const char *uniform) {
 	return glGetUniformLocation(program, uniform);
 }
 
-avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int width, int height) {
+avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format, int width, int height) {
 
 	GLuint tex;
 	GL(glGenTextures(1, &tex));
 	GL(glBindTexture(GL_TEXTURE_2D, tex));
 
-	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-	GL(glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_FLOAT, pixels));
-	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	GL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
-	GL(glTexImage2D(GL_TEXTURE_2D, 0, pixel_format, width, height, 0, pixel_format, GL_UNSIGNED_BYTE, pixels));
 	#endif
+	GL(glTexImage2D(GL_TEXTURE_2D, 0, formatInternal, width, height, 0, format, GL_UNSIGNED_BYTE, pixels));
 	GL(glGenerateMipmap(GL_TEXTURE_2D));
 	/*
 	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
@@ -308,13 +306,13 @@ avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, int pixel_format, int wid
 
 }
 
-avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, int pixel_format, int width, int height, int arraySize) {
+avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format, int width, int height, int arraySize) {
 
 	GLuint tex;
 	GL(glGenTextures(1, &tex));
 	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, tex));
 
-	GL(glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, pixel_format, width, height, arraySize, 0, pixel_format, GL_FLOAT, 0));
+	GL(glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, formatInternal, width, height, arraySize, 0, format, GL_UNSIGNED_BYTE, 0));
 
 	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT));
 	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT));
@@ -326,8 +324,8 @@ avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, int pixel_forma
 
 }
 
-avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, int pixel_format, int width, int height, int index) {
-	GL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, width, height, 1, pixel_format, GL_FLOAT, pixels));
+avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, enum avdl_graphics_format format, int width, int height, int index) {
+	GL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, width, height, 1, format, GL_UNSIGNED_BYTE, pixels));
 	return 0;
 }
 
@@ -339,6 +337,9 @@ avdl_texture_id avdl_graphics_ImageArrayToGpuEnd() {
 
 avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], int width[], int height[]) {
 
+	avdl_log("SkyboxToGpu disabled for now");
+	return 0;
+	/*
 	GLuint tex;
 	GL(glGenTextures(1, &tex));
 	GL(glBindTexture(GL_TEXTURE_CUBE_MAP, tex));
@@ -357,7 +358,7 @@ avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], in
 		));
 		#else
 		GL(glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-			0, GL_RGB, width[i], height[i], 0, pixel_format[i], GL_FLOAT, pixels[i]
+			0, GL_RGB, width[i], height[i], 0, pixel_format[i], GL_UNSIGNED_BYTE, pixels[i]
 		));
 		#endif
 	}
@@ -365,34 +366,23 @@ avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], in
 	GL(glBindTexture(GL_TEXTURE_CUBE_MAP, 0));
 
 	return tex;
+	*/
 
 }
 
-void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, int pixel_format, int x, int y, int width, int height) {
+void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, enum avdl_graphics_format format, int x, int y, int width, int height) {
 
 	GL(glBindTexture(GL_TEXTURE_2D, texture_id));
 
-	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	GL(glTexSubImage2D(GL_TEXTURE_2D, 0,
 		x,
 		y,
 		width,
 		height,
-		pixel_format,
-		GL_FLOAT,
-		pixels
-	));
-	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	GL(glTexSubImage2D(GL_TEXTURE_2D, 0,
-		x,
-		y,
-		width,
-		height,
-		pixel_format,
+		format,
 		GL_UNSIGNED_BYTE,
 		pixels
 	));
-	#endif
 	GL(glGenerateMipmap(GL_TEXTURE_2D));
 
 	GL(glBindTexture(GL_TEXTURE_2D, 0));

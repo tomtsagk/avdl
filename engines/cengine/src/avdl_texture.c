@@ -5,6 +5,7 @@
 #include "avdl_assetManager.h"
 #include <errno.h>
 #include "dd_math.h"
+#include "avdl_graphics.h"
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
 #else
@@ -12,11 +13,7 @@
 #endif
 
 struct Subpixel {
-	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	GLubyte *pixels;
-	#else
-	float *pixels;
-	#endif
+	avdl_graphics_ubyte *pixels;
 	int offset_x;
 	int offset_y;
 	int width;
@@ -303,12 +300,9 @@ void avdl_texture_bindIndex(struct avdl_texture *o, int index) {
 	if (o->texture) {
 		if (o->texture->pixels) {
 			// check tex ?
-			#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-			o->texture->tex = avdl_graphics_ImageToGpu(o->texture->pixels, o->texture->pixelFormat, o->texture->width, o->texture->height);
+			o->texture->tex = avdl_graphics_ImageToGpu(o->texture->pixels, o->texture->formatInternal, o->texture->format, o->texture->width, o->texture->height);
 			free(o->texture->pixels);
 			o->texture->pixels = 0;
-			#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-			#endif
 		}
 		// update texture
 		if (o->subpixels.elements > 0 && o->texture->tex) {
@@ -318,7 +312,7 @@ void avdl_texture_bindIndex(struct avdl_texture *o, int index) {
 				avdl_graphics_ImageToGpuUpdate(
 					o->texture->tex,
 					subpixel->pixels,
-					GL_RGBA,
+					o->texture->format,
 					subpixel->offset_x,
 					subpixel->offset_y,
 					subpixel->width,
@@ -364,16 +358,13 @@ void avdl_texture_bindIndexArray(struct avdl_texture *o, int index, int arraySiz
 		if (isLoaded) {
 			
 			// check tex ?
-			#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-			o->texture->tex = avdl_graphics_ImageArrayToGpuStart(o->texture->pixels, o->texture->pixelFormat, o->texture->width, o->texture->height, arraySize);
+			o->texture->tex = avdl_graphics_ImageArrayToGpuStart(o->texture->pixels, o->texture->formatInternal, o->texture->format, o->texture->width, o->texture->height, arraySize);
 			for (int i = 0; i < arraySize; i++) {
-				avdl_graphics_ImageArrayToGpuInstance(array[i]->texture->pixels, o->texture->pixelFormat, o->texture->width, o->texture->height, i);
+				avdl_graphics_ImageArrayToGpuInstance(array[i]->texture->pixels, o->texture->format, o->texture->width, o->texture->height, i);
 			}
 			avdl_graphics_ImageArrayToGpuEnd();
 			free(o->texture->pixels);
 			o->texture->pixels = 0;
-			#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-			#endif
 		}
 
 		// texture is valid in this opengl context, bind it
@@ -411,7 +402,7 @@ void avdl_texture_setLocal(struct avdl_texture *o, const char *filename, int typ
 	#endif
 }
 
-void avdl_texture_addSubpixels(struct avdl_texture *o, void *pixels, int pixel_format, int offset_x, int offset_y, int w, int h) {
+void avdl_texture_addSubpixels(struct avdl_texture *o, void *pixels, int offset_x, int offset_y, int w, int h) {
 
 	#if defined( AVDL_DIRECT3D11 )
 	return;
@@ -422,11 +413,7 @@ void avdl_texture_addSubpixels(struct avdl_texture *o, void *pixels, int pixel_f
 		return;
 	}
 
-	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	GLubyte *pixelsf = pixels;
-	#else
-	float *pixelsf = pixels;
-	#endif
+	avdl_graphics_ubyte *pixelsUByte = pixels;
 
 	// texture not uploaded yet, update in-place
 	if (o->texture->pixels) {
@@ -435,35 +422,24 @@ void avdl_texture_addSubpixels(struct avdl_texture *o, void *pixels, int pixel_f
 			int ry = y;
 			int index = (ry*o->texture->width*4) +x*4+0 +offset_x*4 +(offset_y*o->texture->width*4);
 			int indexPixel = y *w *4 +x*4;
-			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-			o->texture->pixelsb[index+0] = pixelsf[indexPixel +0];
-			o->texture->pixelsb[index+1] = pixelsf[indexPixel +1];
-			o->texture->pixelsb[index+2] = pixelsf[indexPixel +2];
-			o->texture->pixelsb[index+3] = pixelsf[indexPixel +3];
-			#else
-			o->texture->pixels[index+0] = pixelsf[indexPixel +0];
-			o->texture->pixels[index+1] = pixelsf[indexPixel +1];
-			o->texture->pixels[index+2] = pixelsf[indexPixel +2];
-			o->texture->pixels[index+3] = pixelsf[indexPixel +3];
-			#endif
+			o->texture->pixels[index+0] = pixelsUByte[indexPixel +0];
+			o->texture->pixels[index+1] = pixelsUByte[indexPixel +1];
+			o->texture->pixels[index+2] = pixelsUByte[indexPixel +2];
+			o->texture->pixels[index+3] = pixelsUByte[indexPixel +3];
 		}
 		return;
 	}
 
 	// update subtexture
 	struct Subpixel subpixel;
-	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	subpixel.pixels = malloc(sizeof(GLubyte) *4 *w *h);
-	#else
-	subpixel.pixels = malloc(sizeof(float) *4 *w *h);
-	#endif
+	subpixel.pixels = malloc(sizeof(avdl_graphics_ubyte) *4 *w *h);
 	for (int i = 0; i < w; i++)
 	for (int j = 0; j < h; j++) {
 		int index = j *w *4 +i *4;
-		subpixel.pixels[index +0] = pixelsf[index +0];
-		subpixel.pixels[index +1] = pixelsf[index +1];
-		subpixel.pixels[index +2] = pixelsf[index +2];
-		subpixel.pixels[index +3] = pixelsf[index +3];
+		subpixel.pixels[index +0] = pixelsUByte[index +0];
+		subpixel.pixels[index +1] = pixelsUByte[index +1];
+		subpixel.pixels[index +2] = pixelsUByte[index +2];
+		subpixel.pixels[index +3] = pixelsUByte[index +3];
 	}
 	subpixel.offset_x = offset_x;
 	subpixel.offset_y = offset_y;
@@ -489,15 +465,16 @@ void avdl_texture_cleanNonGpuData(struct avdl_texture *o) {
 	*/
 }
 
-int avdl_texture_CreateTexture(struct avdl_texture *o, int width, int height, int pixelFormat) {
+int avdl_texture_CreateTexture(struct avdl_texture *o, int width, int height, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format) {
 
 	o->dirtyTexture = 1;
 
 	o->texture = malloc(sizeof(struct avdl_assetManager_texture));
 	o->texture->width = width;
 	o->texture->height = height;
-	o->texture->pixelFormat = pixelFormat;
-	o->texture->pixels = malloc(sizeof(float) *4 *o->texture->width *o->texture->height);
+	o->texture->formatInternal = formatInternal;
+	o->texture->format = format;
+	o->texture->pixels = malloc(sizeof(avdl_graphics_ubyte) *4 *o->texture->width *o->texture->height);
 	o->texture->graphicsContextId = avdl_graphics_getContextId();
 	o->texture->tex = 0;
 	o->texture->uses = 0;
@@ -509,9 +486,9 @@ int avdl_texture_CreateTexture(struct avdl_texture *o, int width, int height, in
 	// clean the texture
 	for (int x = 0; x < o->texture->width ; x++)
 	for (int y = 0; y < o->texture->height; y++) {
-		o->texture->pixels[(y*o->texture->width*4) +x*4+0] = 1;
-		o->texture->pixels[(y*o->texture->width*4) +x*4+1] = 1;
-		o->texture->pixels[(y*o->texture->width*4) +x*4+2] = 1;
+		o->texture->pixels[(y*o->texture->width*4) +x*4+0] = 255;
+		o->texture->pixels[(y*o->texture->width*4) +x*4+1] = 255;
+		o->texture->pixels[(y*o->texture->width*4) +x*4+2] = 255;
 		o->texture->pixels[(y*o->texture->width*4) +x*4+3] = 0;
 	}
 	return 0;
@@ -533,7 +510,7 @@ int avdl_texture_GetHeight(struct avdl_texture *o) {
 
 int avdl_texture_GetPixelFormat(struct avdl_texture *o) {
 	if (o->texture) {
-		return o->texture->pixelFormat;
+		return o->texture->format;
 	}
 	return 0;
 }

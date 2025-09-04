@@ -19,8 +19,9 @@ extern "C" {
 #define AVDL_ASSETMANAGER_MESH2 5
 
 struct avdl_assetManager_texture {
-	int pixelFormat;
-	float *pixels;
+	enum avdl_graphics_format_internal formatInternal;
+	enum avdl_graphics_format format;
+	avdl_graphics_ubyte *pixels;
 	int width;
 	int height;
 	struct avdl_string filename;

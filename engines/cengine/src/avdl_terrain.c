@@ -1,6 +1,7 @@
 #include "avdl_terrain.h"
 #include "shared/avdl_log.h"
 #include "dd_math.h"
+#include "avdl_graphics.h"
 
 extern GLuint currentProgram;
 
@@ -52,7 +53,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			return;
 		}
 
-		if (avdl_texture_GetPixelFormat(&o->img) != GL_RGB) {
+		if (avdl_texture_GetPixelFormat(&o->img) != AVDL_GRAPHICS_RGB) {
 			avdl_log("image has wrong format (non RGB): %d", avdl_texture_GetPixelFormat(&o->img));
 			avdl_log("image width height: %dx%d", avdl_texture_GetWidth(&o->img), avdl_texture_GetHeight(&o->img));
 			avdl_texture_UnLoad(&o->img);
@@ -64,13 +65,13 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 		o->width = avdl_texture_GetWidth(&o->img);
 		o->height = avdl_texture_GetHeight(&o->img);
 		o->heights = malloc(sizeof(float) *o->width *o->height);
-		float *pixels = avdl_texture_GetPixels(&o->img);
+		avdl_graphics_ubyte *pixels = avdl_texture_GetPixels(&o->img);
 		if (!pixels) {
 			avdl_log("terrain heightmap texture could not get pixels");
 			return;
 		}
 		for (int i = 0; i < o->width *o->height; i++) {
-			o->heights[i] = pixels[i*pixelStride] *o->scaleZ;
+			o->heights[i] = (pixels[i*pixelStride] /255.0) *o->scaleZ;
 		}
 
 		o->mesh.vcount = ((o->width -1) *(o->height -1)) *6;
@@ -148,7 +149,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 1 - bottom left
 			o->mesh.v[index +0] = x *1;
-			o->mesh.v[index +1] = pixels[pixelIndex] *o->scaleZ;
+			o->mesh.v[index +1] = (pixels[pixelIndex] /255.0) *o->scaleZ;
 			o->mesh.v[index +2] = y *-1;
 			o->mesh.c[index +0] = 0;
 			o->mesh.c[index +1] = 0;
@@ -169,7 +170,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 2
 			o->mesh.v[index +3] = x *1 +1;
-			o->mesh.v[index +4] = pixels[pixelIndexTopRight] *o->scaleZ;
+			o->mesh.v[index +4] = (pixels[pixelIndexTopRight] /255.0) *o->scaleZ;
 			o->mesh.v[index +5] = y *-1 -1;
 			o->mesh.c[index +3] = 0;
 			o->mesh.c[index +4] = 0;
@@ -183,7 +184,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 3
 			o->mesh.v[index +6] = x *1;
-			o->mesh.v[index +7] = pixels[pixelIndexTop] *o->scaleZ;
+			o->mesh.v[index +7] = (pixels[pixelIndexTop] /255.0) *o->scaleZ;
 			o->mesh.v[index +8] = y *-1 -1;
 			o->mesh.c[index +6] = 0;
 			o->mesh.c[index +7] = 0;
@@ -199,7 +200,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 1
 			o->mesh.v[index +9] = x *1;
-			o->mesh.v[index +10] = pixels[pixelIndex] *o->scaleZ;
+			o->mesh.v[index +10] = (pixels[pixelIndex] /255.0) *o->scaleZ;
 			o->mesh.v[index +11] = y *-1;
 			o->mesh.c[index +9] = 0;
 			o->mesh.c[index +10] = 0;
@@ -213,7 +214,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 2
 			o->mesh.v[index +12] = x *1 +1;
-			o->mesh.v[index +13] = pixels[pixelIndexRight] *o->scaleZ;
+			o->mesh.v[index +13] = (pixels[pixelIndexRight] /255.0) *o->scaleZ;
 			o->mesh.v[index +14] = y *-1;
 			o->mesh.c[index +12] = 0;
 			o->mesh.c[index +13] = 0;
@@ -227,7 +228,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 			// vertex 3
 			o->mesh.v[index +15] = x *1 +1;
-			o->mesh.v[index +16] = pixels[pixelIndexTopRight] *o->scaleZ;
+			o->mesh.v[index +16] = (pixels[pixelIndexTopRight] /255.0) *o->scaleZ;
 			o->mesh.v[index +17] = y *-1 -1;
 			o->mesh.c[index +15] = 0;
 			o->mesh.c[index +16] = 0;

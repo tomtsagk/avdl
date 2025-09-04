@@ -686,65 +686,49 @@ static int LoadTexturePNG(struct avdl_assetManager_texture *o, const char *filen
 
 	//avdl_log("%dx%d %d %d | %d %d %d", width, height, bit_depth, color_type, interlace_type, compression_type, filter_method);
 
-	#if defined( AVDL_DIRECT3D11)
-	o->pixelFormat = 0;
-	#else
-	o->pixelFormat = GL_RGB;
-	#endif
 	o->width = width;
 	o->height = height;
 	png_bytep *row_pointers = png_get_rows(png_ptr, info_ptr);
 	// grayscale images
 	if (color_type == PNG_COLOR_TYPE_GRAY) {
-		#if defined( AVDL_DIRECT3D11)
-		o->pixelFormat = 0;
-		#else
-		o->pixelFormat = GL_RGB;
-		#endif
-		float *pixels = malloc(sizeof(float) *o->width *o->height *3);
+		o->format = AVDL_GRAPHICS_R;
+		o->formatInternal = AVDL_GRAPHICS_R8;
+		avdl_graphics_ubyte *pixels = malloc(sizeof(avdl_graphics_ubyte) *o->width *o->height *1);
 		for (int x = 0; x < o->width ; x++)
 		for (int y = 0; y < o->height; y++) {
 			int ry = o->height-1 -y;
-			pixels[(y*width*3) +x*3+0] = dd_math_pow(row_pointers[ry][x]/ 255.0, 2.2);
-			pixels[(y*width*3) +x*3+1] = dd_math_pow(row_pointers[ry][x]/ 255.0, 2.2);
-			pixels[(y*width*3) +x*3+2] = dd_math_pow(row_pointers[ry][x]/ 255.0, 2.2);
+			pixels[(y*width*1) +x*1+0] = dd_math_pow(row_pointers[ry][x] /255.0, 2.2) *255;
 		}
 		o->pixels = pixels;
 	}
 	else
 	// RGB images
 	if (color_type == PNG_COLOR_TYPE_RGB) {
-		#if defined( AVDL_DIRECT3D11)
-		o->pixelFormat = 0;
-		#else
-		o->pixelFormat = GL_RGB;
-		#endif
-		float *pixels = malloc(sizeof(float) *o->width *o->height *3);
+		o->format = AVDL_GRAPHICS_RGB;
+		o->formatInternal = AVDL_GRAPHICS_RGB8;
+		avdl_graphics_ubyte *pixels = malloc(sizeof(avdl_graphics_ubyte) *o->width *o->height *3);
 		for (int x = 0; x < o->width ; x++)
 		for (int y = 0; y < o->height; y++) {
 			int ry = o->height-1 -y;
-			pixels[(y*width*3) +x*3+0] = dd_math_pow(row_pointers[ry][x*3+0]/ 255.0, 2.2);
-			pixels[(y*width*3) +x*3+1] = dd_math_pow(row_pointers[ry][x*3+1]/ 255.0, 2.2);
-			pixels[(y*width*3) +x*3+2] = dd_math_pow(row_pointers[ry][x*3+2]/ 255.0, 2.2);
+			pixels[(y*width*3) +x*3+0] = dd_math_pow(row_pointers[ry][x*3+0] /255.0, 2.2) *255;
+			pixels[(y*width*3) +x*3+1] = dd_math_pow(row_pointers[ry][x*3+1] /255.0, 2.2) *255;
+			pixels[(y*width*3) +x*3+2] = dd_math_pow(row_pointers[ry][x*3+2] /255.0, 2.2) *255;
 		}
 		o->pixels = pixels;
 	}
 	else
 	// RGBA images
 	if (color_type == PNG_COLOR_TYPE_RGBA) {
-		#if defined( AVDL_DIRECT3D11)
-		o->pixelFormat = 0;
-		#else
-		o->pixelFormat = GL_RGBA;
-		#endif
-		float *pixels = malloc(sizeof(float) *o->width *o->height *4);
+		o->format = AVDL_GRAPHICS_RGBA;
+		o->formatInternal = AVDL_GRAPHICS_RGBA8;
+		avdl_graphics_ubyte *pixels = malloc(sizeof(avdl_graphics_ubyte) *o->width *o->height *4);
 		for (int x = 0; x < o->width ; x++)
 		for (int y = 0; y < o->height; y++) {
 			int ry = o->height-1 -y;
-			pixels[(y*width*4) +x*4+0] = dd_math_pow(row_pointers[ry][x*4+0]/ 255.0, 2.2);
-			pixels[(y*width*4) +x*4+1] = dd_math_pow(row_pointers[ry][x*4+1]/ 255.0, 2.2);
-			pixels[(y*width*4) +x*4+2] = dd_math_pow(row_pointers[ry][x*4+2]/ 255.0, 2.2);
-			pixels[(y*width*4) +x*4+3] = dd_math_pow(row_pointers[ry][x*4+3]/ 255.0, 2.2);
+			pixels[(y*width*4) +x*4+0] = dd_math_pow(row_pointers[ry][x*4+0] /255.0, 2.2) *255;
+			pixels[(y*width*4) +x*4+1] = dd_math_pow(row_pointers[ry][x*4+1] /255.0, 2.2) *255;
+			pixels[(y*width*4) +x*4+2] = dd_math_pow(row_pointers[ry][x*4+2] /255.0, 2.2) *255;
+			pixels[(y*width*4) +x*4+3] = dd_math_pow(row_pointers[ry][x*4+3] /255.0, 2.2) *255;
 		}
 		o->pixels = pixels;
 	}
