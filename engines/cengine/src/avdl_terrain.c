@@ -49,17 +49,32 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 	if (avdl_texture_isLoaded(&o->img)) {
 		if (avdl_texture_GetWidth(&o->img) == 0 || avdl_texture_GetHeight(&o->img) == 0) {
 			avdl_log("image doesn't have width or height: %dx%d", avdl_texture_GetWidth(&o->img), avdl_texture_GetHeight(&o->img));
-			avdl_texture_UnLoad(&o->img);
+			avdl_texture_clean(&o->img);
 			return;
 		}
 
-		if (avdl_texture_GetPixelFormat(&o->img) != AVDL_GRAPHICS_RGB) {
+		int pixelStride;
+		if (avdl_texture_GetPixelFormat(&o->img) == AVDL_GRAPHICS_RGBA) {
+			pixelStride = 4;
+		}
+		else
+		if (avdl_texture_GetPixelFormat(&o->img) == AVDL_GRAPHICS_RGB) {
+			pixelStride = 3;
+		}
+		else
+		if (avdl_texture_GetPixelFormat(&o->img) == AVDL_GRAPHICS_RG) {
+			pixelStride = 2;
+		}
+		else
+		if (avdl_texture_GetPixelFormat(&o->img) == AVDL_GRAPHICS_RED) {
+			pixelStride = 1;
+		}
+		else {
 			avdl_log("image has wrong format (non RGB): %d", avdl_texture_GetPixelFormat(&o->img));
 			avdl_log("image width height: %dx%d", avdl_texture_GetWidth(&o->img), avdl_texture_GetHeight(&o->img));
-			avdl_texture_UnLoad(&o->img);
+			avdl_texture_clean(&o->img);
 			return;
 		}
-		int pixelStride = 3;
 
 		o->loaded = 1;
 		o->width = avdl_texture_GetWidth(&o->img);
@@ -88,11 +103,11 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 		for (int y = 0; y < o->height-1; y++) {
 
 			int index = ((y *(o->width-1)) +x) *18;
-			int pixelIndex = ((y *(o->width-0) *3) +(x *3));
+			int pixelIndex = ((y *(o->width-0) *pixelStride) +(x *pixelStride));
 			//int pixelIndex = (x *3);
-			int pixelIndexRight = pixelIndex +3;
-			int pixelIndexTop = pixelIndex +((o->width-0)*3);
-			int pixelIndexTopRight = pixelIndexTop +3;
+			int pixelIndexRight = pixelIndex +pixelStride;
+			int pixelIndexTop = pixelIndex +((o->width-0)*pixelStride);
+			int pixelIndexTopRight = pixelIndexTop +pixelStride;
 			int indexT = ((y *(o->width-1)) +x) *12;
 
 			/*
@@ -242,7 +257,7 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 
 		}
 
-		avdl_texture_UnLoad(&o->img);
+		avdl_texture_clean(&o->img);
 	}
 
 	GLuint loc = glGetUniformLocation(currentProgram, "terrain_repeat");

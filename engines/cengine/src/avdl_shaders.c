@@ -442,6 +442,8 @@ void avdl_program_create(struct avdl_program *o) {
 	o->openglContext = 0;
 	o->program = 0;
 
+	o->hasError = 0;
+
 	o->clean = avdl_program_clean;
 }
 
@@ -457,10 +459,18 @@ void avdl_program_setFragmentShader(struct avdl_program *o, char *source) {
 }
 
 void avdl_program_useProgram(struct avdl_program *o) {
+	if (o->hasError) {
+		return;
+	}
+
 	if (o->program == 0
 	||  o->openglContext != avdl_graphics_getContextId()) {
 		o->openglContext = avdl_graphics_getContextId();
 		o->program = avdl_loadProgram(o->sdrVertexSrc, o->sdrFragmentSrc);
+		if (!o->program) {
+			o->hasError = 1;
+			return;
+		}
 	}
 	avdl_useProgram(o);
 }

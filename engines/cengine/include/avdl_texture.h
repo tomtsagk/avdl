@@ -13,11 +13,12 @@ enum AVDL_IMAGETYPE {
 	AVDL_IMAGETYPE_PNG,
 	AVDL_IMAGETYPE_BMP,
 };
+struct avdl_texture_data;
 
 struct avdl_texture {
 
 	// new image
-	struct avdl_assetManager_texture *texture;
+	struct avdl_texture_data *data;
 	int dirtyTexture;
 
 	// updating parts of the image
@@ -27,16 +28,6 @@ struct avdl_texture {
 };
 
 void avdl_texture_create(struct avdl_texture *o);
-
-#ifdef AVDL_DIRECT3D11
-void avdl_texture_load_bmp(struct avdl_texture *img, const char *filename);
-#elif defined(WIN32) || defined(_WIN32)
-void avdl_texture_load_bmp(struct avdl_texture *img, const wchar_t *filename);
-#else
-void avdl_texture_load_bmp(struct avdl_texture *img, const char *filename);
-#endif
-int avdl_texture_load_png(struct avdl_texture *img, const char *filename);
-int avdl_texture_load_FromAsset(struct avdl_texture *img, struct avdl_assetManager_texture *t);
 
 void avdl_texture_bind(struct avdl_texture *o);
 void avdl_texture_bindIndex(struct avdl_texture *o, int index);
@@ -52,9 +43,6 @@ void avdl_texture_clean(struct avdl_texture *o);
 void avdl_texture_addSubpixels(struct avdl_texture *o, void *pixels, int x, int y, int w, int h);
 
 int avdl_texture_isLoaded(struct avdl_texture *o);
-int avdl_texture_UnLoad(struct avdl_texture *o);
-
-void avdl_texture_cleanNonGpuData(struct avdl_texture *o);
 
 int avdl_texture_CreateTexture(struct avdl_texture *o, int width, int height, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format);
 

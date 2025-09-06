@@ -15,21 +15,7 @@ extern "C" {
 #define AVDL_ASSETMANAGER_MESH 1
 #define AVDL_ASSETMANAGER_MESHCOLOUR 2
 #define AVDL_ASSETMANAGER_MESHTEXTURE 3
-#define AVDL_ASSETMANAGER_TEXTURE 4
 #define AVDL_ASSETMANAGER_MESH2 5
-
-struct avdl_assetManager_texture {
-	enum avdl_graphics_format_internal formatInternal;
-	enum avdl_graphics_format format;
-	avdl_graphics_ubyte *pixels;
-	int width;
-	int height;
-	struct avdl_string filename;
-	avdl_texture_id tex;
-	int index;
-	int graphicsContextId;
-	int uses;
-};
 
 struct dd_meshToLoad {
 	void *object;
@@ -41,6 +27,7 @@ struct dd_meshToLoad {
 	wchar_t filenameW[400];
 	#endif
 	int type;
+	void *(*loadOperation)(const char *);
 	int (*callback)(void *obj, void *data);
 };
 
@@ -51,6 +38,8 @@ void avdl_assetManager_init();
 void avdl_assetManager_deinit();
 
 // add assets to load
+int avdl_assetManager_AddLoadOperation(void *object, const char *assetname, void *(*loadOperation)(const char *), int (*callback)(void *obj, void *data));
+int avdl_assetManager_AddLoadOperationLocal(void *object, const char *assetname, void *(*loadOperation)(const char *), int (*callback)(void *obj, void *data));
 int avdl_assetManager_add(void *object, int meshType, const char *assetname, int type, int (*callback)(void *obj, void *data));
 int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname, int type, int (*callback)(void *obj, void *data));
 void avdl_assetManager_remove(int index);
@@ -67,9 +56,6 @@ void avdl_assetManager_unlockLoading();
 void avdl_assetManager_clear();
 
 void avdl_assetManager_setPercentage(float percentage);
-
-// Textures
-void avdl_assetManager_CleanTexture(struct avdl_assetManager_texture *t);
 
 #ifdef __cplusplus
 }

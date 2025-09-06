@@ -13,6 +13,8 @@ struct avdl_program {
 	int openglContext;
 	int program;
 
+	int hasError;
+
 	void (*clean)(struct avdl_program *);
 };
 

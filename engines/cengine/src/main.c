@@ -284,7 +284,6 @@ void updateThread() {
 		pthread_mutex_lock(&updateDrawMutex);
 		avdl_engine_update(&engine, 1);
 		if (dd_flag_exit) {
-			/*
 			JNIEnv *env;
 			int getEnvStat = (*jvm)->GetEnv(jvm, &env, JNI_VERSION_1_4);
 
@@ -297,15 +296,11 @@ void updateThread() {
 				avdl_log("avdl: GetEnv: version not supported");
 			}
 			jniEnv = env;
-			avdl_log("get method");
 			jmethodID MethodID = (*(*jniEnv)->GetStaticMethodID)(jniEnv, clazz, "CloseApplication", "()V");
-			avdl_log("call method");
 			(*(*jniEnv)->CallStaticVoidMethod)(jniEnv, clazz, MethodID);
-			avdl_log("detach");
 			if (getEnvStat == JNI_EDETACHED) {
 				(*jvm)->DetachCurrentThread(jvm);
 			}
-			*/
 			#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 			if (!avdl_state_initialised) return;
 			avdl_state_initialised = 0;

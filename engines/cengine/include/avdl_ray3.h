@@ -3,6 +3,7 @@
 
 #include "avdl_vec3.h"
 #include "avdl_vec4.h"
+#include "avdl_collider_aabb.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,8 @@ void avdl_ray3_SetDirection3f(struct avdl_ray3 *o, float x, float y, float z);
 struct avdl_vec3 *avdl_ray3_GetDirection(struct avdl_ray3 *o);
 
 void avdl_ray3_Print(struct avdl_ray3 *);
+
+int avdl_ray3_CollisionWithAABB(struct avdl_ray3 *, struct avdl_collider_aabb *collider);
 
 #ifdef __cplusplus
 }

@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include "avdl_settings.h"
 
+#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
+#include <android/log.h>
+#endif
+
 enum log_type {
 	LOG_TYPE_INFO,
 	LOG_TYPE_WARNING,

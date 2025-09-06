@@ -1,5 +1,7 @@
 #include "avdl_component_mesh.h"
 #include "shared/avdl_log.h"
+#include <string.h>
+#include <stdlib.h>
 
 void avdl_component_mesh_create(struct avdl_component_mesh *o) {
 	avdl_component_create(o);

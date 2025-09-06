@@ -14,7 +14,7 @@ prefix=/usr/local/
 #
 #COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -fprofile-arcs -ftest-coverage --coverage#-Werror
 #COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security -DAVDL_PKG_LOCATION="\"test_loc/test_loc2/\"" #-Werror
-COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security #-g#-Werror
+COMPILER_FLAGS=-Wall -Wpedantic -Wformat-security #-g-Werror
 
 COMPILER_DEFINES=\
 	-DPKG_NAME=\"${PACKAGE_NAME}\"\
@@ -47,10 +47,14 @@ HEADERS=$(shell find include/ -name '*.h')
 #
 ENGINE_FILES_SRC=$(shell find engines/cengine/src -name "*.c")
 ENGINE_FILES_SRC_CPP=$(wildcard engines/cengine/src/*.cpp)
+ENGINE_FILES_SRC_SHARED=$(shell find src/shared/ -name "*.c")
 ENGINE_FILES_HEADERS=$(wildcard engines/cengine/include/*.h)
+ENGINE_FILES_HEADERS_SHARED=$(wildcard include/shared/*.h)
 ENGINE_FILES_ANDROID=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=engine/%.h)\
+	$(ENGINE_FILES_HEADERS_SHARED:include/%.h=engine/%.h)\
 	$(ENGINE_FILES_SRC:engines/cengine/src/%.c=engine/%.c) \
-	$(ENGINE_FILES_SRC_CPP:engines/cengine/src/%.cpp=engine/%.cpp)
+	$(ENGINE_FILES_SRC_CPP:engines/cengine/src/%.cpp=engine/%.cpp) \
+	$(ENGINE_FILES_SRC_SHARED:src/%.c=engine/%.c)
 ENGINE_FILES_QUEST2=$(ENGINE_FILES_HEADERS:engines/cengine/include/%.h=../../../src/%.h)\
 	$(ENGINE_FILES_SRC:engines/cengine/src/%.c=../../../src/%.c) \
 	$(ENGINE_FILES_SRC_CPP:engines/cengine/src/%.cpp=../../../src/%.cpp)

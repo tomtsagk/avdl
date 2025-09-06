@@ -75,7 +75,7 @@ enum avdl_graphics_format_internal {
 };
 
 enum avdl_graphics_format {
-	AVDL_GRAPHICS_R    = GL_R,
+	AVDL_GRAPHICS_RED  = GL_RED,
 	AVDL_GRAPHICS_RG   = GL_RG,
 	AVDL_GRAPHICS_RGB  = GL_RGB,
 	AVDL_GRAPHICS_RGBA = GL_RGBA,

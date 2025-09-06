@@ -165,6 +165,7 @@ void struct_table_init() {
 	struct_table_push_member("SetDirection3f", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("GetDirection", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("Print", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("CollisionWithAABB", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push("avdl_plane", 0);
 	struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("SetPosition", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);

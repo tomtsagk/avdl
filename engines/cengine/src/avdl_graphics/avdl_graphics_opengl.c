@@ -284,9 +284,7 @@ avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, enum avdl_graphics_format
 	GL(glGenTextures(1, &tex));
 	GL(glBindTexture(GL_TEXTURE_2D, tex));
 
-	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	GL(glPixelStorei(GL_UNPACK_ALIGNMENT, 1));
-	#endif
 	GL(glTexImage2D(GL_TEXTURE_2D, 0, formatInternal, width, height, 0, format, GL_UNSIGNED_BYTE, pixels));
 	GL(glGenerateMipmap(GL_TEXTURE_2D));
 	/*

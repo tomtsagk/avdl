@@ -3,6 +3,8 @@
 #include "shared/avdl_log.h"
 #include "avdl_node.h"
 #include "dd_math.h"
+#include <string.h>
+#include <stdlib.h>
 
 void avdl_component_terrain_create(struct avdl_component_terrain *o) {
 	avdl_component_create(o);
@@ -111,7 +113,7 @@ struct avdl_terrain *avdl_component_terrain_GetTerrain(struct avdl_component_ter
 int avdl_component_terrain_IsOnTerrain(struct avdl_component_terrain *o, struct avdl_node *n) {
 
 	if (!o->terrain.loaded) {
-		avdl_log("terrain not loaded yet");
+		//avdl_log("terrain not loaded yet");
 		return 0;
 	}
 

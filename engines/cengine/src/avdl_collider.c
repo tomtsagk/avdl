@@ -293,6 +293,7 @@ int avdl_collider_collision(struct avdl_collider *o1, struct dd_matrix *m1, stru
 	return 0;
 }
 
+int once = 0;
 int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, struct avdl_collider *o2, struct avdl_node *n2, struct avdl_collider_collision *collision) {
 
 	if (o1->type == AVDL_COLLIDER_TYPE_AABB && o2->type == AVDL_COLLIDER_TYPE_AABB) {
@@ -626,7 +627,7 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 	if (o1->type == AVDL_COLLIDER_TYPE_TERRRAIN && o2->type == AVDL_COLLIDER_TYPE_POINT) {
 		//avdl_log("terrain point collision");
 
-		// get player's position
+		// get point position
 		struct avdl_vec4 vertex2;
 		avdl_vec4_Setf(&vertex2, 0, 0, 0, 1);
 		avdl_vec4_MultiplyMatrix(&vertex2, avdl_node_GetGlobalMatrix(n2));
@@ -652,7 +653,53 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 		return 0;
 	}
 	else
-	if (o1->type == AVDL_COLLIDER_TYPE_POINT && o2->type == AVDL_COLLIDER_TYPE_TERRRAIN) {
+	if (o1->type == AVDL_COLLIDER_TYPE_SPHERE && o2->type == AVDL_COLLIDER_TYPE_POINT) {
+		//avdl_log("terrain point collision");
+
+		// get sphere position
+		struct avdl_vec4 vertexSphere;
+		avdl_vec4_Setf(&vertexSphere, 0, 0, 0, 1);
+		avdl_vec4_MultiplyMatrix(&vertexSphere, avdl_node_GetGlobalMatrix(n1));
+
+		// get point position
+		struct avdl_vec4 vertexPoint;
+		avdl_vec4_Setf(&vertexPoint, 0, 0, 0, 1);
+		avdl_vec4_MultiplyMatrix(&vertexPoint, avdl_node_GetGlobalMatrix(n2));
+
+		if (dd_math_abs(avdl_vec4_Distance(&vertexPoint, &vertexSphere)) < 1.0) {
+			avdl_log("sphere collision: %f", avdl_vec4_Distance(&vertexPoint, &vertexSphere));
+			avdl_vec4_Set(&collision->overlap, &vertexSphere);
+			avdl_vec4_Subtract(&collision->overlap, &vertexPoint);
+			avdl_vec4_Invert(&collision->overlap);
+
+			avdl_vec4_Set(&collision->normal1, &collision->overlap);
+			avdl_vec4_Normalise(&collision->normal1);
+
+			avdl_vec4_Set(&collision->normal2, &collision->overlap);
+			avdl_vec4_Normalise(&collision->normal2);
+			avdl_vec4_Invert(&collision->normal2);
+			return 1;
+		}
+
+		/*
+		//avdl_log("player position:");
+		//avdl_vec3_Print(&vertexPoint);
+		//avdl_log("terrain spot: %f", terrainSpot);
+		if (avdl_vec4_Y(&vertexPoint) < terrainSpot) {
+			avdl_vec4_Setf(&collision->overlap, 0, 0, 0, 0);
+			avdl_vec4_SetY(&collision->overlap, terrainSpot -avdl_vec4_Y(&vertexPoint));
+
+			avdl_terrain_getNormal(t, avdl_vec4_X(&vertexPoint), -avdl_vec4_Z(&vertexPoint), &collision->normal1);
+			avdl_vec3_Setf(&collision->normal2, 0, 0, 0);
+			return 1;
+		}
+		*/
+		return 0;
+	}
+	else
+	// swaps
+	if ((o1->type == AVDL_COLLIDER_TYPE_POINT && o2->type == AVDL_COLLIDER_TYPE_TERRRAIN)
+	||  (o1->type == AVDL_COLLIDER_TYPE_POINT && o2->type == AVDL_COLLIDER_TYPE_SPHERE  )) {
 		if (!avdl_collider_collisionNode(o2, n2, o1, n1, collision)) {
 			return 0;
 		}
@@ -668,7 +715,37 @@ int avdl_collider_collisionNode(struct avdl_collider *o1, struct avdl_node *n1, 
 		return 1;
 	}
 
-	avdl_log("collision not supported");
+	if (!once) {
+		char *t1 = 0;
+		char *t2 = 0;
+
+		if (o1->type == AVDL_COLLIDER_TYPE_POINT) {
+			t1 = "Point";
+		}
+		else
+		if (o1->type == AVDL_COLLIDER_TYPE_SPHERE) {
+			t1 = "Sphere";
+		}
+		else
+		if (o1->type == AVDL_COLLIDER_TYPE_AABB) {
+			t1 = "AABB";
+		}
+
+		if (o2->type == AVDL_COLLIDER_TYPE_POINT) {
+			t2 = "Point";
+		}
+		else
+		if (o2->type == AVDL_COLLIDER_TYPE_SPHERE) {
+			t2 = "Sphere";
+		}
+		else
+		if (o2->type == AVDL_COLLIDER_TYPE_AABB) {
+			t2 = "AABB";
+		}
+
+		avdl_log("Collision not supported: (%s) - (%s)", t1, t2);
+		once = 1;
+	}
 	return 0;
 }
 

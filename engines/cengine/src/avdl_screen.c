@@ -11,21 +11,21 @@ extern struct avdl_engine engine;
 int avdl_screen_GetWidth () {
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
 	return dd_width;
-	#endif
-
+	#else
 	int w, h;
 	SDL_GetWindowSize(engine.graphics.sdl_window, &w, &h);
 	return w;
+	#endif
 }
 
 int avdl_screen_GetHeight() {
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
 	return dd_height;
-	#endif
-
+	#else
 	int w, h;
 	SDL_GetWindowSize(engine.graphics.sdl_window, &w, &h);
 	return h;
+	#endif
 }
 
 // screen limits
