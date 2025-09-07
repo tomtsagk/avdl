@@ -352,10 +352,10 @@ static struct avdl_texture_data *GetDataFromFile(const char *filename) {
 		for (int y = 0; y < height; y++) {
 			int index = ((y *width) +x);
 			int indexReverse = (((height -(y+1)) *width) +x);
-			pixelsb[indexReverse*4 +0] = (pixelValues[index] & 0x00FF0000) >> 16;
-			pixelsb[indexReverse*4 +1] = (pixelValues[index] & 0x0000FF00) >>  8;
-			pixelsb[indexReverse*4 +2] = (pixelValues[index] & 0x000000FF);
-			pixelsb[indexReverse*4 +3] = (pixelValues[index] & 0xFF000000) >> 24;
+			pixelsb[indexReverse*4 +0] = dd_math_pow(((pixelValues[index] & 0x00FF0000) >> 16) /255.0, 2.2) *255;
+			pixelsb[indexReverse*4 +1] = dd_math_pow(((pixelValues[index] & 0x0000FF00) >>  8) /255.0, 2.2) *255;
+			pixelsb[indexReverse*4 +2] = dd_math_pow(((pixelValues[index] & 0x000000FF)      ) /255.0, 2.2) *255;
+			pixelsb[indexReverse*4 +3] = dd_math_pow(((pixelValues[index] & 0xFF000000) >> 24) /255.0, 2.2) *255;
 		}
 		}
 

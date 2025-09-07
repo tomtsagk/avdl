@@ -169,7 +169,10 @@ public class AvdlActivity extends Activity {
 			return null;
 		}
 
-		Bitmap b = BitmapFactory.decodeResource(AvdlActivity.context.getApplicationContext().getResources(), id);
+		BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inScaled = false;
+		Bitmap b = BitmapFactory.decodeResource(AvdlActivity.context.getApplicationContext().getResources(), id, options);
+		b.setDensity(Bitmap.DENSITY_NONE);
 
 		int arraySize[] = new int[] {
 			b.getWidth(),

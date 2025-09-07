@@ -74,6 +74,16 @@ static char *avsl_shader_fragment =
 "#define avdl_frag_color gl_FragColor\n"
 "#define avdl_texture(x, y) texture2D(x, y)\n"
 "#endif\n"
+
+#if defined(AVDL_ANDROID)
+"vec4 gamma_correction(vec4 incolour) {\n"
+"	return pow(incolour, vec4(1.0/2.2));\n"
+"}\n"
+#else
+"vec4 gamma_correction(vec4 incolour) {\n"
+"	return incolour;\n"
+"}\n"
+#endif
 ;
 
 /*

@@ -1915,7 +1915,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 			else
 			if (avdl_string_endsIn(str, ".bmp")
 			||  avdl_string_endsIn(str, ".png")) {
-				assetDir = "res/drawable";
+				assetDir = "res/drawable-nodpi";
 			}
 			else {
 				assetDir = "assets";
