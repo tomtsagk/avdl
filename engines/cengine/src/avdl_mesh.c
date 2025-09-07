@@ -86,6 +86,89 @@ static float shape_box[] = {
 	 0.5, -0.5,  0.5,
 };
 
+static float shape_box_corners[] = {
+	// front top right
+	0.5, 0.5, 0.5,
+	0.5, 0.2, 0.5,
+
+	0.5, 0.5, 0.5,
+	0.2, 0.5, 0.5,
+
+	0.5, 0.5, 0.5,
+	0.5, 0.5, 0.2,
+
+	// front top left
+	-0.5, 0.5, 0.5,
+	-0.5, 0.2, 0.5,
+
+	-0.5, 0.5, 0.5,
+	-0.2, 0.5, 0.5,
+
+	-0.5, 0.5, 0.5,
+	-0.5, 0.5, 0.2,
+
+	// front bottom left
+	-0.5, -0.5, 0.5,
+	-0.5, -0.2, 0.5,
+
+	-0.5, -0.5, 0.5,
+	-0.2, -0.5, 0.5,
+
+	-0.5, -0.5, 0.5,
+	-0.5, -0.5, 0.2,
+
+	// front bottom right
+	0.5, -0.5, 0.5,
+	0.5, -0.2, 0.5,
+
+	0.5, -0.5, 0.5,
+	0.2, -0.5, 0.5,
+
+	0.5, -0.5, 0.5,
+	0.5, -0.5, 0.2,
+
+	// back top right
+	0.5, 0.5, -0.5,
+	0.5, 0.2, -0.5,
+
+	0.5, 0.5, -0.5,
+	0.2, 0.5, -0.5,
+
+	0.5, 0.5, -0.5,
+	0.5, 0.5, -0.2,
+
+	// back top left
+	-0.5, 0.5, -0.5,
+	-0.5, 0.2, -0.5,
+
+	-0.5, 0.5, -0.5,
+	-0.2, 0.5, -0.5,
+
+	-0.5, 0.5, -0.5,
+	-0.5, 0.5, -0.2,
+
+	// back bottom left
+	-0.5, -0.5, -0.5,
+	-0.5, -0.2, -0.5,
+
+	-0.5, -0.5, -0.5,
+	-0.2, -0.5, -0.5,
+
+	-0.5, -0.5, -0.5,
+	-0.5, -0.5, -0.2,
+
+	// back bottom right
+	0.5, -0.5, -0.5,
+	0.5, -0.2, -0.5,
+
+	0.5, -0.5, -0.5,
+	0.2, -0.5, -0.5,
+
+	0.5, -0.5, -0.5,
+	0.5, -0.5, -0.2,
+
+};
+
 static float shape_box_flipped[] = {
 	// front side
 	-0.5, 0.5, 0.5,
@@ -290,7 +373,13 @@ void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
 
 		case AVDL_PRIMITIVE_LINE:
 			m->v = shape_line;
-			m->vcount = sizeof(shape_line) /sizeof(float) /2;
+			m->vcount = sizeof(shape_line) /sizeof(float) /3;
+			break;
+
+		case AVDL_PRIMITIVE_BOX_CORNERS:
+			m->v = shape_box_corners;
+			m->vcount = sizeof(shape_box_corners) /sizeof(float) /3;
+			avdl_log("vcount: %d", m->vcount);
 			break;
 	}
 
