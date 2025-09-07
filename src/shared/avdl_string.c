@@ -36,6 +36,22 @@ void avdl_string_cat(struct avdl_string *o, const char *stringToCatenate) {
 	avdl_da_add(&o->string, stringToCatenate, strlen(stringToCatenate), -2);
 }
 
+void avdl_string_ncat(struct avdl_string *o, const char *stringToCatenate, int size) {
+	o->errorCharacters += size;
+
+	// string is in error mode - do nothing
+	if (o->errorCode) {
+		return;
+	}
+
+	// maximum characters reached - error
+	if (o->string.elements +size > o->maxCharacters) {
+		o->errorCode = 1;
+		return;
+	}
+	avdl_da_add(&o->string, stringToCatenate, size, -2);
+}
+
 int avdl_string_isValid(struct avdl_string *o) {
 	return !o->errorCode;
 }

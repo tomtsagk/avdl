@@ -12,6 +12,7 @@ struct avdl_string {
 
 void avdl_string_create(struct avdl_string *o, int maxCharacters);
 void avdl_string_cat(struct avdl_string *o, const char *stringToCatenate);
+void avdl_string_ncat(struct avdl_string *o, const char *stringToCatenate, int size);
 int avdl_string_isValid(struct avdl_string *o);
 char *avdl_string_getError(struct avdl_string *o);
 char *avdl_string_toCharPtr(struct avdl_string *o);

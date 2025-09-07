@@ -22,7 +22,7 @@ void avdl_program_create(struct avdl_program *);
 void avdl_program_clean(struct avdl_program *);
 void avdl_program_setVertexShader(struct avdl_program *, char *source);
 void avdl_program_setFragmentShader(struct avdl_program *, char *source);
-void avdl_program_useProgram(struct avdl_program *);
+int avdl_program_useProgram(struct avdl_program *);
 
 /*
  * function to change the current program

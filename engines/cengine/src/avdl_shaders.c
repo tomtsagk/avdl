@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <string.h>
 #include "avdl_cengine.h"
+#include "shared/avdl_string.h"
 
 /*
  * intro shaders
@@ -111,6 +112,9 @@ const char *shader_glsl_versions[] = {
 };
 const int shader_glsl_versions_count = sizeof(shader_glsl_versions) /sizeof(char *);
 
+const char *avdl_shaderError_vertex;
+const char *avdl_shaderError_fragment;
+
 /*
  * all shaders start with this version string,
  * where the version is assigned based on the values above
@@ -118,14 +122,15 @@ const int shader_glsl_versions_count = sizeof(shader_glsl_versions) /sizeof(char
  */
 const char *versionSource = "#version XXX YY\n";
 
-unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
+unsigned int create_shader(int type, const char *src, int glslVersionIndex, struct avdl_string *errorString) {
 
 	#ifndef AVDL_DIRECT3D11
 	/*
 	 * set up a copy of the source code, and try different versions of it
 	 */
 	if (!src || strlen(src) < 20) {
-		avdl_log("avdl: create_shader: no source given, or source smaller than 20");
+		avdl_string_cat(errorString, shader_glsl_versions[glslVersionIndex]);
+		avdl_string_cat(errorString, ": no source given, or source smaller than 20");
 		return 0;
 	}
 
@@ -141,8 +146,9 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 		shaderIntro = avsl_shader_fragment;
 	}
 	else {
-		avdl_log("avdl: create_shader: unsupported shader type: %d", type);
-		exit(-1);
+		avdl_string_cat(errorString, shader_glsl_versions[glslVersionIndex]);
+		avdl_string_cat(errorString, ": unsupported shader type");
+		return 0;
 	}
 
 	/*
@@ -178,14 +184,16 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 	unsigned int sdr = glCreateShader(type);
 	GLenum err = glGetError();
 	if (!sdr || err != GL_NO_ERROR) {
-		//avdl_log("avdl: create_shader: error creating shader");
+		avdl_string_cat(errorString, shader_glsl_versions[glslVersionIndex]);
+		avdl_string_cat(errorString, ": error creating shader\n");
 		glDeleteShader(sdr);
 		free(newSource);
 		return 0;
 	}
 	glShaderSource(sdr, 1, &newSource2, 0);
 	if (glGetError() != GL_NO_ERROR) {
-		//avdl_log("avdl: create_shader: error getting shader source");
+		avdl_string_cat(errorString, shader_glsl_versions[glslVersionIndex]);
+		avdl_string_cat(errorString, ": error getting shader source\n");
 		glDeleteShader(sdr);
 		free(newSource);
 		return 0;
@@ -203,10 +211,10 @@ unsigned int create_shader(int type, const char *src, int glslVersionIndex) {
 			char *buf = malloc(sizeof(char) *(logsz +1));
 			glGetShaderInfoLog(sdr, logsz, 0, buf);
 			buf[logsz] = 0;
-			avdl_log("avdl: compilation of %s shader failed: %s",
-				type == GL_VERTEX_SHADER   ? "vertex" :
-				type == GL_FRAGMENT_SHADER ? "fragment" :
-				"<unknown>", buf);
+			avdl_string_cat(errorString, YEL "OpenGL ");
+			avdl_string_cat(errorString, shader_glsl_versions[glslVersionIndex]);
+			avdl_string_cat(errorString, RESET ":\n");
+			avdl_string_cat(errorString, buf);
 			free(buf);
 		}
 
@@ -299,6 +307,10 @@ void avdl_useProgram(struct avdl_program *o) {
 	#endif
 }
 
+static unsigned int GetErrorProgram() {
+	return avdl_loadProgram(avdl_shaderError_vertex, avdl_shaderError_fragment);
+}
+
 /*
  * load each shader, and link them into a program
  */
@@ -308,33 +320,51 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 	// check input
 	if (!vfname || !ffname) return 0;
 
+	struct avdl_string vertexErrorString;
+	struct avdl_string fragmentErrorString;
+	avdl_string_create(&vertexErrorString  , 1024 *5);
+	avdl_string_create(&fragmentErrorString, 1024 *5);
+
 	// attempt to create shaders in all versions, first one to succeeds is accepted
 	unsigned int vsdr = 0;
 	unsigned int fsdr = 0;
 	for (int i = 0; i < shader_glsl_versions_count; i++) {
 
-		// create vertex shader
-		if ( !(vsdr = create_shader(GL_VERTEX_SHADER, vfname, i)) ) {
+		// create vertex shader, try next version if it fails
+		if ( (vsdr = create_shader(GL_VERTEX_SHADER, vfname, i, &vertexErrorString)) == 0 ) {
 			continue;
 		}
 
-		// create fragment shader
-		if ( !(fsdr = create_shader(GL_FRAGMENT_SHADER, ffname, i)) )
-		{
+		// create fragment shader, try next version if it fails
+		if ( (fsdr = create_shader(GL_FRAGMENT_SHADER, ffname, i, &fragmentErrorString)) == 0 ) {
 			glDeleteShader(vsdr);
 			vsdr = 0;
 			continue;
 		}
-		else {
-			break;
-		}
+
+		// both shaders succeeded
+		break;
+	}
+
+	if (!avdl_string_isValid(&vertexErrorString) || !avdl_string_isValid(&fragmentErrorString)) {
+		avdl_log("error getting shader log");
+		return 0;
 	}
 
 	if (!vsdr || !fsdr) {
-		avdl_log("avdl: one or more shaders failed to compile:\n"
-			"vertex:\n%s\nresult code '%d'\nfragment:\n%s\nresult code '%d'", vfname, vsdr, ffname, fsdr);
+		avdl_log_error("One or more shaders failed to compile:");
+		avdl_log("");
+		avdl_log("~ " WHT "VERTEX" RESET " ~");
+		avdl_log("%s", avdl_string_toCharPtr(&vertexErrorString));
+		avdl_log("~ " WHT "FRAGMENT" RESET " ~");
+		avdl_log("%s", avdl_string_toCharPtr(&fragmentErrorString));
+		avdl_string_clean(&vertexErrorString);
+		avdl_string_clean(&fragmentErrorString);
 		return 0;
 	}
+
+	avdl_string_clean(&vertexErrorString);
+	avdl_string_clean(&fragmentErrorString);
 
 	// shaders created - create program
 	return create_program(vsdr, fsdr);
@@ -368,6 +398,18 @@ const char *avdl_shaderDefault_fragment =
 "		discard;\n"
 "	}\n"
 "	avdl_frag_color = finalCol;\n"
+"}\n"
+;
+
+const char *avdl_shaderError_vertex =
+"void main() {\n"
+"	gl_Position = final_position();\n"
+"}\n"
+;
+
+const char *avdl_shaderError_fragment =
+"void main() {\n"
+"	avdl_frag_color = vec4(1.0, 0.0, 1.0, 0.0);\n"
 "}\n"
 ;
 
@@ -458,9 +500,9 @@ void avdl_program_setFragmentShader(struct avdl_program *o, char *source) {
 	o->sdrFragmentSrc = source;
 }
 
-void avdl_program_useProgram(struct avdl_program *o) {
+int avdl_program_useProgram(struct avdl_program *o) {
 	if (o->hasError) {
-		return;
+		return 0;
 	}
 
 	if (o->program == 0
@@ -468,11 +510,15 @@ void avdl_program_useProgram(struct avdl_program *o) {
 		o->openglContext = avdl_graphics_getContextId();
 		o->program = avdl_loadProgram(o->sdrVertexSrc, o->sdrFragmentSrc);
 		if (!o->program) {
-			o->hasError = 1;
-			return;
+			o->program = GetErrorProgram();
+			if (!o->program) {
+				o->hasError = 1;
+				return 0;
+			}
 		}
 	}
 	avdl_useProgram(o);
+	return 1;
 }
 
 #ifdef AVDL_DIRECT3D11
