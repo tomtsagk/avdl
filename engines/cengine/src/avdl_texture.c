@@ -126,47 +126,12 @@ void avdl_texture_bindIndex(struct avdl_texture *o, int index) {
 	#endif
 }
 
-void avdl_texture_bindIndexArray(struct avdl_texture *o, int index, int arraySize, struct avdl_texture *array[]) {
-
-	if (o->data) {
-		int isLoaded = 1;
-		for (int i = 0; i < arraySize; i++) {
-			if (!array[i]->data || !array[i]->data->pixels) {
-				isLoaded = 0;
-				break;
-			}
-		}
-		if (isLoaded) {
-			
-			// check tex ?
-			o->data->tex = avdl_graphics_ImageArrayToGpuStart(o->data->pixels, o->data->formatInternal, o->data->format, o->data->width, o->data->height, arraySize);
-			for (int i = 0; i < arraySize; i++) {
-				avdl_graphics_ImageArrayToGpuInstance(array[i]->data->pixels, o->data->format, o->data->width, o->data->height, i);
-			}
-			avdl_graphics_ImageArrayToGpuEnd();
-			free(o->data->pixels);
-			o->data->pixels = 0;
-		}
-
-		// texture is valid in this opengl context, bind it
-		if (o->data->graphicsContextId == avdl_graphics_getContextId() && o->data->tex) {
-			avdl_graphics_BindTextureArrayIndex(o->data->tex, index);
-		}
-		return;
-	}
-
-}
-
 void avdl_texture_unbind(struct avdl_texture *o) {
 	avdl_texture_unbindIndex(o, 0);
 }
 
 void avdl_texture_unbindIndex(struct avdl_texture *o, int index) {
 	avdl_graphics_BindTextureIndex(0, index);
-}
-
-void avdl_texture_unbindIndexArray(struct avdl_texture *o, int index) {
-	avdl_graphics_BindTextureArrayIndex(0, index);
 }
 
 void avdl_texture_set(struct avdl_texture *o, const char *filename, int type) {
@@ -627,3 +592,42 @@ static int CleanData(struct avdl_texture *o) {
 	o->dirtyTexture = 0;
 	return 0;
 }
+
+/* deprecated
+void avdl_texture_bindIndexArray(struct avdl_texture *o, int index, int arraySize, struct avdl_texture *array[]) {
+
+	if (o->data) {
+		int isLoaded = 1;
+		for (int i = 0; i < arraySize; i++) {
+			if (!array[i]->data || !array[i]->data->pixels) {
+				isLoaded = 0;
+				break;
+			}
+		}
+		if (isLoaded) {
+
+			// check tex ?
+			o->data->tex = avdl_graphics_ImageArrayToGpuStart(o->data->pixels, o->data->formatInternal, o->data->format, o->data->width, o->data->height, arraySize);
+			for (int i = 0; i < arraySize; i++) {
+				avdl_graphics_ImageArrayToGpuInstance(array[i]->data->pixels, o->data->format, o->data->width, o->data->height, i);
+			}
+			avdl_graphics_ImageArrayToGpuEnd();
+			free(o->data->pixels);
+			o->data->pixels = 0;
+		}
+
+		// texture is valid in this opengl context, bind it
+		if (o->data->graphicsContextId == avdl_graphics_getContextId() && o->data->tex) {
+			avdl_graphics_BindTextureArrayIndex(o->data->tex, index);
+		}
+		return;
+	}
+
+}
+
+void avdl_texture_unbindIndexArray(struct avdl_texture *o, int index) {
+	avdl_graphics_BindTextureArrayIndex(0, index);
+}
+
+*/
+

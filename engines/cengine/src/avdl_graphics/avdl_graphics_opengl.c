@@ -294,43 +294,18 @@ avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, enum avdl_graphics_format
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
-	//GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	// non-terrain
+	//GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+
+	// terrain
+	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR));
+
 	GL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 
 	GL(glBindTexture(GL_TEXTURE_2D, 0));
 
 	return tex;
 
-}
-
-avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format, int width, int height, int arraySize) {
-
-	GLuint tex;
-	GL(glGenTextures(1, &tex));
-	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, tex));
-
-	GL(glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, formatInternal, width, height, arraySize, 0, format, GL_UNSIGNED_BYTE, 0));
-
-	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT));
-	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT));
-	//GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
-	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-
-	return tex;
-
-}
-
-avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, enum avdl_graphics_format format, int width, int height, int index) {
-	GL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, width, height, 1, format, GL_UNSIGNED_BYTE, pixels));
-	return 0;
-}
-
-avdl_texture_id avdl_graphics_ImageArrayToGpuEnd() {
-	GL(glGenerateMipmap(GL_TEXTURE_2D_ARRAY));
-	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, 0));
-	return 0;
 }
 
 avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], int width[], int height[]) {
@@ -505,4 +480,41 @@ void avdl_graphics_SetMSAntiAlias(int samples) {
 void avdl_graphics_SetNoAntiAlias() {
 	engine.graphics.antialias = 0;
 }
+
+// deprecated, but kept around for now just in case.
+
+/*
+
+// Image arrays deprecated because they don't work with OpenGL ES.
+// There's alternatives like making an atlas instead.
+avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format, int width, int height, int arraySize) {
+
+	GLuint tex;
+	GL(glGenTextures(1, &tex));
+	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, tex));
+
+	GL(glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, formatInternal, width, height, arraySize, 0, format, GL_UNSIGNED_BYTE, 0));
+
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT));
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT));
+	//GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR));
+	GL(glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+
+	return tex;
+
+}
+
+avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, enum avdl_graphics_format format, int width, int height, int index) {
+	GL(glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, index, width, height, 1, format, GL_UNSIGNED_BYTE, pixels));
+	return 0;
+}
+
+avdl_texture_id avdl_graphics_ImageArrayToGpuEnd() {
+	GL(glGenerateMipmap(GL_TEXTURE_2D_ARRAY));
+	GL(glBindTexture(GL_TEXTURE_2D_ARRAY, 0));
+	return 0;
+}
+*/
+
 #endif

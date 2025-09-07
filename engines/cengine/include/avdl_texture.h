@@ -31,10 +31,8 @@ void avdl_texture_create(struct avdl_texture *o);
 
 void avdl_texture_bind(struct avdl_texture *o);
 void avdl_texture_bindIndex(struct avdl_texture *o, int index);
-void avdl_texture_bindIndexArray(struct avdl_texture *o, int index, int arraySize, struct avdl_texture *array[]);
 void avdl_texture_unbind(struct avdl_texture *o);
 void avdl_texture_unbindIndex(struct avdl_texture *o, int index);
-void avdl_texture_unbindIndexArray(struct avdl_texture *o, int index);
 void avdl_texture_set(struct avdl_texture *o, const char *filename, int type);
 void avdl_texture_setLocal(struct avdl_texture *o, const char *filename, int type);
 
@@ -50,6 +48,11 @@ int avdl_texture_GetWidth(struct avdl_texture *o);
 int avdl_texture_GetHeight(struct avdl_texture *o);
 int avdl_texture_GetPixelFormat(struct avdl_texture *o);
 void *avdl_texture_GetPixels(struct avdl_texture *o);
+
+/* deprecated
+void avdl_texture_bindIndexArray(struct avdl_texture *o, int index, int arraySize, struct avdl_texture *array[]);
+void avdl_texture_unbindIndexArray(struct avdl_texture *o, int index);
+*/
 
 #ifdef __cplusplus
 }

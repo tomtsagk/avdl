@@ -517,21 +517,17 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 			GL(glUniform1i(loc, 1));
 		}
 	}
-	int activeTextures = 0;
 	for (int i = 0; i < TEXTURES_COUNT; i++) {
-		if (m->img_extra[i]) {
-			activeTextures++;
+		if (!m->img_extra[i]) {
+			continue;
 		}
-		else {
-			break;
-		}
-	}
-	if (activeTextures > 0) {
-		avdl_texture_bindIndexArray(m->img_extra[0], 2, activeTextures, m->img_extra);
+		avdl_texture_bindIndex(m->img_extra[i], 2 +i);
+		char shadername[20] = "image_extra_X";
+		shadername[12] = '0' +i;
 		GLuint loc = -1;
-		loc = glGetUniformLocation(currentProgram, "image_extra");
+		loc = glGetUniformLocation(currentProgram, shadername);
 		if (loc != -1) {
-			GL(glUniform1i(loc, 2));
+			GL(glUniform1i(loc, 2 +i));
 		}
 	}
 
@@ -592,8 +588,11 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 		avdl_texture_unbindIndex(m->img_normal, 1);
 	}
 
-	if (activeTextures > 0) {
-		avdl_texture_unbindIndexArray(m->img_extra[0], 2);
+	for (int i = 0; i < TEXTURES_COUNT; i++) {
+		if (!m->img_extra[i]) {
+			continue;
+		}
+		avdl_texture_unbindIndex(m->img_extra[i], 2 +i);
 	}
 
 	if (m->hasTransparency) {

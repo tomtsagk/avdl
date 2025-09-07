@@ -205,9 +205,6 @@ void avdl_graphics_BindTextureSkybox(avdl_texture_id tex);
 avdl_texture_id avdl_graphics_ImageToGpu(void *pixels, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format, int width, int height);
 void avdl_graphics_ImageToGpuUpdate(avdl_texture_id texture_id, void *pixels, enum avdl_graphics_format format, int x, int y, int width, int height);
 avdl_texture_id avdl_graphics_SkyboxToGpu(void *pixels[], int pixel_format[], int width[], int height[]);
-avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format, int width, int height, int arraySize);
-avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, enum avdl_graphics_format format, int width, int height, int index);
-avdl_texture_id avdl_graphics_ImageArrayToGpuEnd();
 
 #if AVDL_DIRECT3D11
 void avdl_graphics_d3d11_SetWindow();
@@ -219,6 +216,12 @@ void avdl_graphics_Refresh();
 
 void avdl_graphics_SetMSAntiAlias(int samples);
 void avdl_graphics_SetNoAntiAlias();
+
+/* deprecated
+avdl_texture_id avdl_graphics_ImageArrayToGpuStart(void *pixels, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format, int width, int height, int arraySize);
+avdl_texture_id avdl_graphics_ImageArrayToGpuInstance(void *pixels, enum avdl_graphics_format format, int width, int height, int index);
+avdl_texture_id avdl_graphics_ImageArrayToGpuEnd();
+*/
 
 #ifdef __cplusplus
 }
