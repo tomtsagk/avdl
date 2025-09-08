@@ -379,7 +379,6 @@ void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
 		case AVDL_PRIMITIVE_BOX_CORNERS:
 			m->v = shape_box_corners;
 			m->vcount = sizeof(shape_box_corners) /sizeof(float) /3;
-			avdl_log("vcount: %d", m->vcount);
 			break;
 	}
 

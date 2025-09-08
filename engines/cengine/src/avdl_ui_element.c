@@ -48,8 +48,9 @@ void avdl_ui_element_create(struct avdl_ui_element *o) {
 	o->isSelectedClicked = 0;
 
 	avdl_mesh_create(&o->mesh_debug);
-	avdl_mesh_set_primitive(&o->mesh_debug, AVDL_PRIMITIVE_BOX);
-	avdl_mesh_setWireframe(&o->mesh_debug);
+	avdl_mesh_set_primitive(&o->mesh_debug, AVDL_PRIMITIVE_BOX_CORNERS);
+	avdl_mesh_set_colour(&o->mesh_debug, 0.8, 0.8, 0.8);
+	avdl_mesh_SetTypeLine(&o->mesh_debug, 1.8);
 }
 
 void avdl_ui_element_SetSize(struct avdl_ui_element *o, float width, float height) {
