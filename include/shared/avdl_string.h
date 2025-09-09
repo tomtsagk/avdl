@@ -8,9 +8,12 @@ struct avdl_string {
 	struct avdl_dynamic_array string;
 	int errorCode;
 	int errorCharacters;
+
+	void (*clean)(struct avdl_string *);
 };
 
-void avdl_string_create(struct avdl_string *o, int maxCharacters);
+void avdl_string_create(struct avdl_string *o);
+void avdl_string_SetMaxCharacters(struct avdl_string *o, int maxCharacters);
 void avdl_string_cat(struct avdl_string *o, const char *stringToCatenate);
 void avdl_string_ncat(struct avdl_string *o, const char *stringToCatenate, int size);
 int avdl_string_isValid(struct avdl_string *o);

@@ -21,7 +21,8 @@ void avdl_node_create(struct avdl_node *o) {
 	o->parent = 0;
 
 	//o->name[0] = '\0';
-	avdl_string_create(&o->name, 100);
+	avdl_string_create(&o->name);
+	avdl_string_SetMaxCharacters(&o->name, 100);
 
 	o->clean = avdl_node_clean;
 
@@ -750,7 +751,8 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				struct avdl_component_mesh *mesh = c;
 
 				struct avdl_string property_name;
-				avdl_string_create(&property_name, 1024);
+				avdl_string_create(&property_name);
+				avdl_string_SetMaxCharacters(&property_name, 1024);
 				avdl_string_cat(&property_name, avdl_json_getTokenString(json));
 				if (!avdl_string_isValid(&property_name)) {
 					avdl_log_error("Unable to construct property name");
@@ -760,7 +762,8 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				avdl_json_next(json);
 				if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
 					struct avdl_string property_value;
-					avdl_string_create(&property_value, 1024);
+					avdl_string_create(&property_value);
+					avdl_string_SetMaxCharacters(&property_value, 1024);
 					avdl_string_cat(&property_value, avdl_json_getTokenString(json));
 					if (!avdl_string_isValid(&property_value)) {
 						avdl_log_error("Unable to construct property value");
@@ -797,7 +800,8 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				struct avdl_component_skinned_mesh *mesh = c;
 
 				struct avdl_string property_name;
-				avdl_string_create(&property_name, 1024);
+				avdl_string_create(&property_name);
+				avdl_string_SetMaxCharacters(&property_name, 1024);
 				avdl_string_cat(&property_name, avdl_json_getTokenString(json));
 				if (!avdl_string_isValid(&property_name)) {
 					avdl_log_error("Unable to construct property name");
@@ -807,7 +811,8 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				avdl_json_next(json);
 				if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
 					struct avdl_string property_value;
-					avdl_string_create(&property_value, 1024);
+					avdl_string_create(&property_value);
+					avdl_string_SetMaxCharacters(&property_value, 1024);
 					avdl_string_cat(&property_value, avdl_json_getTokenString(json));
 					if (!avdl_string_isValid(&property_value)) {
 						avdl_log_error("Unable to construct property value");
@@ -844,7 +849,8 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				//struct avdl_component_terrain *terrain = c;
 
 				struct avdl_string property_name;
-				avdl_string_create(&property_name, 1024);
+				avdl_string_create(&property_name);
+				avdl_string_SetMaxCharacters(&property_name, 1024);
 				avdl_string_cat(&property_name, avdl_json_getTokenString(json));
 				if (!avdl_string_isValid(&property_name)) {
 					avdl_log_error("Unable to construct property name");
@@ -854,7 +860,8 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				avdl_json_next(json);
 				if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
 					struct avdl_string property_value;
-					avdl_string_create(&property_value, 1024);
+					avdl_string_create(&property_value);
+					avdl_string_SetMaxCharacters(&property_value, 1024);
 					avdl_string_cat(&property_value, avdl_json_getTokenString(json));
 					if (!avdl_string_isValid(&property_value)) {
 						avdl_log_error("Unable to construct property value");

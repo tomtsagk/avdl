@@ -1,5 +1,5 @@
-#ifndef _FILE_OPERATIONS_H_
-#define _FILE_OPERATIONS_H_
+#ifndef AVDL_FILESYSTEM_H
+#define AVDL_FILESYSTEM_H
 
 #include <stdio.h>
 
@@ -41,6 +41,8 @@ int Avdl_FileOp_IsRegStat(struct stat *s);
 
 int Avdl_FileOp_CreateSubDirectories(int dir_at, const char *dirname);
 
-int Avdl_FileOp_GetCurrentDirectory(struct avdl_string *str);
+// New API
+int avdl_filesystem_GetCurrentDirectory(struct avdl_string *str);
+int avdl_filesystem_DoesFileExist(const char *filename);
 
 #endif

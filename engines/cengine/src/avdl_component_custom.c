@@ -8,7 +8,8 @@ void avdl_component_custom_create(struct avdl_component_custom *o) {
 	o->parent.Copy = avdl_component_custom_Copy;
 	o->parent.clean = avdl_component_custom_clean;
 
-	avdl_string_create(&o->name, 100);
+	avdl_string_create(&o->name);
+	avdl_string_SetMaxCharacters(&o->name, 100);
 	avdl_da_init(&o->values, sizeof(struct avdl_string *));
 }
 
@@ -27,19 +28,22 @@ char *avdl_component_custom_GetName(struct avdl_component_custom *o) {
 
 void avdl_component_custom_AddVariableName(struct avdl_component_custom *o, char *value) {
 	struct avdl_string *str = malloc(sizeof(struct avdl_string));
-	avdl_string_create(str, 100);
+	avdl_string_create(str);
+	avdl_string_SetMaxCharacters(str, 100);
 	avdl_string_cat(str, value);
 	avdl_da_push(&o->values, &str);
 }
 
 void avdl_component_custom_AddVariableValue(struct avdl_component_custom *o, char *value, char *type) {
 	struct avdl_string *str = malloc(sizeof(struct avdl_string));
-	avdl_string_create(str, 100);
+	avdl_string_create(str);
+	avdl_string_SetMaxCharacters(str, 100);
 	avdl_string_cat(str, value);
 	avdl_da_push(&o->values, &str);
 
 	struct avdl_string *strType = malloc(sizeof(struct avdl_string));
-	avdl_string_create(strType, 100);
+	avdl_string_create(strType);
+	avdl_string_SetMaxCharacters(strType, 100);
 	avdl_string_cat(strType, type);
 	avdl_da_push(&o->values, &strType);
 }
@@ -56,7 +60,8 @@ int avdl_component_custom_Copy(struct avdl_component *o, struct avdl_component *
 	for (int i = 0; i < avdl_da_count(&t->values); i++) {
 		struct avdl_string *str = malloc(sizeof(struct avdl_string));
 		struct avdl_string *str_target = avdl_da_getDeref(&t->values, i);
-		avdl_string_create(str, str_target->maxCharacters);
+		avdl_string_create(str);
+		avdl_string_SetMaxCharacters(str, str_target->maxCharacters);
 		avdl_string_copy(str, str_target);
 		avdl_da_push(&c->values, &str);
 	}

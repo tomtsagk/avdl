@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "shared/avdl_file_op.h"
+#include "shared/avdl_filesystem.h"
 #include "avdl_settings.h"
 #include "shared/avdl_string.h"
 #include "shared/avdl_log.h"
@@ -658,7 +658,8 @@ int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_arr
 			struct avdl_string *str2 = avdl_da_get(array, -1);
 
 			// put filename into the string
-			avdl_string_create(str2, 1024);
+			avdl_string_create(str2);
+			avdl_string_SetMaxCharacters(str2, 1024);
 			avdl_string_cat(str2, fdFile.cFileName);
 			if ( !avdl_string_isValid(str2) ) {
 				avdl_log_error("Unable to collect filename");
@@ -691,7 +692,8 @@ int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_arr
 		struct avdl_string *str2 = avdl_da_get(array, -1);
 
 		// put filename into the string
-		avdl_string_create(str2, 1024);
+		avdl_string_create(str2);
+		avdl_string_SetMaxCharacters(str2, 1024);
 		avdl_string_cat(str2, dir->d_name);
 		if ( !avdl_string_isValid(str2) ) {
 			avdl_log_error("Unable to collect filename");
@@ -745,7 +747,8 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 
 			// add a string into the array and get a pointer to it
 			struct avdl_string prefixStr;
-			avdl_string_create(&prefixStr, 1024);
+			avdl_string_create(&prefixStr);
+			avdl_string_SetMaxCharacters(&prefixStr, 1024);
 			if (prefix) {
 				avdl_string_cat(&prefixStr, prefix);
 				avdl_string_cat(&prefixStr, "/");
@@ -759,7 +762,8 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 
 			// new dirname
 			struct avdl_string newDirname;
-			avdl_string_create(&newDirname, 1024);
+			avdl_string_create(&newDirname);
+			avdl_string_SetMaxCharacters(&newDirname, 1024);
 			avdl_string_cat(&newDirname, dirname);
 			avdl_string_cat(&newDirname, "/");
 			avdl_string_cat(&newDirname, fdFile.cFileName);
@@ -780,7 +784,8 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 			struct avdl_string *str2 = avdl_da_get(array, -1);
 
 			// put filename into the string
-			avdl_string_create(str2, 1024);
+			avdl_string_create(str2);
+			avdl_string_SetMaxCharacters(str2, 1024);
 			if (prefix) {
 				avdl_string_cat(str2, prefix);
 				avdl_string_cat(str2, "/");
@@ -841,7 +846,8 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 
 			// add a string into the array and get a pointer to it
 			struct avdl_string prefixStr;
-			avdl_string_create(&prefixStr, 1024);
+			avdl_string_create(&prefixStr);
+			avdl_string_SetMaxCharacters(&prefixStr, 1024);
 			if (prefix) {
 				avdl_string_cat(&prefixStr, prefix);
 				avdl_string_cat(&prefixStr, "/");
@@ -855,7 +861,8 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 
 			// new dirname
 			struct avdl_string newDirname;
-			avdl_string_create(&newDirname, 1024);
+			avdl_string_create(&newDirname);
+			avdl_string_SetMaxCharacters(&newDirname, 1024);
 			avdl_string_cat(&newDirname, dirname);
 			avdl_string_cat(&newDirname, "/");
 			avdl_string_cat(&newDirname, dir->d_name);
@@ -876,7 +883,8 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 		struct avdl_string *str2 = avdl_da_get(array, -1);
 
 		// put filename into the string
-		avdl_string_create(str2, 1024);
+		avdl_string_create(str2);
+		avdl_string_SetMaxCharacters(str2, 1024);
 		if (prefix) {
 			avdl_string_cat(str2, prefix);
 			avdl_string_cat(str2, "/");
@@ -1064,7 +1072,8 @@ int Avdl_FileOp_IsFileOlderThanAt(int src_at, const char *src, int target_at, co
 			}
 
 			struct avdl_string target_path;
-			avdl_string_create(&target_path, 1024);
+			avdl_string_create(&target_path);
+			avdl_string_SetMaxCharacters(&target_path, 1024);
 			avdl_string_cat(&target_path, target);
 			avdl_string_cat(&target_path, "/");
 			avdl_string_cat(&target_path, dir->d_name);
@@ -1142,16 +1151,6 @@ int file_write(const char *filename, const char *content, int append) {
 	return 0;
 }
 
-int Avdl_FileOp_GetCurrentDirectory(struct avdl_string *str) {
-	char buffer[1024];
-	if (getcwd(buffer, 1024) == 0) {
-		avdl_log_error("GetCurrentDirectory: unable to get current working directory: %s", strerror(errno));
-		return -1;
-	}
-	avdl_string_cat(str, buffer);
-	return 0;
-}
-
 int Avdl_FileOp_CreateSubDirectories(int dir_at, const char *dirname) {
 
 	char buffer[1024];
@@ -1169,4 +1168,78 @@ int Avdl_FileOp_CreateSubDirectories(int dir_at, const char *dirname) {
 		slash++;
 	}
 	return 0;
+}
+
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+
+int avdl_filesystem_GetCurrentDirectory(struct avdl_string *str) {
+
+
+	int size = sizeof(char) *PATH_MAX;
+	int tries = 2; // try twice for now, each time with double memory
+	char *buffer = 0;
+	while (tries > 0) {
+
+		// allocate buffer - reminder: if `buffer` is 0, `realloc` works like `malloc`
+		buffer = realloc(buffer, size);
+		if (!buffer) {
+			avdl_log_error("avdl_filesystem_GetCurrentDirectory: failed to allocate memory for cwd: %s", strerror(errno));
+			return -1;
+		}
+
+		// currently checking if getting directory fails and if buffer doesn't have enough memory
+		int hasError = 0;
+		int notEnoughMemory = 0;
+
+		#if defined( AVDL_WINDOWS )
+		DWORD length = GetCurrentDirectoryA(size, buffer);
+		notEnoughMemory = length > size;
+		hasError = notEnoughMemory || (length == 0);
+		#else
+		char *ret = getcwd(buffer, size);
+		hasError = ret == 0;
+		notEnoughMemory = hasError && errno == ERANGE;
+		#endif
+
+		// error while getting cwd
+		if (hasError) {
+
+			// failed to get cwd because buffer was too small, try again with double the memory
+			// as long as there are enough "tries" left
+			if (notEnoughMemory) {
+				size *= 2;
+				tries--;
+				continue;
+			}
+
+			// Some other error happened, just exit
+			avdl_log_error("avdl_filesystem_GetCurrentDirectory: unable to get current working directory, unknown error");
+			free(buffer);
+			buffer = 0;
+			return -1;
+		}
+
+		// getcwd succeeded
+		break;
+	}
+
+	// run out of tries
+	if (tries == 0) {
+		avdl_log_error("avdl_filesystem_GetCurrentDirectory: run out of tries when attempting to get cwd");
+		free(buffer);
+		buffer = 0;
+		return -1;
+	}
+
+	// success!
+	avdl_string_cat(str, buffer);
+	free(buffer);
+	buffer = 0;
+	return 0;
+}
+
+int avdl_filesystem_DoesFileExist(const char *filename) {
+	return access(filename, F_OK) == 0;
 }

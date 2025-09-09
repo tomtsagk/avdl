@@ -7,6 +7,7 @@
 
 #include "shared/avdl_dynamic_array.h"
 #include "shared/avdl_log.h"
+#include "shared/avdl_filesystem.h"
 #include "dd_filetomesh.h"
 #include "dd_matrix.h"
 #include "dd_mesh.h"

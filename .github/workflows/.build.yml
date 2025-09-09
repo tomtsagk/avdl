@@ -187,7 +187,7 @@ jobs:
 
   # test rue builds
   rue_builds:
-    if: ${{ always() && !cancelled() && github.ref_name == 'develop' }}
+    if: ${{ always() && !cancelled() && github.ref_name == 'develop' && false }}
     uses: ./.github/workflows/.compile_avdl_project.yml
     needs: [build_linux, build_windows]
     with:

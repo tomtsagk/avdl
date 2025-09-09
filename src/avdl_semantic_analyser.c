@@ -1257,7 +1257,8 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 
 			// assemble inline function's name
 			struct avdl_string str;
-			avdl_string_create(&str, 1024);
+			avdl_string_create(&str);
+			avdl_string_SetMaxCharacters(&str, 1024);
 			avdl_string_cat(&str, struct_table_get_name(structIndex));
 			avdl_string_cat(&str, "_");
 			avdl_string_cat(&str, child->lex);

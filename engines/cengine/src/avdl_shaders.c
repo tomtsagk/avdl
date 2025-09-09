@@ -332,8 +332,10 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 
 	struct avdl_string vertexErrorString;
 	struct avdl_string fragmentErrorString;
-	avdl_string_create(&vertexErrorString  , 1024 *5);
-	avdl_string_create(&fragmentErrorString, 1024 *5);
+	avdl_string_create(&vertexErrorString  );
+	avdl_string_SetMaxCharacters(&vertexErrorString  , 1024 *5);
+	avdl_string_create(&fragmentErrorString);
+	avdl_string_SetMaxCharacters(&fragmentErrorString, 1024 *5);
 
 	// attempt to create shaders in all versions, first one to succeeds is accepted
 	unsigned int vsdr = 0;

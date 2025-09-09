@@ -217,7 +217,8 @@ int avdl_texture_CreateTexture(struct avdl_texture *o, int width, int height, en
 	o->data->uses = 0;
 	o->data->index = -1;
 
-	avdl_string_create(&o->data->filename, 1024);
+	avdl_string_create(&o->data->filename);
+	avdl_string_SetMaxCharacters(&o->data->filename, 1024);
 	avdl_string_cat(&o->data->filename, "manual_font_texture");
 
 	// clean the texture
@@ -363,7 +364,8 @@ static struct avdl_texture_data *GetDataFromFile(const char *filename) {
 		(*env)->ReleaseIntArrayElements(env, pixels, pixelValues, JNI_ABORT);
 
 		o = malloc(sizeof(struct avdl_texture_data));
-		avdl_string_create(&o->filename, 1024);
+		avdl_string_create(&o->filename);
+		avdl_string_SetMaxCharacters(&o->filename, 1024);
 		avdl_string_cat(&o->filename, filename);
 		if (!avdl_string_isValid(&o->filename)) {
 			avdl_log("avdl: AssetManager: Unable to construct filename for texture: %s", filename);
@@ -395,7 +397,8 @@ static struct avdl_texture_data *GetDataFromFile(const char *filename) {
 	}
 
 	//t = malloc(sizeof(struct avdl_texture_data));
-	avdl_string_create(&o->filename, 1024);
+	avdl_string_create(&o->filename);
+	avdl_string_SetMaxCharacters(&o->filename, 1024);
 	avdl_string_cat(&o->filename, filename);
 	if (!avdl_string_isValid(&o->filename)) {
 		avdl_log("avdl: AssetManager: Unable to construct filename for texture: %s", filename);

@@ -14,7 +14,7 @@
 #include "avdl_parser.h"
 #include "avdl_settings.h"
 #include "avdl_pkg.h"
-#include "shared/avdl_file_op.h"
+#include "shared/avdl_filesystem.h"
 #include "shared/avdl_log.h"
 #include "shared/avdl_string.h"
 #include "avdl_arguments.h"
@@ -226,7 +226,8 @@ int create_android_directory(const char *androidDirName) {
 
 	// copy any needed files from template
 	struct avdl_string cenginePath;
-	avdl_string_create(&cenginePath, 1024);
+	avdl_string_create(&cenginePath);
+	avdl_string_SetMaxCharacters(&cenginePath, 1024);
 	avdl_string_cat(&cenginePath, avdl_pkg_GetProjectPath());
 	avdl_string_cat(&cenginePath, "/share/avdl/android");
 	if ( !avdl_string_isValid(&cenginePath) ) {
@@ -253,7 +254,8 @@ int create_quest2_directory(const char *dirName) {
 	if (isDir == 0) {
 		dir_create(dirName);
 		struct avdl_string cenginePath;
-		avdl_string_create(&cenginePath, 1024);
+		avdl_string_create(&cenginePath);
+		avdl_string_SetMaxCharacters(&cenginePath, 1024);
 		avdl_string_cat(&cenginePath, avdl_pkg_GetProjectPath());
 		avdl_string_cat(&cenginePath, "/share/avdl/quest2");
 		if ( !avdl_string_isValid(&cenginePath) ) {
@@ -281,7 +283,8 @@ int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirNa
 	if (isDir == 0) {
 		dir_create(dirName);
 		struct avdl_string cenginePath;
-		avdl_string_create(&cenginePath, 1024);
+		avdl_string_create(&cenginePath);
+		avdl_string_SetMaxCharacters(&cenginePath, 1024);
 		avdl_string_cat(&cenginePath, avdl_pkg_GetProjectPath());
 		avdl_string_cat(&cenginePath, "/share/avdl/d3d11");
 		if ( !avdl_string_isValid(&cenginePath) ) {
@@ -300,7 +303,8 @@ int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirNa
 
 	// avdl_project.vcxproj file path src
 	struct avdl_string vcPath;
-	avdl_string_create(&vcPath, 1024);
+	avdl_string_create(&vcPath);
+	avdl_string_SetMaxCharacters(&vcPath, 1024);
 	avdl_string_cat(&vcPath, dirName);
 	avdl_string_cat(&vcPath, "/");
 	//avdl_string_cat(&vcPath, "/avdl_project.vcxproj.in");
@@ -324,7 +328,8 @@ int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirNa
 	}
 
 	struct avdl_string avdlHeaders;
-	avdl_string_create(&avdlHeaders, 4000);
+	avdl_string_create(&avdlHeaders);
+	avdl_string_SetMaxCharacters(&avdlHeaders, 4000);
 	for (int i = 0; i < avdl_da_count(&cengineHeaders); i++) {
 		struct avdl_string *str = avdl_da_get(&cengineHeaders, i);
 		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
@@ -355,7 +360,8 @@ int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirNa
 
 	// collect src
 	struct avdl_string avdlSrc;
-	avdl_string_create(&avdlSrc, 10000);
+	avdl_string_create(&avdlSrc);
+	avdl_string_SetMaxCharacters(&avdlSrc, 10000);
 	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
 
@@ -928,7 +934,8 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 
 		// src file full path
 		struct avdl_string srcFilePath;
-		avdl_string_create(&srcFilePath, 1024);
+		avdl_string_create(&srcFilePath);
+		avdl_string_SetMaxCharacters(&srcFilePath, 1024);
 		avdl_string_cat(&srcFilePath, avdl_settings->src_dir);
 		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&srcFilePath) ) {
@@ -943,7 +950,8 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 		if (avdl_string_endsIn(str, ".json")) {
 
 			struct avdl_string ddFilePath;
-			avdl_string_create(&ddFilePath, 1024);
+			avdl_string_create(&ddFilePath);
+			avdl_string_SetMaxCharacters(&ddFilePath, 1024);
 			avdl_string_cat(&ddFilePath, cache_dir);
 			avdl_string_cat(&ddFilePath, avdl_string_toCharPtr(str));
 			avdl_string_replaceEnding(&ddFilePath, ".json", ".dd");
@@ -966,7 +974,8 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 
 		// dst file full path
 		struct avdl_string dstFilePath;
-		avdl_string_create(&dstFilePath, 1024);
+		avdl_string_create(&dstFilePath);
+		avdl_string_SetMaxCharacters(&dstFilePath, 1024);
 		// android transpiles directly to the gradle directory
 		if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
 			avdl_string_cat(&dstFilePath, android_cache_dir);
@@ -1110,7 +1119,8 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 
 		// src file full path
 		struct avdl_string srcFilePath;
-		avdl_string_create(&srcFilePath, 1024);
+		avdl_string_create(&srcFilePath);
+		avdl_string_SetMaxCharacters(&srcFilePath, 1024);
 		avdl_string_cat(&srcFilePath, cache_dir);
 		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&srcFilePath) ) {
@@ -1126,7 +1136,8 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
 		/*
 			struct avdl_string androidFilePath;
-			avdl_string_create(&androidFilePath, 1024);
+			avdl_string_create(&androidFilePath);
+			avdl_string_SetMaxCharacters(&androidFilePath, 1024);
 			avdl_string_cat(&androidFilePath, android_cache_dir "/app/src/main/cpp/engine/");
 			avdl_string_cat(&androidFilePath, avdl_string_toCharPtr(str));
 			if ( !avdl_string_isValid(&androidFilePath) ) {
@@ -1147,7 +1158,8 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 
 		// dst file full path
 		struct avdl_string dstFilePath;
-		avdl_string_create(&dstFilePath, 1024);
+		avdl_string_create(&dstFilePath);
+		avdl_string_SetMaxCharacters(&dstFilePath, 1024);
 		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(&srcFilePath));
 		avdl_string_cat(&dstFilePath, ".o");
 		if ( !avdl_string_isValid(&dstFilePath) ) {
@@ -1196,7 +1208,8 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 
 		// command string
 		struct avdl_string commandString;
-		avdl_string_create(&commandString, 1024);
+		avdl_string_create(&commandString);
+		avdl_string_SetMaxCharacters(&commandString, 1024);
 		avdl_string_cat(&commandString, "gcc -O3 -Wno-incompatible-pointer-types -DGLEW_NO_GLU -DAVDL_GAME_VERSION=\"\\\"");
 		avdl_string_cat(&commandString, avdl_settings->version_name);
 		avdl_string_cat(&commandString, "\\\"\" -DAVDL_GAME_REVISION=\"\\\"");
@@ -1280,7 +1293,8 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 	// create .avdl_cache/cengine directory
 	struct avdl_string cenginePath;
-	avdl_string_create(&cenginePath, 1024);
+	avdl_string_create(&cenginePath);
+	avdl_string_SetMaxCharacters(&cenginePath, 1024);
 	avdl_string_cat(&cenginePath, outdir);
 	avdl_string_cat(&cenginePath, "cengine/");
 	if ( !avdl_string_isValid(&cenginePath) ) {
@@ -1310,7 +1324,8 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		}
 
 		struct avdl_string cEngFile;
-		avdl_string_create(&cEngFile, 1024);
+		avdl_string_create(&cEngFile);
+		avdl_string_SetMaxCharacters(&cEngFile, 1024);
 		avdl_string_cat(&cEngFile, avdl_string_toCharPtr(str));
 		if (avdl_string_endsIn(&cEngFile, ".cpp")) {
 			strcpy(compile_command, "g++ -c -DGLEW_NO_GLU ");
@@ -1350,7 +1365,8 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		//strcat(compile_command, buffer);
 		//strcat(compile_command, "/");
 		struct avdl_string cenginePathOut;
-		avdl_string_create(&cenginePathOut, 1024);
+		avdl_string_create(&cenginePathOut);
+		avdl_string_SetMaxCharacters(&cenginePathOut, 1024);
 		avdl_string_cat(&cenginePathOut, outdir);
 		avdl_string_cat(&cenginePathOut, "cengine/");
 		avdl_string_cat(&cenginePathOut, avdl_string_toCharPtr(str));
@@ -1462,7 +1478,8 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 
 	// prepare link command
 	struct avdl_string link_cmd;
-	avdl_string_create(&link_cmd, 4096);
+	avdl_string_create(&link_cmd);
+	avdl_string_SetMaxCharacters(&link_cmd, 4096);
 	if (avdl_settings->cpp_mode) {
 		avdl_string_cat(&link_cmd, "g++ -DGLEW_NO_GLU ");
 	}
@@ -1483,7 +1500,8 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	Avdl_FileOp_GetFilesInDirectory(avdl_settings->src_dir, &objFiles);
 
 	struct avdl_string objFilesStr;
-	avdl_string_create(&objFilesStr, 100000);
+	avdl_string_create(&objFilesStr);
+	avdl_string_SetMaxCharacters(&objFilesStr, 100000);
 
 	// filter out some files
 	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
@@ -1519,7 +1537,8 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		avdl_string_cat(&link_cmd, ".avdl_cache/cengine/");
 
 		struct avdl_string tempfile;
-		avdl_string_create(&tempfile, 1024);
+		avdl_string_create(&tempfile);
+		avdl_string_SetMaxCharacters(&tempfile, 1024);
 		avdl_string_cat(&tempfile, avdl_string_toCharPtr(str));
 		if (avdl_string_endsIn(&tempfile, ".cpp")) {
 			avdl_string_replaceEnding(&tempfile, ".cpp", ".o");
@@ -1777,8 +1796,9 @@ int avdl_link_android(struct AvdlSettings *avdl_settings) {
 
 	// get initial directory
 	struct avdl_string initialDirectory;
-	avdl_string_create(&initialDirectory, 1024);
-	Avdl_FileOp_GetCurrentDirectory(&initialDirectory);
+	avdl_string_create(&initialDirectory);
+	avdl_string_SetMaxCharacters(&initialDirectory, 1024);
+	avdl_filesystem_GetCurrentDirectory(&initialDirectory);
 	if ( !avdl_string_isValid(&initialDirectory) ) {
 		avdl_log_error("link_android: cannot construct current directory: %s", avdl_string_getError(&initialDirectory));
 		avdl_string_clean(&initialDirectory);
@@ -1814,7 +1834,8 @@ int avdl_link_android(struct AvdlSettings *avdl_settings) {
 	}
 
 	struct avdl_string projectReleaseApk;
-	avdl_string_create(&projectReleaseApk, 1024);
+	avdl_string_create(&projectReleaseApk);
+	avdl_string_SetMaxCharacters(&projectReleaseApk, 1024);
 	avdl_string_cat(&projectReleaseApk, "avdl_build_android/");
 	avdl_string_cat(&projectReleaseApk, avdl_settings->project_name_code);
 	avdl_string_cat(&projectReleaseApk, "-release-unsigned.apk");
@@ -1825,7 +1846,8 @@ int avdl_link_android(struct AvdlSettings *avdl_settings) {
 	}
 
 	struct avdl_string projectDebugApk;
-	avdl_string_create(&projectDebugApk, 1024);
+	avdl_string_create(&projectDebugApk);
+	avdl_string_SetMaxCharacters(&projectDebugApk, 1024);
 	avdl_string_cat(&projectDebugApk, "avdl_build_android/");
 	avdl_string_cat(&projectDebugApk, avdl_settings->project_name_code);
 	avdl_string_cat(&projectDebugApk, "-debug.apk");
@@ -1892,7 +1914,8 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 		// src file full path
 		struct avdl_string srcFilePath;
-		avdl_string_create(&srcFilePath, 1024);
+		avdl_string_create(&srcFilePath);
+		avdl_string_SetMaxCharacters(&srcFilePath, 1024);
 		avdl_string_cat(&srcFilePath, avdl_settings->asset_dir);
 		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&srcFilePath) ) {
@@ -1923,7 +1946,8 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 			// android file full path
 			struct avdl_string androidFilePath;
-			avdl_string_create(&androidFilePath, 1024);
+			avdl_string_create(&androidFilePath);
+			avdl_string_SetMaxCharacters(&androidFilePath, 1024);
 			avdl_string_cat(&androidFilePath, android_cache_dir "/app/src/main/");
 			avdl_string_cat(&androidFilePath, assetDir);
 			avdl_string_cat(&androidFilePath, "/");
@@ -1970,7 +1994,8 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 			// quest2 file full path
 			struct avdl_string androidFilePath;
-			avdl_string_create(&androidFilePath, 1024);
+			avdl_string_create(&androidFilePath);
+			avdl_string_SetMaxCharacters(&androidFilePath, 1024);
 			avdl_string_cat(&androidFilePath, "avdl_build_quest2/");
 			avdl_string_cat(&androidFilePath, assetDir);
 			avdl_string_cat(&androidFilePath, "/");
@@ -2000,7 +2025,8 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 			// d3d11 file full path
 			struct avdl_string d3d11FilePath;
-			avdl_string_create(&d3d11FilePath, 1024);
+			avdl_string_create(&d3d11FilePath);
+			avdl_string_SetMaxCharacters(&d3d11FilePath, 1024);
 			avdl_string_cat(&d3d11FilePath, "avdl_build_d3d11/");
 			avdl_string_cat(&d3d11FilePath, assetDir);
 			avdl_string_cat(&d3d11FilePath, "/");
@@ -2024,7 +2050,8 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 
 		// dst file full path
 		struct avdl_string dstFilePath;
-		avdl_string_create(&dstFilePath, 1024);
+		avdl_string_create(&dstFilePath);
+		avdl_string_SetMaxCharacters(&dstFilePath, 1024);
 		avdl_string_cat(&dstFilePath, outdir);
 		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&dstFilePath) ) {
@@ -2093,7 +2120,8 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	if (avdl_settings->target_platform == AVDL_PLATFORM_D3D11) {
 
 		struct avdl_string assetFilesStr;
-		avdl_string_create(&assetFilesStr, 100000);
+		avdl_string_create(&assetFilesStr);
+		avdl_string_SetMaxCharacters(&assetFilesStr, 100000);
 
 		// filter out some files
 		for (int i = 0; i < avdl_da_count(&assetFiles); i++) {
@@ -2288,7 +2316,8 @@ int avdl_metadata(struct AvdlSettings *avdl_settings) {
 
 		// resource file for windows
 		struct avdl_string rcGenCmd;
-		avdl_string_create(&rcGenCmd, 1024);
+		avdl_string_create(&rcGenCmd);
+		avdl_string_SetMaxCharacters(&rcGenCmd, 1024);
 		avdl_string_cat(&rcGenCmd, "echo 'IDI_ICON1 ICON DISCARDABLE \"metadata/icon.ico\"' > ");
 		avdl_string_cat(&rcGenCmd, avdl_settings->project_name_code);
 		avdl_string_cat(&rcGenCmd, ".rc");
@@ -2434,7 +2463,8 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	// collect avdl android project source
 	struct avdl_string objFilesStr;
-	avdl_string_create(&objFilesStr, 100000);
+	avdl_string_create(&objFilesStr);
+	avdl_string_SetMaxCharacters(&objFilesStr, 100000);
 	struct avdl_dynamic_array objFiles;
 	Avdl_FileOp_GetFilesInDirectory(android_cache_dir "/app/src/main/cpp/game/", &objFiles);
 	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
@@ -2458,7 +2488,8 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	// cpp directory
 	struct avdl_string cppFilePath;
-	avdl_string_create(&cppFilePath, 1024);
+	avdl_string_create(&cppFilePath);
+	avdl_string_SetMaxCharacters(&cppFilePath, 1024);
 	avdl_string_cat(&cppFilePath, android_cache_dir "/app/src/main/cpp/");
 	if ( !avdl_string_isValid(&cppFilePath) ) {
 		avdl_log_error("cannot construct android cpp path: %s", avdl_string_getError(&cppFilePath));
@@ -2482,7 +2513,8 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	// add C flags
 	{
 		struct avdl_string cflags;
-		avdl_string_create(&cflags, 1024);
+		avdl_string_create(&cflags);
+		avdl_string_SetMaxCharacters(&cflags, 1024);
 
 		// admob ads
 		if (avdl_settings->admob_ads) {
@@ -2532,7 +2564,8 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	/*
 	// backwards compatible icon
 	struct avdl_string iconPath;
-	avdl_string_create(&iconPath, 1024);
+	avdl_string_create(&iconPath);
+	avdl_string_SetMaxCharacters(&iconPath, 1024);
 	avdl_string_cat(&iconPath, android_cache_dir "/app/src/main/res/drawable/");
 	avdl_string_cat(&iconPath, avdl_settings->icon_path);
 	if (!avdl_string_isValid(&iconPath)) {
@@ -2545,7 +2578,8 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	// adaptable icon foreground
 	struct avdl_string foregroundPath;
-	avdl_string_create(&foregroundPath, 1024);
+	avdl_string_create(&foregroundPath);
+	avdl_string_SetMaxCharacters(&foregroundPath, 1024);
 	avdl_string_cat(&foregroundPath, android_cache_dir "/app/src/main/res/drawable/icon_foreground.png");
 	if (!avdl_string_isValid(&foregroundPath)) {
 		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&foregroundPath));
@@ -2556,7 +2590,8 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	// adaptable icon background
 	struct avdl_string backgroundPath;
-	avdl_string_create(&backgroundPath, 1024);
+	avdl_string_create(&backgroundPath);
+	avdl_string_SetMaxCharacters(&backgroundPath, 1024);
 	avdl_string_cat(&backgroundPath, android_cache_dir "/app/src/main/res/drawable/icon_background.png");
 	if (!avdl_string_isValid(&backgroundPath)) {
 		avdl_log_error("unable to construct icon path: %s", avdl_string_getError(&backgroundPath));
@@ -2567,7 +2602,8 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	// strings
 	struct avdl_string values_file;
-	avdl_string_create(&values_file, 2048 *2);
+	avdl_string_create(&values_file);
+	avdl_string_SetMaxCharacters(&values_file, 2048 *2);
 	avdl_string_cat(&values_file, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 	avdl_string_cat(&values_file, "<resources>\n");
 	avdl_string_cat(&values_file, "	<string name=\"app_name\">");
@@ -2623,22 +2659,28 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 
 	// collect metadata and permissions
 	struct avdl_string metadata;
-	avdl_string_create(&metadata, 1024);
+	avdl_string_create(&metadata);
+	avdl_string_SetMaxCharacters(&metadata, 1024);
 
 	struct avdl_string permissions;
-	avdl_string_create(&permissions, 1024);
+	avdl_string_create(&permissions);
+	avdl_string_SetMaxCharacters(&permissions, 1024);
 
 	struct avdl_string ads_imports;
-	avdl_string_create(&ads_imports, 1024);
+	avdl_string_create(&ads_imports);
+	avdl_string_SetMaxCharacters(&ads_imports, 1024);
 
 	struct avdl_string ads_declarations;
-	avdl_string_create(&ads_declarations, 1024);
+	avdl_string_create(&ads_declarations);
+	avdl_string_SetMaxCharacters(&ads_declarations, 1024);
 
 	struct avdl_string ads_init;
-	avdl_string_create(&ads_init, 1024);
+	avdl_string_create(&ads_init);
+	avdl_string_SetMaxCharacters(&ads_init, 1024);
 
 	struct avdl_string ads_functions;
-	avdl_string_create(&ads_functions, 2048 *2);
+	avdl_string_create(&ads_functions);
+	avdl_string_SetMaxCharacters(&ads_functions, 2048 *2);
 
 	// modify Android Manifest based on google play mode or not
 	if (avdl_settings->googleplay_mode) {
@@ -2989,7 +3031,8 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 
 	// collect quest2 project object
 	struct avdl_string objFilesStr;
-	avdl_string_create(&objFilesStr, 10000);
+	avdl_string_create(&objFilesStr);
+	avdl_string_SetMaxCharacters(&objFilesStr, 10000);
 	struct avdl_dynamic_array objFiles;
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
 	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
@@ -3013,7 +3056,8 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 		#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 		// src file full path
 		struct avdl_string srcFilePath;
-		avdl_string_create(&srcFilePath, 1024);
+		avdl_string_create(&srcFilePath);
+		avdl_string_SetMaxCharacters(&srcFilePath, 1024);
 		avdl_string_cat(&srcFilePath, ".avdl_cache/");
 		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&srcFilePath) ) {
@@ -3027,7 +3071,8 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 
 		// dst file full path
 		struct avdl_string dstFilePath;
-		avdl_string_create(&dstFilePath, 1024);
+		avdl_string_create(&dstFilePath);
+		avdl_string_SetMaxCharacters(&dstFilePath, 1024);
 		avdl_string_cat(&dstFilePath, "avdl_build_quest2/src/");
 		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&dstFilePath) ) {
@@ -3049,7 +3094,8 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 
 	// Android.mk directory
 	struct avdl_string cppFilePath;
-	avdl_string_create(&cppFilePath, 1024);
+	avdl_string_create(&cppFilePath);
+	avdl_string_SetMaxCharacters(&cppFilePath, 1024);
 	avdl_string_cat(&cppFilePath, "avdl_build_quest2/");
 	avdl_string_cat(&cppFilePath, "/Projects/Android/jni/");
 	if ( !avdl_string_isValid(&cppFilePath) ) {
@@ -3070,7 +3116,8 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	// add C flags
 	{
 		struct avdl_string cflags;
-		avdl_string_create(&cflags, 1024);
+		avdl_string_create(&cflags);
+		avdl_string_SetMaxCharacters(&cflags, 1024);
 
 		// game version
 		avdl_string_cat(&cflags, " -DAVDL_GAME_VERSION=\"\\\"");
@@ -3114,7 +3161,8 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 
 	/*
 	struct avdl_string iconPath;
-	avdl_string_create(&iconPath, 1024);
+	avdl_string_create(&iconPath);
+	avdl_string_SetMaxCharacters(&iconPath, 1024);
 	avdl_string_cat(&iconPath, "avdl_build_quest2/");
 	avdl_string_cat(&iconPath, "/res/drawable/");
 	avdl_string_cat(&iconPath, avdl_settings->icon_path);
@@ -3127,7 +3175,8 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	*/
 
 	struct avdl_string foregroundPath;
-	avdl_string_create(&foregroundPath, 1024);
+	avdl_string_create(&foregroundPath);
+	avdl_string_SetMaxCharacters(&foregroundPath, 1024);
 	avdl_string_cat(&foregroundPath, "avdl_build_quest2/");
 	avdl_string_cat(&foregroundPath, "/res/drawable/icon_foreground.png");
 	if (!avdl_string_isValid(&foregroundPath)) {
@@ -3138,7 +3187,8 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	avdl_string_clean(&foregroundPath);
 
 	struct avdl_string backgroundPath;
-	avdl_string_create(&backgroundPath, 1024);
+	avdl_string_create(&backgroundPath);
+	avdl_string_SetMaxCharacters(&backgroundPath, 1024);
 	avdl_string_cat(&backgroundPath, "avdl_build_quest2/");
 	avdl_string_cat(&backgroundPath, "/res/drawable/icon_background.png");
 	if (!avdl_string_isValid(&backgroundPath)) {
@@ -3171,7 +3221,8 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 
 	// collect avdl project source
 	struct avdl_string objFilesStr;
-	avdl_string_create(&objFilesStr, 10000);
+	avdl_string_create(&objFilesStr);
+	avdl_string_SetMaxCharacters(&objFilesStr, 10000);
 	struct avdl_dynamic_array objFiles;
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
 	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
@@ -3191,7 +3242,8 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 		#if !AVDL_IS_OS(AVDL_OS_WINDOWS)
 		// src file full path
 		struct avdl_string srcFilePath;
-		avdl_string_create(&srcFilePath, 1024);
+		avdl_string_create(&srcFilePath);
+		avdl_string_SetMaxCharacters(&srcFilePath, 1024);
 		avdl_string_cat(&srcFilePath, ".avdl_cache/");
 		avdl_string_cat(&srcFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&srcFilePath) ) {
@@ -3205,7 +3257,8 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 
 		// dst file full path
 		struct avdl_string dstFilePath;
-		avdl_string_create(&dstFilePath, 1024);
+		avdl_string_create(&dstFilePath);
+		avdl_string_SetMaxCharacters(&dstFilePath, 1024);
 		avdl_string_cat(&dstFilePath, "avdl_build_d3d11/src/");
 		avdl_string_cat(&dstFilePath, avdl_string_toCharPtr(str));
 		if ( !avdl_string_isValid(&dstFilePath) ) {
@@ -3243,7 +3296,8 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	/*
 	// Android.mk directory
 	struct avdl_string cppFilePath;
-	avdl_string_create(&cppFilePath, 1024);
+	avdl_string_create(&cppFilePath);
+	avdl_string_SetMaxCharacters(&cppFilePath, 1024);
 	avdl_string_cat(&cppFilePath, "avdl_build_quest2/");
 	avdl_string_cat(&cppFilePath, "/Projects/Android/jni/");
 	if ( !avdl_string_isValid(&cppFilePath) ) {
@@ -3263,7 +3317,8 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	// add C flags
 	{
 		struct avdl_string cflags;
-		avdl_string_create(&cflags, 1024);
+		avdl_string_create(&cflags);
+		avdl_string_SetMaxCharacters(&cflags, 1024);
 
 		// game version
 		avdl_string_cat(&cflags, " -DAVDL_GAME_VERSION=\"\\\"");
@@ -3347,7 +3402,8 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 
 	// copy cmake template to current directory
 	struct avdl_string path;
-	avdl_string_create(&path, 1024);
+	avdl_string_create(&path);
+	avdl_string_SetMaxCharacters(&path, 1024);
 	avdl_string_cat(&path, avdl_pkg_GetProjectPath());
 	avdl_string_cat(&path, "/share/avdl/templates/CMakeLists.txt");
 	if ( !avdl_string_isValid(&path) ) {
@@ -3367,7 +3423,8 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 
 	// collect avdl source
 	struct avdl_string avdl_src;
-	avdl_string_create(&avdl_src, 5024);
+	avdl_string_create(&avdl_src);
+	avdl_string_SetMaxCharacters(&avdl_src, 5024);
 	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
 		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
@@ -3397,7 +3454,8 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 
 	// project data in cmake
 	struct avdl_string cmake_data;
-	avdl_string_create(&cmake_data, 5024);
+	avdl_string_create(&cmake_data);
+	avdl_string_SetMaxCharacters(&cmake_data, 5024);
 	avdl_string_cat(&cmake_data, "set(AVDL_PROJECT_NAME \"");
 	avdl_string_cat(&cmake_data, avdl_settings->project_name);
 	avdl_string_cat(&cmake_data, "\")\n");
@@ -3461,7 +3519,8 @@ int avdl_makefile(struct AvdlSettings *avdl_settings) {
 
 	// copy the makefile template to the current directory
 	struct avdl_string makefilePath;
-	avdl_string_create(&makefilePath, 1024);
+	avdl_string_create(&makefilePath);
+	avdl_string_SetMaxCharacters(&makefilePath, 1024);
 	avdl_string_cat(&makefilePath, avdl_pkg_GetProjectPath());
 	avdl_string_cat(&makefilePath, "/share/avdl/templates/makefile");
 	if ( !avdl_string_isValid(&makefilePath) ) {
