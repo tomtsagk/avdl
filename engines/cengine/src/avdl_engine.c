@@ -155,7 +155,7 @@ int avdl_engine_init(struct avdl_engine *o) {
 	#endif
 
 	// avdl input system
-	avdl_input_Init(&o->input);
+	avdl_inputmanager_Init(&o->input);
 
 	#if defined(AVDL_DIRECT3D11)
 	#elif defined(_WIN32) || defined(WIN32)
@@ -671,15 +671,15 @@ int avdl_engine_update(struct avdl_engine *o, float dt) {
 
 	}
 
-	avdl_input_update(&o->input);
+	avdl_inputmanager_update(&o->input);
 
 	// handle mouse input
-	if (o->cworld && o->cworld->input && avdl_input_GetInputTotal(&o->input) > 0) {
-		int totalInput = avdl_input_GetInputTotal(&o->input);
+	if (o->cworld && o->cworld->input && avdl_inputmanager_GetInputTotal(&o->input) > 0) {
+		int totalInput = avdl_inputmanager_GetInputTotal(&o->input);
 		for (int i = 0; i < totalInput; i++) {
-			o->cworld->input(o->cworld, avdl_input_GetButton(&o->input, i), avdl_input_GetState(&o->input, i));
+			o->cworld->input(o->cworld, &o->input.input[i]);
 		}
-		avdl_input_ClearInput(&o->input);
+		avdl_inputmanager_ClearInput(&o->input);
 	}
 
 	// update world
@@ -795,7 +795,7 @@ static void handleMousePress(struct avdl_engine *o, int button, int state, int x
 			button_temp = AVDL_INPUT_MOUSE_RIGHT;
 			break;
 	}
-	avdl_input_AddInputLocation(&o->input, button_temp, state_temp, x, y);
+	avdl_inputmanager_AddInputLocation(&o->input, button_temp, state_temp, x, y);
 
 }
 
@@ -857,6 +857,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 
 	int isRunning = 1;
 	SDL_Event event;
+	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 	while (isRunning && !dd_flag_exit) {
 
 		avdl_time_start(&o->frame_duration);
@@ -872,7 +873,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 				}
 				break;
 			case SDL_MOUSEMOTION:
-				avdl_input_AddPassiveMotion(&o->input, event.motion.x, event.motion.y);
+				avdl_inputmanager_AddPassiveMotion(&o->input, event.motion.x, event.motion.y);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
 				handleMousePress(o, 0, 0, event.motion.x, event.motion.y);
@@ -883,14 +884,18 @@ int avdl_engine_loop(struct avdl_engine *o) {
 			case SDL_KEYDOWN:
 				keycode = SDLScancodeToAvdl(event.key.keysym.scancode);
 				if (keycode >= 0) {
-					avdl_input_AddInput(&o->input, keycode, AVDL_INPUT_STATE_DOWN);
+					avdl_inputmanager_AddInput(&o->input, keycode, AVDL_INPUT_STATE_DOWN);
 				}
 				break;
 			case SDL_KEYUP:
 				keycode = SDLScancodeToAvdl(event.key.keysym.scancode);
 				if (keycode >= 0) {
-					avdl_input_AddInput(&o->input, keycode, AVDL_INPUT_STATE_UP);
+					avdl_inputmanager_AddInput(&o->input, keycode, AVDL_INPUT_STATE_UP);
 				}
+				break;
+			case SDL_DROPFILE:
+				avdl_inputmanager_AddInputDropfile(&o->input, event.drop.file);
+				SDL_free(event.drop.file);
 				break;
 			}
 		}

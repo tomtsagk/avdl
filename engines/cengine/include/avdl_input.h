@@ -2,6 +2,7 @@
 #define AVDL_INPUT_H
 
 #include "avdl_graphics.h"
+#include "shared/avdl_string.h"
 
 #if defined(AVDL_QUEST2)
 #include <jni.h>
@@ -41,19 +42,28 @@ enum AVDL_INPUT_KEYS {
 	AVDL_INPUT_MOUSE_LEFT,
 	AVDL_INPUT_MOUSE_MIDDLE,
 	AVDL_INPUT_MOUSE_RIGHT,
+	AVDL_INPUT_DROPFILE,
 };
 
 #define AVDL_INPUT_KEYS_MAXIMUM 100
 
-struct AvdlKeyInput {
+// avdl input
+
+struct avdl_input {
 	int button;
 	int state;
+	struct avdl_string filename;
 };
+int avdl_input_GetButton(struct avdl_input *);
+int avdl_input_GetState(struct avdl_input *);
+struct avdl_string *avdl_input_GetFilename(struct avdl_input *);
 
-struct AvdlInput {
+// avdl input manager
+
+struct avdl_inputmanager {
 
 	// input keys
-	struct AvdlKeyInput input[AVDL_INPUT_KEYS_MAXIMUM];
+	struct avdl_input input[AVDL_INPUT_KEYS_MAXIMUM];
 	int input_total;
 	int loc_x;
 	int loc_y;
@@ -84,18 +94,17 @@ struct AvdlInput {
 	#endif
 };
 
-void avdl_input_Init(struct AvdlInput *);
-void avdl_input_update(struct AvdlInput *);
-int avdl_input_GetInputTotal(struct AvdlInput *);
-int avdl_input_GetButton(struct AvdlInput *, int index);
-int avdl_input_GetState(struct AvdlInput *, int index);
-int avdl_input_GetX(struct AvdlInput *);
-int avdl_input_GetY(struct AvdlInput *);
-int avdl_input_ClearInput(struct AvdlInput *);
+void avdl_inputmanager_Init(struct avdl_inputmanager *);
+void avdl_inputmanager_update(struct avdl_inputmanager *);
+int avdl_inputmanager_GetInputTotal(struct avdl_inputmanager *);
+int avdl_inputmanager_GetX(struct avdl_inputmanager *);
+int avdl_inputmanager_GetY(struct avdl_inputmanager *);
+int avdl_inputmanager_ClearInput(struct avdl_inputmanager *);
 
-int avdl_input_AddInput(struct AvdlInput *, int button, int state);
-int avdl_input_AddInputLocation(struct AvdlInput *, int button, int state, int x, int y);
-int avdl_input_AddPassiveMotion(struct AvdlInput *, int x, int y);
+int avdl_inputmanager_AddInputDropfile(struct avdl_inputmanager *, const char *filename);
+int avdl_inputmanager_AddInput(struct avdl_inputmanager *, int button, int state);
+int avdl_inputmanager_AddInputLocation(struct avdl_inputmanager *, int button, int state, int x, int y);
+int avdl_inputmanager_AddPassiveMotion(struct avdl_inputmanager *, int x, int y);
 
 #ifdef __cplusplus
 }

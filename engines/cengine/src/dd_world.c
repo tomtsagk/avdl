@@ -69,4 +69,4 @@ void dd_world_onload(struct dd_world *this) {}
 void dd_world_update(struct dd_world *this, float dt) {}
 void dd_world_draw  (struct dd_world *this) {}
 
-void dd_world_input(struct dd_world *this, int button, int type) {}
+void dd_world_input(struct dd_world *this, struct avdl_input *input) {}

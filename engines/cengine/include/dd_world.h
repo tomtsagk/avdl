@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include "avdl_input.h"
+
 /* data that each world has
  */
 extern struct dd_world {
@@ -13,7 +15,7 @@ extern struct dd_world {
 	void (*resize)(struct dd_world *);
 	void (*draw)(struct dd_world *);
 
-	void (*input)(struct dd_world *, int button, int type);
+	void (*input)(struct dd_world *, struct avdl_input *input);
 	void (*clean)(struct dd_world *);
 
 } *cworld, *nworld;
@@ -43,7 +45,7 @@ void dd_world_create(struct dd_world *);
 void dd_world_onload(struct dd_world *);
 void dd_world_update(struct dd_world *, float dt);
 void dd_world_draw(struct dd_world *);
-void dd_world_input(struct dd_world *, int button, int type);
+void dd_world_input(struct dd_world *, struct avdl_input *input);
 void dd_world_clean(struct dd_world *);
 
 // default world

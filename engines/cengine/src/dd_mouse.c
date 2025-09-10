@@ -6,11 +6,11 @@
 
 extern struct avdl_engine engine;
 int dd_mouse_x() {
-	return avdl_input_GetX(&engine.input);
+	return avdl_inputmanager_GetX(&engine.input);
 }
 
 int dd_mouse_y() {
-	return avdl_input_GetY(&engine.input);
+	return avdl_inputmanager_GetY(&engine.input);
 }
 
 float dd_mouse_xProportion() {

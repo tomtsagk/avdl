@@ -63,7 +63,7 @@ struct avdl_engine {
 
 	struct avdl_achievements *achievements;
 
-	struct AvdlInput input;
+	struct avdl_inputmanager input;
 
 	struct avdl_time end_of_update_time;
 	struct avdl_time frame_duration;

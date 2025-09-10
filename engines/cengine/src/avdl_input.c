@@ -1,9 +1,26 @@
 #include "avdl_input.h"
 #include <string.h>
 #include "shared/avdl_log.h"
+#include "shared/avdl_string.h"
 #include "avdl_engine.h"
 
 extern struct avdl_engine engine;
+
+// avdl input
+int avdl_input_GetButton(struct avdl_input *input) {
+	return input->button;
+}
+
+int avdl_input_GetState(struct avdl_input *input) {
+	return input->state;
+}
+
+struct avdl_string *avdl_input_GetFilename(struct avdl_input *input) {
+	if (avdl_input_GetButton(input) == AVDL_INPUT_DROPFILE) {
+		return &input->filename;
+	}
+	return 0;
+}
 
 #if defined(AVDL_QUEST2)
 XrAction create_action(XrActionSet actionSet, XrActionType type, const char *name, const char *locName) {
@@ -34,7 +51,7 @@ void get_state(XrActionStateBoolean *state, XrSession session, XrAction action) 
 
 #endif
 
-void avdl_input_Init(struct AvdlInput *o) {
+void avdl_inputmanager_Init(struct avdl_inputmanager *o) {
 	o->input_total = 0;
 	o->loc_x = 0;
 	o->loc_y = 0;
@@ -174,7 +191,7 @@ void avdl_input_Init(struct AvdlInput *o) {
 
 }
 
-void avdl_input_update(struct AvdlInput *o) {
+void avdl_inputmanager_update(struct avdl_inputmanager *o) {
 
 #if defined(AVDL_QUEST2)
 	// sync action data
@@ -256,30 +273,34 @@ void avdl_input_update(struct AvdlInput *o) {
 
 }
 
-int avdl_input_GetInputTotal(struct AvdlInput *o) {
+int avdl_inputmanager_GetInputTotal(struct avdl_inputmanager *o) {
 	return o->input_total;
 }
 
-int avdl_input_GetButton(struct AvdlInput *o, int index) {
-	if (index >= avdl_input_GetInputTotal(o)) {
-		return 0;
+int avdl_inputmanager_ClearInput(struct avdl_inputmanager *o) {
+	for (int i = 0; i < o->input_total; i++) {
+		if (o->input[i].button == AVDL_INPUT_DROPFILE) {
+			avdl_string_clean(&o->input[i].filename);
+		}
 	}
-	return o->input[index].button;
-}
-
-int avdl_input_GetState(struct AvdlInput *o, int index) {
-	if (index >= avdl_input_GetInputTotal(o)) {
-		return 0;
-	}
-	return o->input[index].state;
-}
-
-int avdl_input_ClearInput(struct AvdlInput *o) {
 	o->input_total = 0;
 	return 0;
 }
 
-int avdl_input_AddInput(struct AvdlInput *o, int button, int state) {
+int avdl_inputmanager_AddInputDropfile(struct avdl_inputmanager *o, const char *filename) {
+	if (o->input_total >= AVDL_INPUT_KEYS_MAXIMUM) {
+		return -1;
+	}
+	avdl_string_create(&o->input[o->input_total].filename);
+	avdl_string_SetMaxCharacters(&o->input[o->input_total].filename, strlen(filename));
+	avdl_string_cat(&o->input[o->input_total].filename, filename);
+	o->input[o->input_total].button = AVDL_INPUT_DROPFILE;
+	o->input[o->input_total].state = AVDL_INPUT_STATE_DOWN;
+	o->input_total++;
+	return 0;
+}
+
+int avdl_inputmanager_AddInput(struct avdl_inputmanager *o, int button, int state) {
 	if (o->input_total >= AVDL_INPUT_KEYS_MAXIMUM) {
 		return -1;
 	}
@@ -289,7 +310,7 @@ int avdl_input_AddInput(struct AvdlInput *o, int button, int state) {
 	return 0;
 }
 
-int avdl_input_AddInputLocation(struct AvdlInput *o, int button, int state, int x, int y) {
+int avdl_inputmanager_AddInputLocation(struct avdl_inputmanager *o, int button, int state, int x, int y) {
 	if (o->input_total >=AVDL_INPUT_KEYS_MAXIMUM) {
 		return -1;
 	}
@@ -301,16 +322,16 @@ int avdl_input_AddInputLocation(struct AvdlInput *o, int button, int state, int 
 	return 0;
 }
 
-int avdl_input_AddPassiveMotion(struct AvdlInput *o, int x, int y) {
+int avdl_inputmanager_AddPassiveMotion(struct avdl_inputmanager *o, int x, int y) {
 	o->loc_x = x;
 	o->loc_y = y;
 	return 0;
 }
 
-int avdl_input_GetX(struct AvdlInput *o) {
+int avdl_inputmanager_GetX(struct avdl_inputmanager *o) {
 	return o->loc_x;
 }
 
-int avdl_input_GetY(struct AvdlInput *o) {
+int avdl_inputmanager_GetY(struct avdl_inputmanager *o) {
 	return o->loc_y;
 }
