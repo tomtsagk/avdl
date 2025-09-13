@@ -105,7 +105,7 @@ extern ComPtr<ID3D11DepthStencilView> avdl_depthBuffer;
 
 extern int dd_flag_exit;
 
-int avdl_engine_init(struct avdl_engine *o) {
+int avdl_engine_init(struct avdl_engine *o, struct avdl_dynamic_array *args) {
 
 	o->isPaused = 1;
 	o->cworld = 0;

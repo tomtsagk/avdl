@@ -115,7 +115,7 @@ struct avdl_engine {
 	#endif
 };
 
-int avdl_engine_init(struct avdl_engine *o);
+int avdl_engine_init(struct avdl_engine *o, struct avdl_dynamic_array *args);
 int avdl_engine_initWorld(struct avdl_engine *o, void (*constructor)(struct dd_world*), int size);
 int avdl_engine_clean(struct avdl_engine *o);
 int avdl_engine_draw(struct avdl_engine *o);

@@ -107,11 +107,11 @@ extern GLuint currentProgram;
 
 extern int avdl_use_default_locale;
 
-int avdl_engine_init(struct avdl_engine *o) {
+int avdl_engine_init(struct avdl_engine *o, struct avdl_dynamic_array *args) {
 
 	// initialise pre-game data to defaults then to game-specifics
 	dd_gameInitDefault();
-	dd_gameInit();
+	dd_gameInit(args);
 
 	// no default world selected - just exit
 	if (dd_default_world_constructor == 0) {

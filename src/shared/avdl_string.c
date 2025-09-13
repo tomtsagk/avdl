@@ -99,7 +99,7 @@ void avdl_string_clean(struct avdl_string *o) {
 	o->errorCode = -1;
 }
 
-int avdl_string_endsIn(struct avdl_string *o, const char *endingString) {
+int avdl_string_EndsIn(struct avdl_string *o, const char *endingString) {
 
 	if (o->errorCode) {
 		return 0;
@@ -120,7 +120,7 @@ void avdl_string_replaceEnding(struct avdl_string *o, const char *fromEnding, co
 	}
 
 	// doesn't end in expected strings - do nothing
-	if ( !avdl_string_endsIn(o, fromEnding) ) {
+	if ( !avdl_string_EndsIn(o, fromEnding) ) {
 		return;
 	}
 
@@ -211,4 +211,39 @@ int avdl_string_incrementEndingInt(struct avdl_string *o) {
 	avdl_string_incrementIndexInt(o, length-1);
 
 	return 0;
+}
+
+int avdl_string_IsEmpty(struct avdl_string *o) {
+	return avdl_da_count(&o->string) == 1;
+}
+
+int avdl_string_Dirname(struct avdl_string *o) {
+
+	char *last_slash = strrchr(avdl_string_toCharPtr(o), '/');
+	char *last_backslash = strrchr(avdl_string_toCharPtr(o), '\\');
+
+	// TODO edge cases not yet handled:
+	// * Ends with slash: /my/path/
+	// * "." should be ignored: /my/./path
+	// * ".." should remove an extra path: /my/../path
+
+	// find last separator
+	char *last_sep = last_slash;
+	if (last_backslash && (last_slash == 0 || last_backslash > last_slash)) {
+		last_sep = last_backslash;
+	}
+
+	// last separator exist, remove everything after it
+	if (last_sep) {
+		last_sep++;
+		avdl_da_remove(&o->string, strlen(last_sep), last_sep -avdl_string_toCharPtr(o));
+		return 0;
+	}
+	// no slashes means it's a local file
+	else {
+		avdl_string_empty(o);
+		avdl_string_cat(o, "./");
+	}
+
+	return -1;
 }

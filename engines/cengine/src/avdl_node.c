@@ -121,6 +121,7 @@ int avdl_node_RemoveChild(struct avdl_node *o, struct avdl_node *targetChild) {
 		avdl_node_clean(child);
 		avdl_da_remove(&o->children, 1, i);
 		free(child);
+		break;
 	}
 
 	return 0;

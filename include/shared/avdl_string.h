@@ -21,13 +21,16 @@ char *avdl_string_getError(struct avdl_string *o);
 char *avdl_string_toCharPtr(struct avdl_string *o);
 void avdl_string_clean(struct avdl_string *o);
 
-int avdl_string_endsIn(struct avdl_string *o, const char *endingString);
+int avdl_string_EndsIn(struct avdl_string *o, const char *endingString);
 void avdl_string_replaceEnding(struct avdl_string *o, const char *fromEnding, const char *toEnding);
 int avdl_string_endsInInt(struct avdl_string *o);
 int avdl_string_incrementEndingInt(struct avdl_string *o);
 
 void avdl_string_copy(struct avdl_string *o, struct avdl_string *target);
 
+int avdl_string_IsEmpty(struct avdl_string *o);
 void avdl_string_empty(struct avdl_string *o);
+
+int avdl_string_Dirname(struct avdl_string *o);
 
 #endif

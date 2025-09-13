@@ -553,7 +553,7 @@ void android_main(struct android_app* androidApp) {
 	dd_height = height;
 	engine.input.session = engine.session;
 	engine.input.instance = instance;
-	avdl_engine_init(&engine);
+	avdl_engine_init(&engine, 0);
 	avdl_engine_initWorld(&engine, dd_default_world_constructor, dd_default_world_size);
 	//avdl_state_initialised = 1;
 

@@ -407,6 +407,9 @@ void struct_table_init() {
 	struct_table_push_member("cat", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("copy", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("empty", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("IsEmpty", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("EndsIn", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("Dirname", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_input", 0);
 	struct_table_push_member("GetButton", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);

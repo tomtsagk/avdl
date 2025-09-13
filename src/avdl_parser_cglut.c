@@ -638,9 +638,14 @@ static void print_command_definition(FILE *fd, struct ast_node *n) {
 
 	// initialise local variable
 	if (!dd_variable_type_isPrimitiveType(type->lex) && !n->isExtern && !n->isRef && !n->isStruct) {
-		fprintf(fd, "%s_create(%s", type->lex, n->isRef ? "" : "&");
-		print_identifier(fd, defname, 0);
-		fprintf(fd, ");\n");
+		// do not initialise public variables
+		if (n->parent && n->parent->node_type == AST_GAME) {
+		}
+		else {
+			fprintf(fd, "%s_create(%s", type->lex, n->isRef ? "" : "&");
+			print_identifier(fd, defname, 0);
+			fprintf(fd, ");\n");
+		}
 	}
 }
 

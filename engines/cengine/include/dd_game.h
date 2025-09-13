@@ -2,6 +2,7 @@
 #define DD_GAME_H
 
 #include "avdl_ray3.h"
+#include "shared/avdl_dynamic_array.h"
 
 #if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 #include "avdl_graphics.h"
@@ -26,7 +27,7 @@ extern float dd_clearcolor_r, dd_clearcolor_g, dd_clearcolor_b;
 
 // initialise all pre-game data
 void dd_gameInitDefault();
-extern void dd_gameInit();
+extern void dd_gameInit(struct avdl_dynamic_array *args);
 
 // game title and function to change it
 extern char *gameTitle;

@@ -332,7 +332,7 @@ int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirNa
 	avdl_string_SetMaxCharacters(&avdlHeaders, 4000);
 	for (int i = 0; i < avdl_da_count(&cengineHeaders); i++) {
 		struct avdl_string *str = avdl_da_get(&cengineHeaders, i);
-		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
+		if (!avdl_string_EndsIn(str, ".c") && !avdl_string_EndsIn(str, ".cpp")) {
 			continue;
 		}
 		avdl_string_cat(&avdlHeaders, "    <ClInclude Include=\"avdl_src/");
@@ -365,7 +365,7 @@ int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirNa
 	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
 
-		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
+		if (!avdl_string_EndsIn(str, ".c") && !avdl_string_EndsIn(str, ".cpp")) {
 			continue;
 		}
 		avdl_string_cat(&avdlSrc, "    <ClCompile Include=\"avdl_src/");
@@ -921,7 +921,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 		struct avdl_string *str = avdl_da_get(&srcFiles, i);
 
 		// only avdl `.dd` files
-		if (!avdl_string_endsIn(str, ".dd") && !avdl_string_endsIn(str, ".json")) {
+		if (!avdl_string_EndsIn(str, ".dd") && !avdl_string_EndsIn(str, ".json")) {
 			/*
 			avdl_log("---");
 			avdl_log("read: %s", avdl_string_toCharPtr(str));
@@ -947,7 +947,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 
-		if (avdl_string_endsIn(str, ".json")) {
+		if (avdl_string_EndsIn(str, ".json")) {
 
 			struct avdl_string ddFilePath;
 			avdl_string_create(&ddFilePath);
@@ -1113,7 +1113,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		struct avdl_string *str = avdl_da_get(&srcFiles, i);
 
 		// skip non `.c` files
-		if (!avdl_string_endsIn(str, ".c")) {
+		if (!avdl_string_EndsIn(str, ".c")) {
 			continue;
 		}
 
@@ -1319,7 +1319,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
 
-		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
+		if (!avdl_string_EndsIn(str, ".c") && !avdl_string_EndsIn(str, ".cpp")) {
 			continue;
 		}
 
@@ -1327,7 +1327,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		avdl_string_create(&cEngFile);
 		avdl_string_SetMaxCharacters(&cEngFile, 1024);
 		avdl_string_cat(&cEngFile, avdl_string_toCharPtr(str));
-		if (avdl_string_endsIn(&cEngFile, ".cpp")) {
+		if (avdl_string_EndsIn(&cEngFile, ".cpp")) {
 			strcpy(compile_command, "g++ -c -DGLEW_NO_GLU ");
 		}
 		else {
@@ -1370,7 +1370,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		avdl_string_cat(&cenginePathOut, outdir);
 		avdl_string_cat(&cenginePathOut, "cengine/");
 		avdl_string_cat(&cenginePathOut, avdl_string_toCharPtr(str));
-		if (avdl_string_endsIn(&cenginePathOut, ".cpp")) {
+		if (avdl_string_EndsIn(&cenginePathOut, ".cpp")) {
 			avdl_string_replaceEnding(&cenginePathOut, ".cpp", ".o");
 		}
 		else {
@@ -1530,7 +1530,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
 
-		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
+		if (!avdl_string_EndsIn(str, ".c") && !avdl_string_EndsIn(str, ".cpp")) {
 			continue;
 		}
 
@@ -1540,11 +1540,11 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		avdl_string_create(&tempfile);
 		avdl_string_SetMaxCharacters(&tempfile, 1024);
 		avdl_string_cat(&tempfile, avdl_string_toCharPtr(str));
-		if (avdl_string_endsIn(&tempfile, ".cpp")) {
+		if (avdl_string_EndsIn(&tempfile, ".cpp")) {
 			avdl_string_replaceEnding(&tempfile, ".cpp", ".o");
 		}
 		else
-		if (avdl_string_endsIn(&tempfile, ".c")) {
+		if (avdl_string_EndsIn(&tempfile, ".c")) {
 			avdl_string_replaceEnding(&tempfile, ".c", ".o");
 		}
 		avdl_string_cat(&link_cmd, avdl_string_toCharPtr(&tempfile));
@@ -1931,13 +1931,13 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		if (avdl_settings->target_platform == AVDL_PLATFORM_ANDROID) {
 			char *assetDir;
 
-			if (avdl_string_endsIn(str, ".wav")
-			||  avdl_string_endsIn(str, ".ogg")) {
+			if (avdl_string_EndsIn(str, ".wav")
+			||  avdl_string_EndsIn(str, ".ogg")) {
 				assetDir = "res/raw";
 			}
 			else
-			if (avdl_string_endsIn(str, ".bmp")
-			||  avdl_string_endsIn(str, ".png")) {
+			if (avdl_string_EndsIn(str, ".bmp")
+			||  avdl_string_EndsIn(str, ".png")) {
 				assetDir = "res/drawable-nodpi";
 			}
 			else {
@@ -1979,13 +1979,13 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		if (avdl_settings->target_platform == AVDL_PLATFORM_QUEST2) {
 			char *assetDir = "";
 
-			if (avdl_string_endsIn(str, ".ogg")
-			||  avdl_string_endsIn(str, ".wav")) {
+			if (avdl_string_EndsIn(str, ".ogg")
+			||  avdl_string_EndsIn(str, ".wav")) {
 				assetDir = "res/raw";
 			}
 			else
-			if (avdl_string_endsIn(str, ".bmp")
-			||  avdl_string_endsIn(str, ".png")) {
+			if (avdl_string_EndsIn(str, ".bmp")
+			||  avdl_string_EndsIn(str, ".png")) {
 				assetDir = "res/drawable";
 			}
 			else {
@@ -2134,7 +2134,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 			}
 
 			// images (textures)
-			if (avdl_string_endsIn(str, ".png")) {
+			if (avdl_string_EndsIn(str, ".png")) {
 				avdl_string_cat(&assetFilesStr, "  <ItemGroup>\n");
 				avdl_string_cat(&assetFilesStr, "    <ImageContentTask Include=\"assets/");
 				avdl_string_cat(&assetFilesStr, avdl_string_toCharPtr(str));
@@ -2149,9 +2149,9 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 			// json (localisation)
 			// ply (3d meshes)
 			// ttf (fonts)
-			if (avdl_string_endsIn(str, ".json")
-			||  avdl_string_endsIn(str, ".ply")
-			||  avdl_string_endsIn(str, ".ttf")) {
+			if (avdl_string_EndsIn(str, ".json")
+			||  avdl_string_EndsIn(str, ".ply")
+			||  avdl_string_EndsIn(str, ".ttf")) {
 				avdl_string_cat(&assetFilesStr, "  <ItemGroup>\n");
 				avdl_string_cat(&assetFilesStr, "    <CopyFileToFolders Include=\"assets/");
 				avdl_string_cat(&assetFilesStr, avdl_string_toCharPtr(str));
@@ -2470,7 +2470,7 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&objFiles, i);
 
-		if (!avdl_string_endsIn(str, ".c")) {
+		if (!avdl_string_EndsIn(str, ".c")) {
 			continue;
 		}
 		else {
@@ -3043,7 +3043,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 			continue;
 		}
 
-		if (!avdl_string_endsIn(str, ".c")) {
+		if (!avdl_string_EndsIn(str, ".c")) {
 			avdl_da_remove(&objFiles, 1, i);
 			i--;
 		}
@@ -3227,7 +3227,7 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
 	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&objFiles, i);
-		if (!avdl_string_endsIn(str, ".c")) {
+		if (!avdl_string_EndsIn(str, ".c")) {
 			continue;
 		}
 		else {
@@ -3427,7 +3427,7 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 	avdl_string_SetMaxCharacters(&avdl_src, 5024);
 	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
-		if (!avdl_string_endsIn(str, ".c") && !avdl_string_endsIn(str, ".cpp")) {
+		if (!avdl_string_EndsIn(str, ".c") && !avdl_string_EndsIn(str, ".cpp")) {
 			continue;
 		}
 		avdl_string_cat(&avdl_src, "cengine/");
@@ -3446,7 +3446,7 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &srcFiles);
 	for (int i = 0; i < avdl_da_count(&srcFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&srcFiles, i);
-		if (!avdl_string_endsIn(str, ".dd.c")) {
+		if (!avdl_string_EndsIn(str, ".dd.c")) {
 			avdl_da_remove(&srcFiles, 1, i);
 			i--;
 		}

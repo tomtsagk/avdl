@@ -90,6 +90,11 @@ extern struct avdl_engine engine;
 
 int dd_main(int argc, char *argv[]) {
 
+	// save any arguments that were not addressed by default behaviour and pass it to the game
+	struct avdl_dynamic_array args;
+	avdl_dynamic_array_create(&args);
+	avdl_da_init(&args, sizeof(struct avdl_string));
+
 	#ifdef AVDL_DIRECT3D11
 	#else
 	/*
@@ -127,6 +132,18 @@ int dd_main(int argc, char *argv[]) {
 		if (strcmp(argv[i], "-q") == 0) {
 			engine.quiet = 1;
 		}
+		// argument not addressed by default, pass it to the engine
+		else {
+			// first argument is the executable, don't pass that to the engine
+			if (i == 0) {
+				continue;
+			}
+			avdl_da_pushEmpty(&args);
+			struct avdl_string *s = avdl_da_get(&args, -1);
+			avdl_string_create(s);
+			avdl_string_SetMaxCharacters(s, 1024);
+			avdl_string_cat(s, argv[i]);
+		}
 
 	}
 	#endif
@@ -152,10 +169,16 @@ int dd_main(int argc, char *argv[]) {
 	#endif
 
 	// initialise engine
-	if (avdl_engine_init(&engine)) {
+	if (avdl_engine_init(&engine, &args)) {
 		avdl_log("avdl: error initialising engine");
 		return -1;
 	}
+	for (int i = 0; i < avdl_da_count(&args); i++) {
+		struct avdl_string *s = avdl_da_get(&args, i);
+		avdl_string_clean(s);
+	}
+	avdl_dynamic_array_clean(&args);
+
 	if (!dd_default_world_constructor) {
 		return 0;
 	}
