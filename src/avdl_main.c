@@ -921,7 +921,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 		struct avdl_string *str = avdl_da_get(&srcFiles, i);
 
 		// only avdl `.dd` files
-		if (!avdl_string_EndsIn(str, ".dd") && !avdl_string_EndsIn(str, ".json")) {
+		if (!avdl_string_EndsIn(str, ".dd") && !avdl_string_EndsIn(str, ".avdl_node")) {
 			/*
 			avdl_log("---");
 			avdl_log("read: %s", avdl_string_toCharPtr(str));
@@ -947,14 +947,14 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 
-		if (avdl_string_EndsIn(str, ".json")) {
+		if (avdl_string_EndsIn(str, ".avdl_node")) {
 
 			struct avdl_string ddFilePath;
 			avdl_string_create(&ddFilePath);
 			avdl_string_SetMaxCharacters(&ddFilePath, 1024);
 			avdl_string_cat(&ddFilePath, cache_dir);
 			avdl_string_cat(&ddFilePath, avdl_string_toCharPtr(str));
-			avdl_string_replaceEnding(&ddFilePath, ".json", ".dd");
+			avdl_string_replaceEnding(&ddFilePath, ".avdl_node", ".dd");
 			if ( !avdl_string_isValid(&ddFilePath) ) {
 				avdl_log_error("cannot construct path of json to dd: '%s%s': %s",
 					avdl_settings->src_dir, avdl_string_toCharPtr(str),
