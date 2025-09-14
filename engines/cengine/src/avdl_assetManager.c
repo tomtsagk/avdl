@@ -78,6 +78,8 @@ static int lockLoading;
 static int interruptLoading;
 static int exitLoading;
 
+struct avdl_string avdl_custom_asset_location;
+
 void avdl_assetManager_init() {
 	avdl_da_init(&meshesToLoad , sizeof(struct dd_meshToLoad));
 	avdl_da_init(&meshesLoading, sizeof(struct dd_meshToLoad));
@@ -89,6 +91,10 @@ void avdl_assetManager_init() {
 
 	// texture cache
 	avdl_da_init(&textureCache, sizeof(struct avdl_texture_data *));
+
+	//avdl_log("init avdl custom asset location");
+	avdl_string_create(&avdl_custom_asset_location);
+	avdl_string_SetMaxCharacters(&avdl_custom_asset_location, 1024);
 }
 
 void avdl_assetManager_deinit() {
@@ -228,8 +234,11 @@ int avdl_assetManager_AddLoadOperationLocal(void *object, const char *assetname,
 	}
 	//avdl_log("add android asset: %s\n", meshToLoad.filename);
 	#else
+	if (!avdl_string_IsEmpty(&avdl_custom_asset_location)) {
+		strcpy(meshToLoad.filename, avdl_string_toCharPtr(&avdl_custom_asset_location));
+	}
 	strcpy(meshToLoad.filename, assetname);
-	//avdl_log("add asset: %s", meshToLoad.filename);
+	//avdl_log("add load operation asset: %s", meshToLoad.filename);
 	#endif
 	avdl_da_push(&meshesToLoad, &meshToLoad);
 	//#endif
@@ -336,6 +345,9 @@ int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname
 	strcpy(meshToLoad.filename, assetname);
 	//avdl_log("add android asset: %s\n", meshToLoad.filename);
 	#else
+	if (!avdl_string_IsEmpty(&avdl_custom_asset_location)) {
+		strcpy(meshToLoad.filename, avdl_string_toCharPtr(&avdl_custom_asset_location));
+	}
 	strcpy(meshToLoad.filename, assetname);
 	//printf("add asset: %s\n", meshToLoad.filename);
 	//avdl_log("add asset: %s", meshToLoad.filename);
@@ -629,4 +641,9 @@ void avdl_assetManager_clear() {
 
 void avdl_assetManager_setPercentage(float percentage) {
 	desiredLoadedPercentage = percentage;
+}
+
+void avdl_assetManager_SetCustomAssetLocation(struct avdl_string *newlocation) {
+	avdl_string_empty(&avdl_custom_asset_location);
+	avdl_string_cat(&avdl_custom_asset_location, avdl_string_toCharPtr(newlocation));
 }

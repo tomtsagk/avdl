@@ -57,6 +57,9 @@ void avdl_assetManager_clear();
 
 void avdl_assetManager_setPercentage(float percentage);
 
+// optional custom project location
+void avdl_assetManager_SetCustomAssetLocation(struct avdl_string *newlocation);
+
 #ifdef __cplusplus
 }
 #endif

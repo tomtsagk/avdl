@@ -219,6 +219,13 @@ int avdl_string_IsEmpty(struct avdl_string *o) {
 
 int avdl_string_Dirname(struct avdl_string *o) {
 
+	// remove all trailing "/"
+	while (avdl_string_EndsIn(o, "/")) {
+		int position = o->string.elements -2;
+		avdl_da_remove(&o->string, 2, position);
+		avdl_da_add(&o->string, "\0", 1, position);
+	}
+
 	char *last_slash = strrchr(avdl_string_toCharPtr(o), '/');
 	char *last_backslash = strrchr(avdl_string_toCharPtr(o), '\\');
 
