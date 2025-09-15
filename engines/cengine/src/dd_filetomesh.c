@@ -30,13 +30,20 @@ extern AAssetManager *aassetManager;
 int dd_load_ply(struct dd_loaded_mesh *m, const char *asset, int settings);
 
 /* Select the right function depending on file_type */
-int dd_filetomesh(struct dd_loaded_mesh *m, const char *asset, int settings, int file_type) {
+int dd_filetomesh(struct dd_loaded_mesh *m, const char *asset, int settings) {
 
-	switch (file_type) {
-		case DD_PLY: return dd_load_ply(m, asset, settings);
-		case AVDL_GLTF: return avdl_load_gltf(m, asset, settings);
-		default: avdl_log("dd_filetomesh: unsupported file format with id: %d", file_type);
+	const char *cend = asset;
+	cend += strlen(asset);
+
+	if (strcmp(cend -strlen(".ply"), ".ply") == 0) {
+		return dd_load_ply(m, asset, settings);
 	}
+	else
+	if (strcmp(cend -strlen(".glb"), ".glb") == 0) {
+		return avdl_load_gltf(m, asset, settings);
+	}
+
+	avdl_log("dd_filetomesh: unsupported file format: %s", asset);
 
 	return -1;
 }
@@ -100,14 +107,20 @@ int dd_load_ply(struct dd_loaded_mesh *m, const char *path, int settings);
 int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings);
 
 /* Select the right function depending on file_type */
-int dd_filetomesh(struct dd_loaded_mesh *m, const char *path, int settings, int file_type) {
+int dd_filetomesh(struct dd_loaded_mesh *m, const char *asset, int settings) {
 
-	switch (file_type) {
-		//case DD_PLY: return dd_load_ply(m, path, settings);
-		case AVDL_GLTF: return avdl_load_gltf(m, path, settings);
-		case DD_PLY: return avdl_load_ply(m, path, settings);
-		case DD_OBJ: return dd_load_obj(m, path, settings);
+	const char *cend = asset;
+	cend += strlen(asset);
+
+	if (strcmp(cend -strlen(".ply"), ".ply") == 0) {
+		return avdl_load_ply(m, asset, settings);
 	}
+	else
+	if (strcmp(cend -strlen(".glb"), ".glb") == 0) {
+		return avdl_load_gltf(m, asset, settings);
+	}
+
+	avdl_log("dd_filetomesh: unsupported file format: %s", asset);
 
 	return -1;
 }

@@ -692,23 +692,23 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 /*
  * add the mesh to be loaded from the asset manager
  */
-void avdl_mesh_load(struct avdl_mesh *m, const char *asset, int type) {
+void avdl_mesh_load(struct avdl_mesh *m, const char *asset) {
 
 	// clean the mesh, if was dirty
 	avdl_mesh_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH2, asset, type, 0);
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESH2, asset, 0);
 
 }
 
-void avdl_mesh_loadLocal(struct avdl_mesh *m, const char *asset, int type) {
+void avdl_mesh_loadLocal(struct avdl_mesh *m, const char *asset) {
 
 	// clean the mesh, if was dirty
 	avdl_mesh_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_addLocal(m, AVDL_ASSETMANAGER_MESH2, asset, type, 0);
+	avdl_assetManager_addLocal(m, AVDL_ASSETMANAGER_MESH2, asset, 0);
 
 }
 

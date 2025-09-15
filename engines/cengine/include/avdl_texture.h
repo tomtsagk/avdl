@@ -33,8 +33,8 @@ void avdl_texture_bind(struct avdl_texture *o);
 void avdl_texture_bindIndex(struct avdl_texture *o, int index);
 void avdl_texture_unbind(struct avdl_texture *o);
 void avdl_texture_unbindIndex(struct avdl_texture *o, int index);
-void avdl_texture_set(struct avdl_texture *o, const char *filename, int type);
-void avdl_texture_setLocal(struct avdl_texture *o, const char *filename, int type);
+void avdl_texture_set(struct avdl_texture *o, const char *filename);
+void avdl_texture_setLocal(struct avdl_texture *o, const char *filename);
 
 void avdl_texture_clean(struct avdl_texture *o);
 

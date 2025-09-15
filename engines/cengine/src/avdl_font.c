@@ -402,7 +402,7 @@ extern jclass *clazz;
 
 extern const char* getAppLocation(void);
 
-void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outline_thickness) {
+void avdl_font_set(struct avdl_font *o, const char *name, int outline_thickness) {
 
 	CleanFontData(o);
 	CleanFontFace(o);
@@ -434,7 +434,7 @@ void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outl
 	char* appLoc = getAppLocation();
 	char buffer[10000];
 	strcpy_s(buffer, 10000, appLoc);
-	strcat_s(buffer, 10000, "/");
+	strcat_s(buffer, 10000, "/assets/");
 	strcat_s(buffer, 10000, name);
 	assetName = buffer;
 	#else
@@ -445,6 +445,7 @@ void avdl_font_set(struct avdl_font *o, const char *name, int filetype, int outl
 	strcpy(buffer, avdl_getProjectLocation());
 	strcat(buffer, "/");
 	strcat(buffer, GAME_ASSET_PREFIX);
+	strcat(buffer, "/assets/");
 	strcat(buffer, name);
 	assetName = buffer;
 	#endif

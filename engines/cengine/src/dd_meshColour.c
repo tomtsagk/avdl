@@ -191,7 +191,7 @@ void dd_meshColour_load(struct dd_meshColour *m, const char *asset, int type) {
 	dd_meshColour_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHCOLOUR, asset, type, 0);
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHCOLOUR, asset, 0);
 }
 
 void dd_meshColour_copy(struct dd_meshColour *dest, struct dd_meshColour *src) {

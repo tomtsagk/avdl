@@ -134,12 +134,12 @@ void avdl_texture_unbindIndex(struct avdl_texture *o, int index) {
 	avdl_graphics_BindTextureIndex(0, index);
 }
 
-void avdl_texture_set(struct avdl_texture *o, const char *filename, int type) {
+void avdl_texture_set(struct avdl_texture *o, const char *filename) {
 	CleanData(o);
 	avdl_assetManager_AddLoadOperation(o, filename, GetDataFromFile, SetData);
 }
 
-void avdl_texture_setLocal(struct avdl_texture *o, const char *filename, int type) {
+void avdl_texture_setLocal(struct avdl_texture *o, const char *filename) {
 	CleanData(o);
 	#ifdef AVDL_DIRECT3D11
 	avdl_assetManager_AddLoadOperation(o, filename, GetDataFromFile, SetData);

@@ -141,7 +141,6 @@ int avdl_assetManager_AddLoadOperation(void *object, const char *assetname, void
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
-	meshToLoad.type = type;
 	strcpy_s(meshToLoad.filename, 300, assetname);
 	avdl_da_push(&meshesToLoad, &meshToLoad);
 	*/
@@ -150,7 +149,6 @@ int avdl_assetManager_AddLoadOperation(void *object, const char *assetname, void
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = -1;
-	meshToLoad.type = -1;
 	meshToLoad.loadOperation = loadOperation;
 	meshToLoad.callback = callback;
 	#if defined(_WIN32) || defined(WIN32)
@@ -174,7 +172,9 @@ int avdl_assetManager_AddLoadOperation(void *object, const char *assetname, void
 	//avdl_log("add android asset: %s\n", meshToLoad.filename);
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
+	strcat(meshToLoad.filename, "/");
 	strcat(meshToLoad.filename, GAME_ASSET_PREFIX);
+	strcat(meshToLoad.filename, "/assets/");
 	strcat(meshToLoad.filename, assetname);
 	//avdl_log("add asset: %s", meshToLoad.filename);
 	#endif
@@ -202,7 +202,6 @@ int avdl_assetManager_AddLoadOperationLocal(void *object, const char *assetname,
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
-	meshToLoad.type = type;
 	strcpy_s(meshToLoad.filename, 300, assetname);
 	avdl_da_push(&meshesToLoad, &meshToLoad);
 	*/
@@ -211,7 +210,6 @@ int avdl_assetManager_AddLoadOperationLocal(void *object, const char *assetname,
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = -1;
-	meshToLoad.type = -1;
 	meshToLoad.loadOperation = loadOperation;
 	meshToLoad.callback = callback;
 	#if defined(_WIN32) || defined(WIN32)
@@ -236,8 +234,13 @@ int avdl_assetManager_AddLoadOperationLocal(void *object, const char *assetname,
 	#else
 	if (!avdl_string_IsEmpty(&avdl_custom_asset_location)) {
 		strcpy(meshToLoad.filename, avdl_string_toCharPtr(&avdl_custom_asset_location));
+		strcat(meshToLoad.filename, "/assets/");
+		strcat(meshToLoad.filename, assetname);
 	}
-	strcpy(meshToLoad.filename, assetname);
+	else {
+		strcpy(meshToLoad.filename, "assets/");
+		strcat(meshToLoad.filename, assetname);
+	}
 	//avdl_log("add load operation asset: %s", meshToLoad.filename);
 	#endif
 	avdl_da_push(&meshesToLoad, &meshToLoad);
@@ -248,7 +251,7 @@ int avdl_assetManager_AddLoadOperationLocal(void *object, const char *assetname,
 	return 0;
 }
 
-int avdl_assetManager_add(void *object, int meshType, const char *assetname, int type, int (*callback)(void *obj, void *data)) {
+int avdl_assetManager_add(void *object, int meshType, const char *assetname, int (*callback)(void *obj, void *data)) {
 	if (lockLoading) {
 		return -1;
 	}
@@ -263,7 +266,6 @@ int avdl_assetManager_add(void *object, int meshType, const char *assetname, int
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
-	meshToLoad.type = type;
 	strcpy_s(meshToLoad.filename, 300, assetname);
 	avdl_da_push(&meshesToLoad, &meshToLoad);
 	#else
@@ -271,35 +273,30 @@ int avdl_assetManager_add(void *object, int meshType, const char *assetname, int
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
-	meshToLoad.type = type;
 	meshToLoad.callback = callback;
+	meshToLoad.loadOperation = 0;
 	#if defined(_WIN32) || defined(WIN32)
-	strcpy(meshToLoad.filename, assetname);
+	strcpy(meshToLoad.filename, "assets/");
+	strcat(meshToLoad.filename, assetname);
 	//avdl_log("add asset: %s\n", meshToLoad.filename);
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	char prefix[] = "assets/";
-	if (strncmp(assetname, prefix, strlen(prefix)) == 0) {
-		char *assetnameShort = assetname +strlen(prefix);
-		char buffer[1024];
-		strcpy(buffer, assetnameShort);
-		char *period = strstr(buffer, ".");
-		if (strcmp(period, ".png") == 0) {
-			period[0] = '\0';
-		}
-		strcpy(meshToLoad.filename, buffer);
+	char buffer[1024];
+	strcpy(buffer, assetname);
+	char *period = strstr(buffer, ".");
+	if (strcmp(period, ".png") == 0) {
+		period[0] = '\0';
 	}
-	else {
-		strcpy(meshToLoad.filename, assetname);
-	}
+	strcpy(meshToLoad.filename, buffer);
 	//avdl_log("add android asset: %s\n", meshToLoad.filename);
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
+	strcat(meshToLoad.filename, "/");
 	strcat(meshToLoad.filename, GAME_ASSET_PREFIX);
+	strcat(meshToLoad.filename, "/assets/");
 	strcat(meshToLoad.filename, assetname);
 	//avdl_log("add asset: %s", meshToLoad.filename);
 	#endif
 
-	meshToLoad.loadOperation = 0;
 	avdl_da_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
@@ -312,7 +309,7 @@ void avdl_assetManager_remove(int index) {
 	avdl_log("remove asset: %d", index);
 }
 
-int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname, int type, int (*callback)(void *obj, void *data)) {
+int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname, int (*callback)(void *obj, void *data)) {
 	if (lockLoading) {
 		return -1;
 	}
@@ -327,7 +324,6 @@ int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
-	meshToLoad.type = type;
 	meshToLoad.callback = callback;
 	strcpy_s(meshToLoad.filename, 300, assetname);
 	avdl_da_push(&meshesToLoad, &meshToLoad);
@@ -336,10 +332,11 @@ int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname
 	struct dd_meshToLoad meshToLoad;
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
-	meshToLoad.type = type;
 	meshToLoad.callback = callback;
+	meshToLoad.loadOperation = 0;
 	#if defined(_WIN32) || defined(WIN32)
-	strcpy(meshToLoad.filename, assetname);
+	strcpy(meshToLoad.filename, "assets/");
+	strcat(meshToLoad.filename, assetname);
 	//avdl_log("add asset: %s\n", meshToLoad.filename);
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	strcpy(meshToLoad.filename, assetname);
@@ -347,12 +344,16 @@ int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname
 	#else
 	if (!avdl_string_IsEmpty(&avdl_custom_asset_location)) {
 		strcpy(meshToLoad.filename, avdl_string_toCharPtr(&avdl_custom_asset_location));
+		strcat(meshToLoad.filename, "/assets/");
+		strcat(meshToLoad.filename, assetname);
 	}
-	strcpy(meshToLoad.filename, assetname);
+	else {
+		strcpy(meshToLoad.filename, "assets/");
+		strcat(meshToLoad.filename, assetname);
+	}
 	//printf("add asset: %s\n", meshToLoad.filename);
 	//avdl_log("add asset: %s", meshToLoad.filename);
 	#endif
-	meshToLoad.loadOperation = 0;
 	avdl_da_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
@@ -421,7 +422,7 @@ void avdl_assetManager_loadAssets() {
 				struct avdl_mesh *mesh = m->object;
 				struct dd_loaded_mesh lm = {0};
 				if (dd_filetomesh(&lm, m->filename,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, m->type) == -1) {
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR) == -1) {
 					// error loading file
 					avdl_log("avdl: error loading mesh2: %s", m->filename);
 				}
@@ -455,7 +456,7 @@ void avdl_assetManager_loadAssets() {
 				struct dd_mesh *mesh = m->object;
 				dd_mesh_clean(mesh);
 				struct dd_loaded_mesh lm;
-				if (dd_filetomesh(&lm, m->filename, DD_FILETOMESH_SETTINGS_POSITION, DD_PLY) == -1) {
+				if (dd_filetomesh(&lm, m->filename, DD_FILETOMESH_SETTINGS_POSITION) == -1) {
 					// error
 				}
 				else {
@@ -471,7 +472,7 @@ void avdl_assetManager_loadAssets() {
 				dd_meshColour_clean(mesh);
 				struct dd_loaded_mesh lm;
 				if (dd_filetomesh(&lm, m->filename,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR, DD_PLY) == -1) {
+					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR) == -1) {
 					// error loading file
 				}
 				else {
@@ -490,7 +491,7 @@ void avdl_assetManager_loadAssets() {
 				struct dd_loaded_mesh lm;
 				if (dd_filetomesh(&lm, m->filename,
 					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
-					| DD_FILETOMESH_SETTINGS_TEX_COORD, DD_PLY) == -1) {
+					| DD_FILETOMESH_SETTINGS_TEX_COORD) == -1) {
 					// error
 				}
 				else {

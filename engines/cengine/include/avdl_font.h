@@ -62,7 +62,7 @@ int avdl_font_deinit();
 void avdl_font_create(struct avdl_font *);
 void avdl_font_clean(struct avdl_font *);
 
-void avdl_font_set(struct avdl_font *, const char *name, int filetype, int outline_thickness);
+void avdl_font_set(struct avdl_font *, const char *name, int outline_thickness);
 
 int avdl_font_registerGlyph(struct avdl_font *, int);
 int avdl_font_releaseGlyph(struct avdl_font *, int);

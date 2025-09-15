@@ -37,11 +37,11 @@ void avdl_terrain_clean(struct avdl_terrain *o) {
 
 void avdl_terrain_load(struct avdl_terrain *o, const char *filename) {
 	//avdl_texture_load_png(&o->img, filename);
-	avdl_texture_set(&o->img, filename, AVDL_IMAGETYPE_PNG);
+	avdl_texture_set(&o->img, filename);
 }
 
 void avdl_terrain_loadLocal(struct avdl_terrain *o, const char *filename) {
-	avdl_texture_setLocal(&o->img, filename, AVDL_IMAGETYPE_PNG);
+	avdl_texture_setLocal(&o->img, filename);
 	//avdl_texture_load_png(&o->img, filename);
 }
 

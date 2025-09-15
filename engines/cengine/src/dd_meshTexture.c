@@ -39,7 +39,7 @@ void dd_meshTexture_load(struct dd_meshTexture *m, const char *filename, int typ
 	dd_meshTexture_clean(m);
 
 	// mark to be loaded
-	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHTEXTURE, filename, type, 0);
+	avdl_assetManager_add(m, AVDL_ASSETMANAGER_MESHTEXTURE, filename, 0);
 
 }
 
