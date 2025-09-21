@@ -79,7 +79,7 @@ void struct_table_init() {
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_texture", 0);
 	struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
-	struct_table_push_member("set", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("Load", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("clean", DD_VARIABLE_TYPE_FUNCTION, 0, 0);
 	struct_table_push("avdl_skybox", 0);
 	struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);

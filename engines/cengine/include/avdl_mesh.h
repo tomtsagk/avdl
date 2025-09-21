@@ -7,7 +7,9 @@ extern "C" {
 
 enum avdl_primitives {
 	AVDL_PRIMITIVE_TRIANGLE,
+	AVDL_PRIMITIVE_TRIANGLE_WIREFRAME,
 	AVDL_PRIMITIVE_RECTANGLE,
+	AVDL_PRIMITIVE_RECTANGLE_WIREFRAME,
 	AVDL_PRIMITIVE_BOX,
 	AVDL_PRIMITIVE_BOX_CORNERS,
 	AVDL_PRIMITIVE_BOX_FLIP,
@@ -17,12 +19,55 @@ enum avdl_primitives {
 #include "avdl_graphics.h"
 #include "dd_matrix.h"
 #include "avdl_texture.h"
-#include "dd_filetomesh.h"
 #include "avdl_vec3.h"
 
 #define TEXTURES_COUNT 5
 
+struct avdl_mesh_data {
+	unsigned int vcount;
+	enum avdl_graphics_vtype verticesType;
+
+	float *v;
+	int dirtyVertices;
+	float *c;
+	float *t;
+	float *n;
+	float *tan;
+	float *bitan;
+	int *boneIds;
+	float *weights;
+	void *indices;
+	enum avdl_graphics_indicetype indicesType;
+	unsigned int indicesCount;
+
+	// animations
+	int boneCount;
+	struct dd_matrix *inverseBindMatrices;
+	struct dd_animation *animations;
+	int animationsCount;
+	int rootIndex;
+	int **children_indices;
+	int *children_indices_count;
+	struct dd_matrix rootMatrix;
+
+	struct avdl_vec3 boundsCenter;
+	struct avdl_vec3 boundsExtend;
+
+	avdl_mesh_id id;
+	avdl_mesh_id buffer;
+	avdl_mesh_id bufferIndices;
+	int graphicsContextId;
+
+	struct avdl_string filename;
+	int uses;
+
+	int hasError;
+};
+
+
 struct avdl_mesh {
+
+	struct avdl_mesh_data *data;
 
 	// number of vertices
 	int vcount;
@@ -76,10 +121,12 @@ struct avdl_mesh {
 	// init mesh
 	void (*clean)(struct avdl_mesh *);
 
-	void (*LoadFromLoadedMesh)(struct avdl_mesh *o, struct dd_loaded_mesh *lm);
-
 	avdl_graphics_mesh* vertexBuffer;
 };
+
+// global data
+void avdl_mesh_InitGlobalData();
+void avdl_mesh_DeinitGlobalData();
 
 // constructor
 void avdl_mesh_create(struct avdl_mesh *);
@@ -113,10 +160,12 @@ void avdl_mesh_SetTypeLine(struct avdl_mesh *o, float lineWidth);
 
 int avdl_mesh_hasTexture(struct avdl_mesh *o);
 
-void avdl_mesh_LoadFromLoadedMesh(struct avdl_mesh *o, struct dd_loaded_mesh *loadedMesh);
+//void avdl_mesh_LoadFromLoadedMesh(struct avdl_mesh *o, struct dd_loaded_mesh *loadedMesh);
 
 struct avdl_vec3 *avdl_mesh_GetBoundsCenter(struct avdl_mesh *o);
 struct avdl_vec3 *avdl_mesh_GetBoundsExtend(struct avdl_mesh *o);
+
+int avdl_mesh_SetCustomData(struct avdl_mesh *o, int vcount, float *pos, float *col, float *tex);
 
 #ifdef __cplusplus
 }

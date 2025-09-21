@@ -36,13 +36,11 @@ void avdl_terrain_clean(struct avdl_terrain *o) {
 }
 
 void avdl_terrain_load(struct avdl_terrain *o, const char *filename) {
-	//avdl_texture_load_png(&o->img, filename);
-	avdl_texture_set(&o->img, filename);
+	avdl_texture_Load(&o->img, filename);
 }
 
 void avdl_terrain_loadLocal(struct avdl_terrain *o, const char *filename) {
-	avdl_texture_setLocal(&o->img, filename);
-	//avdl_texture_load_png(&o->img, filename);
+	avdl_texture_LoadExternal(&o->img, filename);
 }
 
 void avdl_terrain_draw(struct avdl_terrain *o) {
@@ -89,15 +87,10 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			o->heights[i] = (pixels[i*pixelStride] /255.0) *o->scaleZ;
 		}
 
-		o->mesh.vcount = ((o->width -1) *(o->height -1)) *6;
-		o->mesh.v = malloc(sizeof(float) *o->mesh.vcount *3);
-		o->mesh.dirtyVertices = 1;
-		o->mesh.c = malloc(sizeof(float) *o->mesh.vcount *3);
-		o->mesh.dirtyColours = 1;
-		o->mesh.t = malloc(sizeof(float) *o->mesh.vcount *2);
-		o->mesh.dirtyTextures = 1;
-		o->mesh.n = malloc(sizeof(float) *o->mesh.vcount *3);
-		o->mesh.dirtyNormals = 1;
+		int vcount = ((o->width -1) *(o->height -1)) *6;
+		float *v = malloc(sizeof(float) *vcount *3);
+		float *c = malloc(sizeof(float) *vcount *3);
+		float *t = malloc(sizeof(float) *vcount *2);
 
 		for (int x = 0; x < o->width -1; x++)
 		for (int y = 0; y < o->height-1; y++) {
@@ -163,18 +156,18 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			// triangle 1
 
 			// vertex 1 - bottom left
-			o->mesh.v[index +0] = x *1;
-			o->mesh.v[index +1] = (pixels[pixelIndex] /255.0) *o->scaleZ;
-			o->mesh.v[index +2] = y *-1;
-			o->mesh.c[index +0] = 0;
-			o->mesh.c[index +1] = 0;
-			o->mesh.c[index +2] = 0;
+			v[index +0] = x *1;
+			v[index +1] = (pixels[pixelIndex] /255.0) *o->scaleZ;
+			v[index +2] = y *-1;
+			c[index +0] = 0;
+			c[index +1] = 0;
+			c[index +2] = 0;
 			//o->mesh.t[indexT +0] = invertTX ? 1 : 0;
 			//o->mesh.t[indexT +1] = invertTY ? 1 : 0;
 			//o->mesh.t[indexT +0] = fromTX;
 			//o->mesh.t[indexT +1] = fromTY;
-			o->mesh.t[indexT +0] = cornersX[0];
-			o->mesh.t[indexT +1] = cornersY[0];
+			t[indexT +0] = cornersX[0];
+			t[indexT +1] = cornersY[0];
 			/*
 			if (x == 0) {
 				o->mesh.n[index +0] = x *1;
@@ -184,78 +177,80 @@ void avdl_terrain_draw(struct avdl_terrain *o) {
 			*/
 
 			// vertex 2
-			o->mesh.v[index +3] = x *1 +1;
-			o->mesh.v[index +4] = (pixels[pixelIndexTopRight] /255.0) *o->scaleZ;
-			o->mesh.v[index +5] = y *-1 -1;
-			o->mesh.c[index +3] = 0;
-			o->mesh.c[index +4] = 0;
-			o->mesh.c[index +5] = 0;
+			v[index +3] = x *1 +1;
+			v[index +4] = (pixels[pixelIndexTopRight] /255.0) *o->scaleZ;
+			v[index +5] = y *-1 -1;
+			c[index +3] = 0;
+			c[index +4] = 0;
+			c[index +5] = 0;
 			//o->mesh.t[indexT +2] = invertTX ? 0 : 1;
 			//o->mesh.t[indexT +3] = invertTY ? 0 : 1;
 			//o->mesh.t[indexT +2] = toTX;
 			//o->mesh.t[indexT +3] = toTY;
-			o->mesh.t[indexT +2] = cornersX[2];
-			o->mesh.t[indexT +3] = cornersY[2];
+			t[indexT +2] = cornersX[2];
+			t[indexT +3] = cornersY[2];
 
 			// vertex 3
-			o->mesh.v[index +6] = x *1;
-			o->mesh.v[index +7] = (pixels[pixelIndexTop] /255.0) *o->scaleZ;
-			o->mesh.v[index +8] = y *-1 -1;
-			o->mesh.c[index +6] = 0;
-			o->mesh.c[index +7] = 0;
-			o->mesh.c[index +8] = 0;
+			v[index +6] = x *1;
+			v[index +7] = (pixels[pixelIndexTop] /255.0) *o->scaleZ;
+			v[index +8] = y *-1 -1;
+			c[index +6] = 0;
+			c[index +7] = 0;
+			c[index +8] = 0;
 			//o->mesh.t[indexT +4] = invertTX ? 1 : 0;
 			//o->mesh.t[indexT +5] = invertTY ? 0 : 1;
 			//o->mesh.t[indexT +4] = fromTX;
 			//o->mesh.t[indexT +5] = toTY;
-			o->mesh.t[indexT +4] = cornersX[1];
-			o->mesh.t[indexT +5] = cornersY[1];
+			t[indexT +4] = cornersX[1];
+			t[indexT +5] = cornersY[1];
 
 			// triangle 2
 
 			// vertex 1
-			o->mesh.v[index +9] = x *1;
-			o->mesh.v[index +10] = (pixels[pixelIndex] /255.0) *o->scaleZ;
-			o->mesh.v[index +11] = y *-1;
-			o->mesh.c[index +9] = 0;
-			o->mesh.c[index +10] = 0;
-			o->mesh.c[index +11] = 0;
+			v[index +9] = x *1;
+			v[index +10] = (pixels[pixelIndex] /255.0) *o->scaleZ;
+			v[index +11] = y *-1;
+			c[index +9] = 0;
+			c[index +10] = 0;
+			c[index +11] = 0;
 			//o->mesh.t[indexT +6] = invertTX ? 1 : 0;
 			//o->mesh.t[indexT +7] = invertTY ? 1 : 0;
 			//o->mesh.t[indexT +6] = fromTX;
 			//o->mesh.t[indexT +7] = fromTY;
-			o->mesh.t[indexT +6] = cornersX[0];
-			o->mesh.t[indexT +7] = cornersY[0];
+			t[indexT +6] = cornersX[0];
+			t[indexT +7] = cornersY[0];
 
 			// vertex 2
-			o->mesh.v[index +12] = x *1 +1;
-			o->mesh.v[index +13] = (pixels[pixelIndexRight] /255.0) *o->scaleZ;
-			o->mesh.v[index +14] = y *-1;
-			o->mesh.c[index +12] = 0;
-			o->mesh.c[index +13] = 0;
-			o->mesh.c[index +14] = 0;
+			v[index +12] = x *1 +1;
+			v[index +13] = (pixels[pixelIndexRight] /255.0) *o->scaleZ;
+			v[index +14] = y *-1;
+			c[index +12] = 0;
+			c[index +13] = 0;
+			c[index +14] = 0;
 			//o->mesh.t[indexT +8] = invertTX ? 0 : 1;
 			//o->mesh.t[indexT +9] = invertTY ? 1 : 0;
 			//o->mesh.t[indexT +8] = toTX;
 			//o->mesh.t[indexT +9] = fromTY;
-			o->mesh.t[indexT +8] = cornersX[3];
-			o->mesh.t[indexT +9] = cornersY[3];
+			t[indexT +8] = cornersX[3];
+			t[indexT +9] = cornersY[3];
 
 			// vertex 3
-			o->mesh.v[index +15] = x *1 +1;
-			o->mesh.v[index +16] = (pixels[pixelIndexTopRight] /255.0) *o->scaleZ;
-			o->mesh.v[index +17] = y *-1 -1;
-			o->mesh.c[index +15] = 0;
-			o->mesh.c[index +16] = 0;
-			o->mesh.c[index +17] = 0;
+			v[index +15] = x *1 +1;
+			v[index +16] = (pixels[pixelIndexTopRight] /255.0) *o->scaleZ;
+			v[index +17] = y *-1 -1;
+			c[index +15] = 0;
+			c[index +16] = 0;
+			c[index +17] = 0;
 			//o->mesh.t[indexT +10] = invertTX ? 0 : 1;
 			//o->mesh.t[indexT +11] = invertTY ? 0 : 1;
 			//o->mesh.t[indexT +10] = toTX;
 			//o->mesh.t[indexT +11] = toTY;
-			o->mesh.t[indexT +10] = cornersX[2];
-			o->mesh.t[indexT +11] = cornersY[2];
+			t[indexT +10] = cornersX[2];
+			t[indexT +11] = cornersY[2];
 
 		}
+
+		avdl_mesh_SetCustomData(&o->mesh, vcount, v, c, t);
 
 		avdl_texture_clean(&o->img);
 	}

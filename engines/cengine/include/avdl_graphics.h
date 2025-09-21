@@ -52,11 +52,11 @@
 #endif
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
-extern void test_glError(char *file, int line);
-#define GL(line) do { \
-	line;\
-	test_glError(__FILE__, __LINE__);\
-	} while (0);
+extern int test_glError(char *file, int line);
+#define GL(line) \
+	(line,\
+	test_glError(__FILE__, __LINE__)\
+	)
 #endif
 
 #ifdef __cplusplus
@@ -187,6 +187,47 @@ void avdl_graphics_DisableVertexAttribArray(int attrib);
 void avdl_graphics_VertexAttribPointer(int p, int size, int format, int, int, void *data);
 
 void avdl_graphics_DrawArrays(int vcount);
+
+// Types
+#if defined( AVDL_DIRECT3D11 )
+#else
+enum avdl_graphics_indicetype {
+	AVDL_GRAPHICS_INDICETYPE_UBYTE = GL_UNSIGNED_BYTE,
+	AVDL_GRAPHICS_INDICETYPE_USHORT = GL_UNSIGNED_SHORT,
+};
+#endif
+
+// Meshes
+typedef unsigned int avdl_mesh_id;
+#if defined( AVDL_DIRECT3D11 )
+enum avdl_graphics_vtype {
+	// each vertex is a point
+	AVDL_GRAPHICS_VTYPE_POINTS,
+
+	// each two vertices are a line
+	AVDL_GRAPHICS_VTYPE_LINES,      // [0, 1] is a line, [2, 3] is next line
+	AVDL_GRAPHICS_VTYPE_LINE_STRIP, // [0, 1] is a line, [1, 2] is next line
+	AVDL_GRAPHICS_VTYPE_LINE_LOOP,  // Like line strips, but last and first vertices also form a line
+
+	AVDL_GRAPHICS_VTYPE_TRIANGLES,      // 3 separate vertices is a triangle, [0, 1, 2] -> [3, 4, 5]
+	AVDL_GRAPHICS_VTYPE_TRIANGLE_STRIP, // every group of 3 is a triangle, [0, 1, 2] -> [1, 2, 3] etc
+	AVDL_GRAPHICS_VTYPE_TRIANGLE_FAN,   // first vertex is the same, [0, 1, 2] -> [0, 2, 3] etc
+};
+#else
+enum avdl_graphics_vtype {
+	// each vertex is a point
+	AVDL_GRAPHICS_VTYPE_POINTS = GL_POINTS,
+
+	// each two vertices are a line
+	AVDL_GRAPHICS_VTYPE_LINES      = GL_LINES,      // [0, 1] is a line, [2, 3] is next line
+	AVDL_GRAPHICS_VTYPE_LINE_STRIP = GL_LINE_STRIP, // [0, 1] is a line, [1, 2] is next line
+	AVDL_GRAPHICS_VTYPE_LINE_LOOP  = GL_LINE_LOOP,  // Like line strips, but last and first vertices also form a line
+
+	AVDL_GRAPHICS_VTYPE_TRIANGLES      = GL_TRIANGLES,      // 3 separate vertices is a triangle, [0, 1, 2] -> [3, 4, 5]
+	AVDL_GRAPHICS_VTYPE_TRIANGLE_STRIP = GL_TRIANGLE_STRIP, // every group of 3 is a triangle, [0, 1, 2] -> [1, 2, 3] etc
+	AVDL_GRAPHICS_VTYPE_TRIANGLE_FAN   = GL_TRIANGLE_FAN,   // first vertex is the same, [0, 1, 2] -> [0, 2, 3] etc
+};
+#endif
 
 // Textures
 #if defined( AVDL_DIRECT3D11 )

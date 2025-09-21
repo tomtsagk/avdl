@@ -11,36 +11,37 @@
 #include "avdl_engine.h"
 #include "dd_math.h"
 
-void test_glError(char *file, int line) {
+int test_glError(char *file, int line) {
 	GLenum err = glGetError();
 	if (err != GL_NO_ERROR) {
 		switch (err) {
 		case GL_INVALID_ENUM:
 			avdl_log("avdl: opengl error: invalid enum at %s %d", file, line);
-			break;
+			return -1;
 		case GL_INVALID_VALUE:
 			avdl_log("avdl: opengl error: invalid value at %s %d", file, line);
-			break;
+			return -1;
 		case GL_INVALID_OPERATION:
 			avdl_log("avdl: opengl error: invalid operation at %s %d", file, line);
-			break;
+			return -1;
 		case GL_INVALID_FRAMEBUFFER_OPERATION:
 			avdl_log("avdl: opengl error: invalid framebuffer operation at %s %d", file, line);
-			break;
+			return -1;
 		case GL_OUT_OF_MEMORY:
 			avdl_log("avdl: opengl error: out of memory at %s %d", file, line);
-			break;
+			return -1;
 		// are these not present in OpenGL ES (Android)?
 		#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 		case GL_STACK_UNDERFLOW:
 			avdl_log("stack underflow");
-			break;
+			return -1;
 		case GL_STACK_OVERFLOW:
 			avdl_log("stack overflow");
-			break;
+			return -1;
 		#endif
 		}
 	}
+	return 0;
 }
 
 extern struct avdl_engine engine;

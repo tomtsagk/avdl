@@ -1,6 +1,5 @@
 #include "avdl_assetManager.h"
 #include "shared/avdl_dynamic_array.h"
-#include "dd_filetomesh.h"
 #include "shared/avdl_log.h"
 #include <string.h>
 #include <stdlib.h>
@@ -155,20 +154,12 @@ int avdl_assetManager_AddLoadOperation(void *object, const char *assetname, void
 	strcpy(meshToLoad.filename, assetname);
 	//avdl_log("add asset: %s\n", meshToLoad.filename);
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-	char prefix[] = "assets/";
-	if (strncmp(assetname, prefix, strlen(prefix)) == 0) {
-		char *assetnameShort = assetname +strlen(prefix);
-		char buffer[1024];
-		strcpy(buffer, assetnameShort);
-		char *period = strstr(buffer, ".");
-		if (strcmp(period, ".png") == 0) {
-			period[0] = '\0';
-		}
-		strcpy(meshToLoad.filename, buffer);
-	}
-	else {
-		strcpy(meshToLoad.filename, assetname);
-	}
+	struct avdl_string assetstr;
+	avdl_string_create(&assetstr);
+	avdl_string_SetMaxCharacters(&assetstr, 1024);
+	avdl_string_cat(&assetstr, assetname);
+	avdl_string_replaceEnding(&assetstr, ".png", "");
+	strcpy(meshToLoad.filename, avdl_string_toCharPtr(&assetstr));
 	//avdl_log("add android asset: %s\n", meshToLoad.filename);
 	#else
 	strcpy(meshToLoad.filename, avdl_getProjectLocation());
@@ -414,96 +405,6 @@ void avdl_assetManager_loadAssets() {
 			#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 			pthread_mutex_unlock(&updateDrawMutex);
 			#endif
-		}
-		// load mesh
-		else {
-			// mesh
-			if (m->meshType == AVDL_ASSETMANAGER_MESH2) {
-				struct avdl_mesh *mesh = m->object;
-				struct dd_loaded_mesh lm = {0};
-				if (dd_filetomesh(&lm, m->filename,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR) == -1) {
-					// error loading file
-					avdl_log("avdl: error loading mesh2: %s", m->filename);
-				}
-				else {
-					#if defined( AVDL_DIRECT3D11 )
-					#elif defined( AVDL_WINDOWS )
-					WaitForSingleObject(updateDrawMutex, INFINITE);
-					#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
-					pthread_mutex_lock(&updateDrawMutex);
-					#endif
-					if (exitLoading) {
-						#if defined( AVDL_DIRECT3D11 )
-						#elif defined( AVDL_WINDOWS )
-						ReleaseMutex(updateDrawMutex);
-						#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
-						pthread_mutex_unlock(&updateDrawMutex);
-						#endif
-						return;
-					}
-					mesh->LoadFromLoadedMesh(mesh, &lm);
-					#if defined( AVDL_DIRECT3D11 )
-					#elif defined( AVDL_WINDOWS )
-					ReleaseMutex(updateDrawMutex);
-					#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
-					pthread_mutex_unlock(&updateDrawMutex);
-					#endif
-				}
-			}
-			else
-			if (m->meshType == AVDL_ASSETMANAGER_MESH) {
-				struct dd_mesh *mesh = m->object;
-				dd_mesh_clean(mesh);
-				struct dd_loaded_mesh lm;
-				if (dd_filetomesh(&lm, m->filename, DD_FILETOMESH_SETTINGS_POSITION) == -1) {
-					// error
-				}
-				else {
-					mesh->vcount = lm.vcount;
-					mesh->v = lm.v;
-					mesh->dirtyVertices = 1;
-				}
-			}
-			else
-			// mesh colour
-			if (m->meshType == AVDL_ASSETMANAGER_MESHCOLOUR) {
-				struct dd_meshColour *mesh = m->object;
-				dd_meshColour_clean(mesh);
-				struct dd_loaded_mesh lm;
-				if (dd_filetomesh(&lm, m->filename,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR) == -1) {
-					// error loading file
-				}
-				else {
-					mesh->parent.vcount = lm.vcount;
-					mesh->parent.v = lm.v;
-					mesh->parent.dirtyVertices = 1;
-					mesh->c = lm.c;
-					mesh->dirtyColours = 1;
-				}
-			}
-			else
-			// mesh texture
-			if (m->meshType == AVDL_ASSETMANAGER_MESHTEXTURE) {
-				struct dd_meshTexture *mesh = m->object;
-				dd_meshTexture_clean(mesh);
-				struct dd_loaded_mesh lm;
-				if (dd_filetomesh(&lm, m->filename,
-					DD_FILETOMESH_SETTINGS_POSITION | DD_FILETOMESH_SETTINGS_COLOUR
-					| DD_FILETOMESH_SETTINGS_TEX_COORD) == -1) {
-					// error
-				}
-				else {
-					mesh->parent.parent.vcount = lm.vcount;
-					mesh->parent.parent.v = lm.v;
-					mesh->parent.parent.dirtyVertices = 1;
-					mesh->parent.c = lm.c;
-					mesh->parent.dirtyColours = 1;
-					mesh->t = lm.t;
-					mesh->dirtyTextures = 1;
-				}
-			}
 		}
 
 		#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )

@@ -49,10 +49,10 @@ void avdl_component_mesh_after_create(struct avdl_component_mesh *o) {
 
 	if (o->texture_name) {
 		if (o->isEditor) {
-			avdl_texture_setLocal(&o->image, o->texture_name);
+			avdl_texture_LoadExternal(&o->image, o->texture_name);
 		}
 		else {
-			avdl_texture_set(&o->image, o->texture_name);
+			avdl_texture_Load(&o->image, o->texture_name);
 		}
 		avdl_mesh_setTexture(&o->mesh, &o->image);
 	}

@@ -333,9 +333,9 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 	struct avdl_string vertexErrorString;
 	struct avdl_string fragmentErrorString;
 	avdl_string_create(&vertexErrorString  );
-	avdl_string_SetMaxCharacters(&vertexErrorString  , 1024 *5);
+	avdl_string_SetMaxCharacters(&vertexErrorString  , 1024 *10);
 	avdl_string_create(&fragmentErrorString);
-	avdl_string_SetMaxCharacters(&fragmentErrorString, 1024 *5);
+	avdl_string_SetMaxCharacters(&fragmentErrorString, 1024 *10);
 
 	// attempt to create shaders in all versions, first one to succeeds is accepted
 	unsigned int vsdr = 0;
@@ -359,7 +359,7 @@ unsigned int avdl_loadProgram(const char *vfname, const char *ffname) {
 	}
 
 	if (!avdl_string_isValid(&vertexErrorString) || !avdl_string_isValid(&fragmentErrorString)) {
-		avdl_log("error getting shader log");
+		avdl_log("error getting shader log: vertex: %s: fragment: %s", avdl_string_getError(&vertexErrorString), avdl_string_getError(&fragmentErrorString));
 		return 0;
 	}
 

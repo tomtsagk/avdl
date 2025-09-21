@@ -54,48 +54,48 @@ void avdl_component_terrain_after_create(struct avdl_component_terrain *o) {
 			avdl_terrain_loadLocal(&o->terrain, o->asset_name);
 
 			if (o->texture_main_name) {
-				avdl_texture_setLocal(&o->img, o->texture_main_name);
+				avdl_texture_LoadExternal(&o->img, o->texture_main_name);
 				avdl_terrain_setTextureIndex(&o->terrain, &o->img, 0);
 			}
 
 			if (o->texture0_name) {
-				avdl_texture_setLocal(&o->img_extra_0, o->texture0_name);
+				avdl_texture_LoadExternal(&o->img_extra_0, o->texture0_name);
 				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_0, 1);
 			}
 			if (o->texture1_name) {
-				avdl_texture_setLocal(&o->img_extra_1, o->texture1_name);
+				avdl_texture_LoadExternal(&o->img_extra_1, o->texture1_name);
 				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_1, 2);
 			}
 			if (o->texture2_name) {
-				avdl_texture_setLocal(&o->img_extra_2, o->texture2_name);
+				avdl_texture_LoadExternal(&o->img_extra_2, o->texture2_name);
 				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_2, 3);
 			}
 			if (o->texture3_name) {
-				avdl_texture_setLocal(&o->img_extra_3, o->texture3_name);
+				avdl_texture_LoadExternal(&o->img_extra_3, o->texture3_name);
 				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_3, 4);
 			}
 		}
 		else {
 			avdl_terrain_load(&o->terrain, o->asset_name);
 			if (o->texture_main_name) {
-				avdl_texture_set(&o->img, o->texture_main_name);
+				avdl_texture_Load(&o->img, o->texture_main_name);
 				avdl_terrain_setTextureIndex(&o->terrain, &o->img, 0);
 			}
 
 			if (o->texture0_name) {
-				avdl_texture_set(&o->img_extra_0, o->texture0_name);
+				avdl_texture_Load(&o->img_extra_0, o->texture0_name);
 				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_0, 1);
 			}
 			if (o->texture1_name) {
-				avdl_texture_set(&o->img_extra_1, o->texture1_name);
+				avdl_texture_Load(&o->img_extra_1, o->texture1_name);
 				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_1, 2);
 			}
 			if (o->texture2_name) {
-				avdl_texture_set(&o->img_extra_2, o->texture2_name);
+				avdl_texture_Load(&o->img_extra_2, o->texture2_name);
 				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_2, 3);
 			}
 			if (o->texture3_name) {
-				avdl_texture_set(&o->img_extra_3, o->texture3_name);
+				avdl_texture_Load(&o->img_extra_3, o->texture3_name);
 				avdl_terrain_setTextureIndex(&o->terrain, &o->img_extra_3, 4);
 			}
 		}

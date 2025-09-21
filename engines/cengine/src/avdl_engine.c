@@ -5,6 +5,7 @@
 #include "dd_fov.h"
 #include "avdl_graphics.h"
 #include "avdl_cengine.h"
+#include "avdl_mesh.h"
 
 #include <math.h>
 #include <string.h>
@@ -173,6 +174,7 @@ int avdl_engine_init(struct avdl_engine *o, struct avdl_dynamic_array *args) {
 
 	o->achievements = avdl_achievements_create();
 	avdl_assetManager_init();
+	avdl_mesh_InitGlobalData();
 
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	/*
@@ -380,6 +382,7 @@ int avdl_engine_clean(struct avdl_engine *o) {
 		o->cworld = 0;
 	}
 
+	avdl_mesh_DeinitGlobalData();
 	avdl_assetManager_deinit();
 	avdl_font_deinit();
 

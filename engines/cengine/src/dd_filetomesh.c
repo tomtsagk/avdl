@@ -9,7 +9,7 @@
 #include "avdl_time.h"
 #include "dd_math.h"
 
-#define CGLTF_IMPLEMENTATION
+//#define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
 
 const char *skip_whitespace(const char *str);

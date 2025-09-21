@@ -33,7 +33,6 @@ void avdl_skinned_mesh_PlayAnimation(struct avdl_skinned_mesh *m, const char *na
 void avdl_skinned_mesh_PlayAnimationInstant(struct avdl_skinned_mesh *m, const char *name);
 void avdl_skinned_mesh_PrintAnimations(struct avdl_skinned_mesh *m);
 
-void avdl_skinned_mesh_LoadFromLoadedMesh(struct avdl_skinned_mesh *o, struct dd_loaded_mesh *loadedMesh);
 void avdl_skinned_mesh_SetOnAnimationDone(struct avdl_skinned_mesh *o, void (*func)(void *ctx), void *context);
 
 #ifdef __cplusplus

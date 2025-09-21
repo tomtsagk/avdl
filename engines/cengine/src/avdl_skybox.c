@@ -45,7 +45,7 @@ void avdl_skybox_set(struct avdl_skybox *o, const char *assetname[]) {
 
 	// load textures
 	for (int i = 0; i < 6; i++) {
-		avdl_texture_set(&o->img[i], assetname[i]);
+		avdl_texture_Load(&o->img[i], assetname[i]);
 	}
 
 }

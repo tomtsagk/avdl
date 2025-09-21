@@ -9,17 +9,16 @@
 #include "shared/avdl_dynamic_array.h"
 #include <string.h>
 
-#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
-#else
+#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 #include <png.h>
 #endif
 
-#ifdef AVDL_DIRECT3D11
+#if defined( AVDL_DIRECT3D11 )
 #include <windows.h>
 #elif defined(AVDL_WINDOWS)
 #include <windows.h>
 extern HANDLE updateDrawMutex;
-#else
+#elif defined( AVDL_LINUX ) || defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 #include <pthread.h>
 #include <unistd.h>
 extern pthread_mutex_t updateDrawMutex;
@@ -35,16 +34,24 @@ struct Subpixel {
 };
 
 struct avdl_texture_data {
+
+	// pixels and their format
 	enum avdl_graphics_format_internal formatInternal;
 	enum avdl_graphics_format format;
 	avdl_graphics_ubyte *pixels;
+
+	// dimensions
 	int width;
 	int height;
+
+	// caching data, filename is used to identify different textures
 	struct avdl_string filename;
-	avdl_texture_id tex;
-	int index;
-	int graphicsContextId;
+	int cacheIndex;
 	int uses;
+
+	// id for when it's stored by the graphics library
+	avdl_texture_id tex;
+	int graphicsContextId;
 };
 
 static struct avdl_texture_data *GetDataFromFile(const char *filename);
@@ -53,7 +60,7 @@ static int CleanData(struct avdl_texture *o);
 
 void avdl_texture_create(struct avdl_texture *o) {
 	o->data = 0;
-	o->dirtyTexture = 0;
+	//o->dirtyTexture = 0;
 	avdl_da_init(&o->subpixels, sizeof(struct Subpixel));
 
 	o->clean = avdl_texture_clean;
@@ -134,12 +141,12 @@ void avdl_texture_unbindIndex(struct avdl_texture *o, int index) {
 	avdl_graphics_BindTextureIndex(0, index);
 }
 
-void avdl_texture_set(struct avdl_texture *o, const char *filename) {
+void avdl_texture_Load(struct avdl_texture *o, const char *filename) {
 	CleanData(o);
 	avdl_assetManager_AddLoadOperation(o, filename, GetDataFromFile, SetData);
 }
 
-void avdl_texture_setLocal(struct avdl_texture *o, const char *filename) {
+void avdl_texture_LoadExternal(struct avdl_texture *o, const char *filename) {
 	CleanData(o);
 	#ifdef AVDL_DIRECT3D11
 	avdl_assetManager_AddLoadOperation(o, filename, GetDataFromFile, SetData);
@@ -204,7 +211,8 @@ int avdl_texture_isLoaded(struct avdl_texture *o) {
 
 int avdl_texture_CreateTexture(struct avdl_texture *o, int width, int height, enum avdl_graphics_format_internal formatInternal, enum avdl_graphics_format format) {
 
-	o->dirtyTexture = 1;
+	CleanData(o);
+	//o->dirtyTexture = 1;
 
 	o->data = malloc(sizeof(struct avdl_texture_data));
 	o->data->width = width;
@@ -215,7 +223,7 @@ int avdl_texture_CreateTexture(struct avdl_texture *o, int width, int height, en
 	o->data->graphicsContextId = avdl_graphics_getContextId();
 	o->data->tex = 0;
 	o->data->uses = 0;
-	o->data->index = -1;
+	o->data->cacheIndex = -1;
 
 	avdl_string_create(&o->data->filename);
 	avdl_string_SetMaxCharacters(&o->data->filename, 1024);
@@ -523,7 +531,7 @@ static struct avdl_texture_data *GetDataFromFile(const char *filename) {
 	#endif
 
 	// add newly created texture to texture cache
-	o->index = avdl_da_count(&textureCache);
+	o->cacheIndex = avdl_da_count(&textureCache);
 	o->graphicsContextId = avdl_graphics_getContextId();
 	o->uses = 0;
 	o->tex = 0;
@@ -563,25 +571,28 @@ static void ReduceDataCacheUses(struct avdl_texture_data *t) {
 // cleans up data (if any) and resets data pointer
 static int CleanData(struct avdl_texture *o) {
 
-	// cached texture - do not clean
-	if (o->data && !o->dirtyTexture) {
-		ReduceDataCacheUses(o->data);
-		o->data = 0;
+	if (!o->data) {
+		return 0;
 	}
 
-	if (o->data && o->dirtyTexture) {
-		if (o->data->pixels) {
-			free(o->data->pixels);
-			o->data->pixels = 0;
-		}
-		if (o->data->tex) {
-			avdl_graphics_DeleteTexture(o->data->tex);
-		}
-		avdl_string_clean(&o->data->filename);
-		free(o->data);
+	// cached - do not clean
+	if (o->data->cacheIndex >= 0) {
+		ReduceDataCacheUses(o->data);
 		o->data = 0;
-		o->dirtyTexture = 0;
+		return 0;
 	}
+
+	if (o->data->pixels) {
+		free(o->data->pixels);
+		o->data->pixels = 0;
+	}
+
+	if (o->data->tex) {
+		avdl_graphics_DeleteTexture(o->data->tex);
+	}
+	avdl_string_clean(&o->data->filename);
+	free(o->data);
+	o->data = 0;
 
 	#if !defined( AVDL_DIRECT3D11 )
 	for (int i = 0; i < o->subpixels.elements; i++) {
@@ -591,46 +602,5 @@ static int CleanData(struct avdl_texture *o) {
 	avdl_da_empty(&o->subpixels);
 	#endif
 
-	o->data = 0;
-	o->dirtyTexture = 0;
 	return 0;
 }
-
-/* deprecated
-void avdl_texture_bindIndexArray(struct avdl_texture *o, int index, int arraySize, struct avdl_texture *array[]) {
-
-	if (o->data) {
-		int isLoaded = 1;
-		for (int i = 0; i < arraySize; i++) {
-			if (!array[i]->data || !array[i]->data->pixels) {
-				isLoaded = 0;
-				break;
-			}
-		}
-		if (isLoaded) {
-
-			// check tex ?
-			o->data->tex = avdl_graphics_ImageArrayToGpuStart(o->data->pixels, o->data->formatInternal, o->data->format, o->data->width, o->data->height, arraySize);
-			for (int i = 0; i < arraySize; i++) {
-				avdl_graphics_ImageArrayToGpuInstance(array[i]->data->pixels, o->data->format, o->data->width, o->data->height, i);
-			}
-			avdl_graphics_ImageArrayToGpuEnd();
-			free(o->data->pixels);
-			o->data->pixels = 0;
-		}
-
-		// texture is valid in this opengl context, bind it
-		if (o->data->graphicsContextId == avdl_graphics_getContextId() && o->data->tex) {
-			avdl_graphics_BindTextureArrayIndex(o->data->tex, index);
-		}
-		return;
-	}
-
-}
-
-void avdl_texture_unbindIndexArray(struct avdl_texture *o, int index) {
-	avdl_graphics_BindTextureArrayIndex(0, index);
-}
-
-*/
-
