@@ -42,6 +42,7 @@ struct avdl_json_object {
 	 */
 	char buffer[AVDL_JSON_BUFFER_SIZE];
 	char *str;
+	int dirty_str;
 	int size;
 
 	char *start;

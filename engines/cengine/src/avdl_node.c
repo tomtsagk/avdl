@@ -855,6 +855,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 				avdl_string_cat(&property_name, avdl_json_getTokenString(json));
 				if (!avdl_string_isValid(&property_name)) {
 					avdl_log_error("Unable to construct property name");
+					avdl_string_clean(&property_name);
 					return -1;
 				}
 
@@ -866,20 +867,26 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					avdl_string_cat(&property_value, avdl_json_getTokenString(json));
 					if (!avdl_string_isValid(&property_value)) {
 						avdl_log_error("Unable to construct property value");
+						avdl_string_clean(&property_name);
+						avdl_string_clean(&property_value);
 						return -1;
 					}
 
 					if (avdl_component_terrain_SetPropertyString(c, avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value)) != 0) {
 						avdl_log_error("unable to set property '%s' for terrain component to value '%s'",
 							avdl_string_toCharPtr(&property_name), avdl_string_toCharPtr(&property_value));
+						avdl_string_clean(&property_name);
+						avdl_string_clean(&property_value);
 						return -1;
 					}
+					avdl_string_clean(&property_value);
 				}
 				else
 				if (avdl_json_getToken(json) == AVDL_JSON_INT) {
 					if (avdl_component_terrain_SetPropertyInt(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json)) != 0) {
 						avdl_log_error("unable to set property '%s' for terrain component to value '%d'",
 							avdl_string_toCharPtr(&property_name), avdl_json_getTokenNumber(json));
+						avdl_string_clean(&property_name);
 						return -1;
 					}
 				}
@@ -888,9 +895,11 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					if (avdl_component_terrain_SetPropertyFloat(c, avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json)) != 0) {
 						avdl_log_error("unable to set property '%s' for terrain component to value '%f'",
 							avdl_string_toCharPtr(&property_name), avdl_json_getTokenFloat(json));
+						avdl_string_clean(&property_name);
 						return -1;
 					}
 				}
+				avdl_string_clean(&property_name);
 			}
 			else {
 				struct avdl_component_custom *custom = c;

@@ -15,6 +15,7 @@ struct avdl_component_terrain {
 	struct avdl_terrain terrain;
 	struct avdl_collider_terrain collider;
 	char *asset_name;
+	int dirty_asset_name;
 
 	struct avdl_texture img;
 	struct avdl_texture img_extra_0;
@@ -27,6 +28,11 @@ struct avdl_component_terrain {
 	char *texture1_name;
 	char *texture2_name;
 	char *texture3_name;
+	int dirty_texture_main_name;
+	int dirty_texture0_name;
+	int dirty_texture1_name;
+	int dirty_texture2_name;
+	int dirty_texture3_name;
 
 	float scaleZ;
 

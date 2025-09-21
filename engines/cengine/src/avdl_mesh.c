@@ -504,6 +504,18 @@ static void CleanData(struct avdl_mesh *m) {
 	data->indices = 0;
 	data->indicesCount = 0;
 
+	// boneIds
+	if (data->boneIds) {
+		free(data->boneIds);
+	}
+	data->boneIds = 0;
+
+	// weights
+	if (data->weights) {
+		free(data->weights);
+	}
+	data->weights = 0;
+
 	avdl_string_clean(&data->filename);
 
 	data->vcount = 0;
@@ -546,6 +558,7 @@ static void CleanData(struct avdl_mesh *m) {
 		}
 	}
 
+	free(m->data);
 	m->data = 0;
 
 }
@@ -2516,6 +2529,7 @@ static int load_gltf_internal(struct avdl_mesh_data *m, cgltf_options *options, 
 						}
 						if (indices) {
 							m->v = malloc(sizeof(float) *m->vcount *3);
+							m->dirtyVertices = 1;
 							for (int ind = 0; ind < m->vcount; ind++) {
 								m->v[ind*3 +0] = vertices[indices[ind]*3 +0];
 								m->v[ind*3 +1] = vertices[indices[ind]*3 +1];
@@ -3136,6 +3150,7 @@ int avdl_mesh_SetCustomData(struct avdl_mesh *m, int vcount, float *pos, float *
 
 	m->data->vcount = vcount;
 	m->data->v = pos;
+	m->data->dirtyVertices = 1;
 	m->data->c = col;
 	m->data->t = tex;
 

@@ -14,6 +14,14 @@ void avdl_component_custom_create(struct avdl_component_custom *o) {
 }
 
 void avdl_component_custom_clean(struct avdl_component_custom *o) {
+	avdl_string_clean(&o->name);
+
+	for (int i = 0; i < avdl_da_count(&o->values); i++) {
+		struct avdl_string *str = avdl_da_getDeref(&o->values, i);
+		avdl_string_clean(str);
+		free(str);
+	}
+	avdl_dynamic_array_clean(&o->values);
 	avdl_component_clean(o);
 }
 

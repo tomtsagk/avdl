@@ -9,6 +9,8 @@ void avdl_component_mesh_create(struct avdl_component_mesh *o) {
 	o->parent.after_create = avdl_component_mesh_after_create;
 	o->mesh_name = 0;
 	o->texture_name = 0;
+	o->dirty_mesh_name = 0;
+	o->dirty_texture_name = 0;
 	o->hasTransparency = 0;
 	o->isEditor = 0;
 	o->parent.Copy = avdl_component_mesh_Copy;
@@ -22,6 +24,17 @@ void avdl_component_mesh_create(struct avdl_component_mesh *o) {
 void avdl_component_mesh_clean(struct avdl_component_mesh *o) {
 	avdl_mesh_clean(&o->mesh);
 	avdl_texture_clean(&o->image);
+
+	if (o->dirty_mesh_name && o->mesh_name) {
+		free(o->mesh_name);
+		o->mesh_name = 0;
+	}
+
+	if (o->dirty_texture_name && o->texture_name) {
+		free(o->texture_name);
+		o->texture_name = 0;
+	}
+
 	avdl_component_clean(o);
 }
 
@@ -135,6 +148,12 @@ int avdl_component_mesh_SetPropertyString(struct avdl_component_mesh *c, const c
 				strcat(prop, "\0");
 				char **p = (char **) ((char *)c +avdl_component_mesh_property_array[i].offset);
 				*p = prop;
+				if (strcmp(property_name, "mesh_name") == 0) {
+					c->dirty_mesh_name = 1;
+				}
+				if (strcmp(property_name, "texture_name") == 0) {
+					c->dirty_texture_name = 1;
+				}
 				return 0;
 			}
 			return -1;

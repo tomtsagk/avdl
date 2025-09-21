@@ -11,9 +11,11 @@ struct avdl_component_skinned_mesh {
 
 	struct avdl_skinned_mesh mesh;
 	char *mesh_name;
+	int dirty_mesh_name;
 
 	struct avdl_texture image;
 	char *texture_name;
+	int dirty_texture_name;
 
 	int hasTransparency;
 

@@ -29,6 +29,13 @@ void avdl_component_terrain_create(struct avdl_component_terrain *o) {
 	avdl_texture_create(&o->img_extra_2);
 	avdl_texture_create(&o->img_extra_3);
 
+	o->dirty_asset_name = 0;
+	o->dirty_texture_main_name = 0;
+	o->dirty_texture0_name = 0;
+	o->dirty_texture1_name = 0;
+	o->dirty_texture2_name = 0;
+	o->dirty_texture3_name = 0;
+
 	o->terrainRepeat = 1;
 
 	avdl_collider_terrain_create(&o->collider);
@@ -43,6 +50,37 @@ void avdl_component_terrain_clean(struct avdl_component_terrain *o) {
 	avdl_texture_clean(&o->img_extra_1);
 	avdl_texture_clean(&o->img_extra_2);
 	avdl_texture_clean(&o->img_extra_3);
+
+	if (o->dirty_asset_name && o->asset_name) {
+		free(o->asset_name);
+		o->asset_name = 0;
+	}
+
+	if (o->dirty_texture_main_name && o->texture_main_name) {
+		free(o->texture_main_name);
+		o->texture_main_name = 0;
+	}
+
+	if (o->dirty_texture0_name && o->texture0_name) {
+		free(o->texture0_name);
+		o->texture0_name = 0;
+	}
+
+	if (o->dirty_texture1_name && o->texture1_name) {
+		free(o->texture1_name);
+		o->texture1_name = 0;
+	}
+
+	if (o->dirty_texture2_name && o->texture2_name) {
+		free(o->texture2_name);
+		o->texture2_name = 0;
+	}
+
+	if (o->dirty_texture3_name && o->texture3_name) {
+		free(o->texture3_name);
+		o->texture3_name = 0;
+	}
+
 	avdl_component_clean(o);
 }
 
@@ -230,6 +268,24 @@ int avdl_component_terrain_SetPropertyString(struct avdl_component_terrain *c, c
 				strcpy(prop, value);
 				strcat(prop, "\0");
 				memcpy(((void *)c) +avdl_component_terrain_property_array[i].offset, &prop, sizeof(char *));
+				if (strcmp(property_name, "asset_name") == 0) {
+					c->dirty_asset_name = 1;
+				}
+				if (strcmp(property_name, "texture_main_name") == 0) {
+					c->dirty_texture_main_name = 1;
+				}
+				if (strcmp(property_name, "texture0_name") == 0) {
+					c->dirty_texture0_name = 1;
+				}
+				if (strcmp(property_name, "texture1_name") == 0) {
+					c->dirty_texture1_name = 1;
+				}
+				if (strcmp(property_name, "texture2_name") == 0) {
+					c->dirty_texture2_name = 1;
+				}
+				if (strcmp(property_name, "texture3_name") == 0) {
+					c->dirty_texture3_name = 1;
+				}
 				return 0;
 			}
 			avdl_log("failed to set string property '%s', wrong format", property_name);

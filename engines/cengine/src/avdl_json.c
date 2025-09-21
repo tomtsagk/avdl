@@ -10,6 +10,7 @@
 
 void avdl_json_init(struct avdl_json_object *o, char *json_string, int size) {
 	o->str = json_string;
+	o->dirty_str = 0;
 	o->size = size;
 
 	o->start = o->str;
@@ -61,6 +62,7 @@ int avdl_json_initFile(struct avdl_json_object *o, char *filename) {
 	rewind(o->file);
 
 	o->str = malloc((size +1) *sizeof(char));
+	o->dirty_str = 1;
 	int times = 0;
 	while (fscanf(o->file, "%1024c", o->str +(times *1024)) > 0) {
 		times++;
@@ -275,7 +277,10 @@ void avdl_json_deinit(struct avdl_json_object *o) {
 	}
 	#endif
 
-	o->str = 0;
+	if (o->dirty_str && o->str) {
+		free(o->str);
+		o->str = 0;
+	}
 	o->size = 0;
 
 	o->start = 0;
