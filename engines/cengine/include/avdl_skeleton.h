@@ -2,7 +2,7 @@
 #define AVDL_SKELETON_H
 
 #include "dd_matrix.h"
-#include "dd_filetomesh.h"
+#include "avdl_mesh.h"
 
 struct avdl_mix_animated_bone {
 	struct avdl_vec3 position;

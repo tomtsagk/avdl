@@ -8,7 +8,6 @@
 #include "avdl_graphics.h"
 #include "dd_math.h"
 #include <errno.h>
-#include "dd_filetomesh.h"
 
 #define CGLTF_IMPLEMENTATION
 #include "cgltf.h"
@@ -1244,7 +1243,7 @@ static int filetomesh(struct avdl_mesh_data *m, const char *asset) {
 		return load_gltf(m, asset);
 	}
 
-	avdl_log("dd_filetomesh: unsupported file format: %s", asset);
+	avdl_log("avdl_mesh: filetomesh: unsupported file format: %s", asset);
 
 	return -1;
 }

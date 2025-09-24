@@ -5,6 +5,35 @@
 extern "C" {
 #endif
 
+// ex dd_filetomesh
+#include "dd_matrix.h"
+#include "avdl_vec3.h"
+#include "avdl_vec4.h"
+
+#include "shared/avdl_dynamic_array.h"
+
+struct dd_keyframe_vec3 {
+	struct avdl_vec3 value;
+	float time;
+};
+
+struct dd_keyframe_vec4 {
+	struct avdl_vec4 value;
+	float time;
+};
+
+struct dd_animated_bone {
+	struct avdl_dynamic_array keyframes_position;
+	struct avdl_dynamic_array keyframes_rotation;
+	struct avdl_dynamic_array keyframes_scale;
+};
+
+struct dd_animation {
+	char *name;
+	struct dd_animated_bone *animatedBones;
+	int animatedBonesCount;
+};
+
 enum avdl_primitives {
 	AVDL_PRIMITIVE_TRIANGLE,
 	AVDL_PRIMITIVE_TRIANGLE_WIREFRAME,
