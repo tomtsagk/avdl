@@ -293,7 +293,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 }
 #endif
 
-extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struct dd_matrix *matrix);
+//extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struct dd_matrix *matrix);
 
 // Used to send per-vertex data to the vertex shader.
 struct VertexPositionColor
@@ -685,227 +685,227 @@ void D3D11AvdlApplication::OnDisplayContentsInvalidated(DisplayInformation^ send
 {
 }
 
-extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struct dd_matrix *matrix) {
-
-	/*
-	 * Matrix
-	 */
-	XMMATRIX orientationMatrix2(
-		matrix->cell
-	);
-	XMStoreFloat4x4(&avdl_constantBufferData.model, orientationMatrix2);
-
-	// Prepare the constant buffer to send it to the graphics device.
-	avdl_d3dContext->UpdateSubresource1(
-		avdl_constantBuffer.Get(),
-		0,
-		NULL,
-		&avdl_constantBufferData,
-		0,
-		0,
-		0
-	);
-
-	ComPtr<ID3D11Buffer> vertexBuffer = (ID3D11Buffer *) m->parent.vertexBuffer;
-	// Each vertex is one instance of the VertexPositionColor struct.
-	UINT stride = sizeof(VertexPositionColor);
-	UINT offset = 0;
-	avdl_d3dContext->IASetVertexBuffers(
-		0,
-		1,
-		vertexBuffer.GetAddressOf(),
-		&stride,
-		&offset
-	);
-
-	avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
-
-	// Attach our vertex shader.
-	avdl_d3dContext->VSSetShader(
-		avdl_vertexShader.Get(),
-		nullptr,
-		0
-	);
-
-	// Send the constant buffer to the graphics device.
-	avdl_d3dContext->VSSetConstantBuffers1(
-		0,
-		1,
-		avdl_constantBuffer.GetAddressOf(),
-		nullptr,
-		nullptr
-		);
-
-	// Attach our pixel shader.
-	avdl_d3dContext->PSSetShader(
-		avdl_pixelShader2.Get(),
-		nullptr,
-		0
-		);
-
-	// Draw cube
-	avdl_d3dContext->Draw(
-		//9,
-		//3,
-		m->parent.vcount,
-		0
-	);
-}
+//extern "C" void avdl_graphics_direct3d11_drawMesh(struct dd_meshColour *m, struct dd_matrix *matrix) {
+//
+//	/*
+//	 * Matrix
+//	 */
+//	XMMATRIX orientationMatrix2(
+//		matrix->cell
+//	);
+//	XMStoreFloat4x4(&avdl_constantBufferData.model, orientationMatrix2);
+//
+//	// Prepare the constant buffer to send it to the graphics device.
+//	avdl_d3dContext->UpdateSubresource1(
+//		avdl_constantBuffer.Get(),
+//		0,
+//		NULL,
+//		&avdl_constantBufferData,
+//		0,
+//		0,
+//		0
+//	);
+//
+//	ComPtr<ID3D11Buffer> vertexBuffer = (ID3D11Buffer *) m->parent.vertexBuffer;
+//	// Each vertex is one instance of the VertexPositionColor struct.
+//	UINT stride = sizeof(VertexPositionColor);
+//	UINT offset = 0;
+//	avdl_d3dContext->IASetVertexBuffers(
+//		0,
+//		1,
+//		vertexBuffer.GetAddressOf(),
+//		&stride,
+//		&offset
+//	);
+//
+//	avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+//
+//	avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
+//
+//	// Attach our vertex shader.
+//	avdl_d3dContext->VSSetShader(
+//		avdl_vertexShader.Get(),
+//		nullptr,
+//		0
+//	);
+//
+//	// Send the constant buffer to the graphics device.
+//	avdl_d3dContext->VSSetConstantBuffers1(
+//		0,
+//		1,
+//		avdl_constantBuffer.GetAddressOf(),
+//		nullptr,
+//		nullptr
+//		);
+//
+//	// Attach our pixel shader.
+//	avdl_d3dContext->PSSetShader(
+//		avdl_pixelShader2.Get(),
+//		nullptr,
+//		0
+//		);
+//
+//	// Draw cube
+//	avdl_d3dContext->Draw(
+//		//9,
+//		//3,
+//		m->parent.vcount,
+//		0
+//	);
+//}
 
 extern "C" void avdl_graphics_direct3d11_drawMeshMesh(struct dd_mesh* m, struct dd_matrix* matrix) {
 
-	/*
-	 * Matrix
-	 */
-	XMMATRIX orientationMatrix2(
-		matrix->cell
-	);
-	XMStoreFloat4x4(&avdl_constantBufferData.model, orientationMatrix2);
-
-	// Prepare the constant buffer to send it to the graphics device.
-	avdl_d3dContext->UpdateSubresource1(
-		avdl_constantBuffer.Get(),
-		0,
-		NULL,
-		&avdl_constantBufferData,
-		0,
-		0,
-		0
-	);
-
-	ComPtr<ID3D11Buffer> vertexBuffer = (ID3D11Buffer*)m->vertexBuffer;
-	// Each vertex is one instance of the VertexPositionColor struct.
-	UINT stride = sizeof(VertexPositionColor);
-	UINT offset = 0;
-	avdl_d3dContext->IASetVertexBuffers(
-		0,
-		1,
-		vertexBuffer.GetAddressOf(),
-		&stride,
-		&offset
-	);
-
-	avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
-
-	// Attach our vertex shader.
-	avdl_d3dContext->VSSetShader(
-		avdl_vertexShader.Get(),
-		nullptr,
-		0
-	);
-
-	// Send the constant buffer to the graphics device.
-	avdl_d3dContext->VSSetConstantBuffers1(
-		0,
-		1,
-		avdl_constantBuffer.GetAddressOf(),
-		nullptr,
-		nullptr
-	);
-
-	// Attach our pixel shader.
-	avdl_d3dContext->PSSetShader(
-		avdl_pixelShader2.Get(),
-		nullptr,
-		0
-	);
-
-	// Draw cube
-	avdl_d3dContext->Draw(
-		//9,
-		//3,
-		m->vcount,
-		0
-	);
+//	/*
+//	 * Matrix
+//	 */
+//	XMMATRIX orientationMatrix2(
+//		matrix->cell
+//	);
+//	XMStoreFloat4x4(&avdl_constantBufferData.model, orientationMatrix2);
+//
+//	// Prepare the constant buffer to send it to the graphics device.
+//	avdl_d3dContext->UpdateSubresource1(
+//		avdl_constantBuffer.Get(),
+//		0,
+//		NULL,
+//		&avdl_constantBufferData,
+//		0,
+//		0,
+//		0
+//	);
+//
+//	ComPtr<ID3D11Buffer> vertexBuffer = (ID3D11Buffer*)m->vertexBuffer;
+//	// Each vertex is one instance of the VertexPositionColor struct.
+//	UINT stride = sizeof(VertexPositionColor);
+//	UINT offset = 0;
+//	avdl_d3dContext->IASetVertexBuffers(
+//		0,
+//		1,
+//		vertexBuffer.GetAddressOf(),
+//		&stride,
+//		&offset
+//	);
+//
+//	avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+//
+//	avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
+//
+//	// Attach our vertex shader.
+//	avdl_d3dContext->VSSetShader(
+//		avdl_vertexShader.Get(),
+//		nullptr,
+//		0
+//	);
+//
+//	// Send the constant buffer to the graphics device.
+//	avdl_d3dContext->VSSetConstantBuffers1(
+//		0,
+//		1,
+//		avdl_constantBuffer.GetAddressOf(),
+//		nullptr,
+//		nullptr
+//	);
+//
+//	// Attach our pixel shader.
+//	avdl_d3dContext->PSSetShader(
+//		avdl_pixelShader2.Get(),
+//		nullptr,
+//		0
+//	);
+//
+//	// Draw cube
+//	avdl_d3dContext->Draw(
+//		//9,
+//		//3,
+//		m->vcount,
+//		0
+//	);
 }
 
 extern "C" ID3D11SamplerState * ImageSamplerState;
 
-extern "C" void avdl_graphics_direct3d11_drawMeshTexture(struct dd_meshTexture* m, struct dd_matrix* matrix) {
-
-	/*
-	 * Matrix
-	 */
-	XMMATRIX orientationMatrix2(
-		matrix->cell
-	);
-	XMStoreFloat4x4(&avdl_constantBufferData.model, orientationMatrix2);
-
-	// Prepare the constant buffer to send it to the graphics device.
-	avdl_d3dContext->UpdateSubresource1(
-		avdl_constantBuffer.Get(),
-		0,
-		NULL,
-		&avdl_constantBufferData,
-		0,
-		0,
-		0
-	);
-
-	ComPtr<ID3D11Buffer> vertexBuffer = (ID3D11Buffer*)m->parent.parent.vertexBuffer;
-	// Each vertex is one instance of the VertexPositionColor struct.
-	UINT stride = sizeof(VertexPositionColor);
-	UINT offset = 0;
-	avdl_d3dContext->IASetVertexBuffers(
-		0,
-		1,
-		vertexBuffer.GetAddressOf(),
-		&stride,
-		&offset
-	);
-
-	avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
-
-	// Attach our vertex shader.
-	avdl_d3dContext->VSSetShader(
-		avdl_vertexShader.Get(),
-		nullptr,
-		0
-	);
-
-	// Send the constant buffer to the graphics device.
-	avdl_d3dContext->VSSetConstantBuffers1(
-		0,
-		1,
-		avdl_constantBuffer.GetAddressOf(),
-		nullptr,
-		nullptr
-	);
-
-	if (m->img) {
-		// Attach our pixel shader.
-		avdl_d3dContext->PSSetShader(
-			avdl_pixelShader.Get(),
-			nullptr,
-			0
-		);
-		m->img->bind(m->img);
-
-		avdl_d3dContext->PSSetSamplers(0, 1, &ImageSamplerState);
-	}
-	else {
-		// Attach our pixel shader.
-		avdl_d3dContext->PSSetShader(
-			avdl_pixelShader2.Get(),
-			nullptr,
-			0
-		);
-	}
-
-	// Draw cube
-	avdl_d3dContext->Draw(
-		//9,
-		//3,
-		m->parent.parent.vcount,
-		0
-	);
-}
+//extern "C" void avdl_graphics_direct3d11_drawMeshTexture(struct dd_meshTexture* m, struct dd_matrix* matrix) {
+//
+//	/*
+//	 * Matrix
+//	 */
+//	XMMATRIX orientationMatrix2(
+//		matrix->cell
+//	);
+//	XMStoreFloat4x4(&avdl_constantBufferData.model, orientationMatrix2);
+//
+//	// Prepare the constant buffer to send it to the graphics device.
+//	avdl_d3dContext->UpdateSubresource1(
+//		avdl_constantBuffer.Get(),
+//		0,
+//		NULL,
+//		&avdl_constantBufferData,
+//		0,
+//		0,
+//		0
+//	);
+//
+//	ComPtr<ID3D11Buffer> vertexBuffer = (ID3D11Buffer*)m->parent.parent.vertexBuffer;
+//	// Each vertex is one instance of the VertexPositionColor struct.
+//	UINT stride = sizeof(VertexPositionColor);
+//	UINT offset = 0;
+//	avdl_d3dContext->IASetVertexBuffers(
+//		0,
+//		1,
+//		vertexBuffer.GetAddressOf(),
+//		&stride,
+//		&offset
+//	);
+//
+//	avdl_d3dContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+//
+//	avdl_d3dContext->IASetInputLayout(avdl_inputLayout.Get());
+//
+//	// Attach our vertex shader.
+//	avdl_d3dContext->VSSetShader(
+//		avdl_vertexShader.Get(),
+//		nullptr,
+//		0
+//	);
+//
+//	// Send the constant buffer to the graphics device.
+//	avdl_d3dContext->VSSetConstantBuffers1(
+//		0,
+//		1,
+//		avdl_constantBuffer.GetAddressOf(),
+//		nullptr,
+//		nullptr
+//	);
+//
+//	if (m->img) {
+//		// Attach our pixel shader.
+//		avdl_d3dContext->PSSetShader(
+//			avdl_pixelShader.Get(),
+//			nullptr,
+//			0
+//		);
+//		m->img->bind(m->img);
+//
+//		avdl_d3dContext->PSSetSamplers(0, 1, &ImageSamplerState);
+//	}
+//	else {
+//		// Attach our pixel shader.
+//		avdl_d3dContext->PSSetShader(
+//			avdl_pixelShader2.Get(),
+//			nullptr,
+//			0
+//		);
+//	}
+//
+//	// Draw cube
+//	avdl_d3dContext->Draw(
+//		//9,
+//		//3,
+//		m->parent.parent.vcount,
+//		0
+//	);
+//}
 
 extern "C" const char* getAppLocation(void) {
 	static char filepath[1001];
@@ -936,104 +936,104 @@ extern "C" FILE *avdl_filetomesh_openFile(char *filename) {
 	return 0;
 }
 
-extern "C" void avdl_graphics_direct3d11_setVertexBuffer(struct dd_meshColour *m) {
+//extern "C" void avdl_graphics_direct3d11_setVertexBuffer(struct dd_meshColour *m) {
+//
+//	// create array with vertex data
+//	VertexPositionColor *vertices = (VertexPositionColor *)malloc(sizeof(struct VertexPositionColor) *m->parent.vcount);
+//	for (int i = 0; i < m->parent.vcount; i++) {
+//		vertices[i].pos = XMFLOAT3(
+//				m->parent.v[i*3 +0],
+//				m->parent.v[i*3 +1],
+//				m->parent.v[i*3 +2]
+//		);
+//		vertices[i].color = XMFLOAT3(
+//				m->c[i*3 +0],
+//				m->c[i*3 +1],
+//				m->c[i*3 +2]
+//		);
+//		vertices[i].uv = XMFLOAT2(0.0f, 0.0f);
+//	}
+//
+//	// pass array to d3d11
+//	m->parent.vertexBuffer = new ComPtr<ID3D11Buffer>();
+//	D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
+//	vertexBufferData.pSysMem = vertices;
+//	vertexBufferData.SysMemPitch = 0;
+//	vertexBufferData.SysMemSlicePitch = 0;
+//	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) *m->parent.vcount, D3D11_BIND_VERTEX_BUFFER);
+//	avdl_d3dDevice->CreateBuffer(
+//		&vertexBufferDesc,
+//		&vertexBufferData,
+//		(ID3D11Buffer**)&m->parent.vertexBuffer
+//	);
+//}
 
-	// create array with vertex data
-	VertexPositionColor *vertices = (VertexPositionColor *)malloc(sizeof(struct VertexPositionColor) *m->parent.vcount);
-	for (int i = 0; i < m->parent.vcount; i++) {
-		vertices[i].pos = XMFLOAT3(
-				m->parent.v[i*3 +0],
-				m->parent.v[i*3 +1],
-				m->parent.v[i*3 +2]
-		);
-		vertices[i].color = XMFLOAT3(
-				m->c[i*3 +0],
-				m->c[i*3 +1],
-				m->c[i*3 +2]
-		);
-		vertices[i].uv = XMFLOAT2(0.0f, 0.0f);
-	}
+//extern "C" void avdl_graphics_direct3d11_setVertexBufferMesh(struct dd_mesh* m) {
+//
+//	// create array with vertex data
+//	VertexPositionColor* vertices = (VertexPositionColor*)malloc(sizeof(struct VertexPositionColor) * m->vcount);
+//	for (int i = 0; i < m->vcount; i++) {
+//		vertices[i].pos = XMFLOAT3(
+//			m->v[i * 3 + 0],
+//			m->v[i * 3 + 1],
+//			m->v[i * 3 + 2]
+//		);
+//		vertices[i].color = XMFLOAT3(0.0f, 0.0f, 0.0f);
+//		vertices[i].uv = XMFLOAT2(0.0f, 0.0f);
+//	}
+//
+//	// pass array to d3d11
+//	m->vertexBuffer = new ComPtr<ID3D11Buffer>();
+//	D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
+//	vertexBufferData.pSysMem = vertices;
+//	vertexBufferData.SysMemPitch = 0;
+//	vertexBufferData.SysMemSlicePitch = 0;
+//	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) * m->vcount, D3D11_BIND_VERTEX_BUFFER);
+//	avdl_d3dDevice->CreateBuffer(
+//		&vertexBufferDesc,
+//		&vertexBufferData,
+//		(ID3D11Buffer**)&m->vertexBuffer
+//	);
+//}
 
-	// pass array to d3d11
-	m->parent.vertexBuffer = new ComPtr<ID3D11Buffer>();
-	D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
-	vertexBufferData.pSysMem = vertices;
-	vertexBufferData.SysMemPitch = 0;
-	vertexBufferData.SysMemSlicePitch = 0;
-	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) *m->parent.vcount, D3D11_BIND_VERTEX_BUFFER);
-	avdl_d3dDevice->CreateBuffer(
-		&vertexBufferDesc,
-		&vertexBufferData,
-		(ID3D11Buffer**)&m->parent.vertexBuffer
-	);
-}
-
-extern "C" void avdl_graphics_direct3d11_setVertexBufferMesh(struct dd_mesh* m) {
-
-	// create array with vertex data
-	VertexPositionColor* vertices = (VertexPositionColor*)malloc(sizeof(struct VertexPositionColor) * m->vcount);
-	for (int i = 0; i < m->vcount; i++) {
-		vertices[i].pos = XMFLOAT3(
-			m->v[i * 3 + 0],
-			m->v[i * 3 + 1],
-			m->v[i * 3 + 2]
-		);
-		vertices[i].color = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		vertices[i].uv = XMFLOAT2(0.0f, 0.0f);
-	}
-
-	// pass array to d3d11
-	m->vertexBuffer = new ComPtr<ID3D11Buffer>();
-	D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-	vertexBufferData.pSysMem = vertices;
-	vertexBufferData.SysMemPitch = 0;
-	vertexBufferData.SysMemSlicePitch = 0;
-	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) * m->vcount, D3D11_BIND_VERTEX_BUFFER);
-	avdl_d3dDevice->CreateBuffer(
-		&vertexBufferDesc,
-		&vertexBufferData,
-		(ID3D11Buffer**)&m->vertexBuffer
-	);
-}
-
-extern "C" void avdl_graphics_direct3d11_setVertexBufferTexture(struct dd_meshTexture* m) {
-
-	// create array with vertex data
-	VertexPositionColor* vertices = (VertexPositionColor*)malloc(sizeof(struct VertexPositionColor) * m->parent.parent.vcount);
-	for (int i = 0; i < m->parent.parent.vcount; i++) {
-		vertices[i].pos = XMFLOAT3(
-			m->parent.parent.v[i * 3 + 0],
-			m->parent.parent.v[i * 3 + 1],
-			m->parent.parent.v[i * 3 + 2]
-		);
-		if (m->parent.c) {
-			vertices[i].color = XMFLOAT3(
-				m->parent.c[i * 3 + 0],
-				m->parent.c[i * 3 + 1],
-				m->parent.c[i * 3 + 2]
-			);
-		}
-		else {
-			vertices[i].color = XMFLOAT3(0.0f, 0.0f, 0.0f);
-		}
-		vertices[i].uv = XMFLOAT2(
-			m->t[i * 2 + 0],
-			1.0f -m->t[i * 2 + 1]
-		);
-	}
-
-	// pass array to d3d11
-	m->parent.parent.vertexBuffer = new ComPtr<ID3D11Buffer>();
-	D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-	vertexBufferData.pSysMem = vertices;
-	vertexBufferData.SysMemPitch = 0;
-	vertexBufferData.SysMemSlicePitch = 0;
-	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) * m->parent.parent.vcount, D3D11_BIND_VERTEX_BUFFER);
-	avdl_d3dDevice->CreateBuffer(
-		&vertexBufferDesc,
-		&vertexBufferData,
-		(ID3D11Buffer**)&m->parent.parent.vertexBuffer
-	);
-}
+//extern "C" void avdl_graphics_direct3d11_setVertexBufferTexture(struct dd_meshTexture* m) {
+//
+//	// create array with vertex data
+//	VertexPositionColor* vertices = (VertexPositionColor*)malloc(sizeof(struct VertexPositionColor) * m->parent.parent.vcount);
+//	for (int i = 0; i < m->parent.parent.vcount; i++) {
+//		vertices[i].pos = XMFLOAT3(
+//			m->parent.parent.v[i * 3 + 0],
+//			m->parent.parent.v[i * 3 + 1],
+//			m->parent.parent.v[i * 3 + 2]
+//		);
+//		if (m->parent.c) {
+//			vertices[i].color = XMFLOAT3(
+//				m->parent.c[i * 3 + 0],
+//				m->parent.c[i * 3 + 1],
+//				m->parent.c[i * 3 + 2]
+//			);
+//		}
+//		else {
+//			vertices[i].color = XMFLOAT3(0.0f, 0.0f, 0.0f);
+//		}
+//		vertices[i].uv = XMFLOAT2(
+//			m->t[i * 2 + 0],
+//			1.0f -m->t[i * 2 + 1]
+//		);
+//	}
+//
+//	// pass array to d3d11
+//	m->parent.parent.vertexBuffer = new ComPtr<ID3D11Buffer>();
+//	D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
+//	vertexBufferData.pSysMem = vertices;
+//	vertexBufferData.SysMemPitch = 0;
+//	vertexBufferData.SysMemSlicePitch = 0;
+//	CD3D11_BUFFER_DESC vertexBufferDesc(sizeof(VertexPositionColor) * m->parent.parent.vcount, D3D11_BIND_VERTEX_BUFFER);
+//	avdl_d3dDevice->CreateBuffer(
+//		&vertexBufferDesc,
+//		&vertexBufferData,
+//		(ID3D11Buffer**)&m->parent.parent.vertexBuffer
+//	);
+//}
 
 #endif

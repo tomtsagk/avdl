@@ -7,7 +7,6 @@ extern "C" {
 
 #include "avdl_vec3.h"
 #include "avdl_vec4.h"
-#include "dd_mesh.h"
 #include "avdl_node.h"
 
 #define AVDL_COLLIDER_TYPE_POINT 0

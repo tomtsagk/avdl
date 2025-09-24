@@ -1,8 +1,8 @@
 #ifndef AVDL_ASSETMANAGER_H
 #define AVDL_ASSETMANAGER_H
 
-#include "dd_meshColour.h"
 #include "shared/avdl_string.h"
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -6,7 +6,6 @@ extern "C" {
 #endif
 
 /* Needs mesh, to store data into */
-#include "dd_mesh.h"
 #include "dd_matrix.h"
 #include "avdl_vec3.h"
 #include "avdl_vec4.h"

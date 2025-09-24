@@ -50,7 +50,7 @@ static void clean_words(struct dd_string3d *o) {
 	for (int i = 0; i < o->textMeshes.elements; i++) {
 		struct dd_word_mesh *p;
 		p = avdl_da_get(&o->textMeshes, i);
-		dd_meshTexture_clean(&p->m);
+		avdl_mesh_clean(&p->m);
 		if (o->openglContextId == o->font->openglContextId) {
 			for (int j = 0; j < p->length; j++) {
 				avdl_font_releaseGlyph(o->font, p->glyph_ids[j]);
@@ -123,13 +123,13 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 		GLint MatrixID = avdl_graphics_GetUniformLocation(defaultProgram, "matrix");
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 
-		dd_meshTexture_draw(&m->m);
+		avdl_mesh_draw(&m->m);
 
 		dd_translatef(m->widthf, 0, 0);
 
 		// draw `.` every 3 digits
 		if ((num_len -i -1) %3 == 0 && (num_len -i -1) != 0) {
-			dd_meshTexture_draw(&mDot->m);
+			avdl_mesh_draw(&mDot->m);
 			dd_translatef(mDot->widthf, 0, 0);
 		}
 
@@ -210,13 +210,13 @@ void dd_string3d_drawIntPadded(struct dd_string3d *o, int num, int digits) {
 		GLint MatrixID = avdl_graphics_GetUniformLocation(defaultProgram, "matrix");
 		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 
-		dd_meshTexture_draw(m);
+		avdl_mesh_draw(&m->m);
 
 		dd_translatef(m->widthf, 0, 0);
 
 		// draw `.` every 3 digits
 		if ((num_len -i -1) %3 == 0 && (num_len -i -1) != 0) {
-			dd_meshTexture_draw(mDot);
+			avdl_mesh_draw(&mDot->m);
 			dd_translatef(mDot->widthf, 0, 0);
 		}
 
@@ -367,7 +367,7 @@ void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int words
 			avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
 			#endif
 
-			dd_meshTexture_draw(&m->m);
+			avdl_mesh_draw(&m->m);
 
 			#if !defined( AVDL_DIRECT3D11 )
 			avdl_graphics_UseProgram(previousProgram);
@@ -449,7 +449,7 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 		avdl_da_push(&o->textMeshes, &m);
 		p = avdl_da_get(&o->textMeshes, o->textMeshes.elements-1);
 
-		dd_meshTexture_create(&p->m);
+		avdl_mesh_create(&p->m);
 
 		// find characters until word end
 		p->length = 0;
@@ -475,13 +475,13 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 				if (strncmp(t, o->font->customIconKeyword[i], strlen(o->font->customIconKeyword[i])) == 0) {
 					t += strlen(o->font->customIconKeyword[i]);
 					p->widthf = 0.9;
-					dd_meshTexture_set_primitive(&p->m, DD_PRIMITIVE_RECTANGLE);
-					dd_meshColour_set_colour(&p->m, 0, 0, 0);
+					avdl_mesh_set_primitive(&p->m, AVDL_PRIMITIVE_RECTANGLE);
+					avdl_mesh_set_colour(&p->m, 0, 0, 0);
 
 					struct avdl_texture *img = o->font->customIcon[i];
-					dd_meshTexture_setTexture(&p->m, img);
-					dd_meshTexture_setTransparency(&p->m, 1);
-					dd_mesh_translatef(&p->m, 0.5, 0.1, 0);
+					avdl_mesh_setTexture(&p->m, img);
+					avdl_mesh_setTransparency(&p->m, 1);
+					//avdl_mesh_translatef(&p->m, 0.5, 0.1, 0); // TODO
 					foundIcon = 1;
 					break;
 				}
@@ -491,11 +491,34 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 			}
 		}
 
-		dd_meshTexture_setTexture(&p->m, &o->font->texture);
-		dd_meshTexture_setTransparency(&p->m, 1);
+		avdl_mesh_setTexture(&p->m, &o->font->texture);
+		avdl_mesh_setTransparency(&p->m, 1);
+
+		int letters = 0;
+		const char *tempptr = t;
+		while ((!isunicode(tempptr[0]) && tempptr[0] != ' ' && tempptr[0] != '\0' && strncmp(tempptr, "\\n", 2) != 0) || isunicode(tempptr[0])) {
+			if (isunicode(tempptr[0])) {
+				int l = 0;
+				utf8_decode(tempptr, &l);
+				tempptr += l;
+				letters += l;
+			}
+			else {
+				tempptr++;
+				letters++;
+			}
+		}
+		//avdl_log("Letters: %d %s", letters, t);
+
+		int verticesInRectangle = 6;
+		int vcount = verticesInRectangle *letters;
+		float *v = malloc(sizeof(float) *vcount *3);
+		float *tex = malloc(sizeof(float) *vcount *2);
+		//avdl_log("vcount: %d - v: %d", vcount, vcount *3);
 
 		// add each letter of the word
 		float advance = 0;
+		int letterIndex = 0;
 		while ((!isunicode(t[0]) && t[0] != ' ' && t[0] != '\0' && strncmp(t, "\\n", 2) != 0) || isunicode(t[0])) {
 			p->length++;
 
@@ -517,55 +540,102 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 
 			p->glyph_ids[p->length -1] = glyph_id;
 
-			struct dd_meshTexture m2;
-			dd_meshTexture_create(&m2);
-			dd_meshTexture_set_primitive(&m2, DD_PRIMITIVE_RECTANGLE);
+			struct avdl_mesh m3;
+			avdl_mesh_create(&m3);
+			avdl_mesh_set_primitive(&m3, AVDL_PRIMITIVE_RECTANGLE);
 
-			if (o->isOnce) {
-				dd_meshTexture_set_primitive_texcoords(&m2, 0, 0, 1, 1);
-			}
-			else {
-				dd_meshTexture_set_primitive_texcoords(&m2,
-					avdl_font_getTexCoordX(o->font, glyph_id),
-					#if defined( AVDL_DIRECT3D11 )
-					1 - avdl_font_getTexCoordY(o->font, glyph_id),
-					#else
-					avdl_font_getTexCoordY(o->font, glyph_id),
-					#endif
-					avdl_font_getTexCoordW(o->font, glyph_id),
-					#if defined( AVDL_DIRECT3D11 )
-					-avdl_font_getTexCoordH(o->font, glyph_id)
-					#else
-					avdl_font_getTexCoordH(o->font, glyph_id)
-					#endif
-				);
-			}
+			float glyphWidth  = avdl_font_getGlyphWidth (o->font, glyph_id);
+			float glyphHeight = avdl_font_getGlyphHeight(o->font, glyph_id);
 
-			dd_mesh_scalef(&m2,
-				avdl_font_getGlyphWidth (o->font, glyph_id),
-				avdl_font_getGlyphHeight(o->font, glyph_id),
-				1
-			);
-
-			dd_meshTexture_combine(&p->m, &m2,
-				-(avdl_font_getGlyphWidth(o->font, glyph_id) /2)
+			float offsetX = -(avdl_font_getGlyphWidth(o->font, glyph_id) /2)
 					+avdl_font_getGlyphWidth(o->font, glyph_id)
 					+avdl_font_getGlyphLeft(o->font, glyph_id)
-					+advance,
-				(avdl_font_getGlyphHeight(o->font, glyph_id) /2)
+					+advance;
+			float offsetY = (avdl_font_getGlyphHeight(o->font, glyph_id) /2)
 					-avdl_font_getGlyphHeight(o->font, glyph_id)
-					+avdl_font_getGlyphTop(o->font, glyph_id),
-				0
-			);
-			dd_meshTexture_clean(&m2);
+					+avdl_font_getGlyphTop(o->font, glyph_id);
+			//avdl_log("    v: %d / %d", letterIndex *18 +17, vcount *3);
+			v[letterIndex *18 +0] = -0.5;
+			v[letterIndex *18 +1] =  0.5;
+			v[letterIndex *18 +2] = 0;
+
+			v[letterIndex *18 +3] = -0.5;
+			v[letterIndex *18 +4] = -0.5;
+			v[letterIndex *18 +5] = 0;
+
+			v[letterIndex *18 +6] =  0.5;
+			v[letterIndex *18 +7] = -0.5;
+			v[letterIndex *18 +8] = 0;
+
+			v[letterIndex *18 + 9] =  0.5;
+			v[letterIndex *18 +10] = -0.5;
+			v[letterIndex *18 +11] = 0;
+
+			v[letterIndex *18 +12] = 0.5;
+			v[letterIndex *18 +13] = 0.5;
+			v[letterIndex *18 +14] = 0;
+
+			v[letterIndex *18 +15] = -0.5;
+			v[letterIndex *18 +16] =  0.5;
+			v[letterIndex *18 +17] = 0;
+
+			if (o->isOnce) {
+
+				//avdl_log("    t#1: %d / %d", letterIndex *12 +11, vcount *2);
+				tex[letterIndex *12 +0] = 0;
+				tex[letterIndex *12 +1] = 0;
+
+				tex[letterIndex *12 +2] = 1;
+				tex[letterIndex *12 +3] = 0;
+
+				tex[letterIndex *12 +4] = 0;
+				tex[letterIndex *12 +5] = 1;
+
+				tex[letterIndex *12 +6] = 0;
+				tex[letterIndex *12 +7] = 1;
+
+				tex[letterIndex *12 +8] = 1;
+				tex[letterIndex *12 +9] = 1;
+
+				tex[letterIndex *12 +10] = 1;
+				tex[letterIndex *12 +11] = 0;
+			}
+			else {
+				float offsetX = avdl_font_getTexCoordX(o->font, glyph_id);
+				float offsetY = avdl_font_getTexCoordY(o->font, glyph_id);
+				#if defined( AVDL_DIRECT3D11 )
+				offsetY = 1 -offsetY;
+				#endif
+				float sizeX = avdl_font_getTexCoordW(o->font, glyph_id);
+				float sizeY = avdl_font_getTexCoordH(o->font, glyph_id);
+				#if defined( AVDL_DIRECT3D11 )
+				sizeY = -sizeY;
+				#endif
+
+				for (int i = 0; i < vcount; i++) {
+					tex[letterIndex *12 +(i*2+0)] = (v[letterIndex *18 +(i*3+0)] +0.5) *sizeX +offsetX;
+					tex[letterIndex *12 +(i*2+1)] = (v[letterIndex *18 +(i*3+1)] +0.5) *sizeY +offsetY;
+				}
+			}
+			for (int i = 0; i < 18; i += 3) {
+				v[letterIndex *18 +i +0] *= glyphWidth;
+				v[letterIndex *18 +i +1] *= glyphHeight;
+
+				v[letterIndex *18 +i +0] += offsetX;
+				v[letterIndex *18 +i +1] += offsetY;
+			}
+
+			avdl_mesh_clean(&m3);
 
 			// move to next character
 			advance += avdl_font_getGlyphAdvance(o->font, glyph_id);
+			letterIndex++;
 
 		}
+		avdl_mesh_SetCustomData(&p->m, vcount, v, 0, tex);
 		p->widthf = advance;
 
-		dd_meshColour_set_colour(&p->m, 0, 0, 0);
+		avdl_mesh_set_colour(&p->m, 0, 0, 0);
 
 	} while (t[0] != '\0');
 

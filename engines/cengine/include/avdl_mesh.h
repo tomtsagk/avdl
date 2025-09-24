@@ -69,45 +69,8 @@ struct avdl_mesh {
 
 	struct avdl_mesh_data *data;
 
-	// number of vertices
-	int vcount;
-
-	// vertex attributes
-	float *v;
-	int dirtyVertices;
-	float *c;
-	int dirtyColours;
-	float *t;
-	int dirtyTextures;
-	float *n;
-	int dirtyNormals;
-
-	// bounds
-	struct avdl_vec3 boundsCenter;
-	struct avdl_vec3 boundsExtend;
-
-	// bump map
-	float *tan;
-	int dirtyTan;
-	float *bitan;
-	int dirtyBitan;
-
-	// structs
-	void *verticesCol;
-	int dirtyColourArrayObject;
-
 	// draw solid or wireframe
-	int draw_type;
 	float lineWidth;
-
-	// array buffer object
-	#if !defined( AVDL_DIRECT3D11 )
-	GLuint buffer;
-	GLuint array;
-	#endif
-
-	// graphics context
-	int graphicsContextId;
 
 	// textures
 	// texture to be used
@@ -120,8 +83,6 @@ struct avdl_mesh {
 
 	// init mesh
 	void (*clean)(struct avdl_mesh *);
-
-	avdl_graphics_mesh* vertexBuffer;
 };
 
 // global data
@@ -159,8 +120,6 @@ void avdl_mesh_setSolid(struct avdl_mesh *o);
 void avdl_mesh_SetTypeLine(struct avdl_mesh *o, float lineWidth);
 
 int avdl_mesh_hasTexture(struct avdl_mesh *o);
-
-//void avdl_mesh_LoadFromLoadedMesh(struct avdl_mesh *o, struct dd_loaded_mesh *loadedMesh);
 
 struct avdl_vec3 *avdl_mesh_GetBoundsCenter(struct avdl_mesh *o);
 struct avdl_vec3 *avdl_mesh_GetBoundsExtend(struct avdl_mesh *o);

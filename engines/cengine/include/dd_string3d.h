@@ -3,7 +3,7 @@
 
 #include "avdl_cengine.h"
 #include "avdl_texture.h"
-#include "dd_meshTexture.h"
+#include "avdl_mesh.h"
 #include "avdl_font.h"
 
 #ifdef __cplusplus
@@ -23,7 +23,7 @@ enum dd_string3d_align_vertical {
 };
 
 struct dd_word_mesh {
-	struct dd_meshTexture m;
+	struct avdl_mesh m;
 	int glyph_ids[100];
 	int length;
 	float widthf;

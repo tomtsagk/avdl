@@ -1,4 +1,3 @@
-#include "dd_mesh.h"
 #include "dd_filetomesh.h"
 #include "shared/avdl_dynamic_array.h"
 #include "shared/avdl_log.h"
@@ -991,8 +990,6 @@ int dd_load_obj(struct dd_loaded_mesh *m, const char *path, int settings) {
 		m->v[(i*3)+1] = vec->y;
 		m->v[(i*3)+2] = vec->z;
 	}
-
-	//dd_mesh_to_vbo(m);
 
 	return 0;
 

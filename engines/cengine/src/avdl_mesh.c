@@ -246,6 +246,7 @@ static float shape_line[] = {
 	 0.5, 0.0, 0.0,
 };
 
+/*
 static void clean_position(struct avdl_mesh *m) {
 	if (m->v && m->dirtyVertices) {
 		free(m->v);
@@ -292,42 +293,14 @@ static void clean_bitan(struct avdl_mesh *m) {
 	}
 	m->bitan = 0;
 }
+*/
 
 // constructor
 void avdl_mesh_create(struct avdl_mesh *m) {
 
 	m->data = 0;
 
-	// num of vertices
-	m->vcount = 0;
-
-	// vertex attributes
-	m->v = 0;
-	m->dirtyVertices = 0;
-	m->c = 0;
-	m->dirtyColours = 0;
-	m->n = 0;
-	m->dirtyNormals = 0;
-
-	// bump map
-	m->tan = 0;
-	m->dirtyTan = 0;
-	m->bitan = 0;
-	m->dirtyBitan = 0;
-
-	// graphics context
-	m->graphicsContextId = -1;
-
-	// draw solid or wireframe
-	m->draw_type = 0;
-
-	// array
-	m->verticesCol = 0;
-	m->dirtyColourArrayObject = 0;
-
 	// textures
-	m->dirtyTextures = 0;
-	m->t = 0;
 	m->img = 0;
 	m->img_normal = 0;
 	for (int i = 0; i < TEXTURES_COUNT; i++) {
@@ -337,26 +310,14 @@ void avdl_mesh_create(struct avdl_mesh *m) {
 
 	m->clean = avdl_mesh_clean;
 
-	#if !defined( AVDL_DIRECT3D11 )
-	m->buffer = 0;
-	m->array = 0;
-	#endif
-
-	m->vertexBuffer = 0;
-
 	m->lineWidth = 1.0;
-
-	avdl_vec3_create(&m->boundsCenter);
-	avdl_vec3_Setf(&m->boundsCenter, 0, 0, 0);
-	avdl_vec3_create(&m->boundsExtend);
-	avdl_vec3_Setf(&m->boundsExtend, 0, 0, 0);
 
 }
 
 void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
 
 	// clean previous vertices
-	clean_position(m);
+	//clean_position(m);
 
 	// set mesh shape based on given value
 	switch (shape) {
@@ -569,29 +530,17 @@ static void CleanData(struct avdl_mesh *m) {
  * load function or not used anymore.
  */
 void avdl_mesh_clean(struct avdl_mesh *m) {
+	/*
 	clean_position(m);
 	clean_colour(m);
 	clean_textures(m);
 	clean_normals(m);
 	clean_tan(m);
 	clean_bitan(m);
+	*/
 
 	CleanData(m);
 
-	#if !defined( AVDL_DIRECT3D11 )
-	if (m->array) {
-		glDeleteVertexArrays(1, &m->array);
-		glDeleteBuffers(1, &m->buffer);
-		m->array = 0;
-		m->buffer = 0;
-	}
-	#endif
-
-	if (m->dirtyColourArrayObject) {
-		free(m->verticesCol);
-		m->verticesCol = 0;
-		m->dirtyColourArrayObject = 0;
-	}
 }
 
 extern struct dd_matrix matPerspective;
@@ -600,6 +549,15 @@ extern struct dd_matrix matModel[];
 extern int matModel_index;
 
 void avdl_mesh_draw2(struct avdl_mesh *m) {
+}
+
+/* draw the mesh itself
+ */
+void avdl_mesh_draw(struct avdl_mesh *m) {
+	if (!m->data) {
+		return;
+	}
+
 	if (m->data->hasError || m->data->vcount == 0) {
 		return;
 	}
@@ -706,13 +664,13 @@ void avdl_mesh_draw2(struct avdl_mesh *m) {
 		}
 		if (m->data->boneIds) {
 			memcpy(((char *)verticesCol) +boneIdsOffset, m->data->boneIds, boneIdsSize);
-			//free(m->data->boneIds);
-			//m->data->boneIds = 0;
+			free(m->data->boneIds);
+			m->data->boneIds = 0;
 		}
 		if (m->data->weights) {
 			memcpy(((char *)verticesCol) +weightsOffset, m->data->weights, weightsSize);
-			//free(m->data->weights);
-			//m->data->weights = 0;
+			free(m->data->weights);
+			m->data->weights = 0;
 		}
 
 		// generate array object
@@ -816,10 +774,6 @@ void avdl_mesh_draw2(struct avdl_mesh *m) {
 			}
 		}
 
-		// generate buffer for indices
-		GL(glGenBuffers(1, &m->data->bufferIndices));
-		GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->data->bufferIndices));
-
 		size_t indicesSize = 0;
 		if (m->data->indicesType == AVDL_GRAPHICS_INDICETYPE_UBYTE) {
 			indicesSize = sizeof(GLubyte) *m->data->indicesCount;
@@ -831,10 +785,22 @@ void avdl_mesh_draw2(struct avdl_mesh *m) {
 		else {
 			avdl_log("indice type is wrong ?");
 		}
-		if (indicesSize == 0 || GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, m->data->indices, GL_STATIC_DRAW)) != 0) {
-			GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-			GL(glDeleteBuffers(1, &m->data->bufferIndices));
-			m->data->bufferIndices = 0;
+
+		if (indicesSize > 0) {
+
+			// generate buffer for indices
+			GL(glGenBuffers(1, &m->data->bufferIndices));
+			GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->data->bufferIndices));
+
+			if (GL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, m->data->indices, GL_STATIC_DRAW)) == 0) {
+				free(m->data->indices);
+				m->data->indices = 0;
+			}
+			else {
+				GL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+				GL(glDeleteBuffers(1, &m->data->bufferIndices));
+				m->data->bufferIndices = 0;
+			}
 		}
 
 	}
@@ -913,14 +879,12 @@ void avdl_mesh_draw2(struct avdl_mesh *m) {
 	||  m->data->verticesType == AVDL_GRAPHICS_VTYPE_LINE_LOOP) {
 		// not possible on OpenGL ES
 		//GL(glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ));
-
 		GL(glLineWidth(m->lineWidth));
 	}
 
 	// actual draw call
-	if (m->data->indices) {
-		//GL(glDrawElements(m->data->verticesType, m->data->indicesCount, m->data->indicesType, m->data->indices));
-		GL(glDrawElements(m->data->verticesType, m->data->indicesCount, m->data->indicesType, 0));
+	if (m->data->indices || m->data->bufferIndices > 0) {
+		GL(glDrawElements(m->data->verticesType, m->data->indicesCount, m->data->indicesType, m->data->indices));
 	}
 	else {
 		GL(glDrawArrays(m->data->verticesType, 0, m->data->vcount));
@@ -945,16 +909,6 @@ void avdl_mesh_draw2(struct avdl_mesh *m) {
 	if (m->hasTransparency) {
 		avdl_graphics_DisableBlend();
 	}
-}
-
-/* draw the mesh itself
- */
-void avdl_mesh_draw(struct avdl_mesh *m) {
-	if (m->data) {
-		avdl_mesh_draw2(m);
-		return;
-	}
-	return;
 	#ifdef AVDL_DIRECT3D11
 	/*
 	if (!m->vertexBuffer && m->v) {
@@ -970,256 +924,6 @@ void avdl_mesh_draw(struct avdl_mesh *m) {
 	}
 	avdl_graphics_direct3d11_drawMeshTexture(m, dd_matrix_globalGet());
 	*/
-	#else
-	if (!m->v) {
-		return;
-	}
-
-	if (m->array == 0 || m->graphicsContextId != avdl_graphics_getContextId()) {
-
-		// keep graphics context up to date
-                m->graphicsContextId = avdl_graphics_getContextId();
-
-		size_t totalSize = 0;
-
-		// vertex positions
-		size_t posOffset = 0;
-		size_t posSize = sizeof(float) *3 *m->vcount;
-		totalSize += posSize;
-
-		// vertex colours
-		size_t colOffset = posOffset +posSize;
-		size_t colSize = 0;
-		if (m->c) {
-			//#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
-			//colSize = sizeof(float) *4 *m->vcount;
-			//#else
-			colSize = sizeof(float) *3 *m->vcount;
-			//#endif
-		}
-		totalSize += colSize;
-
-		// texture coordinates
-		size_t texOffset = colOffset +colSize;
-		size_t texSize = 0;
-		if (m->t) {
-			texSize = sizeof(float) *2 *m->vcount;
-		}
-		totalSize += texSize;
-
-		// normals
-		size_t norOffset = texOffset +texSize;
-		size_t norSize = 0;
-		if (m->n) {
-			norSize = sizeof(float) *3 *m->vcount;
-		}
-		totalSize += norSize;
-
-		// tan
-		size_t tanOffset = norOffset +norSize;
-		size_t tanSize = 0;
-		if (m->tan) {
-			tanSize = sizeof(float) *3 *m->vcount;
-		}
-		totalSize += tanSize;
-
-		// bitan
-		size_t bitanOffset = tanOffset +tanSize;
-		size_t bitanSize = 0;
-		if (m->bitan) {
-			bitanSize = sizeof(float) *3 *m->vcount;
-		}
-		totalSize += bitanSize;
-
-		// create array as one unit
-		m->verticesCol = malloc( totalSize );
-		m->dirtyColourArrayObject = 1;
-		memcpy(((char *)m->verticesCol) +posOffset, m->v, posSize);
-		if (m->c) {
-			memcpy(((char *)m->verticesCol) +colOffset, m->c, colSize);
-		}
-		if (m->t) {
-			memcpy(((char *)m->verticesCol) +texOffset, m->t, texSize);
-		}
-		if (m->n) {
-			memcpy(((char *)m->verticesCol) +norOffset, m->n, norSize);
-		}
-		if (m->tan) {
-			memcpy(((char *)m->verticesCol) +tanOffset, m->tan, tanSize);
-		}
-		if (m->bitan) {
-			memcpy(((char *)m->verticesCol) +bitanOffset, m->bitan, bitanSize);
-		}
-
-		// generate array object
-		GL(glGenVertexArrays(1, &m->array));
-		GL(glBindVertexArray(m->array));
-	
-		// generate buffer attached to array
-		GL(glGenBuffers(1, &m->buffer));
-		GL(glBindBuffer(GL_ARRAY_BUFFER, m->buffer));
-
-		// give data to buffer
-		GL(glBufferData(GL_ARRAY_BUFFER, totalSize, m->verticesCol, GL_STATIC_DRAW));
-	
-		// attach vertex positions to current program
-		int pos = glGetAttribLocation(currentProgram, "position");
-		// program has `position`
-		if (pos != -1) {
-			GL(glVertexAttribPointer(pos, 3, GL_FLOAT, 0, 0, (void *) posOffset));
-			GL(glEnableVertexAttribArray(pos));
-		}
-
-		// attach vertex colours
-		if (m->c) {
-			int col = glGetAttribLocation(currentProgram, "colour");
-			// program has colours
-			if (col != -1) {
-				GL(glVertexAttribPointer(col, 3, GL_FLOAT, 0, 0, (void *) colOffset));
-				GL(glEnableVertexAttribArray(col));
-			}
-		}
-
-		// attach texture coordinates
-		if (m->t) {
-			int tex = glGetAttribLocation(currentProgram, "texCoord");
-			// program has texCoord
-			if (tex != -1) {
-				GL(glVertexAttribPointer(tex, 2, GL_FLOAT, 0, 0, (void *) texOffset));
-				GL(glEnableVertexAttribArray(tex));
-			}
-		}
-
-		// attach normal
-		if (m->n) {
-			int nor = glGetAttribLocation(currentProgram, "normal");
-			// program has normal
-			if (nor != -1) {
-				GL(glVertexAttribPointer(nor, 3, GL_FLOAT, 0, 0, (void *) norOffset));
-				GL(glEnableVertexAttribArray(nor));
-			}
-		}
-
-		// attach tan
-		if (m->tan) {
-			int tanLoc = glGetAttribLocation(currentProgram, "tangent");
-			// program has tan
-			if (tanLoc != -1) {
-				GL(glVertexAttribPointer(tanLoc, 3, GL_FLOAT, 0, 0, (void *) tanOffset));
-				GL(glEnableVertexAttribArray(tanLoc));
-			}
-		}
-
-		// attach bitan
-		if (m->bitan) {
-			int bitanLoc = glGetAttribLocation(currentProgram, "bitangent");
-			// program has bitan
-			if (bitanLoc != -1) {
-				GL(glVertexAttribPointer(bitanLoc, 3, GL_FLOAT, 0, 0, (void *) bitanOffset));
-				GL(glEnableVertexAttribArray(bitanLoc));
-			}
-		}
-	}
-
-	if (m->hasTransparency) {
-		avdl_graphics_EnableBlend();
-	}
-
-	if (m->img) {
-		avdl_texture_bindIndex(m->img, 0);
-		GLuint loc = glGetUniformLocation(currentProgram, "image");
-		if (loc != -1) {
-			GL(glUniform1i(loc, 0));
-		}
-	}
-	if (m->img_normal) {
-		avdl_texture_bindIndex(m->img_normal, 1);
-		GLuint loc = glGetUniformLocation(currentProgram, "image_normal");
-		if (loc != -1) {
-			GL(glUniform1i(loc, 1));
-		}
-	}
-	for (int i = 0; i < TEXTURES_COUNT; i++) {
-		if (!m->img_extra[i]) {
-			continue;
-		}
-		avdl_texture_bindIndex(m->img_extra[i], 2 +i);
-		char shadername[20] = "image_extra_X";
-		shadername[12] = '0' +i;
-		GLuint loc = -1;
-		loc = glGetUniformLocation(currentProgram, shadername);
-		if (loc != -1) {
-			GL(glUniform1i(loc, 2 +i));
-		}
-	}
-
-	GL(glBindVertexArray(m->array));
-
-	#if defined(AVDL_QUEST2)
-	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
-	if (MatrixID < 0) {
-		//avdl_log("avdl: avdl_mesh: location of `matrix` not found in current program");
-	}
-	else {
-		GL(glUniformMatrix4fv(
-			MatrixID,
-			1,
-			GL_TRUE,
-			(float *)dd_matrix_globalGet()
-		));
-	}
-	#else
-	int MatrixID = avdl_graphics_GetUniformLocation(currentProgram, "matrix");
-	if (MatrixID < 0) {
-		//avdl_log("avdl: avdl_mesh: location of `matrix` not found in current program");
-	}
-	else {
-		avdl_graphics_SetUniformMatrix4f(MatrixID, (float *)dd_matrix_globalGet());
-	}
-	int MatrixIDProjection = avdl_graphics_GetUniformLocation(currentProgram, "matrix_projection");
-	if (MatrixIDProjection >= 0) {
-		avdl_graphics_SetUniformMatrix4f(MatrixIDProjection, (float *)&matPerspective);
-	}
-	int MatrixIDView = avdl_graphics_GetUniformLocation(currentProgram, "matrix_view");
-	if (MatrixIDView >= 0) {
-		avdl_graphics_SetUniformMatrix4f(MatrixIDView, (float *)&matView);
-	}
-	int MatrixIDModel = avdl_graphics_GetUniformLocation(currentProgram, "matrix_model");
-	if (MatrixIDModel >= 0) {
-		avdl_graphics_SetUniformMatrix4f(MatrixIDModel, (float *)&matModel[matModel_index]);
-	}
-	#endif
-
-	// draw arrays
-	if (m->draw_type) {
-		// not possible on OpenGL ES
-		//GL(glPolygonMode( GL_FRONT_AND_BACK, GL_LINE ));
-		GL(glLineWidth(m->lineWidth));
-		GL(glDrawArrays(GL_LINES, 0, m->vcount));
-	}
-	else {
-		GL(glDrawArrays(GL_TRIANGLES, 0, m->vcount));
-	}
-	GL(glBindVertexArray(0));
-
-	if (m->img) {
-		avdl_texture_unbindIndex(m->img, 0);
-	}
-
-	if (m->img_normal) {
-		avdl_texture_unbindIndex(m->img_normal, 1);
-	}
-
-	for (int i = 0; i < TEXTURES_COUNT; i++) {
-		if (!m->img_extra[i]) {
-			continue;
-		}
-		avdl_texture_unbindIndex(m->img_extra[i], 2 +i);
-	}
-
-	if (m->hasTransparency) {
-		avdl_graphics_DisableBlend();
-	}
 	#endif
 }
 
@@ -1315,6 +1019,7 @@ void avdl_mesh_loadLocal(struct avdl_mesh *m, const char *asset) {
 }
 
 void avdl_mesh_copy(struct avdl_mesh *dest, struct avdl_mesh *src) {
+	/*
 	avdl_mesh_clean(dest);
 	dest->vcount = src->vcount;
 	dest->v = malloc(src->vcount *sizeof(float) *3);
@@ -1334,9 +1039,11 @@ void avdl_mesh_copy(struct avdl_mesh *dest, struct avdl_mesh *src) {
 		memcpy(dest->t, src->t, sizeof(float) *(dest->vcount*2));
 		dest->dirtyTextures = 1;
 	}
+	*/
 }
 
 void avdl_mesh_combine(struct avdl_mesh *dst, struct avdl_mesh *src, float offsetX, float offsetY, float offsetZ) {
+	/*
 	dst->v = realloc(dst->v, (dst->vcount +src->vcount) *sizeof(float) *3);
 	dst->dirtyVertices = 1;
 	for (int i = dst->vcount *3; i < (dst->vcount +src->vcount) *3; i += 3) {
@@ -1383,9 +1090,11 @@ void avdl_mesh_combine(struct avdl_mesh *dst, struct avdl_mesh *src, float offse
 			}
 		}
 	}
+	*/
 }
 
 void avdl_mesh_translatef(struct avdl_mesh *o, float x, float y, float z) {
+	/*
 	if (o->v && !o->dirtyVertices) {
 		float *p = malloc(sizeof(float) *o->vcount *3);
 		memcpy(p, o->v, sizeof(float) *o->vcount *3);
@@ -1397,9 +1106,11 @@ void avdl_mesh_translatef(struct avdl_mesh *o, float x, float y, float z) {
 		o->v[i*3 +1] += y;
 		o->v[i*3 +2] += z;
 	}
+	*/
 }
 
 void avdl_mesh_scalef(struct avdl_mesh *o, float x, float y, float z) {
+	/*
 	if (o->v && !o->dirtyVertices) {
 		float *p = malloc(sizeof(float) *o->vcount *3);
 		memcpy(p, o->v, sizeof(float) *o->vcount *3);
@@ -1411,10 +1122,11 @@ void avdl_mesh_scalef(struct avdl_mesh *o, float x, float y, float z) {
 		o->v[i*3 +1] *= y;
 		o->v[i*3 +2] *= z;
 	}
+	*/
 }
 
 void avdl_mesh_set_colour(struct avdl_mesh *m, float r, float g, float b) {
-	clean_colour(m);
+	//clean_colour(m);
 //	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 //	m->c = malloc(m->vcount *sizeof(float) *4);
 //	m->dirtyColours = 1;
@@ -1456,6 +1168,7 @@ void avdl_mesh_set_colour(struct avdl_mesh *m, float r, float g, float b) {
 }
 
 void avdl_mesh_set_primitive_texcoords(struct avdl_mesh *m, float offsetX, float offsetY, float sizeX, float sizeY) {
+	/*
 	for (int i = 0; i < m->vcount*2; i += 2) {
 		m->t[i+0] *= sizeX;
 		m->t[i+0] += offsetX;
@@ -1463,6 +1176,7 @@ void avdl_mesh_set_primitive_texcoords(struct avdl_mesh *m, float offsetX, float
 		m->t[i+1] *= sizeY;
 		m->t[i+1] += offsetY;
 	}
+	*/
 }
 
 void avdl_mesh_setTransparency(struct avdl_mesh *o, int transparency) {
@@ -1490,23 +1204,22 @@ int avdl_mesh_hasTexture(struct avdl_mesh *o) {
 }
 
 void avdl_mesh_setWireframe(struct avdl_mesh *o) {
-	o->draw_type = 1;
 }
 
 void avdl_mesh_setSolid(struct avdl_mesh *o) {
-	o->draw_type = 0;
 }
 
 void avdl_mesh_SetTypeLine(struct avdl_mesh *o, float lineWidth) {
-	o->draw_type = 1;
 	o->lineWidth = lineWidth;
 }
 
 struct avdl_vec3 *avdl_mesh_GetBoundsCenter(struct avdl_mesh *o) {
-	return &o->boundsCenter;
+	//return &o->boundsCenter;
+	return 0;
 }
 struct avdl_vec3 *avdl_mesh_GetBoundsExtend(struct avdl_mesh *o) {
-	return &o->boundsExtend;
+	//return &o->boundsExtend;
+	return 0;
 }
 
 static int load_ply(struct avdl_mesh_data *data, const char *path);
@@ -3145,6 +2858,11 @@ static int load_gltf_internal(struct avdl_mesh_data *m, cgltf_options *options, 
 }
 
 int avdl_mesh_SetCustomData(struct avdl_mesh *m, int vcount, float *pos, float *col, float *tex) {
+
+	if (m->data) {
+		avdl_log("avdl_mesh_SetCustomData: Currently not supporting setting custom data when other data is available");
+		return -1;
+	}
 
 	m->data = CreateMeshData();
 
