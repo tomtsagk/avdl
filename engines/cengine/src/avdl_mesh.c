@@ -1213,11 +1213,15 @@ void avdl_mesh_SetTypeLine(struct avdl_mesh *o, float lineWidth) {
 }
 
 struct avdl_vec3 *avdl_mesh_GetBoundsCenter(struct avdl_mesh *o) {
-	//return &o->boundsCenter;
+	if (o->data) {
+		return &o->data->boundsCenter;
+	}
 	return 0;
 }
 struct avdl_vec3 *avdl_mesh_GetBoundsExtend(struct avdl_mesh *o) {
-	//return &o->boundsExtend;
+	if (o->data) {
+		return &o->data->boundsExtend;
+	}
 	return 0;
 }
 
@@ -1815,33 +1819,33 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 						p = skip_to_whitespace(p);
 
 						if ( is_vertex && strncmp( property->name, "x", strlen("x") ) == 0) {
+							array_vertex_pos[j*3 +0] = f;
 							if (j == 0 || avdl_vec3_X(&boundsMin) > array_vertex_pos[j*3 +0]) {
 								avdl_vec3_SetX(&boundsMin, array_vertex_pos[j*3 +0]);
 							}
 							if (j == 0 || avdl_vec3_X(&boundsMax) < array_vertex_pos[j*3 +0]) {
 								avdl_vec3_SetX(&boundsMax, array_vertex_pos[j*3 +0]);
 							}
-							array_vertex_pos[j*3 +0] = f;
 						}
 						else
 						if ( is_vertex && strncmp( property->name, "y", strlen("y") ) == 0) {
+							array_vertex_pos[j*3 +1] = f;
 							if (j == 0 || avdl_vec3_Y(&boundsMin) > array_vertex_pos[j*3 +1]) {
 								avdl_vec3_SetY(&boundsMin, array_vertex_pos[j*3 +1]);
 							}
 							if (j == 0 || avdl_vec3_Y(&boundsMax) < array_vertex_pos[j*3 +1]) {
 								avdl_vec3_SetY(&boundsMax, array_vertex_pos[j*3 +1]);
 							}
-							array_vertex_pos[j*3 +1] = f;
 						}
 						else
 						if ( is_vertex && strncmp( property->name, "z", strlen("z") ) == 0) {
+							array_vertex_pos[j*3 +2] = f;
 							if (j == 0 || avdl_vec3_Z(&boundsMin) > array_vertex_pos[j*3 +2]) {
 								avdl_vec3_SetZ(&boundsMin, array_vertex_pos[j*3 +2]);
 							}
 							if (j == 0 || avdl_vec3_Z(&boundsMax) < array_vertex_pos[j*3 +2]) {
 								avdl_vec3_SetZ(&boundsMax, array_vertex_pos[j*3 +2]);
 							}
-							array_vertex_pos[j*3 +2] = f;
 						}
 						else
 						if ( is_vertex && strncmp( property->name, "nx", strlen("nx") ) == 0 && has_normals) {

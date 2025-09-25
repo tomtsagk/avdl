@@ -554,7 +554,12 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 			float offsetY = (avdl_font_getGlyphHeight(o->font, glyph_id) /2)
 					-avdl_font_getGlyphHeight(o->font, glyph_id)
 					+avdl_font_getGlyphTop(o->font, glyph_id);
-			//avdl_log("    v: %d / %d", letterIndex *18 +17, vcount *3);
+			if (letterIndex *18 +18 >= vcount *3) {
+				//avdl_log("    v (good): %d / %d", letterIndex *18 +17, vcount *3);
+			}
+			if (letterIndex *18 +17 >= vcount *3) {
+				//avdl_log("    v: %d / %d", letterIndex *18 +17, vcount *3);
+			}
 			v[letterIndex *18 +0] = -0.5;
 			v[letterIndex *18 +1] =  0.5;
 			v[letterIndex *18 +2] = 0;
@@ -581,7 +586,12 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 
 			if (o->isOnce) {
 
-				//avdl_log("    t#1: %d / %d", letterIndex *12 +11, vcount *2);
+				if (letterIndex *12 +12 >= vcount *2) {
+					//avdl_log("    t#1 (good): %d / %d", letterIndex *12 +11, vcount *2);
+				}
+				if (letterIndex *12 +11 >= vcount *2) {
+					//avdl_log("    t#1: %d / %d", letterIndex *12 +11, vcount *2);
+				}
 				tex[letterIndex *12 +0] = 0;
 				tex[letterIndex *12 +1] = 0;
 
@@ -612,10 +622,22 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 				sizeY = -sizeY;
 				#endif
 
-				for (int i = 0; i < vcount; i++) {
+				if ((letterIndex *12 +(5*2+2)) >= vcount *2) {
+					//avdl_log("    t#2 (good): %d / %d", letterIndex *12 +(5*2+1), vcount *2);
+				}
+				if ((letterIndex *12 +(5*2+1)) >= vcount *2) {
+					//avdl_log("    t#2: %d / %d", letterIndex *12 +(5*2+1), vcount *2);
+				}
+				for (int i = 0; i < 6; i++) {
 					tex[letterIndex *12 +(i*2+0)] = (v[letterIndex *18 +(i*3+0)] +0.5) *sizeX +offsetX;
 					tex[letterIndex *12 +(i*2+1)] = (v[letterIndex *18 +(i*3+1)] +0.5) *sizeY +offsetY;
 				}
+			}
+			if (letterIndex *18 +15 +3 >= vcount *3) {
+				//avdl_log("    v#2 (good): %d / %d", letterIndex *18 +17 +1, vcount *3);
+			}
+			if (letterIndex *18 +15 +1 >= vcount *3) {
+				//avdl_log("    v#2: %d / %d", letterIndex *18 +17 +1, vcount *3);
 			}
 			for (int i = 0; i < 18; i += 3) {
 				v[letterIndex *18 +i +0] *= glyphWidth;
