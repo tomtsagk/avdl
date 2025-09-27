@@ -367,6 +367,7 @@ void avdl_assetManager_loadAssets() {
 
 			void *data = m->loadOperation(m->filename);
 			if (!data) {
+				totalAssetsLoaded++;
 				avdl_log("avdl: AssetManager: failed to execute load operation: %s", m->filename);
 				continue;
 			}
