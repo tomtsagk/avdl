@@ -120,7 +120,9 @@ INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/man/man1/ \
 	${DESTDIR}${prefix}/share/avdl/scripts \
 	${DESTDIR}${prefix}/share/vim/vimfiles/syntax/ \
 	${DESTDIR}${prefix}/share/vim/vimfiles/ftdetect/ \
-	${DESTDIR}${prefix}/include
+	${DESTDIR}${prefix}/include \
+	${DESTDIR}${prefix}/lib/avdl/cengine/src \
+	${DESTDIR}${prefix}/lib/avdl/cengine/include
 
 ${INSTALL_DIRS}:
 	mkdir -p $@
@@ -138,17 +140,14 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	@# scripts
 	install -m644 scripts/* ${DESTDIR}${prefix}/share/avdl/scripts
 	@# c engine
-	install -m644 ${ENGINE_FILES_HEADERS} ${DESTDIR}${prefix}/include
-	cp -r ./include/shared ${DESTDIR}${prefix}/include
-	cp -r ${CENGINE_PATH}/src/* ${DESTDIR}${prefix}/share/avdl/cengine
-	cp -r ./src/shared ${DESTDIR}${prefix}/share/avdl/cengine
+	install -m644 ${ENGINE_FILES_HEADERS} ${DESTDIR}${prefix}/lib/avdl/cengine/include/
+	cp -r ./include/shared ${DESTDIR}${prefix}/lib/avdl/cengine/include/
+	cp -r ${CENGINE_PATH}/src/* ${DESTDIR}${prefix}/lib/avdl/cengine/src/
+	cp -r ./src/shared ${DESTDIR}${prefix}/lib/avdl/cengine/src/
 	@# android engine
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
-	cp -r engines/cengine/src/* engines/cengine/include/*\
-		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine
 	sed -i '/%AVDL_ENGINE_FILES%/ s#%AVDL_ENGINE_FILES%#${ENGINE_FILES_ANDROID}#'\
 		${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/CMakeLists.txt.in
-	cp -r ./src/shared ./include/shared ${DESTDIR}${prefix}/share/avdl/android/app/src/main/cpp/engine
 	@# quest2 engine
 	cp -r engines/quest2/* ${DESTDIR}${prefix}/share/avdl/quest2
 	cp -r engines/cengine/src/* engines/cengine/include/*.h\

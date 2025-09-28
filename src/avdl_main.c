@@ -231,7 +231,7 @@ int create_android_directory(const char *androidDirName) {
 	avdl_string_cat(&cenginePath, avdl_pkg_GetProjectPath());
 	avdl_string_cat(&cenginePath, "/share/avdl/android");
 	if ( !avdl_string_isValid(&cenginePath) ) {
-		avdl_log_error("cannot construct path of cengine: %s", avdl_string_getError(&cenginePath));
+		avdl_log_error("cannot construct path of android engine: %s", avdl_string_getError(&cenginePath));
 		avdl_string_clean(&cenginePath);
 		return -1;
 	}
@@ -242,6 +242,46 @@ int create_android_directory(const char *androidDirName) {
 		avdl_log_error("cannot change mode of `gradlew`: %s", avdl_string_getError(&cenginePath));
 		return -1;
 	}
+
+	// copy cengine files into android template
+	struct avdl_string androidOutPath;
+	avdl_string_create(&androidOutPath);
+	avdl_string_SetMaxCharacters(&androidOutPath, 1024);
+	avdl_string_cat(&androidOutPath, androidDirName);
+	avdl_string_cat(&androidOutPath, "/app/src/main/cpp/engine");
+	if ( !avdl_string_isValid(&androidOutPath) ) {
+		avdl_log_error("cannot construct path of android out src: %s", avdl_string_getError(&androidOutPath));
+		avdl_string_clean(&androidOutPath);
+		return -1;
+	}
+
+	struct avdl_string cengineIncludePath;
+	avdl_string_create(&cengineIncludePath);
+	avdl_string_SetMaxCharacters(&cengineIncludePath, 1024);
+	avdl_string_cat(&cengineIncludePath, avdl_pkg_GetProjectPath());
+	avdl_string_cat(&cengineIncludePath, "/lib/avdl/cengine/include");
+	if ( !avdl_string_isValid(&cengineIncludePath) ) {
+		avdl_log_error("cannot construct path of cengine include: %s", avdl_string_getError(&cengineIncludePath));
+		avdl_string_clean(&cengineIncludePath);
+		return -1;
+	}
+	dir_copy_recursive_ifNewer(0, avdl_string_toCharPtr(&cengineIncludePath), 0, avdl_string_toCharPtr(&androidOutPath));
+	avdl_string_clean(&cengineIncludePath);
+
+	struct avdl_string cengineSrcPath;
+	avdl_string_create(&cengineSrcPath);
+	avdl_string_SetMaxCharacters(&cengineSrcPath, 1024);
+	avdl_string_cat(&cengineSrcPath, avdl_pkg_GetProjectPath());
+	avdl_string_cat(&cengineSrcPath, "/lib/avdl/cengine/src");
+	if ( !avdl_string_isValid(&cengineSrcPath) ) {
+		avdl_log_error("cannot construct path of cengine src: %s", avdl_string_getError(&cengineSrcPath));
+		avdl_string_clean(&cengineSrcPath);
+		return -1;
+	}
+	dir_copy_recursive_ifNewer(0, avdl_string_toCharPtr(&cengineSrcPath), 0, avdl_string_toCharPtr(&androidOutPath));
+	avdl_string_clean(&cengineSrcPath);
+
+	avdl_string_clean(&androidOutPath);
 	#endif
 
 	return 0;
