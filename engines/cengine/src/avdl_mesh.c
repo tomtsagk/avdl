@@ -10,7 +10,7 @@
 #include <errno.h>
 
 #define CGLTF_IMPLEMENTATION
-#include "cgltf.h"
+#include "avdl_cgltf.h"
 
 #ifndef AVDL_DIRECT3D11
 extern GLuint defaultProgram;
