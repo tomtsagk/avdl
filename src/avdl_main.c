@@ -1004,11 +1004,15 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 				return -1;
 			}
 
-			if (avdl_json_to_dd(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&ddFilePath)) != 0) {
-				avdl_log_error("could not translate json to dd: %s", avdl_string_toCharPtr(&srcFilePath));
-				return -1;
+			// only convert if `.avdl_node` file has changes
+			if (Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&ddFilePath), avdl_string_toCharPtr(&srcFilePath))) {
+				if (avdl_json_to_dd(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&ddFilePath)) != 0) {
+					avdl_log_error("could not translate json to dd: %s", avdl_string_toCharPtr(&srcFilePath));
+					return -1;
+				}
 			}
 
+			//avdl_log("node convert %s -> %s", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&ddFilePath));
 			avdl_string_copy(&srcFilePath, &ddFilePath);
 		}
 
@@ -1232,16 +1236,36 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 			continue;
 		}
 
+		// collect cengine include/ and src/ directories, to compile only if those have changed
+		struct avdl_string cengineHeadersStr;
+		avdl_string_create(&cengineHeadersStr);
+		avdl_string_SetMaxCharacters(&cengineHeadersStr, 1024);
+		avdl_string_cat(&cengineHeadersStr, avdl_settings->cengine_path);
+		avdl_string_cat(&cengineHeadersStr, "/include/");
+
+		struct avdl_string cengineSrcStr;
+		avdl_string_create(&cengineSrcStr);
+		avdl_string_SetMaxCharacters(&cengineSrcStr, 1024);
+		avdl_string_cat(&cengineSrcStr, avdl_settings->cengine_path);
+		avdl_string_cat(&cengineSrcStr, "/src/");
+
 		// skip files already compiled (check last modified)
 		// but if any header in `include/` has changed, compile everything
 		if ( avdl_settings->use_cache
 		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
-		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
-			//avdl_log("skipping file: %s", avdl_string_toCharPtr(&srcFilePath));
+		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/")
+		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&cengineHeadersStr))
+		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&cengineSrcStr))) {
+			//avdl_log("skipping src file: %s -> %s", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath));
 			avdl_string_clean(&srcFilePath);
 			avdl_string_clean(&dstFilePath);
+			avdl_string_clean(&cengineHeadersStr);
+			avdl_string_clean(&cengineSrcStr);
 			continue;
 		}
+		//avdl_log("compiling src file: %s", avdl_string_toCharPtr(&srcFilePath));
+		avdl_string_clean(&cengineHeadersStr);
+		avdl_string_clean(&cengineSrcStr);
 
 		//printf("compiling %s\n", dir->d_name);
 		//avdl_log("compiling %s\n", avdl_string_toCharPtr(&srcFilePath));
