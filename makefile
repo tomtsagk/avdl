@@ -121,8 +121,8 @@ INSTALL_DIRS = ${DESTDIR}${prefix}/bin ${DESTDIR}${prefix}/share/man/man1/ \
 	${DESTDIR}${prefix}/share/vim/vimfiles/syntax/ \
 	${DESTDIR}${prefix}/share/vim/vimfiles/ftdetect/ \
 	${DESTDIR}${prefix}/include \
-	${DESTDIR}${prefix}/lib/avdl/cengine/src \
-	${DESTDIR}${prefix}/lib/avdl/cengine/include
+	${DESTDIR}${prefix}/share/avdl/cengine/src \
+	${DESTDIR}${prefix}/share/avdl/cengine/include
 
 ${INSTALL_DIRS}:
 	mkdir -p $@
@@ -140,10 +140,10 @@ install: ${EXECUTABLE} ${INSTALL_DIRS}
 	@# scripts
 	install -m644 scripts/* ${DESTDIR}${prefix}/share/avdl/scripts
 	@# c engine
-	install -m644 ${ENGINE_FILES_HEADERS} ${DESTDIR}${prefix}/lib/avdl/cengine/include/
-	cp -r ./include/shared ${DESTDIR}${prefix}/lib/avdl/cengine/include/
-	cp -r ${CENGINE_PATH}/src/* ${DESTDIR}${prefix}/lib/avdl/cengine/src/
-	cp -r ./src/shared ${DESTDIR}${prefix}/lib/avdl/cengine/src/
+	install -m644 ${ENGINE_FILES_HEADERS} ${DESTDIR}${prefix}/share/avdl/cengine/include/
+	cp -r ./include/shared ${DESTDIR}${prefix}/share/avdl/cengine/include/
+	cp -r ${CENGINE_PATH}/src/* ${DESTDIR}${prefix}/share/avdl/cengine/src/
+	cp -r ./src/shared ${DESTDIR}${prefix}/share/avdl/cengine/src/
 	@# android engine
 	cp -r engines/android/* ${DESTDIR}${prefix}/share/avdl/android
 	sed -i '/%AVDL_ENGINE_FILES%/ s#%AVDL_ENGINE_FILES%#${ENGINE_FILES_ANDROID}#'\

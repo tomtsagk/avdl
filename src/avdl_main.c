@@ -259,7 +259,7 @@ int create_android_directory(const char *androidDirName) {
 	avdl_string_create(&cengineIncludePath);
 	avdl_string_SetMaxCharacters(&cengineIncludePath, 1024);
 	avdl_string_cat(&cengineIncludePath, avdl_pkg_GetProjectPath());
-	avdl_string_cat(&cengineIncludePath, "/lib/avdl/cengine/include");
+	avdl_string_cat(&cengineIncludePath, "/share/avdl/cengine/include");
 	if ( !avdl_string_isValid(&cengineIncludePath) ) {
 		avdl_log_error("cannot construct path of cengine include: %s", avdl_string_getError(&cengineIncludePath));
 		avdl_string_clean(&cengineIncludePath);
@@ -272,7 +272,7 @@ int create_android_directory(const char *androidDirName) {
 	avdl_string_create(&cengineSrcPath);
 	avdl_string_SetMaxCharacters(&cengineSrcPath, 1024);
 	avdl_string_cat(&cengineSrcPath, avdl_pkg_GetProjectPath());
-	avdl_string_cat(&cengineSrcPath, "/lib/avdl/cengine/src");
+	avdl_string_cat(&cengineSrcPath, "/share/avdl/cengine/src");
 	if ( !avdl_string_isValid(&cengineSrcPath) ) {
 		avdl_log_error("cannot construct path of cengine src: %s", avdl_string_getError(&cengineSrcPath));
 		avdl_string_clean(&cengineSrcPath);
@@ -1263,7 +1263,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 		#endif
 		// cengine headers
 		avdl_string_cat(&commandString, " -I ");
-		avdl_string_cat(&commandString, avdl_settings->pkg_path);
+		avdl_string_cat(&commandString, avdl_settings->cengine_path);
 		avdl_string_cat(&commandString, "/include ");
 		avdl_string_cat(&commandString, " -I /usr/include/freetype2 ");
 
@@ -1427,7 +1427,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 
 		// cengine headers
 		strcat(compile_command, " -I ");
-		strcat(compile_command, avdl_settings->pkg_path);
+		strcat(compile_command, avdl_settings->cengine_path);
 		strcat(compile_command, "/include ");
 		strcat(compile_command, " -I /usr/include/freetype2 ");
 
