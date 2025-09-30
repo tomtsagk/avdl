@@ -221,3 +221,160 @@ void avdl_vec4_Invert(struct avdl_vec4 *o) {
 	o->z *= -1;
 	o->w *= -1;
 }
+
+// Quest 2 tests
+#if defined(AVDL_QUEST2)
+struct dd_matrix dd_cam_controllers[2];
+int dd_cam_controller_active[2];
+struct avdl_vec4 dd_cam_controllers_position[2];
+struct avdl_vec4 dd_cam_controllers_direction[2];
+#endif
+
+void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m) {
+
+#if defined(AVDL_QUEST2)
+	if (controllerIndex > 2) {
+		avdl_log("too many controllers: %d", controllerIndex);
+		return;
+	}
+
+	dd_matrix_copy(&dd_cam_controllers[controllerIndex], m);
+
+	// controller position
+	avdl_vec4_Setf(&dd_cam_controllers_position[controllerIndex],
+		0,
+		0,
+		0,
+		1
+	);
+	avdl_vec4_multiply(&dd_cam_controllers_position[controllerIndex],
+		&dd_cam_controllers[controllerIndex]
+	);
+
+	// controller direction
+	avdl_vec4_Setf(&dd_cam_controllers_direction[controllerIndex],
+		0,
+		0,
+		-1,
+		1
+	);
+	avdl_vec4_multiply(&dd_cam_controllers_direction[controllerIndex],
+		&dd_cam_controllers[controllerIndex]
+	);
+	avdl_vec4_Setf(&dd_cam_controllers_direction[controllerIndex],
+		avdl_vec4_X(&dd_cam_controllers_direction[controllerIndex])
+			-avdl_vec4_X(&dd_cam_controllers_position[controllerIndex]),
+		avdl_vec4_Y(&dd_cam_controllers_direction[controllerIndex])
+			-avdl_vec4_Y(&dd_cam_controllers_position[controllerIndex]),
+		avdl_vec4_Z(&dd_cam_controllers_direction[controllerIndex])
+			-avdl_vec4_Z(&dd_cam_controllers_position[controllerIndex]),
+		1
+	);
+#endif
+
+}
+
+int dd_matrix_hasVisibleControllers() {
+#if defined(AVDL_QUEST2)
+	return 1;
+#else
+	return 0;
+#endif
+}
+
+void dd_matrix_applyControllerMatrix(int controllerIndex) {
+
+#if defined(AVDL_QUEST2)
+	if (controllerIndex > 2) {
+		return;
+	}
+	dd_multMatrixf(&dd_cam_controllers[controllerIndex]);
+#endif
+
+}
+
+struct dd_matrix *dd_matrix_getControllerMatrix(int controllerIndex) {
+#if defined(AVDL_QUEST2)
+	if (controllerIndex > 2) {
+		return 0;
+	}
+	return &dd_cam_controllers[controllerIndex];
+#else
+	return 0;
+#endif
+}
+
+int dd_matrix_isControllerVisible(int index) {
+#if defined(AVDL_QUEST2)
+	if (index > 2) {
+		return 0;
+	}
+	return dd_cam_controller_active[index];
+#else
+	return 0;
+#endif
+
+}
+
+void dd_matrix_setControllerVisible(int index, int state) {
+#if defined(AVDL_QUEST2)
+	if (index > 2) {
+		return;
+	}
+	dd_cam_controller_active[index] = state;
+#else
+	return;
+#endif
+}
+
+struct avdl_vec4 *dd_matrix_getControllerPosition(int index) {
+#if defined(AVDL_QUEST2)
+	if (index > 2) {
+		return 0;
+	}
+
+	return &dd_cam_controllers_position[index];
+#else
+	return 0;
+#endif
+}
+
+struct avdl_vec4 *dd_matrix_getControllerDirection(int index) {
+#if defined(AVDL_QUEST2)
+	if (index > 2) {
+		return 0;
+	}
+
+	return &dd_cam_controllers_direction[index];
+#else
+	return 0;
+#endif
+}
+
+void dd_matrix_quaternion_to_rotation_matrix(struct avdl_vec4 *q, struct dd_matrix *output) {
+
+	// First row of the rotation matrix
+	output->cell[0] = 1 -(2 * (q->y * q->y)) -(2 * (q->z * q->z));
+	output->cell[4] = 2 * (q->x * q->y) -(2 * (q->w * q->z));
+	output->cell[8] = 2 * (q->x * q->z) +(2 * (q->w * q->y));
+	output->cell[12] = 0;
+
+	// Second row of the rotation matrix
+	output->cell[1] = 2 * (q->x * q->y) +(2 * (q->w * q->z));
+	output->cell[5] = 1 -(2 * (q->x * q->x)) -(2 * (q->z * q->z));
+	output->cell[9] = 2 * (q->y * q->z) -(2 * (q->w * q->x));
+	output->cell[13] = 0;
+
+	// Third row of the rotation matrix
+	output->cell[2] = 2 * (q->x * q->z) -(2 * (q->w * q->y));
+	output->cell[6] = 2 * (q->y * q->z) +(2 * (q->w * q->x));
+	output->cell[10] = 1 -(2 * (q->x * q->x)) -(2 * (q->y * q->y));
+	output->cell[14] = 0;
+
+	// last
+	output->cell[3] = 0;
+	output->cell[7] = 0;
+	output->cell[11] = 0;
+	output->cell[15] = 1;
+
+}

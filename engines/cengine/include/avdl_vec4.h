@@ -67,6 +67,25 @@ float avdl_vec4_Magnitude(struct avdl_vec4 *o);
 
 void avdl_vec4_Invert(struct avdl_vec4 *o);
 
+// Quest 2 tests
+
+#if defined(AVDL_QUEST2)
+extern struct dd_matrix dd_cam_controllers[];
+extern int dd_cam_controller_active[];
+extern struct avdl_vec4 dd_cam_controllers_position[];
+extern struct avdl_vec4 dd_cam_controllers_direction[];
+#endif
+void dd_matrix_setControllerMatrix(int controllerIndex, struct dd_matrix *m);
+struct dd_matrix *dd_matrix_getControllerMatrix(int controllerIndex);
+void dd_matrix_applyControllerMatrix(int controllerIndex);
+int dd_matrix_hasVisibleControllers();
+int dd_matrix_isControllerVisible(int index);
+void dd_matrix_setControllerVisible(int index, int state);
+struct avdl_vec4 *dd_matrix_getControllerPosition(int index);
+struct avdl_vec4 *dd_matrix_getControllerDirection(int index);
+
+void dd_matrix_quaternion_to_rotation_matrix(struct avdl_vec4 *q, struct dd_matrix *output);
+
 #ifdef __cplusplus
 }
 #endif

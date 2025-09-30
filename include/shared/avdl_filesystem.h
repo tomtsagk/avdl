@@ -2,6 +2,7 @@
 #define AVDL_FILESYSTEM_H
 
 #include <stdio.h>
+#include <sys/stat.h>
 
 #include "shared/avdl_dynamic_array.h"
 #include "shared/avdl_string.h"

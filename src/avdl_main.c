@@ -1370,64 +1370,79 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		dir_create(avdl_string_toCharPtr(&cenginePath));
 	}
 
+	struct avdl_string cengineSrcPath;
+	avdl_string_create(&cengineSrcPath);
+	avdl_string_SetMaxCharacters(&cengineSrcPath, 1024);
+	avdl_string_cat(&cengineSrcPath, avdl_settings->cengine_path);
+	avdl_string_cat(&cengineSrcPath, "/src/");
 
 	struct avdl_dynamic_array cengineFiles;
-	if (Avdl_FileOp_GetFilesInDirectoryRecursive(avdl_settings->cengine_path, &cengineFiles) != 0) {
+	if (Avdl_FileOp_GetFilesInDirectoryRecursive(avdl_string_toCharPtr(&cengineSrcPath), &cengineFiles) != 0) {
 		avdl_log_error("Can't get cengine files");
 		return -1;
 	}
 
-	printf("avdl: compiling avdl engine - " RED "0%%" RESET "\r");
-	fflush(stdout);
-	char compile_command[6000];
 	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
 		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
+
+		// update message
+		if (i == 0) {
+			printf("avdl: compiling avdl engine - " RED "0%%" RESET "\r");
+			fflush(stdout);
+		}
+		else {
+			printf("avdl: compiling avdl engine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&cengineFiles)+1) *100));
+			fflush(stdout);
+		}
 
 		if (!avdl_string_EndsIn(str, ".c") && !avdl_string_EndsIn(str, ".cpp")) {
 			continue;
 		}
+
+		struct avdl_string compileCommand;
+		avdl_string_create(&compileCommand);
+		avdl_string_SetMaxCharacters(&compileCommand, 1024 *6);
 
 		struct avdl_string cEngFile;
 		avdl_string_create(&cEngFile);
 		avdl_string_SetMaxCharacters(&cEngFile, 1024);
 		avdl_string_cat(&cEngFile, avdl_string_toCharPtr(str));
 		if (avdl_string_EndsIn(&cEngFile, ".cpp")) {
-			strcpy(compile_command, "g++ -c -DGLEW_NO_GLU ");
+			avdl_string_cat(&compileCommand, "g++ -c -DGLEW_NO_GLU ");
 		}
 		else {
-			strcpy(compile_command, "gcc -Wno-incompatible-pointer-types -Wall -c -DGLEW_NO_GLU ");
+			avdl_string_cat(&compileCommand, "gcc -Wno-incompatible-pointer-types -Wall -c -DGLEW_NO_GLU ");
 		}
 		avdl_string_clean(&cEngFile);
 
-		//strcat(compile_command, " -g -fsanitize=leak ");
+		//avdl_string_cat(&compileCommand, " -g -fsanitize=leak ");
 
 		#if AVDL_IS_OS(AVDL_OS_WINDOWS)
-		strcat(compile_command, " -DAVDL_WINDOWS ");
+		avdl_string_cat(&compileCommand, " -DAVDL_WINDOWS ");
 		#elif AVDL_IS_OS(AVDL_OS_LINUX)
-		strcat(compile_command, " -DAVDL_LINUX ");
+		avdl_string_cat(&compileCommand, " -DAVDL_LINUX ");
 		#endif
 
 		// include the source file
-		strcat(compile_command, avdl_settings->cengine_path);
-		strcat(compile_command, avdl_string_toCharPtr(str));
+		avdl_string_cat(&compileCommand, avdl_settings->cengine_path);
+		avdl_string_cat(&compileCommand, "/src/");
+		avdl_string_cat(&compileCommand, avdl_string_toCharPtr(str));
 
-		strcat(compile_command, " -DPKG_NAME=\"\\\"");
-		strcat(compile_command, avdl_settings->project_name_code);
-		strcat(compile_command, "\"\\\" ");
+		avdl_string_cat(&compileCommand, " -DPKG_NAME=\"\\\"");
+		avdl_string_cat(&compileCommand, avdl_settings->project_name_code);
+		avdl_string_cat(&compileCommand, "\"\\\" ");
 
 		// asset prefix
 		if (avdl_settings->asset_prefix[0] != '\0') {
-			strcat(compile_command, " -DGAME_ASSET_PREFIX=\"\\\"");
-			strcat(compile_command, avdl_settings->asset_prefix);
-			strcat(compile_command, "\"\\\" ");
+			avdl_string_cat(&compileCommand, " -DGAME_ASSET_PREFIX=\"\\\"");
+			avdl_string_cat(&compileCommand, avdl_settings->asset_prefix);
+			avdl_string_cat(&compileCommand, "\"\\\" ");
 		}
 
 		if (avdl_settings->steam_mode) {
-			strcat(compile_command, " -DAVDL_STEAM ");
+			avdl_string_cat(&compileCommand, " -DAVDL_STEAM ");
 		}
-		strcat(compile_command, " -o ");
-		//strcat(compile_command, buffer);
-		//strcat(compile_command, "/");
+		avdl_string_cat(&compileCommand, " -o ");
 		struct avdl_string cenginePathOut;
 		avdl_string_create(&cenginePathOut);
 		avdl_string_SetMaxCharacters(&cenginePathOut, 1024);
@@ -1445,40 +1460,61 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		if ( !avdl_string_isValid(&cenginePathOut) ) {
 			avdl_log_error("cannot construct path '%s%s%s': %s", outdir, "cengine/", avdl_string_toCharPtr(str), avdl_string_getError(&cenginePathOut));
 			avdl_string_clean(&cenginePathOut);
+			avdl_string_clean(&compileCommand);
 			return -1;
 		}
-		strcat(compile_command, avdl_string_toCharPtr(&cenginePathOut));
+		avdl_string_cat(&compileCommand, avdl_string_toCharPtr(&cenginePathOut));
 
 		// cengine headers
-		strcat(compile_command, " -I ");
-		strcat(compile_command, avdl_settings->cengine_path);
-		strcat(compile_command, "/include ");
-		strcat(compile_command, " -I /usr/include/freetype2 ");
+		avdl_string_cat(&compileCommand, " -I ");
+		avdl_string_cat(&compileCommand, avdl_settings->cengine_path);
+		avdl_string_cat(&compileCommand, "/include ");
+		avdl_string_cat(&compileCommand, " -I /usr/include/freetype2 ");
 
 		// cengine extra directories (mostly for custom dependencies)
 		for (int i = 0; i < avdl_settings->total_include_directories; i++) {
-			strcat(compile_command, " -I ");
-			strcat(compile_command, avdl_settings->additional_include_directory[i]);
+			avdl_string_cat(&compileCommand, " -I ");
+			avdl_string_cat(&compileCommand, avdl_settings->additional_include_directory[i]);
 		}
+
+		// check cengine src and include files before compilation
+		struct avdl_string srcFile;
+		avdl_string_create(&srcFile);
+		avdl_string_SetMaxCharacters(&srcFile, 1024);
+		avdl_string_cat(&srcFile, avdl_settings->cengine_path);
+		avdl_string_cat(&srcFile, "/src/");
+		avdl_string_cat(&srcFile, avdl_string_toCharPtr(str));
+
+		struct avdl_string includeFilePath;
+		avdl_string_create(&includeFilePath);
+		avdl_string_SetMaxCharacters(&includeFilePath, 1024);
+		avdl_string_cat(&includeFilePath, avdl_settings->cengine_path);
+		avdl_string_cat(&includeFilePath, "/include/");
 
 		// skip files already compiled
-		if ( avdl_settings->use_cache && Avdl_FileOp_DoesFileExist(avdl_string_toCharPtr(&cenginePathOut)) ) {
-			//printf("skipping: %s\n", buffer);
-			printf("avdl: compiling avdl engine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&cengineFiles)+1) *100));
-			fflush(stdout);
+		if ( avdl_settings->use_cache
+		&&  !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&cenginePathOut), avdl_string_toCharPtr(&srcFile))
+		&&  !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&cenginePathOut), avdl_string_toCharPtr(&includeFilePath)) ) {
+			//printf("skipping: %s\n", avdl_string_toCharPtr(&srcFile));
+			avdl_string_clean(&compileCommand);
+			avdl_string_clean(&srcFile);
+			avdl_string_clean(&includeFilePath);
 			continue;
 		}
+		avdl_string_clean(&srcFile);
+		avdl_string_clean(&includeFilePath);
+		//printf("compiling: %s\n", avdl_string_toCharPtr(&srcFile));
 
-		//printf("cengine compile command: %s\n", compile_command);
-		if (system(compile_command) != 0) {
+		//printf("cengine compile command: %s\n", avdl_string_toCharPtr(&compileCommand));
+		if (system(avdl_string_toCharPtr(&compileCommand)) != 0) {
 			avdl_log_error("failed to compile cengine\n");
 			avdl_string_clean(&cenginePath);
+			avdl_string_clean(&compileCommand);
 			return -1;
 		}
 ////		if (!avdlQuietMode) {
-			printf("avdl: compiling avdl engine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&cengineFiles)+1) *100));
-			fflush(stdout);
 ////		}
+		avdl_string_clean(&compileCommand);
 	}
 	Avdl_FileOp_GetFilesInDirectoryClean(&cengineFiles);
 ////	if (!avdlQuietMode) {
