@@ -1018,9 +1018,20 @@ int Avdl_FileOp_IsFileOlderThan(const char *source, const char *target) {
 		return -1;
 	}
 
-	if (difftime(statbuffer2.st_mtime, statbuffer.st_mtime) >= 0) {
+	// compare seconds of modification
+	if (statbuffer.st_mtim.tv_sec < statbuffer2.st_mtim.tv_sec) {
 		return 1;
 	}
+	else
+	// same second, go to nanoseconds
+	if (statbuffer.st_mtim.tv_sec == statbuffer2.st_mtim.tv_sec) {
+
+		if (statbuffer.st_mtim.tv_nsec <= statbuffer2.st_mtim.tv_nsec) {
+			return 1;
+		}
+
+	}
+
 	return 0;
 
 	#endif

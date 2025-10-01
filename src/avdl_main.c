@@ -1006,10 +1006,14 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 
 			// only convert if `.avdl_node` file has changes
 			if (Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&ddFilePath), avdl_string_toCharPtr(&srcFilePath))) {
+				//avdl_log("convert .avdl_node to .dd: %s -> %s", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&ddFilePath));
 				if (avdl_json_to_dd(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&ddFilePath)) != 0) {
 					avdl_log_error("could not translate json to dd: %s", avdl_string_toCharPtr(&srcFilePath));
 					return -1;
 				}
+			}
+			else {
+				//avdl_log("skip convert .avdl_node to .dd: %s -> %s", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&ddFilePath));
 			}
 
 			//avdl_log("node convert %s -> %s", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&ddFilePath));
@@ -1068,16 +1072,38 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 			continue;
 		}
 
+		// collect cengine include/ and src/ directories, to compile only if those have changed
+		struct avdl_string cengineHeadersStr;
+		avdl_string_create(&cengineHeadersStr);
+		avdl_string_SetMaxCharacters(&cengineHeadersStr, 1024);
+		avdl_string_cat(&cengineHeadersStr, avdl_settings->cengine_path);
+		avdl_string_cat(&cengineHeadersStr, "/include/");
+
+		struct avdl_string cengineSrcStr;
+		avdl_string_create(&cengineSrcStr);
+		avdl_string_SetMaxCharacters(&cengineSrcStr, 1024);
+		avdl_string_cat(&cengineSrcStr, avdl_settings->cengine_path);
+		avdl_string_cat(&cengineSrcStr, "/src/");
+
 		// skip files already compiled (check last modified)
 		// but compile everything if a header file has changed
+		//
+		// all files should re-transpile when the binary changes,
+		// for now it checks if any cengine file has changed
 		if ( avdl_settings->use_cache
 		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&srcFilePath))
-		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/") ) {
+		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), "include/")
+		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&cengineHeadersStr))
+		&&   !Avdl_FileOp_IsFileOlderThan(avdl_string_toCharPtr(&dstFilePath), avdl_string_toCharPtr(&cengineSrcStr))) {
 			//printf("avdl src file not modified, skipping transpilation of '%s' -> '%s'\n", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath));
 			avdl_string_clean(&srcFilePath);
 			avdl_string_clean(&dstFilePath);
+			avdl_string_clean(&cengineHeadersStr);
+			avdl_string_clean(&cengineSrcStr);
 			continue;
 		}
+		avdl_string_clean(&cengineHeadersStr);
+		avdl_string_clean(&cengineSrcStr);
 		//avdl_log("transpiling %s to %s", avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath));
 
 		included_files_num = 0;
@@ -1620,11 +1646,18 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	}
 	Avdl_FileOp_GetFilesInDirectoryClean(&objFiles);
 
+	struct avdl_string cengineSrc;
+	avdl_string_create(&cengineSrc);
+	avdl_string_SetMaxCharacters(&cengineSrc, 1024);
+	avdl_string_cat(&cengineSrc, avdl_settings->cengine_path);
+	avdl_string_cat(&cengineSrc, "/src/");
+
 	struct avdl_dynamic_array cengineFiles;
-	if (Avdl_FileOp_GetFilesInDirectoryRecursive(avdl_settings->cengine_path, &cengineFiles) != 0) {
+	if (Avdl_FileOp_GetFilesInDirectoryRecursive(avdl_string_toCharPtr(&cengineSrc), &cengineFiles) != 0) {
 		avdl_log_error("Can't get cengine files");
 		return -1;
 	}
+	avdl_string_clean(&cengineSrc);
 
 	// add cengine files to link
 	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
