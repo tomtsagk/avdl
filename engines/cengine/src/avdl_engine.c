@@ -6,6 +6,7 @@
 #include "avdl_graphics.h"
 #include "avdl_cengine.h"
 #include "avdl_mesh.h"
+#include "shared/avdl_dynamic_array.h"
 
 #include <math.h>
 #include <string.h>
@@ -155,9 +156,6 @@ int avdl_engine_init(struct avdl_engine *o, struct avdl_dynamic_array *args) {
 	}
 	#endif
 
-	// avdl input system
-	avdl_inputmanager_Init(&o->input);
-
 	#if defined(AVDL_DIRECT3D11)
 	#elif defined(_WIN32) || defined(WIN32)
 	const PROJ_LOC_TYPE *proj_loc = avdl_getProjectLocation();
@@ -249,6 +247,9 @@ int avdl_engine_init(struct avdl_engine *o, struct avdl_dynamic_array *args) {
 	else {
 		o->avdl_vsync = 0;
 	}
+
+	// avdl input system
+	avdl_inputmanager_Init(&o->input);
 
 	//handleResize(avdl_screen_GetWidth(), avdl_screen_GetHeight());
 
@@ -850,6 +851,49 @@ static int SDLScancodeToAvdl(int button) {
 	return -1;
 }
 
+static int SDLGamepadButtonToAvdl(int button) {
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	switch (button) {
+	case SDL_CONTROLLER_BUTTON_X: return AVDL_INPUT_GAMEPAD_WEST;
+	case SDL_CONTROLLER_BUTTON_A: return AVDL_INPUT_GAMEPAD_SOUTH;
+	case SDL_CONTROLLER_BUTTON_B: return AVDL_INPUT_GAMEPAD_EAST;
+	case SDL_CONTROLLER_BUTTON_Y: return AVDL_INPUT_GAMEPAD_NORTH;
+
+	case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER: return AVDL_INPUT_GAMEPAD_RB;
+	case SDL_CONTROLLER_BUTTON_LEFTSHOULDER: return AVDL_INPUT_GAMEPAD_LB;
+	case SDL_CONTROLLER_BUTTON_RIGHTSTICK: return AVDL_INPUT_GAMEPAD_LEFTSTICK;
+	case SDL_CONTROLLER_BUTTON_LEFTSTICK: return AVDL_INPUT_GAMEPAD_RIGHTSTICK;
+
+	case SDL_CONTROLLER_BUTTON_START: return AVDL_INPUT_GAMEPAD_START;
+	case SDL_CONTROLLER_BUTTON_BACK: return AVDL_INPUT_GAMEPAD_BACK;
+
+	case SDL_CONTROLLER_BUTTON_DPAD_DOWN: return AVDL_INPUT_GAMEPAD_DPAD_DOWN;
+	case SDL_CONTROLLER_BUTTON_DPAD_RIGHT: return AVDL_INPUT_GAMEPAD_DPAD_RIGHT;
+	case SDL_CONTROLLER_BUTTON_DPAD_UP: return AVDL_INPUT_GAMEPAD_DPAD_UP;
+	case SDL_CONTROLLER_BUTTON_DPAD_LEFT: return AVDL_INPUT_GAMEPAD_DPAD_LEFT;
+	}
+	#endif
+
+	// ???
+	return -1;
+}
+
+static int SDLGamepadAxisToAvdl(int axis) {
+	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
+	switch (axis) {
+	case SDL_CONTROLLER_AXIS_LEFTX: return AVDL_INPUT_GAMEPAD_AXIS_LEFTX;
+	case SDL_CONTROLLER_AXIS_LEFTY: return AVDL_INPUT_GAMEPAD_AXIS_LEFTY;
+	case SDL_CONTROLLER_AXIS_RIGHTX: return AVDL_INPUT_GAMEPAD_AXIS_RIGHTX;
+	case SDL_CONTROLLER_AXIS_RIGHTY: return AVDL_INPUT_GAMEPAD_AXIS_RIGHTY;
+	case SDL_CONTROLLER_AXIS_TRIGGERLEFT: return AVDL_INPUT_GAMEPAD_AXIS_TRIGGERLEFT;
+	case SDL_CONTROLLER_AXIS_TRIGGERRIGHT: return AVDL_INPUT_GAMEPAD_AXIS_TRIGGERRIGHT;
+	}
+	#endif
+
+	// ???
+	return -1;
+}
+
 int avdl_engine_loop(struct avdl_engine *o) {
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 
@@ -857,6 +901,10 @@ int avdl_engine_loop(struct avdl_engine *o) {
 		avdl_engine_verify(o);
 		return 0;
 	}
+
+	struct avdl_dynamic_array controllerArray;
+	avdl_dynamic_array_create(&controllerArray);
+	avdl_da_init(&controllerArray, sizeof(SDL_GameController*));
 
 	int isRunning = 1;
 	SDL_Event event;
@@ -900,6 +948,50 @@ int avdl_engine_loop(struct avdl_engine *o) {
 				avdl_inputmanager_AddInputDropfile(&o->input, event.drop.file);
 				SDL_free(event.drop.file);
 				break;
+			case SDL_CONTROLLERBUTTONDOWN:
+				keycode = SDLGamepadButtonToAvdl(event.cbutton.button);
+				if (keycode >= 0) {
+					avdl_inputmanager_AddBinaryInput(&o->input, event.cbutton.which, keycode, AVDL_INPUT_STATE_DOWN);
+				}
+				break;
+			case SDL_CONTROLLERBUTTONUP:
+				keycode = SDLGamepadButtonToAvdl(event.cbutton.button);
+				if (keycode >= 0) {
+					avdl_inputmanager_AddBinaryInput(&o->input, event.cbutton.which, keycode, AVDL_INPUT_STATE_UP);
+				}
+				break;
+			case SDL_CONTROLLERAXISMOTION:
+				keycode = SDLGamepadAxisToAvdl(event.caxis.axis);
+				if (keycode >= 0) {
+					float value;
+					if (event.caxis.value > 0) {
+						value = (float) event.caxis.value /SDL_JOYSTICK_AXIS_MAX;
+					}
+					else {
+						value = (float) event.caxis.value /SDL_JOYSTICK_AXIS_MIN;
+					}
+					avdl_inputmanager_AddAxisInput(&o->input, event.caxis.which, keycode, value);
+				}
+				break;
+			case SDL_CONTROLLERDEVICEADDED:
+				SDL_GameController *controller = SDL_GameControllerOpen(event.jbutton.which);
+				if (!controller) {
+					continue;
+				}
+				avdl_inputmanager_AddBinaryInput(&o->input, SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)), AVDL_INPUT_GAMEPAD_CONNECTION, AVDL_INPUT_STATE_DOWN);
+				avdl_da_push(&controllerArray, &controller);
+				break;
+			case SDL_CONTROLLERDEVICEREMOVED:
+				for (int i = 0; i < avdl_da_count(&controllerArray); i++) {
+					SDL_GameController *controller = avdl_da_getDeref(&controllerArray, i);
+					if (event.cdevice.which == SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller))) {
+						avdl_inputmanager_AddBinaryInput(&o->input, event.cdevice.which, AVDL_INPUT_GAMEPAD_CONNECTION, AVDL_INPUT_STATE_UP);
+						SDL_GameControllerClose(controller);
+						avdl_da_remove(&controllerArray, 1, i);
+						break;
+					}
+				}
+				break;
 			}
 		}
 
@@ -925,6 +1017,8 @@ int avdl_engine_loop(struct avdl_engine *o) {
 			}
 		}
 	}
+
+	avdl_dynamic_array_clean(&controllerArray);
 	#endif
 	return 0;
 }

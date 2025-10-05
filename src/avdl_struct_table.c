@@ -388,6 +388,7 @@ void struct_table_init() {
 	struct_table_push("avdl_input", 0);
 	struct_table_push_member("GetButton", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("GetState", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("GetValue", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("GetFilename", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	//struct_table_push("dd_gamejolt_response_struct", 0);
 }

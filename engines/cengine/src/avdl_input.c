@@ -15,6 +15,10 @@ int avdl_input_GetState(struct avdl_input *input) {
 	return input->state;
 }
 
+float avdl_input_GetValue(struct avdl_input *input) {
+	return input->value;
+}
+
 struct avdl_string *avdl_input_GetFilename(struct avdl_input *input) {
 	if (avdl_input_GetButton(input) == AVDL_INPUT_DROPFILE) {
 		return &input->filename;
@@ -294,8 +298,10 @@ int avdl_inputmanager_AddInputDropfile(struct avdl_inputmanager *o, const char *
 	avdl_string_create(&o->input[o->input_total].filename);
 	avdl_string_SetMaxCharacters(&o->input[o->input_total].filename, strlen(filename));
 	avdl_string_cat(&o->input[o->input_total].filename, filename);
+	o->input[o->input_total].device_id = -1;
 	o->input[o->input_total].button = AVDL_INPUT_DROPFILE;
 	o->input[o->input_total].state = AVDL_INPUT_STATE_DOWN;
+	o->input[o->input_total].value = 0;
 	o->input_total++;
 	return 0;
 }
@@ -304,8 +310,10 @@ int avdl_inputmanager_AddInput(struct avdl_inputmanager *o, int button, int stat
 	if (o->input_total >= AVDL_INPUT_KEYS_MAXIMUM) {
 		return -1;
 	}
+	o->input[o->input_total].device_id = -1;
 	o->input[o->input_total].button = button;
 	o->input[o->input_total].state = state;
+	o->input[o->input_total].value = 0;
 	o->input_total++;
 	return 0;
 }
@@ -314,8 +322,10 @@ int avdl_inputmanager_AddInputLocation(struct avdl_inputmanager *o, int button, 
 	if (o->input_total >=AVDL_INPUT_KEYS_MAXIMUM) {
 		return -1;
 	}
+	o->input[o->input_total].device_id = -1;
 	o->input[o->input_total].button = button;
 	o->input[o->input_total].state = state;
+	o->input[o->input_total].value = 0;
 	o->loc_x = x;
 	o->loc_y = y;
 	o->input_total++;
@@ -325,6 +335,51 @@ int avdl_inputmanager_AddInputLocation(struct avdl_inputmanager *o, int button, 
 int avdl_inputmanager_AddPassiveMotion(struct avdl_inputmanager *o, int x, int y) {
 	o->loc_x = x;
 	o->loc_y = y;
+	return 0;
+}
+
+int avdl_inputmanager_AddBinaryInput(struct avdl_inputmanager *o, int device_id, int button, int state) {
+	if (o->input_total >= AVDL_INPUT_KEYS_MAXIMUM) {
+		return -1;
+	}
+
+	// skip duplicate inputs
+	for (int i = 0; i < o->input_total; i++) {
+		if (o->input[i].device_id == device_id
+		&&  o->input[i].button    == button
+		&&  o->input[i].state     == state) {
+			return 0;
+		}
+	}
+
+	o->input[o->input_total].device_id = device_id;
+	o->input[o->input_total].button = button;
+	o->input[o->input_total].state = state;
+	o->input[o->input_total].value = 0;
+	o->input_total++;
+	return 0;
+}
+
+int avdl_inputmanager_AddAxisInput(struct avdl_inputmanager *o, int device_id, int button, float value) {
+	if (o->input_total >= AVDL_INPUT_KEYS_MAXIMUM) {
+		return -1;
+	}
+
+	// skip duplicate inputs
+	for (int i = 0; i < o->input_total; i++) {
+		if (o->input[i].device_id == device_id
+		&&  o->input[i].button    == button
+		&&  o->input[i].state     == AVDL_INPUT_STATE_MOVE) {
+			o->input[i].value = value;
+			return 0;
+		}
+	}
+
+	o->input[o->input_total].device_id = device_id;
+	o->input[o->input_total].button = button;
+	o->input[o->input_total].state = AVDL_INPUT_STATE_MOVE;
+	o->input[o->input_total].value = value;
+	o->input_total++;
 	return 0;
 }
 

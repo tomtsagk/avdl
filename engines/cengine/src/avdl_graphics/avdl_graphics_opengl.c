@@ -243,7 +243,8 @@ int avdl_graphics_Init() {
 
 	#if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
 	// Initialise SDL window
-	int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	// maybe SDL_INIT_JOYSTICK in the future
+	int sdlError = SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER);
 	if (sdlError < 0) {
 		avdl_log("avdl: error initialising SDL2: %s", SDL_GetError());
 		return -1;
