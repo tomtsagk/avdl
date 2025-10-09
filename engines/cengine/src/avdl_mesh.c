@@ -245,6 +245,39 @@ static float shape_line[] = {
 	 0.5, 0.0, 0.0,
 };
 
+static float shape_pyramid[] = {
+	// front
+	 0.0,  0.5, 0.0,
+	-0.5, -0.5, 0.5,
+	 0.5, -0.5, 0.5,
+
+	// right
+	 0.0,  0.5,  0.0,
+	 0.5, -0.5, -0.5,
+	 0.5, -0.5,  0.5,
+
+	// left
+	 0.0,  0.5,  0.0,
+	-0.5, -0.5, -0.5,
+	-0.5, -0.5,  0.5,
+
+	// back
+	 0.0,  0.5,  0.0,
+	-0.5, -0.5, -0.5,
+	 0.5, -0.5, -0.5,
+
+	// bottom 1
+	-0.5, -0.5, -0.5,
+	 0.5, -0.5, -0.5,
+	-0.5, -0.5,  0.5,
+
+	// bottom 2
+	 0.5, -0.5, -0.5,
+	 0.5, -0.5,  0.5,
+	-0.5, -0.5,  0.5,
+
+};
+
 /*
 static void clean_position(struct avdl_mesh *m) {
 	if (m->v && m->dirtyVertices) {
@@ -398,6 +431,28 @@ void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
 			m->data->verticesType = AVDL_GRAPHICS_VTYPE_LINES;
 			m->data->vcount = sizeof(shape_box_corners) /sizeof(float) /3;
 			break;
+		case AVDL_PRIMITIVE_PYRAMID:
+			if (!m->data) {
+				m->data = CreateMeshData();
+			}
+			m->data->v = shape_pyramid;
+			m->data->dirtyVertices = 0;
+			m->data->verticesType = AVDL_GRAPHICS_VTYPE_TRIANGLES;
+			m->data->vcount = sizeof(shape_pyramid) /sizeof(float) /3;
+			break;
+	}
+
+	if (m->data) {
+		avdl_vec3_Setf(&m->data->boundsCenter,
+			0,
+			0,
+			0
+		);
+		avdl_vec3_Setf(&m->data->boundsExtend,
+			0.5,
+			0.5,
+			0.5
+		);
 	}
 
 }

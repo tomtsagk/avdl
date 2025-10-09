@@ -40,8 +40,8 @@ void struct_table_init() {
 	struct_table_push_member("setWireframe", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("setSolid", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("SetTypeLine", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
-	struct_table_push_member("GetBoundsPositive", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
-	struct_table_push_member("GetBoundsNegative", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("GetBoundsCenter", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("GetBoundsExtend", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push("avdl_skinned_mesh", "avdl_mesh");
 	struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("draw", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
@@ -81,10 +81,12 @@ void struct_table_init() {
 	struct_table_push_member("SetZ", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("Add", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("Addf", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("Add1f", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("Subtract", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("Subtractf", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("Divide", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("Dividef", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("Divide1f", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("Multiply", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("Multiplyf", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("Multiply1f", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);

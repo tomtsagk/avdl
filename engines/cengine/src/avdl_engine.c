@@ -968,7 +968,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 						value = (float) event.caxis.value /SDL_JOYSTICK_AXIS_MAX;
 					}
 					else {
-						value = (float) event.caxis.value /SDL_JOYSTICK_AXIS_MIN;
+						value = (float) event.caxis.value /-SDL_JOYSTICK_AXIS_MIN;
 					}
 					avdl_inputmanager_AddAxisInput(&o->input, event.caxis.which, keycode, value);
 				}

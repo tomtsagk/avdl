@@ -32,8 +32,9 @@ void avdl_vec3_SetY(struct avdl_vec3 *o, float value);
 void avdl_vec3_SetZ(struct avdl_vec3 *o, float value);
 
 // math
-void avdl_vec3_Add (struct avdl_vec3 *o1, struct avdl_vec3 *o2);
-void avdl_vec3_Addf(struct avdl_vec3 *o1, float x, float y, float z);
+void avdl_vec3_Add  (struct avdl_vec3 *o1, struct avdl_vec3 *o2);
+void avdl_vec3_Addf (struct avdl_vec3 *o1, float x, float y, float z);
+void avdl_vec3_Add1f(struct avdl_vec3 *o1, float value);
 
 void avdl_vec3_Subtract (struct avdl_vec3 *o1, struct avdl_vec3 *o2);
 void avdl_vec3_Subtractf(struct avdl_vec3 *o, float x, float y, float z);
@@ -43,8 +44,9 @@ void avdl_vec3_Multiplyf(struct avdl_vec3 *o, float x, float y, float z);
 void avdl_vec3_Multiply1f(struct avdl_vec3 *o, float x);
 void avdl_vec3_MultiplyMatrix(struct avdl_vec3 *o, struct dd_matrix *mat, float w);
 
-void avdl_vec3_Divide (struct avdl_vec3 *o1, struct avdl_vec3 *o2);
-void avdl_vec3_Dividef(struct avdl_vec3 *o, float x, float y, float z);
+void avdl_vec3_Divide  (struct avdl_vec3 *o1, struct avdl_vec3 *o2);
+void avdl_vec3_Dividef (struct avdl_vec3 *o, float x, float y, float z);
+void avdl_vec3_Divide1f(struct avdl_vec3 *o, float value);
 
 // getters
 float avdl_vec3_X(struct avdl_vec3 *o);

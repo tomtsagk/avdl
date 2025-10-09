@@ -333,8 +333,26 @@ int avdl_inputmanager_AddInputLocation(struct avdl_inputmanager *o, int button, 
 }
 
 int avdl_inputmanager_AddPassiveMotion(struct avdl_inputmanager *o, int x, int y) {
+	if (o->input_total >= AVDL_INPUT_KEYS_MAXIMUM) {
+		return -1;
+	}
+
+	// skip duplicate inputs
+	for (int i = 0; i < o->input_total; i++) {
+		if (o->input[i].device_id == -1
+		&&  o->input[i].button    == AVDL_INPUT_MOUSE
+		&&  o->input[i].state     == AVDL_INPUT_STATE_MOVE) {
+			return 0;
+		}
+	}
+
+	o->input[o->input_total].device_id = -1;
+	o->input[o->input_total].button = AVDL_INPUT_MOUSE;
+	o->input[o->input_total].state = AVDL_INPUT_STATE_MOVE;
+	o->input[o->input_total].value = 0;
 	o->loc_x = x;
 	o->loc_y = y;
+	o->input_total++;
 	return 0;
 }
 

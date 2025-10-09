@@ -52,6 +52,12 @@ void avdl_vec3_Addf(struct avdl_vec3 *o1, float x, float y, float z) {
 	o1->z += z;
 }
 
+void avdl_vec3_Add1f(struct avdl_vec3 *o1, float value) {
+	o1->x += value;
+	o1->y += value;
+	o1->z += value;
+}
+
 void avdl_vec3_Add(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {
 	o1->x += o2->x;
 	o1->y += o2->y;
@@ -154,6 +160,12 @@ void avdl_vec3_Dividef(struct avdl_vec3 *o, float x, float y, float z) {
 	o->x /= x;
 	o->y /= y;
 	o->z /= z;
+}
+
+void avdl_vec3_Divide1f(struct avdl_vec3 *o, float value) {
+	o->x /= value;
+	o->y /= value;
+	o->z /= value;
 }
 
 void avdl_vec3_Print(struct avdl_vec3 *o) {

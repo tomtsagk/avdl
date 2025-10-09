@@ -6,7 +6,9 @@
 #include <string.h>
 #include "avdl_vec3.h"
 
-void dd_matrix_create(struct dd_matrix *m) {}
+void dd_matrix_create(struct dd_matrix *m) {
+	dd_matrix_identity(m);
+}
 void dd_matrix_clean(struct dd_matrix *m) {}
 
 /* init matrix to identity */

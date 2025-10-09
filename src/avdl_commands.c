@@ -29,6 +29,7 @@ const char *keywords[] = {
 	"-=",
 	"*=",
 	"/=",
+	"!=",
 
 	"group",
 	"struct",

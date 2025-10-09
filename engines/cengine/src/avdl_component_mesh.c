@@ -9,7 +9,7 @@ void avdl_component_mesh_create(struct avdl_component_mesh *o) {
 	o->parent.after_create = avdl_component_mesh_after_create;
 	o->mesh_name = 0;
 	o->texture_name = 0;
-	o->dirty_mesh_name = 0;
+	o->mesh_primitive = -1;
 	o->dirty_texture_name = 0;
 	o->hasTransparency = 0;
 	o->isEditor = 0;
@@ -28,6 +28,7 @@ void avdl_component_mesh_clean(struct avdl_component_mesh *o) {
 	if (o->dirty_mesh_name && o->mesh_name) {
 		free(o->mesh_name);
 		o->mesh_name = 0;
+		o->dirty_mesh_name = 0;
 	}
 
 	if (o->dirty_texture_name && o->texture_name) {
@@ -39,7 +40,7 @@ void avdl_component_mesh_clean(struct avdl_component_mesh *o) {
 }
 
 void avdl_component_mesh_after_create(struct avdl_component_mesh *o) {
-	if (!o->mesh_name) {
+	if (!o->mesh_name && o->mesh_primitive < 0) {
 		//avdl_log("avdl_component_mesh_after_create: no mesh name");
 		if (o->parent.node) {
 			//struct avdl_node *n = &o->parent.node;
@@ -47,6 +48,7 @@ void avdl_component_mesh_after_create(struct avdl_component_mesh *o) {
 		}
 		return;
 	}
+
 	if (o->mesh_name) {
 		if (o->isEditor) {
 			avdl_mesh_loadLocal(&o->mesh, o->mesh_name);
@@ -54,6 +56,11 @@ void avdl_component_mesh_after_create(struct avdl_component_mesh *o) {
 		else {
 			avdl_mesh_load(&o->mesh, o->mesh_name);
 		}
+	}
+	else
+	if (o->mesh_primitive >= 0) {
+		avdl_mesh_set_primitive(&o->mesh, o->mesh_primitive);
+		avdl_mesh_set_colour(&o->mesh, 1.0, 1.0, 1.0);
 	}
 	else {
 		avdl_mesh_set_primitive(&o->mesh, AVDL_PRIMITIVE_BOX);
@@ -84,6 +91,7 @@ int avdl_component_mesh_Copy(struct avdl_component *o, struct avdl_component *ta
 	struct avdl_component_mesh *m = o;
 	struct avdl_component_mesh *t = target;
 	m->mesh_name = t->mesh_name;
+	m->mesh_primitive = t->mesh_primitive;
 	m->texture_name = t->texture_name;
 	m->isEditor = t->isEditor;
 	return 0;
@@ -92,6 +100,7 @@ int avdl_component_mesh_Copy(struct avdl_component *o, struct avdl_component *ta
 // Array of modifiable properties
 struct avdl_component_property avdl_component_mesh_property_array[] = {
 	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_mesh, mesh_name, AVDL_COMPONENT_PROPERTY_TYPE_STRING),
+	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_mesh, mesh_primitive, AVDL_COMPONENT_PROPERTY_TYPE_INT),
 	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_mesh, texture_name, AVDL_COMPONENT_PROPERTY_TYPE_STRING),
 	AVDL_COMPONENT_PROPERTY_ELEMENT(struct avdl_component_mesh, hasTransparency, AVDL_COMPONENT_PROPERTY_TYPE_INT),
 };

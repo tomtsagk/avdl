@@ -154,6 +154,15 @@ int avdl_lexer_getNextToken(struct avdl_lexer *o) {
 		returnToken = LEXER_TOKEN_STRING;
 	}
 	else
+	// char ( 'a' -> 97 )
+	if (buffer[0] == '\'') {
+		char c;
+		fscanf(o->files[o->currentFile].f, "%1[^\']", &c);
+		sprintf(buffer, "%d", c);
+		fscanf(o->files[o->currentFile].f, "%*1c");
+		returnToken = LEXER_TOKEN_INT;
+	}
+	else
 	// start of array
 	if (buffer[0] == '[') {
 		//printf("arrat start: %s\n", buffer);

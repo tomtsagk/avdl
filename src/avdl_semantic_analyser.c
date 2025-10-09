@@ -1140,6 +1140,7 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		||  strcmp(ast_getLex(cmdname), "-=") == 0
 		||  strcmp(ast_getLex(cmdname), "*=") == 0
 		||  strcmp(ast_getLex(cmdname), "/=") == 0
+		||  strcmp(ast_getLex(cmdname), "!=") == 0
 		) {
 			cmd = expect_command_binaryOperation(l, ast_getLex(cmdname));
 		}

@@ -828,6 +828,7 @@ static void print_command_native(FILE *fd, struct ast_node *n) {
 	||  strcmp(n->lex, "-=") == 0
 	||  strcmp(n->lex, "*=") == 0
 	||  strcmp(n->lex, "/=") == 0
+	||  strcmp(n->lex, "!=") == 0
 	) {
 		print_binaryOperation(fd, n);
 	}

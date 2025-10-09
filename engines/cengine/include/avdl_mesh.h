@@ -43,6 +43,7 @@ enum avdl_primitives {
 	AVDL_PRIMITIVE_BOX_CORNERS,
 	AVDL_PRIMITIVE_BOX_FLIP,
 	AVDL_PRIMITIVE_LINE,
+	AVDL_PRIMITIVE_PYRAMID,
 };
 
 #include "avdl_graphics.h"
