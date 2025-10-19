@@ -473,11 +473,28 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 		avdl_log_error("Json component should start with a '{': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
 		return -1;
 	}
+	avdl_json_next(json);
+
+	int print_component = 1;
+
+	// check if editor-only
+	if (avdl_json_getToken(json) == AVDL_JSON_KEY && strcmp(avdl_json_getTokenString(json), "editor_only") == 0) {
+		avdl_json_next(json);
+		if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+			// component is editor-only, skip
+			if (avdl_json_getTokenNumber(json)) {
+				avdl_log("skip component: %d", avdl_json_getTokenNumber(json));
+				print_component = 0;
+				//avdl_json_next(json);
+				//return 0;
+			}
+		}
+		avdl_json_next(json);
+	}
 
 	char component_name[100];
 	strcpy(component_name, "c_");
 	snprintf(component_name +2, 80, "%d", component_counter);
-	avdl_json_next(json);
 	while (avdl_json_getToken(json) != AVDL_JSON_OBJECT_END) {
 		// find key
 		if (avdl_json_getToken(json) != AVDL_JSON_KEY) {
@@ -486,11 +503,11 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 		}
 		//avdl_log("got component key: %s", avdl_json_getTokenString(json));
 		char *content = "\t# found component \"";
-		write(fd, content, strlen(content));
+		if (print_component) write(fd, content, strlen(content));
 		content = avdl_json_getTokenString(json);
-		write(fd, content, strlen(content));
+		if (print_component) write(fd, content, strlen(content));
 		content = "\"\n";
-		write(fd, content, strlen(content));
+		if (print_component) write(fd, content, strlen(content));
 
 		if (strcmp(avdl_json_getTokenString(json), "name") == 0) {
 			avdl_json_next(json);
@@ -504,30 +521,30 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 
 				//avdl_log("got component string: %s", avdl_json_getTokenString(json));
 				char *content = "\t(def ref ";
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = component_type;
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = " ";
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = component_name;
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = ")\n";
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 
 				content = "\t(= ";
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = component_name;
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = " (avdl_node_AddComponent ";
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = node_name;
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = " ";
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = component_type;
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = "))\n";
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 			}
 			else {
 				//avdl_log("component something else?");
@@ -544,34 +561,34 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 			avdl_json_next(json);
 
 			char *content = "\t(= ";
-			write(fd, content, strlen(content));
-			write(fd, component_name, strlen(component_name));
+			if (print_component) write(fd, content, strlen(content));
+			if (print_component) write(fd, component_name, strlen(component_name));
 			content = ".";
-			write(fd, content, strlen(content));
-			write(fd, component_variable, strlen(component_variable));
+			if (print_component) write(fd, content, strlen(content));
+			if (print_component) write(fd, component_variable, strlen(component_variable));
 			content = " ";
-			write(fd, content, strlen(content));
+			if (print_component) write(fd, content, strlen(content));
 
 			if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
 				content = "\"";
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = avdl_json_getTokenString(json);
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 				content = "\"";
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 			}
 			else
 			if (avdl_json_getToken(json) == AVDL_JSON_INT
 			||  avdl_json_getToken(json) == AVDL_JSON_FLOAT) {
 				content = avdl_json_getTokenString(json);
-				write(fd, content, strlen(content));
+				if (print_component) write(fd, content, strlen(content));
 			}
 			else {
 				avdl_log_error("unsupported json component variable value");
 				return -1;
 			}
 			content = ")\n";
-			write(fd, content, strlen(content));
+			if (print_component) write(fd, content, strlen(content));
 		}
 
 		/*
@@ -579,11 +596,11 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 		if (avdl_json_getToken(json) == AVDL_JSON_STRING) {
 			//avdl_log("got component string: %s", avdl_json_getTokenString(json));
 			char *content = "\t# with component string \"";
-			write(fd, content, strlen(content));
+			if (print_component) write(fd, content, strlen(content));
 			content = avdl_json_getTokenString(json);
-			write(fd, content, strlen(content));
+			if (print_component) write(fd, content, strlen(content));
 			content = "\"\n";
-			write(fd, content, strlen(content));
+			if (print_component) write(fd, content, strlen(content));
 		}
 		else {
 			//avdl_log("component something else?");
@@ -596,12 +613,12 @@ int json_expect_component(struct avdl_json_object *json, int fd, char *node_name
 	avdl_json_next(json);
 
 	char *content = "\t(";
-	write(fd, content, strlen(content));
-	write(fd, component_name, strlen(component_name));
+	if (print_component) write(fd, content, strlen(content));
+	if (print_component) write(fd, component_name, strlen(component_name));
 	content = ".after_create ";
-	write(fd, content, strlen(content));
+	if (print_component) write(fd, content, strlen(content));
 	content = ")\n";
-	write(fd, content, strlen(content));
+	if (print_component) write(fd, content, strlen(content));
 
 	component_counter++;
 
@@ -616,6 +633,7 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 		avdl_log_error("Json node should start with a '{': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
 		return -1;
 	}
+	avdl_json_next(json);
 
 	// generate node name
 	char node_name[100];
@@ -685,7 +703,6 @@ int json_expect_node(struct avdl_json_object *json, int fd, char *node_parent_na
 
 	transform_counter++;
 
-	avdl_json_next(json);
 	while (avdl_json_getToken(json) != AVDL_JSON_OBJECT_END) {
 
 		// find key

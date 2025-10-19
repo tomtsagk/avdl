@@ -17,6 +17,8 @@ void avdl_component_mesh_create(struct avdl_component_mesh *o) {
 
 	o->parent.clean = avdl_component_mesh_clean;
 
+	o->editor_only = 0;
+
 	avdl_mesh_create(&o->mesh);
 	avdl_texture_create(&o->image);
 }

@@ -22,6 +22,8 @@ struct avdl_component_mesh {
 
 	int isEditor;
 
+	int editor_only;
+
 };
 
 void avdl_component_mesh_create(struct avdl_component_mesh *o);

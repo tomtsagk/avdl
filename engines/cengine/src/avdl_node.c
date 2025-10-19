@@ -283,6 +283,15 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 	content = "{\n";
 	write(fd, content, strlen(content));
 
+	if (o->clean == (void (*)(struct avdl_component *)) avdl_component_mesh_clean) {
+		struct avdl_component_mesh *mesh = o;
+		if (mesh->editor_only) {
+			NodeToJson_PrintTabs(fd, tabs);
+			content = "\"editor_only\": 1,\n";
+			write(fd, content, strlen(content));
+		}
+	}
+
 	NodeToJson_PrintTabs(fd, tabs);
 	content = "\"name\": \"";
 	write(fd, content, strlen(content));
@@ -293,6 +302,7 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 		write(fd, content, strlen(content));
 
 		struct avdl_component_mesh *mesh = o;
+
 		for (int i = 0; i < avdl_component_mesh_property_array_count; i++) {
 			struct avdl_component_property *p = &avdl_component_mesh_property_array[i];
 
@@ -666,6 +676,22 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 		avdl_log("Json component should start with a '{': %d %s", avdl_json_getToken(json), avdl_json_getTokenString(json));
 		return -1;
 	}
+	avdl_json_next(json);
+
+	// check if editor-only
+	int editor_only = 0;
+	if (avdl_json_getToken(json) == AVDL_JSON_KEY && strcmp(avdl_json_getTokenString(json), "editor_only") == 0) {
+		avdl_json_next(json);
+		if (avdl_json_getToken(json) == AVDL_JSON_INT) {
+			// component is editor-only, skip
+			if (avdl_json_getTokenNumber(json)) {
+				editor_only = 1;
+				//avdl_json_next(json);
+				//return 0;
+			}
+		}
+		avdl_json_next(json);
+	}
 
 	struct avdl_component *c = 0;
 	void (*component_type_func)(void *) = 0;
@@ -675,7 +701,6 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 	strcpy(component_name, "c_");
 	snprintf(component_name +2, 80, "%d", component_counter);
 	*/
-	avdl_json_next(json);
 	while (avdl_json_getToken(json) != AVDL_JSON_OBJECT_END) {
 
 		// find key
@@ -708,6 +733,9 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					mesh->isEditor = 1;
 					c = mesh;
 					component_type_func = avdl_component_mesh_clean;
+					if (editor_only) {
+						mesh->editor_only = 1;
+					}
 				}
 				else
 				if (strcmp(avdl_json_getTokenString(json), "avdl_component_skinned_mesh") == 0) {
@@ -731,6 +759,7 @@ static int json_expect_component(struct avdl_json_object *json, struct avdl_node
 					c = custom;
 					component_type_func = avdl_component_custom_clean;
 				}
+
 			}
 			else {
 				avdl_log_error("component name can only be string");
