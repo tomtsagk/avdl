@@ -37,6 +37,8 @@ void avdl_node_create(struct avdl_node *o) {
 
 	avdl_dynamic_array_create(&o->children);
 	avdl_da_init(&o->children, sizeof(struct avdl_node *));
+
+	avdl_vec3_Setf(&o->globalScale, 1.0, 1.0, 1.0);
 }
 
 void avdl_node_clean(struct avdl_node *o) {
@@ -98,6 +100,15 @@ struct dd_matrix *avdl_node_GetGlobalNormalInverseMatrix(struct avdl_node *o) {
 		dd_matrix_mult(&o->globalNormalInverseMatrix, avdl_node_GetGlobalNormalInverseMatrix(o->parent));
 	}
 	return &o->globalNormalInverseMatrix;
+}
+
+struct avdl_vec3 *avdl_node_GetGlobalScale(struct avdl_node *o) {
+	avdl_vec3_Setf(&o->globalScale, 1.0, 1.0, 1.0);
+	if (o->parent) {
+		avdl_vec3_Set(&o->globalScale, avdl_node_GetGlobalScale(o->parent));
+	}
+	avdl_vec3_Multiply(&o->globalScale, avdl_transform_GetScale(&o->localTransform));
+	return &o->globalScale;
 }
 
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {

@@ -1,11 +1,12 @@
 #ifndef AVDL_COLLIDER_SPHERE_H
 #define AVDL_COLLIDER_SPHERE_H
 
+#include "avdl_collider.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "avdl_collider.h"
 #include "avdl_vec3.h"
 
 struct avdl_collider_sphere {

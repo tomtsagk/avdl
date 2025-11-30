@@ -1719,7 +1719,7 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 		avdl_string_cat(&link_cmd, " -O3 -lm -l:libogg.so.0 -l:libpng16.so.16 -l:libSDL2-2.0.so.0 -l:libSDL2_mixer-2.0.so.0 -lpthread -lGL -l:libGLEW.so.2.2 -l:libfreetype.so.6");
 	}
 	else {
-		avdl_string_cat(&link_cmd, " -O3 -lm -logg -lpng -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lfreetype");
+		avdl_string_cat(&link_cmd, " -O3 -lm -logg -lpng -lSDL2 -lSDL2_mixer -lpthread -lGL -lGLEW -lfreetype -lode");
 	}
 
 	if (avdl_settings->steam_mode) {

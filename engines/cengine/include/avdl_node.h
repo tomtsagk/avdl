@@ -25,6 +25,8 @@ struct avdl_node {
 	struct dd_matrix globalInverseMatrix;
 	struct dd_matrix globalNormalInverseMatrix;
 
+	struct avdl_vec3 globalScale;
+
 	// component
 	struct avdl_dynamic_array components;
 
@@ -44,6 +46,7 @@ struct dd_matrix *avdl_node_GetGlobalMatrix(struct avdl_node *o);
 struct dd_matrix *avdl_node_GetGlobalNormalMatrix(struct avdl_node *o);
 struct dd_matrix *avdl_node_GetGlobalInverseMatrix(struct avdl_node *o);
 struct dd_matrix *avdl_node_GetGlobalNormalInverseMatrix(struct avdl_node *o);
+struct avdl_vec3 *avdl_node_GetGlobalScale(struct avdl_node *o);
 
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o);
 int avdl_node_RemoveChild(struct avdl_node *o, struct avdl_node *child);

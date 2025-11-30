@@ -1,11 +1,12 @@
 #ifndef AVDL_COLLIDER_AABB_H
 #define AVDL_COLLIDER_AABB_H
 
+#include "avdl_collider.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "avdl_collider.h"
 #include "avdl_vec3.h"
 #include "avdl_mesh.h"
 
@@ -29,6 +30,20 @@ float avdl_collider_aabb_getMinZ(struct avdl_collider_aabb *o);
 float avdl_collider_aabb_getMaxX(struct avdl_collider_aabb *o);
 float avdl_collider_aabb_getMaxY(struct avdl_collider_aabb *o);
 float avdl_collider_aabb_getMaxZ(struct avdl_collider_aabb *o);
+
+float avdl_collider_aabb_getCenterX(struct avdl_collider_aabb *o);
+float avdl_collider_aabb_getCenterY(struct avdl_collider_aabb *o);
+float avdl_collider_aabb_getCenterZ(struct avdl_collider_aabb *o);
+
+float avdl_collider_aabb_getLengthX(struct avdl_collider_aabb *o);
+float avdl_collider_aabb_getLengthY(struct avdl_collider_aabb *o);
+float avdl_collider_aabb_getLengthZ(struct avdl_collider_aabb *o);
+
+int avdl_collider_aabb_DrawDebug(struct avdl_collider_aabb *o, struct avdl_node *n);
+int avdl_collider_aabb_DrawDebugNode(struct avdl_collider_aabb *o, struct avdl_node *n);
+
+void avdl_collider_aabb_init();
+void avdl_collider_aabb_deinit();
 
 #ifdef __cplusplus
 }

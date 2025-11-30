@@ -101,6 +101,41 @@ static float shape_box_strip[] = {
 	 0.5, -0.5, -0.5,
 };
 
+static float shape_box_lines[] = {
+	// front side
+	-0.5, -0.5, 0.5,
+	 0.5, -0.5, 0.5,
+	 0.5, -0.5, 0.5,
+	 0.5,  0.5, 0.5,
+	 0.5,  0.5, 0.5,
+	-0.5,  0.5, 0.5,
+	-0.5,  0.5, 0.5,
+	-0.5, -0.5, 0.5,
+
+	// right side
+	 0.5, -0.5,  0.5,
+	 0.5, -0.5, -0.5,
+	 0.5, -0.5, -0.5,
+	 0.5,  0.5, -0.5,
+	 0.5,  0.5, -0.5,
+	 0.5,  0.5,  0.5,
+
+	// left side
+	-0.5,  0.5,  0.5,
+	-0.5,  0.5, -0.5,
+	-0.5,  0.5, -0.5,
+	-0.5, -0.5, -0.5,
+	-0.5, -0.5, -0.5,
+	-0.5, -0.5,  0.5,
+
+	// back side
+	-0.5,  0.5, -0.5,
+	 0.5,  0.5, -0.5,
+
+	 0.5, -0.5, -0.5,
+	-0.5, -0.5, -0.5,
+};
+
 static float shape_box_corners[] = {
 	// front top right
 	0.5, 0.5, 0.5,
@@ -400,6 +435,16 @@ void avdl_mesh_set_primitive(struct avdl_mesh *m, enum avdl_primitives shape) {
 			m->data->dirtyVertices = 0;
 			m->data->verticesType = AVDL_GRAPHICS_VTYPE_TRIANGLE_STRIP;
 			m->data->vcount = sizeof(shape_box_strip) /sizeof(float) /3;
+			break;
+
+		case AVDL_PRIMITIVE_BOX_WIREFRAME:
+			if (!m->data) {
+				m->data = CreateMeshData();
+			}
+			m->data->v = shape_box_lines;
+			m->data->dirtyVertices = 0;
+			m->data->verticesType = AVDL_GRAPHICS_VTYPE_LINES;
+			m->data->vcount = sizeof(shape_box_lines) /sizeof(float) /3;
 			break;
 
 		case AVDL_PRIMITIVE_BOX_FLIP:

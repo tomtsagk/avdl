@@ -63,6 +63,7 @@ float avdl_vec4_Distance(struct avdl_vec4 *a, struct avdl_vec4 *b);
 void avdl_vec4_Print(struct avdl_vec4 *);
 
 void avdl_vec4_Normalise(struct avdl_vec4 *o);
+void avdl_vec4_Normalise3(struct avdl_vec4 *o);
 float avdl_vec4_Magnitude(struct avdl_vec4 *o);
 
 void avdl_vec4_Invert(struct avdl_vec4 *o);

@@ -11,6 +11,8 @@
 #include <math.h>
 #include <string.h>
 
+#include <ode/ode.h>
+extern dSpaceID avdl_collision_space;
 
 #if defined(AVDL_QUEST2)
 // EXT_texture_border_clamp
@@ -108,6 +110,33 @@ extern GLuint currentProgram;
 #include <stdio.h>
 
 extern int avdl_use_default_locale;
+
+#include <ode/ode.h>
+
+static void nearCallback(void *data, dGeomID o1, dGeomID o2)
+{
+	dContact contact[4];
+	int n = dCollide(o1, o2, 4, &contact[0].geom, sizeof(dContact));
+
+	if (n > 0) {
+		for (int i = 0; i < n; i++) {
+			printf("Collision!\n");
+			printf("Contact point: (%f, %f, %f)\n",
+				contact[i].geom.pos[0],
+				contact[i].geom.pos[1],
+				contact[i].geom.pos[2]);
+
+			printf("Contact normal: (%f, %f, %f)\n",
+				contact[i].geom.normal[0],
+				contact[i].geom.normal[1],
+				contact[i].geom.normal[2]);
+
+			printf("Penetration depth: %f\n",
+				contact[i].geom.depth);
+			printf("-------------------------\n");
+		}
+	}
+}
 
 int avdl_engine_init(struct avdl_engine *o, struct avdl_dynamic_array *args) {
 
@@ -367,6 +396,26 @@ int avdl_engine_init(struct avdl_engine *o, struct avdl_dynamic_array *args) {
 
 	#endif
 
+	avdl_log("init ode");
+	dInitODE();
+
+	//dWorldID world = dWorldCreate();
+	//dSpaceID space = dSimpleSpaceCreate(0);
+	avdl_collision_space = dSimpleSpaceCreate(0);
+
+	/*
+	// Sphere
+	dGeomID sphere = dCreateSphere(space, 1.0);
+	dGeomSetPosition(sphere, 0.5, 0.0, 0.0);
+
+	// Box (will be rotated)
+	dGeomID box = dCreateBox(space, 1.0, 1.0, 1.0);
+	dGeomSetPosition(box, 0.0, 0.0, 0.0);
+
+	dSpaceCollide(space, 0, &nearCallback);
+	*/
+	avdl_collider_init();
+
 	return 0;
 }
 #endif
@@ -418,6 +467,9 @@ int avdl_engine_clean(struct avdl_engine *o) {
 	xrDestroySpace(o->HeadSpace);
 	xrDestroySpace(o->LocalSpace);
 	#endif
+
+	dCloseODE();
+	avdl_collider_deinit();
 
 	return 0;
 }

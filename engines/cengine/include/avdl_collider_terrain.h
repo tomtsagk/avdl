@@ -1,11 +1,12 @@
 #ifndef AVDL_COLLIDER_TERRAIN_H
 #define AVDL_COLLIDER_TERRAIN_H
 
+#include "avdl_collider.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "avdl_collider.h"
 #include "avdl_vec3.h"
 #include "avdl_terrain.h"
 

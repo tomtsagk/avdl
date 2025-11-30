@@ -200,6 +200,13 @@ void avdl_vec4_Normalise(struct avdl_vec4 *o) {
 	o->w /= magn;
 }
 
+void avdl_vec4_Normalise3(struct avdl_vec4 *o) {
+	float magn = avdl_vec3_Magnitude(o);
+	o->x /= magn;
+	o->y /= magn;
+	o->z /= magn;
+}
+
 float avdl_vec4_Magnitude(struct avdl_vec4 *o) {
 	return dd_math_sqrt(dd_math_pow(o->x, 2) +dd_math_pow(o->y, 2) +dd_math_pow(o->z, 2) +dd_math_pow(o->w, 2));
 }

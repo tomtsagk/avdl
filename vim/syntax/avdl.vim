@@ -11,6 +11,7 @@ endif
 syntax keyword avdlKeywords if echo def group savefile
 	\ enum struct class class_function function return
 	\ for break continue asset extern multistring include
+	\ ref override
 
 syntax match avdlKeywords '='
 syntax match avdlKeywords '+'
@@ -20,6 +21,7 @@ syntax match avdlKeywords '/'
 syntax match avdlKeywords '%'
 syntax match avdlKeywords '>='
 syntax match avdlKeywords '=='
+syntax match avdlKeywords '!='
 syntax match avdlKeywords '<='
 syntax match avdlKeywords '&&'
 syntax match avdlKeywords '||'
@@ -38,18 +40,16 @@ syntax match avdlKeywords ']'
 syntax match avdlKeywords 'dd_matrix'
 syntax match avdlKeywords 'dd_world'
 syntax match avdlKeywords 'avdl_mesh'
-syntax match avdlKeywords 'dd_mesh'
-syntax match avdlKeywords 'dd_meshColour'
-syntax match avdlKeywords 'dd_meshTexture'
-syntax match avdlKeywords 'dd_string3d'
+syntax match avdlKeywords 'avdl_mesh'
+syntax match avdlKeywords 'avdl_string3d'
 syntax match avdlKeywords 'avdl_particle_system'
 syntax match avdlKeywords 'avdl_localisation'
 syntax match avdlKeywords 'avdl_program'
 syntax match avdlKeywords 'dd_translatef'
 syntax match avdlKeywords 'dd_rotatef'
 syntax match avdlKeywords 'dd_scalef'
-syntax match avdlKeywords 'dd_screen_height_get'
-syntax match avdlKeywords 'dd_screen_width_get'
+syntax match avdlKeywords 'avdl_screen_GetWidth'
+syntax match avdlKeywords 'avdl_screen_GetHeight'
 syntax match avdlKeywords 'dd_matrix_pop'
 syntax match avdlKeywords 'dd_matrix_push'
 syntax match avdlKeywords 'avdl_getUniformLocation'
@@ -58,7 +58,6 @@ syntax match avdlKeywords 'dd_math_ease_linear'
 syntax match avdlKeywords 'avdl_useProgram'
 syntax match avdlKeywords 'dd_math_min'
 syntax match avdlKeywords 'dd_math_max'
-syntax match avdlKeywords 'DD_PLY'
 syntax match avdlKeywords 'AVDL_INPUT_STATE_DOWN'
 syntax match avdlKeywords 'AVDL_INPUT_STATE_UP'
 syntax match avdlKeywords 'AVDL_INPUT_STATE_MOVE'
@@ -72,6 +71,10 @@ syntax match avdlKeywords 'avdl_rigitbody'
 syntax match avdlKeywords 'avdl_collider'
 syntax match avdlKeywords 'avdl_collider_aabb'
 syntax match avdlKeywords 'avdl_collider_sphere'
+syntax match avdlKeywords 'avdl_node'
+syntax match avdlKeywords 'avdl_string'
+syntax match avdlKeywords 'avdl_input'
+syntax match avdlKeywords 'avdl_font'
 
 " primitive variable types
 syntax keyword avdlPrimitiveVariableTypes int float string char void
@@ -80,6 +83,7 @@ syntax keyword avdlPrimitiveVariableTypes int float string char void
 syn match ddNumber '[-+]\?\<\d\+\>'
 syn match ddFloat '[-+]\?\<\d\+\.\?\d\+\>'
 syn region ddString start='"' end='"'
+syn region avdlChar start='\'' end='\''
 
 " comments
 syn match ddComment '#.*$'
@@ -90,6 +94,7 @@ let b:current_syntax = "avdl"
 hi def link ddNumber      Constant
 hi def link ddFloat       Constant
 hi def link ddString      Constant
+hi def link avdlChar      Constant
 hi def link ddComment     Comment
 hi def link avdlKeywords  Keyword
 hi def link avdlPrimitiveVariableTypes  Keyword
