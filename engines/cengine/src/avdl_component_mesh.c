@@ -8,6 +8,7 @@ void avdl_component_mesh_create(struct avdl_component_mesh *o) {
 
 	o->parent.after_create = avdl_component_mesh_after_create;
 	o->mesh_name = 0;
+	o->dirty_mesh_name = 0;
 	o->texture_name = 0;
 	o->mesh_primitive = -1;
 	o->dirty_texture_name = 0;

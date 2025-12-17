@@ -519,7 +519,7 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 			}
 
 			// virtual and override cannot both appear
-			if (child->isVirtual) {
+			if (child->isVirtual || child->isRef) {
 				function_type = DD_VARIABLE_TYPE_FUNCTION;
 
 				// function overrides another function but `override` is not present
@@ -1300,17 +1300,26 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 		else {
 			ast_addChild(cmd, cmdname);
 
-			struct ast_node *chain = ast_getChild(cmd, avdl_da_count(&cmd->children)-1);
-			struct ast_node *prevChain = cmd;
-			while (chain->children.elements > 0) {
-				struct ast_node *arg = ast_create(AST_IDENTIFIER);
-				ast_setLex(arg, chain->lex);
-				arg->value = DD_VARIABLE_TYPE_STRUCT;
-				arg->isRef = chain->isRef;
-				ast_addChild(prevChain, arg);
+			// pointers to functions do not get the automatic context argument, for example:
+			//
+			// For example something like this:
+			//     this.myvar.myfunc(...)
+			// remains the same for function pointers but becomes this for other functions
+			//     this.myvar.myfunc(&this.myvar, ...)
+			//
+			if (!lastChild->isRef) {
+				struct ast_node *chain = ast_getChild(cmd, avdl_da_count(&cmd->children)-1);
+				struct ast_node *prevChain = cmd;
+				while (chain->children.elements > 0) {
+					struct ast_node *arg = ast_create(AST_IDENTIFIER);
+					ast_setLex(arg, chain->lex);
+					arg->value = DD_VARIABLE_TYPE_STRUCT;
+					arg->isRef = chain->isRef;
+					ast_addChild(prevChain, arg);
 
-				chain = avdl_da_get(&chain->children, -1);
-				prevChain = ast_getChild(prevChain, avdl_da_count(&prevChain->children)-1);
+					chain = avdl_da_get(&chain->children, -1);
+					prevChain = ast_getChild(prevChain, avdl_da_count(&prevChain->children)-1);
+				}
 			}
 		}
 
