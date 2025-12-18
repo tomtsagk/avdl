@@ -12,7 +12,7 @@ extern GLuint currentProgram;
 
 void dd_string3d_create(struct dd_string3d *o) {
 
-	avdl_da_init(&o->textMeshes, sizeof(struct dd_word_mesh));
+	avdl_dynamic_array_init(&o->textMeshes, sizeof(struct dd_word_mesh));
 
 	o->isOnce = 0;
 
@@ -47,9 +47,9 @@ void dd_string3d_draw(struct dd_string3d *o) {
 
 static void clean_words(struct dd_string3d *o) {
 	// empty previous text meshes (if any)
-	for (int i = 0; i < o->textMeshes.elements; i++) {
+	for (int i = 0; i < avdl_dynamic_array_count(&o->textMeshes); i++) {
 		struct dd_word_mesh *p;
-		p = avdl_da_get(&o->textMeshes, i);
+		p = avdl_dynamic_array_get(&o->textMeshes, i);
 		avdl_mesh_clean(&p->m);
 		if (o->openglContextId == o->font->openglContextId) {
 			for (int j = 0; j < p->length; j++) {
@@ -58,7 +58,7 @@ static void clean_words(struct dd_string3d *o) {
 		}
 		p->length = 0;
 	}
-	avdl_da_empty(&o->textMeshes);
+	avdl_dynamic_array_empty(&o->textMeshes);
 }
 
 void dd_string3d_drawInt(struct dd_string3d *o, int num) {
@@ -89,11 +89,11 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 	int num_len = strlen(numberString);
 	float lineWidth = 0;
 	for (int i = 0; i < num_len; i++) {
-		struct dd_word_mesh *m = avdl_da_get(&o->textMeshes, numberString[i] -'0');
+		struct dd_word_mesh *m = avdl_dynamic_array_get(&o->textMeshes, numberString[i] -'0');
 		lineWidth += m->widthf;
 	}
 	// add `.` every 3 digits
-	struct dd_word_mesh *mDot = avdl_da_get(&o->textMeshes, 10);
+	struct dd_word_mesh *mDot = avdl_dynamic_array_get(&o->textMeshes, 10);
 	lineWidth += (mDot->widthf *(num_len /3));
 
 	switch (o->align) {
@@ -115,7 +115,7 @@ void dd_string3d_drawInt(struct dd_string3d *o, int num) {
 	}
 
 	for (int i = 0; i < num_len; i++) {
-		struct dd_word_mesh *m = avdl_da_get(&o->textMeshes, numberString[i] -'0');
+		struct dd_word_mesh *m = avdl_dynamic_array_get(&o->textMeshes, numberString[i] -'0');
 
 		int previousProgram;
 		previousProgram = avdl_graphics_GetCurrentProgram();
@@ -164,16 +164,16 @@ void dd_string3d_drawIntPadded(struct dd_string3d *o, int num, int digits) {
 	float lineWidth = 0;
 	for (int i = 0; i < num_len +padding; i++) {
 		if (i < padding) {
-			struct dd_word_mesh *m = avdl_da_get(&o->textMeshes, 0);
+			struct dd_word_mesh *m = avdl_dynamic_array_get(&o->textMeshes, 0);
 			lineWidth += m->widthf;
 		}
 		else {
-			struct dd_word_mesh *m = avdl_da_get(&o->textMeshes, numberString[i -padding] -'0');
+			struct dd_word_mesh *m = avdl_dynamic_array_get(&o->textMeshes, numberString[i -padding] -'0');
 			lineWidth += m->widthf;
 		}
 	}
 	// add `.` every 3 digits
-	struct dd_word_mesh *mDot = avdl_da_get(&o->textMeshes, 10);
+	struct dd_word_mesh *mDot = avdl_dynamic_array_get(&o->textMeshes, 10);
 	lineWidth += (mDot->widthf *(num_len /3));
 
 	switch (o->align) {
@@ -198,10 +198,10 @@ void dd_string3d_drawIntPadded(struct dd_string3d *o, int num, int digits) {
 
 		struct dd_word_mesh *m;
 		if (i < padding) {
-			m = avdl_da_get(&o->textMeshes, 0);
+			m = avdl_dynamic_array_get(&o->textMeshes, 0);
 		}
 		else {
-			m = avdl_da_get(&o->textMeshes, numberString[i -padding] -'0');
+			m = avdl_dynamic_array_get(&o->textMeshes, numberString[i -padding] -'0');
 		}
 
 		int previousProgram;
@@ -265,8 +265,8 @@ void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int words
 		float lineWidth = 0;
 		linesTotal++;
 
-		for (int i = wordsTotal; i < o->textMeshes.elements; i++) {
-			struct dd_word_mesh *m = avdl_da_get(&o->textMeshes, i);
+		for (int i = wordsTotal; i < avdl_dynamic_array_count(&o->textMeshes); i++) {
+			struct dd_word_mesh *m = avdl_dynamic_array_get(&o->textMeshes, i);
 
 			// is newline character - stop parsing line
 			if (m->is_newline) {
@@ -291,7 +291,7 @@ void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int words
 			}
 		}
 		wordsTotal += lineWords;
-	} while (wordsTotal < o->textMeshes.elements);
+	} while (wordsTotal < avdl_dynamic_array_count(&o->textMeshes));
 	switch (o->alignv) {
 	case DD_STRING3D_ALIGN_VERTICAL_TOP:
 		break;
@@ -309,8 +309,8 @@ void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int words
 		int lineWords = 0;
 		float lineWidth = 0;
 
-		for (int i = wordsTotal; i < o->textMeshes.elements; i++) {
-			struct dd_word_mesh *m = avdl_da_get(&o->textMeshes, i);
+		for (int i = wordsTotal; i < avdl_dynamic_array_count(&o->textMeshes); i++) {
+			struct dd_word_mesh *m = avdl_dynamic_array_get(&o->textMeshes, i);
 
 			// newline character - end line
 			if (m->is_newline) {
@@ -353,7 +353,7 @@ void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int words
 				break;
 			}
 
-			struct dd_word_mesh *m = avdl_da_get(&o->textMeshes, wordsTotal +i);
+			struct dd_word_mesh *m = avdl_dynamic_array_get(&o->textMeshes, wordsTotal +i);
 
 			if (m->is_newline) {
 				break;
@@ -380,7 +380,7 @@ void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int words
 		wordsTotal += lineWords;
 		dd_matrix_pop();
 		dd_translatef(0, -1, 0);
-	} while (wordsTotal < o->textMeshes.elements);
+	} while (wordsTotal < avdl_dynamic_array_count(&o->textMeshes));
 
 	dd_matrix_pop();
 
@@ -388,7 +388,7 @@ void dd_string3d_drawLimitTypewriter(struct dd_string3d *o, int limit, int words
 
 void dd_string3d_clean(struct dd_string3d *o) {
 	clean_words(o);
-	avdl_da_free(&o->textMeshes);
+	avdl_dynamic_array_free(&o->textMeshes);
 }
 
 // if it uses bits 0x1100_0000 - it's unicode
@@ -446,8 +446,8 @@ void dd_string3d_setText(struct dd_string3d *o, const char *text) {
 		}
 
 		// create new mesh for the new word
-		avdl_da_push(&o->textMeshes, &m);
-		p = avdl_da_get(&o->textMeshes, o->textMeshes.elements-1);
+		avdl_dynamic_array_push(&o->textMeshes, &m);
+		p = avdl_dynamic_array_get(&o->textMeshes, avdl_dynamic_array_count(&o->textMeshes)-1);
 
 		avdl_mesh_create(&p->m);
 
@@ -685,8 +685,8 @@ float dd_string3d_getWidth(struct dd_string3d *o) {
 	float lineWidth = 0;
 	linesTotal++;
 
-	for (int i = 0; i < o->textMeshes.elements; i++) {
-		struct dd_word_mesh *m = avdl_da_get(&o->textMeshes, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&o->textMeshes); i++) {
+		struct dd_word_mesh *m = avdl_dynamic_array_get(&o->textMeshes, i);
 
 		// is newline character - stop parsing line
 		if (m->is_newline) {
@@ -716,7 +716,7 @@ float dd_string3d_getWidthInt(struct dd_string3d *o, int num) {
 	int num_len = strlen(numberString);
 	float lineWidth = 0;
 	for (int i = 0; i < num_len; i++) {
-		struct dd_word_mesh *m = avdl_da_get(&o->textMeshes, numberString[i] -'0');
+		struct dd_word_mesh *m = avdl_dynamic_array_get(&o->textMeshes, numberString[i] -'0');
 		lineWidth += m->widthf;
 	}
 

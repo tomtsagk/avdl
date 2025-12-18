@@ -10,8 +10,8 @@ void avdl_string_create(struct avdl_string *o) {
 
 	o->errorCode = 0;
 	o->errorCharacters = 0;
-	avdl_da_init(&o->string, sizeof(char));
-	avdl_da_push(&o->string, "\0");
+	avdl_dynamic_array_init(&o->string, sizeof(char));
+	avdl_dynamic_array_push(&o->string, "\0");
 
 	// for now, all strings have 3 character limit unless "SetMaxCharacters" is called.
 	// ideally in the future they should have 'infinite' size unless the above function is called.
@@ -39,11 +39,11 @@ void avdl_string_cat(struct avdl_string *o, const char *stringToCatenate) {
 	}
 
 	// maximum characters reached - error
-	if (o->string.elements +strlen(stringToCatenate) > o->maxCharacters) {
+	if (avdl_dynamic_array_count(&o->string) +strlen(stringToCatenate) > o->maxCharacters) {
 		o->errorCode = 1;
 		return;
 	}
-	avdl_da_add(&o->string, stringToCatenate, strlen(stringToCatenate), -2);
+	avdl_dynamic_array_add(&o->string, stringToCatenate, strlen(stringToCatenate), -2);
 }
 
 void avdl_string_ncat(struct avdl_string *o, const char *stringToCatenate, int size) {
@@ -55,11 +55,11 @@ void avdl_string_ncat(struct avdl_string *o, const char *stringToCatenate, int s
 	}
 
 	// maximum characters reached - error
-	if (o->string.elements +size > o->maxCharacters) {
+	if (avdl_dynamic_array_count(&o->string) +size > o->maxCharacters) {
 		o->errorCode = 1;
 		return;
 	}
-	avdl_da_add(&o->string, stringToCatenate, size, -2);
+	avdl_dynamic_array_add(&o->string, stringToCatenate, size, -2);
 }
 
 int avdl_string_isValid(struct avdl_string *o) {
@@ -95,7 +95,7 @@ void avdl_string_clean(struct avdl_string *o) {
 		return;
 	}
 
-	avdl_da_free(&o->string);
+	avdl_dynamic_array_free(&o->string);
 	o->errorCode = -1;
 }
 
@@ -106,11 +106,11 @@ int avdl_string_EndsIn(struct avdl_string *o, const char *endingString) {
 	}
 
 	// ending string bigger than source string - source string does not end with it
-	if (strlen(endingString) >= o->string.elements) {
+	if (strlen(endingString) >= avdl_dynamic_array_count(&o->string)) {
 		return 0;
 	}
 
-	return strcmp(((char *)o->string.array) +o->string.elements -1 -strlen(endingString), endingString) == 0;
+	return strcmp(((char *)o->string.array) +avdl_dynamic_array_count(&o->string) -1 -strlen(endingString), endingString) == 0;
 }
 
 void avdl_string_replaceEnding(struct avdl_string *o, const char *fromEnding, const char *toEnding) {
@@ -124,9 +124,9 @@ void avdl_string_replaceEnding(struct avdl_string *o, const char *fromEnding, co
 		return;
 	}
 
-	int position = o->string.elements -1 -strlen(fromEnding);
-	avdl_da_remove(&o->string, strlen(fromEnding), position);
-	avdl_da_add(&o->string, toEnding, strlen(toEnding), position);
+	int position = avdl_dynamic_array_count(&o->string) -1 -strlen(fromEnding);
+	avdl_dynamic_array_remove(&o->string, strlen(fromEnding), position);
+	avdl_dynamic_array_add(&o->string, toEnding, strlen(toEnding), position);
 
 }
 
@@ -142,8 +142,8 @@ void avdl_string_copy(struct avdl_string *o, struct avdl_string *target) {
 }
 
 void avdl_string_empty(struct avdl_string *o) {
-	avdl_da_empty(&o->string);
-	avdl_da_push(&o->string, "\0");
+	avdl_dynamic_array_empty(&o->string);
+	avdl_dynamic_array_push(&o->string, "\0");
 	o->errorCharacters = 0;
 	o->errorCode = 0;
 }
@@ -214,16 +214,16 @@ int avdl_string_incrementEndingInt(struct avdl_string *o) {
 }
 
 int avdl_string_IsEmpty(struct avdl_string *o) {
-	return avdl_da_count(&o->string) == 1;
+	return avdl_dynamic_array_count(&o->string) == 1;
 }
 
 int avdl_string_Dirname(struct avdl_string *o) {
 
 	// remove all trailing "/"
 	while (avdl_string_EndsIn(o, "/")) {
-		int position = o->string.elements -2;
-		avdl_da_remove(&o->string, 2, position);
-		avdl_da_add(&o->string, "\0", 1, position);
+		int position = avdl_dynamic_array_count(&o->string) -2;
+		avdl_dynamic_array_remove(&o->string, 2, position);
+		avdl_dynamic_array_add(&o->string, "\0", 1, position);
 	}
 
 	char *last_slash = strrchr(avdl_string_toCharPtr(o), '/');
@@ -243,7 +243,7 @@ int avdl_string_Dirname(struct avdl_string *o) {
 	// last separator exist, remove everything after it
 	if (last_sep) {
 		last_sep++;
-		avdl_da_remove(&o->string, strlen(last_sep), last_sep -avdl_string_toCharPtr(o));
+		avdl_dynamic_array_remove(&o->string, strlen(last_sep), last_sep -avdl_string_toCharPtr(o));
 		return 0;
 	}
 	// no slashes means it's a local file

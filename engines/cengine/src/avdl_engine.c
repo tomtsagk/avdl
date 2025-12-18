@@ -956,7 +956,7 @@ int avdl_engine_loop(struct avdl_engine *o) {
 
 	struct avdl_dynamic_array controllerArray;
 	avdl_dynamic_array_create(&controllerArray);
-	avdl_da_init(&controllerArray, sizeof(SDL_GameController*));
+	avdl_dynamic_array_init(&controllerArray, sizeof(SDL_GameController*));
 
 	int isRunning = 1;
 	SDL_Event event;
@@ -1031,15 +1031,15 @@ int avdl_engine_loop(struct avdl_engine *o) {
 					continue;
 				}
 				avdl_inputmanager_AddBinaryInput(&o->input, SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller)), AVDL_INPUT_GAMEPAD_CONNECTION, AVDL_INPUT_STATE_DOWN);
-				avdl_da_push(&controllerArray, &controller);
+				avdl_dynamic_array_push(&controllerArray, &controller);
 				break;
 			case SDL_CONTROLLERDEVICEREMOVED:
-				for (int i = 0; i < avdl_da_count(&controllerArray); i++) {
-					SDL_GameController *controller = avdl_da_getDeref(&controllerArray, i);
+				for (int i = 0; i < avdl_dynamic_array_count(&controllerArray); i++) {
+					SDL_GameController *controller = avdl_dynamic_array_getDeref(&controllerArray, i);
 					if (event.cdevice.which == SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller))) {
 						avdl_inputmanager_AddBinaryInput(&o->input, event.cdevice.which, AVDL_INPUT_GAMEPAD_CONNECTION, AVDL_INPUT_STATE_UP);
 						SDL_GameControllerClose(controller);
-						avdl_da_remove(&controllerArray, 1, i);
+						avdl_dynamic_array_remove(&controllerArray, 1, i);
 						break;
 					}
 				}

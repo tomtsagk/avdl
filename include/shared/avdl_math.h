@@ -1,18 +1,20 @@
 #ifndef DD_MATH_H
 #define DD_MATH_H
 
+//#include "dd_vec2.h"
+//#include "avdl_vec3.h"
+#include <math.h>
+#include <stdlib.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "dd_vec2.h"
-#include "avdl_vec3.h"
-#include <math.h>
-#include <stdlib.h>
-
 // Random
 int   dd_math_rand (int   to);
 float dd_math_randf(float to);
+int   avdl_math_RandomInt  (int   to);
+float avdl_math_RandomFloat(float to);
 
 
 int dd_math_randPseudo(int to);
@@ -29,13 +31,13 @@ int dd_math_randPseudoSetSeed(int seed);
  *
  */
 float dd_math_ease_linear(float t, float p0, float p1);
-void dd_math_ease_linear2d(struct dd_vec2 *point, float t, struct dd_vec2 p0, struct dd_vec2 p1);
+//void dd_math_ease_linear2d(struct dd_vec2 *point, float t, struct dd_vec2 p0, struct dd_vec2 p1);
 
 float dd_math_ease_bezier(float t, float p0, float p1, float p2);
-void dd_math_ease_bezier2d(struct dd_vec2 *point, float t, struct dd_vec2 p0, struct dd_vec2 p1, struct dd_vec2 p2);
+//void dd_math_ease_bezier2d(struct dd_vec2 *point, float t, struct dd_vec2 p0, struct dd_vec2 p1, struct dd_vec2 p2);
 
-float dd_math_ease_catmullrom(float t, float p0, float p1, float p2, float p3);
-void dd_math_ease_catmullrom2d(struct dd_vec2 *point, float t, struct dd_vec2 p0, struct dd_vec2 p1, struct dd_vec2 p2, struct dd_vec2 p3);
+//float dd_math_ease_catmullrom(float t, float p0, float p1, float p2, float p3);
+//void dd_math_ease_catmullrom2d(struct dd_vec2 *point, float t, struct dd_vec2 p0, struct dd_vec2 p1, struct dd_vec2 p2, struct dd_vec2 p3);
 
 // operations
 #define dd_math_pow(x, times) pow(x, times)
@@ -64,14 +66,10 @@ float dd_math_dec2rad(float dec);
 
 int dd_math_removeTrailingZeroes(int num);
 
-// vector math
-float dd_math_dot2(struct dd_vec2 *v1, struct dd_vec2 *v2);
-float dd_math_dot3(struct avdl_vec3 *v1, struct avdl_vec3 *v2);
+//#include "avdl_vec4.h"
 
-#include "avdl_vec4.h"
-
-int dd_math_plane_ray_intersect(struct avdl_vec4 *rayPos, struct avdl_vec4 *rayDir,
-	struct avdl_vec4 *planePos, struct avdl_vec4 *planeNormal, struct avdl_vec4 *out);
+//int dd_math_plane_ray_intersect(struct avdl_vec4 *rayPos, struct avdl_vec4 *rayDir,
+//	struct avdl_vec4 *planePos, struct avdl_vec4 *planeNormal, struct avdl_vec4 *out);
 
 #ifdef __cplusplus
 }

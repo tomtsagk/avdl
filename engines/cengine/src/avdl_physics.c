@@ -1,9 +1,9 @@
 #include "avdl_physics.h"
-#include "dd_math.h"
 #include "avdl_collider.h"
 #include "avdl_collider_aabb.h"
 #include "avdl_collider_sphere.h"
 #include "shared/avdl_log.h"
+#include "shared/avdl_math.h"
 
 struct manifold {
 	int collide;

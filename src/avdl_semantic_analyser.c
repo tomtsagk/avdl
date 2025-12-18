@@ -312,10 +312,10 @@ static struct ast_node *expect_command_classFunction(struct avdl_lexer *l) {
 	e->value = struct_table_get_index(ast_getLex(classname));
 
 	// function arguments
-	struct ast_node *funcargs = avdl_da_get(&function->children, 2);
-	for (int i = 1; i < funcargs->children.elements; i += 2) {
-		struct ast_node *type = avdl_da_get(&funcargs->children, i-1);
-		struct ast_node *name = avdl_da_get(&funcargs->children, i);
+	struct ast_node *funcargs = avdl_dynamic_array_get(&function->children, 2);
+	for (int i = 1; i < avdl_dynamic_array_count(&funcargs->children); i += 2) {
+		struct ast_node *type = avdl_dynamic_array_get(&funcargs->children, i-1);
+		struct ast_node *name = avdl_dynamic_array_get(&funcargs->children, i);
 
 		struct entry *symEntry = symtable_entryat(symtable_insert(ast_getLex(name), dd_variable_type_convert(ast_getLex(type))));
 		if (!dd_variable_type_isPrimitiveType(ast_getLex(type))) {
@@ -414,8 +414,8 @@ static struct ast_node *expect_command_group(struct avdl_lexer *l) {
 }
 
 static struct ast_node *getIdentifierArrayNode(struct ast_node *n) {
-	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 
 		if (child->node_type == AST_GROUP) {
 			return child;
@@ -463,10 +463,10 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 	}
 
 	int foundCreate = 0;
-	for (int i = 0; i < definitions->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&definitions->children, i);
-		struct ast_node *type = avdl_da_get(&child->children, 0);
-		struct ast_node *name = avdl_da_get(&child->children, 1);
+	for (int i = 0; i < avdl_dynamic_array_count(&definitions->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&definitions->children, i);
+		struct ast_node *type = avdl_dynamic_array_get(&child->children, 0);
+		struct ast_node *name = avdl_dynamic_array_get(&child->children, 1);
 
 		// new variable
 		if (strcmp(ast_getLex(child), "def") == 0) {
@@ -477,11 +477,11 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 			//printf("variable: %s %s\n", ast_getLex(type), ast_getLex(name));
 			if (arrayNode) {
 
-				if (arrayNode->children.elements == 0) {
+				if (avdl_dynamic_array_count(&arrayNode->children) == 0) {
 					semantic_error(l, "array definition should have a value");
 				}
 
-				struct ast_node *arrayNum = avdl_da_get(&arrayNode->children, 0);
+				struct ast_node *arrayNum = avdl_dynamic_array_get(&arrayNode->children, 0);
 
 				if (!avdl_ast_integer_IsValid(arrayNum)) {
 					semantic_error(l, "array definition should only be a number");
@@ -515,7 +515,7 @@ static struct ast_node *expect_command_classDefinition(struct avdl_lexer *l) {
 				}
 			}
 			if (child->isRef) {
-				//avdl_log("is ref: %s %d", ast_getLex(child), child->isRef);
+				//avdl_log("is ref: %s %s\n", name->lex, classname->lex);
 			}
 
 			// virtual and override cannot both appear
@@ -650,10 +650,10 @@ static struct ast_node *expect_command_struct(struct avdl_lexer *l) {
 		return 0;
 	}
 
-	for (int i = 0; i < definitions->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&definitions->children, i);
-		struct ast_node *type = avdl_da_get(&child->children, 0);
-		struct ast_node *name = avdl_da_get(&child->children, 1);
+	for (int i = 0; i < avdl_dynamic_array_count(&definitions->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&definitions->children, i);
+		struct ast_node *type = avdl_dynamic_array_get(&child->children, 0);
+		struct ast_node *name = avdl_dynamic_array_get(&child->children, 1);
 
 		// new variable
 		if (strcmp(ast_getLex(child), "def") == 0) {
@@ -664,11 +664,11 @@ static struct ast_node *expect_command_struct(struct avdl_lexer *l) {
 			//printf("variable: %s %s\n", ast_getLex(type), ast_getLex(name));
 			if (arrayNode) {
 
-				if (arrayNode->children.elements == 0) {
+				if (avdl_dynamic_array_count(&arrayNode->children) == 0) {
 					semantic_error(l, "array definition should have a value");
 				}
 
-				struct ast_node *arrayNum = avdl_da_get(&arrayNode->children, 0);
+				struct ast_node *arrayNum = avdl_dynamic_array_get(&arrayNode->children, 0);
 
 				if (!avdl_ast_integer_IsValid(arrayNum)) {
 					semantic_error(l, "array definition should only be a number");
@@ -976,7 +976,7 @@ static struct ast_node *expect_identifier(struct avdl_lexer *l) {
 				ast_setLex(parentChild, "parent");
 				ast_addChild(lastChild, parentChild);
 				int childIndex = ast_getChildCount(lastChild) -1;
-				lastChild = avdl_da_get(&lastChild->children, childIndex);
+				lastChild = avdl_dynamic_array_get(&lastChild->children, childIndex);
 			}
 
 			// finally add the found child on the last "parent" node added
@@ -1063,7 +1063,7 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 	if (agc_commands_isNative(ast_getLex(cmdname))) {
 
 		// native command can only be a name, no array modifiers or owning data
-		if (cmdname->children.elements > 0) {
+		if (avdl_dynamic_array_count(&cmdname->children) > 0) {
 			semantic_error(l, "native command name cannot have an array modifier, or own other data\n");
 		}
 
@@ -1217,8 +1217,8 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 
 		// inline functions
 		struct ast_node *lastChild = cmdname;
-		while (lastChild->children.elements > 0) {
-			lastChild = avdl_da_get(&lastChild->children, avdl_da_count(&lastChild->children) -1);
+		while (avdl_dynamic_array_count(&lastChild->children) > 0) {
+			lastChild = avdl_dynamic_array_get(&lastChild->children, avdl_dynamic_array_count(&lastChild->children) -1);
 		}
 		if (lastChild != cmdname && lastChild->value == AVDL_VARIABLE_TYPE_FUNCTION_INLINE) {
 
@@ -1232,14 +1232,16 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 			cmdname->isRef = e->isRef;
 			int structIndex = e->value;
 
+			//avdl_log("semantic custom is ref: %s %d", lastChild->lex, cmdname->isRef);
+
 			// find the final child's name and its parent's struct name
-			struct ast_node *child = avdl_da_get(&cmdname->children, -1);
-			while (child->children.elements > 0) {
+			struct ast_node *child = avdl_dynamic_array_get(&cmdname->children, -1);
+			while (avdl_dynamic_array_count(&child->children) > 0) {
 
 				// `parent` is a special keyword for parent struct
 				if (strcmp(child->lex, "parent") == 0) {
 					structIndex = struct_table_get_parent(structIndex);
-					child = avdl_da_get(&child->children, -1);
+					child = avdl_dynamic_array_get(&child->children, -1);
 					continue;
 				}
 
@@ -1253,7 +1255,7 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 					return 0;
 				}
 				structIndex = struct_table_get_index(struct_table_get_member_nametype(structIndex, memberIndex));
-				child = avdl_da_get(&child->children, -1);
+				child = avdl_dynamic_array_get(&child->children, -1);
 			}
 
 			// assemble inline function's name
@@ -1284,14 +1286,14 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 				ast_addChild(to, arg);
 
 				// array handling
-				if (avdl_da_count(&from->children) > 1) {
-					struct ast_node *c = avdl_da_get(&from->children, 0);
-					struct ast_node *to2 = ast_getChild(to, avdl_da_count(&to->children)-1);
+				if (avdl_dynamic_array_count(&from->children) > 1) {
+					struct ast_node *c = avdl_dynamic_array_get(&from->children, 0);
+					struct ast_node *to2 = ast_getChild(to, avdl_dynamic_array_count(&to->children)-1);
 					ast_addChild(to2, c);
 				}
 
-				from = avdl_da_get(&from->children, -1);
-				to = ast_getChild(to, avdl_da_count(&to->children)-1);
+				from = avdl_dynamic_array_get(&from->children, -1);
+				to = ast_getChild(to, avdl_dynamic_array_count(&to->children)-1);
 			}
 
 			avdl_string_clean(&str);
@@ -1308,17 +1310,17 @@ static struct ast_node *expect_command(struct avdl_lexer *l) {
 			//     this.myvar.myfunc(&this.myvar, ...)
 			//
 			if (!lastChild->isRef) {
-				struct ast_node *chain = ast_getChild(cmd, avdl_da_count(&cmd->children)-1);
+				struct ast_node *chain = ast_getChild(cmd, avdl_dynamic_array_count(&cmd->children)-1);
 				struct ast_node *prevChain = cmd;
-				while (chain->children.elements > 0) {
+				while (avdl_dynamic_array_count(&chain->children) > 0) {
 					struct ast_node *arg = ast_create(AST_IDENTIFIER);
 					ast_setLex(arg, chain->lex);
 					arg->value = DD_VARIABLE_TYPE_STRUCT;
 					arg->isRef = chain->isRef;
 					ast_addChild(prevChain, arg);
 
-					chain = avdl_da_get(&chain->children, -1);
-					prevChain = ast_getChild(prevChain, avdl_da_count(&prevChain->children)-1);
+					chain = avdl_dynamic_array_get(&chain->children, -1);
+					prevChain = ast_getChild(prevChain, avdl_dynamic_array_count(&prevChain->children)-1);
 				}
 			}
 		}

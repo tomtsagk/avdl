@@ -1,6 +1,6 @@
 #include "avdl_particle_system.h"
-#include "dd_math.h"
 #include "shared/avdl_log.h"
+#include "shared/avdl_math.h"
 
 /*
  * Particle System Initialisation

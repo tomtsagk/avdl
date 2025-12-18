@@ -1,6 +1,6 @@
 #include "avdl_vec4.h"
-#include "dd_math.h"
 #include "shared/avdl_log.h"
+#include "shared/avdl_math.h"
 
 void avdl_vec4_create(struct avdl_vec4 *o) {
 	o->x = 0;

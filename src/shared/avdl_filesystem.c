@@ -612,7 +612,7 @@ int Avdl_FileOp_ForFileInDirectory(const char *dirname, int (*handle_function)(c
 
 int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_array *array) {
 
-	avdl_da_init(array, sizeof(struct avdl_string));
+	avdl_dynamic_array_init(array, sizeof(struct avdl_string));
 
 	#if AVDL_IS_OS(AVDL_OS_WINDOWS)
 
@@ -654,8 +654,8 @@ int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_arr
 
 			// add a string into the array and get a pointer to it
 			struct avdl_string str;
-			avdl_da_push(array, &str);
-			struct avdl_string *str2 = avdl_da_get(array, -1);
+			avdl_dynamic_array_push(array, &str);
+			struct avdl_string *str2 = avdl_dynamic_array_get(array, -1);
 
 			// put filename into the string
 			avdl_string_create(str2);
@@ -688,8 +688,8 @@ int Avdl_FileOp_GetFilesInDirectory(const char *dirname, struct avdl_dynamic_arr
 
 		// add a string into the array and get a pointer to it
 		struct avdl_string str;
-		avdl_da_push(array, &str);
-		struct avdl_string *str2 = avdl_da_get(array, -1);
+		avdl_dynamic_array_push(array, &str);
+		struct avdl_string *str2 = avdl_dynamic_array_get(array, -1);
 
 		// put filename into the string
 		avdl_string_create(str2);
@@ -780,8 +780,8 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 
 			// add a string into the array and get a pointer to it
 			struct avdl_string str;
-			avdl_da_push(array, &str);
-			struct avdl_string *str2 = avdl_da_get(array, -1);
+			avdl_dynamic_array_push(array, &str);
+			struct avdl_string *str2 = avdl_dynamic_array_get(array, -1);
 
 			// put filename into the string
 			avdl_string_create(str2);
@@ -879,8 +879,8 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 
 		// add a string into the array and get a pointer to it
 		struct avdl_string str;
-		avdl_da_push(array, &str);
-		struct avdl_string *str2 = avdl_da_get(array, -1);
+		avdl_dynamic_array_push(array, &str);
+		struct avdl_string *str2 = avdl_dynamic_array_get(array, -1);
 
 		// put filename into the string
 		avdl_string_create(str2);
@@ -905,17 +905,17 @@ static int Avdl_FileOp_GetFilesInDirectoryRecursive_internal(int src_at, const c
 
 int Avdl_FileOp_GetFilesInDirectoryRecursive(const char *dirname, struct avdl_dynamic_array *array) {
 
-	avdl_da_init(array, sizeof(struct avdl_string));
+	avdl_dynamic_array_init(array, sizeof(struct avdl_string));
 	return Avdl_FileOp_GetFilesInDirectoryRecursive_internal(0, dirname, array, 0);
 
 }
 
 int Avdl_FileOp_GetFilesInDirectoryClean(struct avdl_dynamic_array *array) {
-	for (int i = 0; i < avdl_da_count(array); i++) {
-		struct avdl_string *str = avdl_da_get(array, i);
+	for (int i = 0; i < avdl_dynamic_array_count(array); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(array, i);
 		avdl_string_clean(str);
 	}
-	avdl_da_free(array);
+	avdl_dynamic_array_free(array);
 	return 0;
 }
 

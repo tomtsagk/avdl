@@ -2,7 +2,7 @@
 #include "avdl_collider_aabb.h"
 #include "avdl_collider_sphere.h"
 #include "shared/avdl_log.h"
-#include "dd_math.h"
+#include "shared/avdl_math.h"
 #include "avdl_component_terrain.h"
 
 #include <ode/ode.h>

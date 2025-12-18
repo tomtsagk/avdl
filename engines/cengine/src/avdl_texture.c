@@ -4,9 +4,9 @@
 #include "shared/avdl_log.h"
 #include "avdl_assetManager.h"
 #include <errno.h>
-#include "dd_math.h"
 #include "avdl_graphics.h"
 #include "shared/avdl_dynamic_array.h"
+#include "shared/avdl_math.h"
 #include <string.h>
 
 #if defined( AVDL_LINUX ) || defined( AVDL_WINDOWS )
@@ -61,7 +61,7 @@ static int CleanData(struct avdl_texture *o);
 void avdl_texture_create(struct avdl_texture *o) {
 	o->data = 0;
 	//o->dirtyTexture = 0;
-	avdl_da_init(&o->subpixels, sizeof(struct Subpixel));
+	avdl_dynamic_array_init(&o->subpixels, sizeof(struct Subpixel));
 
 	o->clean = avdl_texture_clean;
 
@@ -75,7 +75,7 @@ extern FILE* avdl_filetomesh_openFile(char* filename);
 void avdl_texture_clean(struct avdl_texture *o) {
 
 	CleanData(o);
-	avdl_da_free(&o->subpixels);
+	avdl_dynamic_array_free(&o->subpixels);
 
 }
 
@@ -93,10 +93,10 @@ void avdl_texture_bindIndex(struct avdl_texture *o, int index) {
 			o->data->pixels = 0;
 		}
 		// update texture
-		if (o->subpixels.elements > 0 && o->data->tex) {
+		if (avdl_dynamic_array_count(&o->subpixels) > 0 && o->data->tex) {
 	
-			for (int i = 0; i < o->subpixels.elements; i++) {
-				struct Subpixel *subpixel = avdl_da_get(&o->subpixels, i);
+			for (int i = 0; i < avdl_dynamic_array_count(&o->subpixels); i++) {
+				struct Subpixel *subpixel = avdl_dynamic_array_get(&o->subpixels, i);
 				avdl_graphics_ImageToGpuUpdate(
 					o->data->tex,
 					subpixel->pixels,
@@ -108,7 +108,7 @@ void avdl_texture_bindIndex(struct avdl_texture *o, int index) {
 				);
 				free(subpixel->pixels);
 			}
-			avdl_da_empty(&o->subpixels);
+			avdl_dynamic_array_empty(&o->subpixels);
 		}
 		if (o->data->graphicsContextId == avdl_graphics_getContextId() && o->data->tex) {
 			avdl_graphics_BindTextureIndex(o->data->tex, index);
@@ -199,7 +199,7 @@ void avdl_texture_addSubpixels(struct avdl_texture *o, void *pixels, int offset_
 	subpixel.width = w;
 	subpixel.height = h;
 
-	avdl_da_push(&o->subpixels, &subpixel);
+	avdl_dynamic_array_push(&o->subpixels, &subpixel);
 
 	#endif
 
@@ -271,8 +271,8 @@ void *avdl_texture_GetPixels(struct avdl_texture *o) {
 struct avdl_dynamic_array textureCache;
 
 struct avdl_texture_data *FindTexture(const char *filename) {
-	for (int i = 0; i < avdl_da_count(&textureCache); i++) {
-		struct avdl_texture_data *t = avdl_da_getDeref(&textureCache, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&textureCache); i++) {
+		struct avdl_texture_data *t = avdl_dynamic_array_getDeref(&textureCache, i);
 		if (strcmp(avdl_string_toCharPtr(&t->filename), filename) == 0) {
 			return t;
 		}
@@ -553,11 +553,11 @@ static struct avdl_texture_data *GetDataFromFile(const char *filename) {
 	#endif
 
 	// add newly created texture to texture cache
-	o->cacheIndex = avdl_da_count(&textureCache);
+	o->cacheIndex = avdl_dynamic_array_count(&textureCache);
 	o->graphicsContextId = avdl_graphics_getContextId();
 	o->uses = 0;
 	o->tex = 0;
-	avdl_da_push(&textureCache, &o);
+	avdl_dynamic_array_push(&textureCache, &o);
 
 	return o;
 }
@@ -574,8 +574,8 @@ static int SetData(struct avdl_texture *o, struct avdl_texture_data *data) {
 static void ReduceDataCacheUses(struct avdl_texture_data *t) {
 	t->uses--;
 	if (t->uses == 0) {
-		for (int i = 0; i < avdl_da_count(&textureCache); i++) {
-			struct avdl_texture_data *tempTex = avdl_da_getDeref(&textureCache, i);
+		for (int i = 0; i < avdl_dynamic_array_count(&textureCache); i++) {
+			struct avdl_texture_data *tempTex = avdl_dynamic_array_getDeref(&textureCache, i);
 			if (tempTex == t) {
 				avdl_string_clean(&t->filename);
 				if (t->pixels) {
@@ -583,7 +583,7 @@ static void ReduceDataCacheUses(struct avdl_texture_data *t) {
 					t->pixels = 0;
 				}
 				free(t);
-				avdl_da_remove(&textureCache, 1, i);
+				avdl_dynamic_array_remove(&textureCache, 1, i);
 				break;
 			}
 		}
@@ -617,11 +617,11 @@ static int CleanData(struct avdl_texture *o) {
 	o->data = 0;
 
 	#if !defined( AVDL_DIRECT3D11 )
-	for (int i = 0; i < o->subpixels.elements; i++) {
-		struct Subpixel *subpixel = avdl_da_get(&o->subpixels, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&o->subpixels); i++) {
+		struct Subpixel *subpixel = avdl_dynamic_array_get(&o->subpixels, i);
 		free(subpixel->pixels);
 	}
-	avdl_da_empty(&o->subpixels);
+	avdl_dynamic_array_empty(&o->subpixels);
 	#endif
 
 	return 0;

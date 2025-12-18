@@ -2,7 +2,7 @@
 #include "avdl_vec3.h"
 #include "avdl_vec4.h"
 #include "shared/avdl_log.h"
-#include "dd_math.h"
+#include "shared/avdl_math.h"
 
 void avdl_ray3_create(struct avdl_ray3 *o) {
 	avdl_vec3_Setf(&o->position, 0, 0, 0);

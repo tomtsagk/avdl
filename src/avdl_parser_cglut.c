@@ -47,11 +47,11 @@ static struct ast_node *getIdentifierInChain(struct ast_node *n, int position);
 static void print_command_asset(FILE *fd, struct ast_node *n) {
 
 	if (n->node_type == AST_ASSET) {
-		for (unsigned int i = 0; i < n->children.elements; i++) {
+		for (unsigned int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
 			if (i != 0) {
 				fprintf(fd, ", ");
 			}
-			print_node(fd, avdl_da_get(&n->children, i));
+			print_node(fd, avdl_dynamic_array_get(&n->children, i));
 		}
 	}
 }
@@ -62,8 +62,8 @@ static struct ast_node *getIdentifierInChain(struct ast_node *n, int position) {
 		return n;
 	}
 
-	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 		if (child->node_type == AST_IDENTIFIER) {
 			return getIdentifierInChain(child, position-1);
 		}
@@ -75,8 +75,8 @@ static struct ast_node *getIdentifierInChain(struct ast_node *n, int position) {
 static void print_command_groupStatements(FILE *fd, struct ast_node *n) {
 
 	if (n->node_type == AST_COMMAND_NATIVE && strcmp(n->lex, "group") == 0) {
-		for (unsigned int i = 0; i < n->children.elements; i++) {
-			print_node(fd, avdl_da_get(&n->children, i));
+		for (unsigned int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+			print_node(fd, avdl_dynamic_array_get(&n->children, i));
 			fprintf(fd, ";\n");
 		}
 	}
@@ -88,32 +88,32 @@ static void print_command_groupStatements(FILE *fd, struct ast_node *n) {
 
 static void print_command_return(FILE *fd, struct ast_node *n) {
 	fprintf(fd, "return ");
-	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 		print_node(fd, child);
 	}
 }
 
 static void print_command_multistring(FILE *fd, struct ast_node *n) {
-	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *string = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *string = avdl_dynamic_array_get(&n->children, i);
 		print_node(fd, string);
 	}
 }
 
 static void print_command_unicode(FILE *fd, struct ast_node *n) {
 	fprintf(fd, "L");
-	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *string = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *string = avdl_dynamic_array_get(&n->children, i);
 		print_node(fd, string);
 	}
 }
 
 static void print_command_for(FILE *fd, struct ast_node *n) {
-	struct ast_node *definition = avdl_da_get(&n->children, 0);
-	struct ast_node *condition = avdl_da_get(&n->children, 1);
-	struct ast_node *step = avdl_da_get(&n->children, 2);
-	struct ast_node *statements = avdl_da_get(&n->children, 3);
+	struct ast_node *definition = avdl_dynamic_array_get(&n->children, 0);
+	struct ast_node *condition = avdl_dynamic_array_get(&n->children, 1);
+	struct ast_node *step = avdl_dynamic_array_get(&n->children, 2);
+	struct ast_node *statements = avdl_dynamic_array_get(&n->children, 3);
 
 	fprintf(fd, "for (");
 	print_node(fd, definition);
@@ -134,12 +134,12 @@ static void print_command_continue(FILE *fd, struct ast_node *n) {
 }
 
 static void print_command_if(FILE *fd, struct ast_node *n) {
-	for (int i = 0; i < n->children.elements; i += 2) {
-		struct ast_node *child1 = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i += 2) {
+		struct ast_node *child1 = avdl_dynamic_array_get(&n->children, i);
 		struct ast_node *child2 = 0;
 
-		if (i+1 < n->children.elements) {
-			child2 = avdl_da_get(&n->children, i+1);
+		if (i+1 < avdl_dynamic_array_count(&n->children)) {
+			child2 = avdl_dynamic_array_get(&n->children, i+1);
 		}
 
 		if (i != 0) {
@@ -164,8 +164,8 @@ static void print_command_if(FILE *fd, struct ast_node *n) {
 static void print_command_echo(FILE *fd, struct ast_node *n) {
 
 	fprintf(fd, "dd_log(\"");
-	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 
 		if (child->node_type == AST_STRING) {
 			fprintf(fd, "%%s");
@@ -195,8 +195,8 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 		}
 	}
 	fprintf(fd, "\"");
-	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 
 		fprintf(fd, ", ");
 		if (child->node_type == AST_STRING) {
@@ -232,12 +232,12 @@ static void print_command_echo(FILE *fd, struct ast_node *n) {
 static void print_command_log(FILE *fd, struct ast_node *n) {
 
 	fprintf(fd, "avdl_log(");
-	for (int i = 0; i < n->children.elements; i++) {
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
 
 		if (i > 0) {
 			fprintf(fd, ", ");
 		}
-		struct ast_node *child = avdl_da_get(&n->children, i);
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 		print_node(fd, child);
 	}
 	fprintf(fd, ");\n");
@@ -246,19 +246,19 @@ static void print_command_log(FILE *fd, struct ast_node *n) {
 static void print_command_logError(FILE *fd, struct ast_node *n) {
 
 	fprintf(fd, "avdl_logError(");
-	for (int i = 0; i < n->children.elements; i++) {
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
 
 		if (i > 0) {
 			fprintf(fd, ", ");
 		}
-		struct ast_node *child = avdl_da_get(&n->children, i);
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 		print_node(fd, child);
 	}
 	fprintf(fd, ");\n");
 }
 
 static void print_binaryOperation(FILE *fd, struct ast_node *n) {
-	struct ast_node *child1 = avdl_da_get(&n->children, 0);
+	struct ast_node *child1 = avdl_dynamic_array_get(&n->children, 0);
 
 	if (strcmp(n->lex, "=") != 0) {
 		fprintf(fd, "(");
@@ -272,8 +272,8 @@ static void print_binaryOperation(FILE *fd, struct ast_node *n) {
 	}
 	fprintf(fd, " ");
 
-	for (int i = 1; i < n->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&n->children, i);
+	for (int i = 1; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 		fprintf(fd, "%s ", n->lex);
 		print_node(fd, child);
 	}
@@ -284,13 +284,13 @@ static void print_binaryOperation(FILE *fd, struct ast_node *n) {
 }
 
 static void print_command_custom(FILE *fd, struct ast_node *n) {
-	struct ast_node *cmdname = avdl_da_get(&n->children, 0);
+	struct ast_node *cmdname = avdl_dynamic_array_get(&n->children, 0);
 
 	print_identifier(fd, cmdname, 0);
 	fprintf(fd, "(");
 	int hasArgs = 0;
-	for (int i = 1; i < n->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&n->children, i);
+	for (int i = 1; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 
 		if (hasArgs) {
 			fprintf(fd, ", ");
@@ -303,13 +303,13 @@ static void print_command_custom(FILE *fd, struct ast_node *n) {
 }
 
 static void print_command_function(FILE *fd, struct ast_node *n) {
-	struct ast_node *functype = avdl_da_get(&n->children, 0);
-	struct ast_node *funcname = avdl_da_get(&n->children, 1);
-	struct ast_node *funcargs = avdl_da_get(&n->children, 2);
+	struct ast_node *functype = avdl_dynamic_array_get(&n->children, 0);
+	struct ast_node *funcname = avdl_dynamic_array_get(&n->children, 1);
+	struct ast_node *funcargs = avdl_dynamic_array_get(&n->children, 2);
 	struct ast_node *funcstatements = 0;
 
-	if (n->children.elements == 4) {
-		funcstatements = avdl_da_get(&n->children, 3);
+	if (avdl_dynamic_array_count(&n->children) == 4) {
+		funcstatements = avdl_dynamic_array_get(&n->children, 3);
 	}
 
 	// print function signature and args
@@ -331,13 +331,13 @@ static void print_command_function(FILE *fd, struct ast_node *n) {
 }
 
 static void print_command_classFunction(FILE *fd, struct ast_node *n) {
-	struct ast_node *classname = avdl_da_get(&n->children, 0);
-	struct ast_node *function = avdl_da_get(&n->children, 1);
+	struct ast_node *classname = avdl_dynamic_array_get(&n->children, 0);
+	struct ast_node *function = avdl_dynamic_array_get(&n->children, 1);
 
-	struct ast_node *functype = avdl_da_get(&function->children, 0);
-	struct ast_node *funcname = avdl_da_get(&function->children, 1);
-	struct ast_node *funcargs = avdl_da_get(&function->children, 2);
-	struct ast_node *funcstatements = avdl_da_get(&function->children, 3);
+	struct ast_node *functype = avdl_dynamic_array_get(&function->children, 0);
+	struct ast_node *funcname = avdl_dynamic_array_get(&function->children, 1);
+	struct ast_node *funcargs = avdl_dynamic_array_get(&function->children, 2);
+	struct ast_node *funcstatements = avdl_dynamic_array_get(&function->children, 3);
 
 	int structIndex = struct_table_get_index(classname->lex);
 
@@ -466,8 +466,8 @@ static void print_command_classFunction(FILE *fd, struct ast_node *n) {
 }
 
 static int getIdentifierChainCount(struct ast_node *n) {
-	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 		if (child->node_type == AST_IDENTIFIER) {
 			return getIdentifierChainCount(child) +1;
 		}
@@ -477,8 +477,8 @@ static int getIdentifierChainCount(struct ast_node *n) {
 }
 
 static struct ast_node *getIdentifierLast(struct ast_node *n) {
-	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 		if (child->node_type == AST_IDENTIFIER) {
 			return getIdentifierLast(child);
 		}
@@ -504,8 +504,8 @@ static void print_identifier(FILE *fd, struct ast_node *n, int skipLast) {
 
 	fprintf(fd, "%s", n->lex);
 
-	for (int i = 0; i < n->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&n->children, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&n->children, i);
 
 		// has array
 		if (child->node_type == AST_GROUP) {
@@ -533,9 +533,9 @@ static void print_identifier(FILE *fd, struct ast_node *n, int skipLast) {
 
 static void print_command_functionArguments(FILE *fd, struct ast_node *n, int beginWithSemicolon) {
 	int applyComma = beginWithSemicolon;
-	for (int i = 1; i < n->children.elements; i += 2) {
-		struct ast_node *argtype = avdl_da_get(&n->children, i-1);
-		struct ast_node *argname = avdl_da_get(&n->children, i  );
+	for (int i = 1; i < avdl_dynamic_array_count(&n->children); i += 2) {
+		struct ast_node *argtype = avdl_dynamic_array_get(&n->children, i-1);
+		struct ast_node *argname = avdl_dynamic_array_get(&n->children, i  );
 
 		// ref
 		if (strcmp(ast_getLex(argtype), "ref") == 0) {
@@ -543,7 +543,7 @@ static void print_command_functionArguments(FILE *fd, struct ast_node *n, int be
 			argtype = argname;
 			argtype->isRef = 1;
 			//avdl_log("is ref of func: %d", argtype->isRef);
-			argname = avdl_da_get(&n->children, i);
+			argname = avdl_dynamic_array_get(&n->children, i);
 		}
 
 		//printf("about to comma %d %d\n", i, beginWithSemicolon);
@@ -571,9 +571,9 @@ static void print_command_functionArguments(FILE *fd, struct ast_node *n, int be
 }
 
 static void print_command_definitionClassFunction(FILE *fd, struct ast_node *n, const char *classname) {
-	struct ast_node *type = avdl_da_get(&n->children, 0);
-	struct ast_node *name = avdl_da_get(&n->children, 1);
-	struct ast_node *args = avdl_da_get(&n->children, 2);
+	struct ast_node *type = avdl_dynamic_array_get(&n->children, 0);
+	struct ast_node *name = avdl_dynamic_array_get(&n->children, 1);
+	struct ast_node *args = avdl_dynamic_array_get(&n->children, 2);
 	int hasArgs = 0;
 	enum dd_variable_type returnType = dd_variable_type_convert(type->lex);
 	if (returnType == DD_VARIABLE_TYPE_STRUCT) {
@@ -610,8 +610,8 @@ static void print_command_definitionClassFunction(FILE *fd, struct ast_node *n, 
 }
 
 static void print_command_definition(FILE *fd, struct ast_node *n) {
-	struct ast_node *type = avdl_da_get(&n->children, 0);
-	struct ast_node *defname = avdl_da_get(&n->children, 1);
+	struct ast_node *type = avdl_dynamic_array_get(&n->children, 0);
+	struct ast_node *defname = avdl_dynamic_array_get(&n->children, 1);
 
 	if (n->isExtern) {
 		fprintf(fd, "extern ");
@@ -629,8 +629,8 @@ static void print_command_definition(FILE *fd, struct ast_node *n) {
 	}
 	print_identifier(fd, defname, 0);
 
-	if (n->children.elements >= 3) {
-		struct ast_node *initValue = avdl_da_get(&n->children, 2);
+	if (avdl_dynamic_array_count(&n->children) >= 3) {
+		struct ast_node *initValue = avdl_dynamic_array_get(&n->children, 2);
 		fprintf(fd, " = ");
 		print_node(fd, initValue);
 	}
@@ -650,8 +650,8 @@ static void print_command_definition(FILE *fd, struct ast_node *n) {
 }
 
 static void print_command_definitionInClass(FILE *fd, struct ast_node *n) {
-	struct ast_node *type = avdl_da_get(&n->children, 0);
-	struct ast_node *defname = avdl_da_get(&n->children, 1);
+	struct ast_node *type = avdl_dynamic_array_get(&n->children, 0);
+	struct ast_node *defname = avdl_dynamic_array_get(&n->children, 1);
 
 	if (!dd_variable_type_isPrimitiveType(type->lex)) {
 		fprintf(fd, "struct ");
@@ -669,9 +669,9 @@ static void print_command_definitionInClass(FILE *fd, struct ast_node *n) {
 }
 
 static void print_command_class(FILE *fd, struct ast_node *n) {
-	struct ast_node *classname = avdl_da_get(&n->children, 0);
-	struct ast_node *subclassname = avdl_da_get(&n->children, 1);
-	struct ast_node *definitions = avdl_da_get(&n->children, 2);
+	struct ast_node *classname = avdl_dynamic_array_get(&n->children, 0);
+	struct ast_node *subclassname = avdl_dynamic_array_get(&n->children, 1);
+	struct ast_node *definitions = avdl_dynamic_array_get(&n->children, 2);
 
 	fprintf(fd, "struct %s {\n", classname->lex);
 
@@ -681,8 +681,8 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 	}
 
 	// definitions in struct
-	for (unsigned int i = 0; i < definitions->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&definitions->children, i);
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&definitions->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&definitions->children, i);
 
 		// definition of variable
 		if (strcmp(child->lex, "def") == 0) {
@@ -700,10 +700,10 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 	fprintf(fd, "};\n");
 
 	// pre-define functions, so they are visible to all functions regardless of order
-	for (unsigned int i = 0; i < definitions->children.elements; i++) {
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&definitions->children); i++) {
 
 		// grab ast node and symbol table entry, ensure this is a function
-		struct ast_node *child = avdl_da_get(&definitions->children, i);
+		struct ast_node *child = avdl_dynamic_array_get(&definitions->children, i);
 		if (child->node_type != AST_COMMAND_NATIVE
 		||  strcmp(child->lex, "function") != 0) continue;
 
@@ -711,8 +711,8 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 		if (child->isRef) continue;
 
 		// function name
-		struct ast_node *functype = avdl_da_get(&child->children, 0);
-		struct ast_node *funcname = avdl_da_get(&child->children, 1);
+		struct ast_node *functype = avdl_dynamic_array_get(&child->children, 0);
+		struct ast_node *funcname = avdl_dynamic_array_get(&child->children, 1);
 
 		// print the function signature
 		if (dd_variable_type_convert(functype->lex) == DD_VARIABLE_TYPE_STRUCT) {
@@ -731,7 +731,7 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 				classname->lex
 			);
 		}
-		struct ast_node *args = avdl_da_get(&child->children, 2);
+		struct ast_node *args = avdl_dynamic_array_get(&child->children, 2);
 		print_command_functionArguments(fd, args, 1);
 		fprintf(fd, ");\n");
 	}
@@ -739,13 +739,13 @@ static void print_command_class(FILE *fd, struct ast_node *n) {
 } // print class definition
 
 static void print_command_enum(FILE *fd, struct ast_node *n) {
-	struct ast_node *enumname = avdl_da_get(&n->children, 0);
+	struct ast_node *enumname = avdl_dynamic_array_get(&n->children, 0);
 
 	fprintf(fd, "enum %s {\n", enumname->lex);
 
 	int i = 1;
 	struct ast_node *enumvalue = 0;
-	while ((enumvalue = avdl_da_get(&n->children, i))) {
+	while ((enumvalue = avdl_dynamic_array_get(&n->children, i))) {
 		fprintf(fd, "%s,\n", enumvalue->lex);
 		i++;
 	}
@@ -755,9 +755,9 @@ static void print_command_enum(FILE *fd, struct ast_node *n) {
 } // print struct definition
 
 static void print_command_struct(FILE *fd, struct ast_node *n) {
-	struct ast_node *classname = avdl_da_get(&n->children, 0);
-	struct ast_node *subclassname = avdl_da_get(&n->children, 1);
-	struct ast_node *definitions = avdl_da_get(&n->children, 2);
+	struct ast_node *classname = avdl_dynamic_array_get(&n->children, 0);
+	struct ast_node *subclassname = avdl_dynamic_array_get(&n->children, 1);
+	struct ast_node *definitions = avdl_dynamic_array_get(&n->children, 2);
 
 	fprintf(fd, "struct %s {\n", classname->lex);
 
@@ -767,8 +767,8 @@ static void print_command_struct(FILE *fd, struct ast_node *n) {
 	}
 
 	// definitions in struct
-	for (unsigned int i = 0; i < definitions->children.elements; i++) {
-		struct ast_node *child = avdl_da_get(&definitions->children, i);
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&definitions->children); i++) {
+		struct ast_node *child = avdl_dynamic_array_get(&definitions->children, i);
 
 		// definition of variable
 		if (strcmp(child->lex, "def") == 0) {
@@ -802,8 +802,8 @@ static void print_command_native(FILE *fd, struct ast_node *n) {
 	}
 	else
 	if (strcmp(n->lex, "group") == 0) {
-		for (unsigned int i = 0; i < n->children.elements; i++) {
-			print_node(fd, avdl_da_get(&n->children, i));
+		for (unsigned int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+			print_node(fd, avdl_dynamic_array_get(&n->children, i));
 		}
 	}
 	else
@@ -886,8 +886,8 @@ static void print_node(FILE *fd, struct ast_node *n) {
 	switch (n->node_type) {
 		case AST_GAME:
 		case AST_GROUP:
-			for (unsigned int i = 0; i < n->children.elements; i++) {
-				print_node(fd, avdl_da_get(&n->children, i));
+			for (unsigned int i = 0; i < avdl_dynamic_array_count(&n->children); i++) {
+				print_node(fd, avdl_dynamic_array_get(&n->children, i));
 			}
 			break;
 		case AST_COMMAND_NATIVE: {

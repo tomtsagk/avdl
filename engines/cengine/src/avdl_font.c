@@ -1,6 +1,6 @@
 #include "avdl_font.h"
-#include "dd_math.h"
 #include "shared/avdl_log.h"
+#include "shared/avdl_math.h"
 #include "dd_game.h"
 #include "avdl_assetManager.h"
 

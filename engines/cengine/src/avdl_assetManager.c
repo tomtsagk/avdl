@@ -1,13 +1,13 @@
 #include "avdl_assetManager.h"
 #include "shared/avdl_dynamic_array.h"
 #include "shared/avdl_log.h"
+#include "shared/avdl_math.h"
 #include <string.h>
 #include <stdlib.h>
 #include "avdl_mesh.h"
 #include <stdio.h>
 #include "dd_game.h"
 #include <errno.h>
-#include "dd_math.h"
 
 #if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_DIRECT3D11 )
 #else
@@ -79,8 +79,8 @@ static int exitLoading;
 struct avdl_string avdl_custom_asset_location;
 
 void avdl_assetManager_init() {
-	avdl_da_init(&meshesToLoad , sizeof(struct dd_meshToLoad));
-	avdl_da_init(&meshesLoading, sizeof(struct dd_meshToLoad));
+	avdl_dynamic_array_init(&meshesToLoad , sizeof(struct dd_meshToLoad));
+	avdl_dynamic_array_init(&meshesLoading, sizeof(struct dd_meshToLoad));
 	assetManagerLoading = 0;
 	lockLoading = 0;
 	interruptLoading = 0;
@@ -88,7 +88,7 @@ void avdl_assetManager_init() {
 	exitLoading = 0;
 
 	// texture cache
-	avdl_da_init(&textureCache, sizeof(struct avdl_texture_data *));
+	avdl_dynamic_array_init(&textureCache, sizeof(struct avdl_texture_data *));
 
 	//avdl_log("init avdl custom asset location");
 	avdl_string_create(&avdl_custom_asset_location);
@@ -103,17 +103,17 @@ void avdl_assetManager_deinit() {
 	#elif defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 ) || defined( AVDL_LINUX )
 	pthread_mutex_lock(&updateDrawMutex);
 	#endif
-	avdl_da_free(&meshesToLoad );
-	avdl_da_free(&meshesLoading);
+	avdl_dynamic_array_free(&meshesToLoad );
+	avdl_dynamic_array_free(&meshesLoading);
 
-	if (avdl_da_count(&textureCache) > 0) {
-		avdl_log("%d texture(s) were not cleaned", avdl_da_count(&textureCache));
-		for (int i = 0; i < avdl_da_count(&textureCache); i++) {
-			struct avdl_texture_data *t = avdl_da_getDeref(&textureCache, i);
+	if (avdl_dynamic_array_count(&textureCache) > 0) {
+		avdl_log("%d texture(s) were not cleaned", avdl_dynamic_array_count(&textureCache));
+		for (int i = 0; i < avdl_dynamic_array_count(&textureCache); i++) {
+			struct avdl_texture_data *t = avdl_dynamic_array_getDeref(&textureCache, i);
 			avdl_log("texture: %s", avdl_string_toCharPtr(&t));
 		}
 	}
-	avdl_da_free(&textureCache);
+	avdl_dynamic_array_free(&textureCache);
 	#ifdef AVDL_DIRECT3D11
 	#elif defined( AVDL_WINDOWS )
 	ReleaseMutex(updateDrawMutex);
@@ -140,7 +140,7 @@ int avdl_assetManager_AddLoadOperation(void *object, const char *assetname, void
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
 	strcpy_s(meshToLoad.filename, 300, assetname);
-	avdl_da_push(&meshesToLoad, &meshToLoad);
+	avdl_dynamic_array_push(&meshesToLoad, &meshToLoad);
 	*/
 	#else
 
@@ -168,7 +168,7 @@ int avdl_assetManager_AddLoadOperation(void *object, const char *assetname, void
 	strcat(meshToLoad.filename, assetname);
 	//avdl_log("add asset: %s", meshToLoad.filename);
 	#endif
-	avdl_da_push(&meshesToLoad, &meshToLoad);
+	avdl_dynamic_array_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
 	#endif
@@ -193,7 +193,7 @@ int avdl_assetManager_AddLoadOperationLocal(void *object, const char *assetname,
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
 	strcpy_s(meshToLoad.filename, 300, assetname);
-	avdl_da_push(&meshesToLoad, &meshToLoad);
+	avdl_dynamic_array_push(&meshesToLoad, &meshToLoad);
 	*/
 	#else
 
@@ -233,7 +233,7 @@ int avdl_assetManager_AddLoadOperationLocal(void *object, const char *assetname,
 	}
 	//avdl_log("add load operation asset: %s", meshToLoad.filename);
 	#endif
-	avdl_da_push(&meshesToLoad, &meshToLoad);
+	avdl_dynamic_array_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
 	#endif
@@ -257,7 +257,7 @@ int avdl_assetManager_add(void *object, int meshType, const char *assetname, int
 	meshToLoad.object = object;
 	meshToLoad.meshType = meshType;
 	strcpy_s(meshToLoad.filename, 300, assetname);
-	avdl_da_push(&meshesToLoad, &meshToLoad);
+	avdl_dynamic_array_push(&meshesToLoad, &meshToLoad);
 	#else
 
 	struct dd_meshToLoad meshToLoad;
@@ -287,7 +287,7 @@ int avdl_assetManager_add(void *object, int meshType, const char *assetname, int
 	//avdl_log("add asset: %s", meshToLoad.filename);
 	#endif
 
-	avdl_da_push(&meshesToLoad, &meshToLoad);
+	avdl_dynamic_array_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
 	#endif
@@ -316,7 +316,7 @@ int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname
 	meshToLoad.meshType = meshType;
 	meshToLoad.callback = callback;
 	strcpy_s(meshToLoad.filename, 300, assetname);
-	avdl_da_push(&meshesToLoad, &meshToLoad);
+	avdl_dynamic_array_push(&meshesToLoad, &meshToLoad);
 	#else
 
 	struct dd_meshToLoad meshToLoad;
@@ -344,7 +344,7 @@ int avdl_assetManager_addLocal(void *object, int meshType, const char *assetname
 	//printf("add asset: %s\n", meshToLoad.filename);
 	//avdl_log("add asset: %s", meshToLoad.filename);
 	#endif
-	avdl_da_push(&meshesToLoad, &meshToLoad);
+	avdl_dynamic_array_push(&meshesToLoad, &meshToLoad);
 	//#endif
 
 	#endif
@@ -356,8 +356,8 @@ void avdl_assetManager_loadAssets() {
 
 	// load assets here
 	//avdl_log("meshes to load: %d", meshesLoading.elements);
-	for (int i = 0; i < meshesLoading.elements; i++) {
-		struct dd_meshToLoad *m = avdl_da_get(&meshesLoading, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&meshesLoading); i++) {
+		struct dd_meshToLoad *m = avdl_dynamic_array_get(&meshesLoading, i);
 		//avdl_log("loading asset: %s", m->filename);
 		//wprintf(L"loading asset: %lS", m->filenameW);
 		//avdl_log("loading asset type: %d", m->meshType);
@@ -454,7 +454,7 @@ void avdl_assetManager_loadAssets() {
 		#endif
 		return;
 	}
-	avdl_da_empty(&meshesLoading);
+	avdl_dynamic_array_empty(&meshesLoading);
 	//avdl_log("finished all loading");
 	assetManagerLoading = 0;
 	loadAssetsThread = 0;
@@ -470,10 +470,10 @@ void avdl_assetManager_loadAssets() {
 void avdl_assetManager_loadAll() {
 	if (assetManagerLoading) return;
 
-	avdl_da_copy(&meshesLoading, &meshesToLoad);
-	avdl_da_empty(&meshesToLoad);
+	avdl_dynamic_array_copy(&meshesLoading, &meshesToLoad);
+	avdl_dynamic_array_empty(&meshesToLoad);
 
-	totalAssets = meshesLoading.elements;
+	totalAssets = avdl_dynamic_array_count(&meshesLoading);
 	totalAssetsLoaded = 0;
 	assetManagerLoading = 1;
 
@@ -510,7 +510,7 @@ int avdl_assetManager_isReady() {
 }
 
 int avdl_assetManager_hasAssetsToLoad() {
-	return meshesToLoad.elements > 0;
+	return avdl_dynamic_array_count(&meshesToLoad) > 0;
 }
 
 void avdl_assetManager_lockLoading() {
@@ -531,7 +531,7 @@ float avdl_assetManager_getLoadedProportion() {
 
 void avdl_assetManager_clear() {
 	/*
-	avdl_da_empty(&meshesToLoad);
+	avdl_dynamic_array_empty(&meshesToLoad);
 	if (loadAssetsThread) {
 		interruptLoading = 1;
 		pthread_join(&loadAssetsThread, NULL);

@@ -1,6 +1,6 @@
 #include "avdl_terrain.h"
 #include "shared/avdl_log.h"
-#include "dd_math.h"
+#include "shared/avdl_math.h"
 #include "avdl_graphics.h"
 
 extern GLuint currentProgram;

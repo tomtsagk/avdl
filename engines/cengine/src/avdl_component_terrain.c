@@ -1,8 +1,8 @@
 #include "avdl_component_terrain.h"
 #include "avdl_component_mesh.h"
 #include "shared/avdl_log.h"
+#include "shared/avdl_math.h"
 #include "avdl_node.h"
-#include "dd_math.h"
 #include <string.h>
 #include <stdlib.h>
 

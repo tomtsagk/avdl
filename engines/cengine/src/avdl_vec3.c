@@ -1,5 +1,5 @@
 #include "avdl_vec3.h"
-#include "dd_math.h"
+#include "shared/avdl_math.h"
 #include "shared/avdl_log.h"
 
 void avdl_vec3_create(struct avdl_vec3 *o) {
@@ -66,9 +66,9 @@ void avdl_vec3_Add(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {
 
 void avdl_vec3_Cross(struct avdl_vec3 *a, struct avdl_vec3 *b) {
 	avdl_vec3_Setf(a,
-		avdl_vec4_Y(a) *avdl_vec4_Z(b) -avdl_vec4_Z(a) *avdl_vec4_Y(b),
-		avdl_vec4_Z(a) *avdl_vec4_X(b) -avdl_vec4_X(a) *avdl_vec4_Z(b),
-		avdl_vec4_X(a) *avdl_vec4_Y(b) -avdl_vec4_Y(a) *avdl_vec4_X(b)
+		avdl_vec3_Y(a) *avdl_vec3_Z(b) -avdl_vec3_Z(a) *avdl_vec3_Y(b),
+		avdl_vec3_Z(a) *avdl_vec3_X(b) -avdl_vec3_X(a) *avdl_vec3_Z(b),
+		avdl_vec3_X(a) *avdl_vec3_Y(b) -avdl_vec3_Y(a) *avdl_vec3_X(b)
 	);
 }
 

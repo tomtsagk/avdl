@@ -33,31 +33,31 @@ void avdl_node_create(struct avdl_node *o) {
 	avdl_transform_create(&o->localTransform);
 
 	avdl_dynamic_array_create(&o->components);
-	avdl_da_init(&o->components, sizeof(struct avdl_component *));
+	avdl_dynamic_array_init(&o->components, sizeof(struct avdl_component *));
 
 	avdl_dynamic_array_create(&o->children);
-	avdl_da_init(&o->children, sizeof(struct avdl_node *));
+	avdl_dynamic_array_init(&o->children, sizeof(struct avdl_node *));
 
 	avdl_vec3_Setf(&o->globalScale, 1.0, 1.0, 1.0);
 }
 
 void avdl_node_clean(struct avdl_node *o) {
 	// clean children
-	for (unsigned int i = 0; i < avdl_da_count(&o->children); i++) {
-		struct avdl_node *child = avdl_da_getDeref(&o->children, i);
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->children); i++) {
+		struct avdl_node *child = avdl_dynamic_array_getDeref(&o->children, i);
 		avdl_node_clean(child);
 		free(child);
 	}
-	avdl_da_empty(&o->children);
-	avdl_da_free(&o->children);
+	avdl_dynamic_array_empty(&o->children);
+	avdl_dynamic_array_free(&o->children);
 
-	for (unsigned int i = 0; i < avdl_da_count(&o->components); i++) {
-		struct avdl_component *c = avdl_da_getDeref(&o->components, i);
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->components); i++) {
+		struct avdl_component *c = avdl_dynamic_array_getDeref(&o->components, i);
 		c->clean(c);
 		free(c);
 	}
-	avdl_da_empty(&o->components);
-	avdl_da_free(&o->components);
+	avdl_dynamic_array_empty(&o->components);
+	avdl_dynamic_array_free(&o->components);
 
 	avdl_string_clean(&o->name);
 }
@@ -113,8 +113,8 @@ struct avdl_vec3 *avdl_node_GetGlobalScale(struct avdl_node *o) {
 
 struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {
 	struct avdl_node *child = malloc(sizeof(struct avdl_node));
-	avdl_da_push(&o->children, &child);
-	//struct avdl_node *child = avdl_da_get(&o->children, -1);
+	avdl_dynamic_array_push(&o->children, &child);
+	//struct avdl_node *child = avdl_dynamic_array_get(&o->children, -1);
 	avdl_node_create(child);
 	child->parent = o;
 	return child;
@@ -122,15 +122,15 @@ struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {
 
 int avdl_node_RemoveChild(struct avdl_node *o, struct avdl_node *targetChild) {
 
-	for (unsigned int i = 0; i < avdl_da_count(&o->children); i++) {
-		struct avdl_node *child = avdl_da_getDeref(&o->children, i);
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->children); i++) {
+		struct avdl_node *child = avdl_dynamic_array_getDeref(&o->children, i);
 
 		if (child != targetChild) {
 			continue;
 		}
 
 		avdl_node_clean(child);
-		avdl_da_remove(&o->children, 1, i);
+		avdl_dynamic_array_remove(&o->children, 1, i);
 		free(child);
 		break;
 	}
@@ -144,7 +144,7 @@ struct avdl_node *avdl_node_GetParent(struct avdl_node *o) {
 
 struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int size, void (*constructor)(void *)) {
 	struct avdl_component *c = malloc(size);
-	avdl_da_push(&o->components, &c);
+	avdl_dynamic_array_push(&o->components, &c);
 	constructor(c);
 	// each component has a reference to the node they are attached to
 	c->node = o;
@@ -168,25 +168,25 @@ static void avdl_node_printInternal(struct avdl_node *o, int tabs) {
 
 	struct avdl_vec3 *pos = avdl_transform_GetPosition(&o->localTransform);
 	printf("%s | position %f %f %f\n", avdl_string_toCharPtr(&o->name), pos->x, pos->y, pos->z);
-	if (avdl_da_count(&o->components) > 0) {
+	if (avdl_dynamic_array_count(&o->components) > 0) {
 		for (int i = 0; i < tabs+1; i++) {
 			printf("\t");
 		}
-		for (int i = 0; i < avdl_da_count(&o->components); i++) {
-			printf("component: %d %p %p\n", i, avdl_da_get(&o->components, i), avdl_da_getDeref(&o->components, i));
+		for (int i = 0; i < avdl_dynamic_array_count(&o->components); i++) {
+			printf("component: %d %p %p\n", i, avdl_dynamic_array_get(&o->components, i), avdl_dynamic_array_getDeref(&o->components, i));
 		}
 	}
 
 	/*
 	// Print components
-	for (unsigned int i = 0; i < avdl_da_count(&o->components); i++) {
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->components); i++) {
 		printf("	component %d\n", i);
 	}
 	*/
 
 	// Print children
-	for (unsigned int i = 0; i < avdl_da_count(&o->children); i++) {
-		struct avdl_node *child = avdl_da_getDeref(&o->children, i);
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->children); i++) {
+		struct avdl_node *child = avdl_dynamic_array_getDeref(&o->children, i);
 		avdl_node_printInternal(child, tabs+1);
 	}
 }
@@ -220,23 +220,23 @@ const char *avdl_node_GetName(struct avdl_node *o) {
 void avdl_node_AddComponentsToArray_Internal(struct avdl_node *o, struct avdl_dynamic_array *array, void (*fnc)(struct avdl_component *)) {
 
 	// Collect components
-	for (unsigned int i = 0; i < avdl_da_count(&o->components); i++) {
-		struct avdl_component *c = *((struct avdl_component **) avdl_da_get(&o->components, i));
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->components); i++) {
+		struct avdl_component *c = *((struct avdl_component **) avdl_dynamic_array_get(&o->components, i));
 
 		if (c->clean == fnc) {
-			avdl_da_push(array, &c);
+			avdl_dynamic_array_push(array, &c);
 		}
 	}
 
 	// Check children
-	for (unsigned int i = 0; i < avdl_da_count(&o->children); i++) {
-		struct avdl_node *child = avdl_da_getDeref(&o->children, i);
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->children); i++) {
+		struct avdl_node *child = avdl_dynamic_array_getDeref(&o->children, i);
 		avdl_node_AddComponentsToArray_Internal(child, array, fnc);
 	}
 }
 
 int avdl_node_GetChildrenCount(struct avdl_node *o) {
-	return avdl_da_count(&o->children);
+	return avdl_dynamic_array_count(&o->children);
 }
 
 struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index) {
@@ -244,7 +244,7 @@ struct avdl_node *avdl_node_GetChild(struct avdl_node *o, int index) {
 		avdl_log("avdl_node_GetChild wrong index: %d", index);
 		return 0;
 	}
-	return avdl_da_getDeref(&o->children, index);
+	return avdl_dynamic_array_getDeref(&o->children, index);
 }
 
 static int NodeToJson_PrintTabs(int fd, int tabs) {
@@ -506,10 +506,10 @@ static int NodeToJson_PrintComponent(int fd, struct avdl_component *o, int tabs)
 		content = "\",\n";
 		write(fd, content, strlen(content));
 
-		for (int i = 0; i+2 < avdl_da_count(&c->values); i += 3) {
-			struct avdl_string *varName = avdl_da_getDeref(&c->values, i);
-			struct avdl_string *varValue = avdl_da_getDeref(&c->values, i+1);
-			struct avdl_string *varType = avdl_da_getDeref(&c->values, i+2);
+		for (int i = 0; i+2 < avdl_dynamic_array_count(&c->values); i += 3) {
+			struct avdl_string *varName = avdl_dynamic_array_getDeref(&c->values, i);
+			struct avdl_string *varValue = avdl_dynamic_array_getDeref(&c->values, i+1);
+			struct avdl_string *varType = avdl_dynamic_array_getDeref(&c->values, i+2);
 			//avdl_log("var name and value: %s - %s", avdl_string_toCharPtr(varName), avdl_string_toCharPtr(varValue));
 
 			NodeToJson_PrintTabs(fd, tabs);
@@ -623,12 +623,12 @@ static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 	write(fd, content, strlen(content));
 
 	// components
-	if (avdl_da_count(&o->components) > 0) {
+	if (avdl_dynamic_array_count(&o->components) > 0) {
 		NodeToJson_PrintTabs(fd, tabs+1);
 		content = "\"components\": [\n";
 		write(fd, content, strlen(content));
-		for (int i = 0; i < avdl_da_count(&o->components); i++) {
-			struct avdl_component *component = avdl_da_getDeref(&o->components, i);
+		for (int i = 0; i < avdl_dynamic_array_count(&o->components); i++) {
+			struct avdl_component *component = avdl_dynamic_array_getDeref(&o->components, i);
 			NodeToJson_PrintComponent(fd, component, tabs+1);
 		}
 		NodeToJson_PrintTabs(fd, tabs+1);
@@ -637,12 +637,12 @@ static int NodeToJson_PrintNode(int fd, struct avdl_node *o, int tabs) {
 	}
 
 	// children
-	if (avdl_da_count(&o->children) > 0) {
+	if (avdl_dynamic_array_count(&o->children) > 0) {
 		NodeToJson_PrintTabs(fd, tabs+1);
 		content = "\"children\": [\n";
 		write(fd, content, strlen(content));
-		for (int i = 0; i < avdl_da_count(&o->children); i++) {
-			struct avdl_node *child = avdl_da_getDeref(&o->children, i);
+		for (int i = 0; i < avdl_dynamic_array_count(&o->children); i++) {
+			struct avdl_node *child = avdl_dynamic_array_getDeref(&o->children, i);
 			NodeToJson_PrintNode(fd, child, tabs+1);
 		}
 		NodeToJson_PrintTabs(fd, tabs+1);
@@ -1149,8 +1149,8 @@ int avdl_node_JsonToNode(char *filename, struct avdl_node *o) {
 struct avdl_component *avdl_node_GetComponent_Internal(struct avdl_node *o, void (*fnc)(struct avdl_component *)) {
 
 	// Get first component
-	for (unsigned int i = 0; i < avdl_da_count(&o->components); i++) {
-		struct avdl_component *c = avdl_da_getDeref(&o->components, i);
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->components); i++) {
+		struct avdl_component *c = avdl_dynamic_array_getDeref(&o->components, i);
 
 		if (c->clean == fnc) {
 			return c;
@@ -1242,8 +1242,8 @@ struct avdl_node *avdl_node_Duplicate(struct avdl_node *o, struct avdl_node *new
 	avdl_transform_Copy(newTransform, avdl_node_GetLocalTransform(o));
 
 	// Copy components
-	for (unsigned int i = 0; i < avdl_da_count(&o->components); i++) {
-		struct avdl_component *component = avdl_da_getDeref(&o->components, i);
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->components); i++) {
+		struct avdl_component *component = avdl_dynamic_array_getDeref(&o->components, i);
 		if (!DuplicateComponent(component, newNode)) {
 			avdl_log("avdl_node_Duplicate: could not duplicate component");
 			continue;
@@ -1260,5 +1260,5 @@ struct avdl_node *avdl_node_Duplicate(struct avdl_node *o, struct avdl_node *new
 }
 
 int avdl_node_GetComponentCount(struct avdl_node *o) {
-	return avdl_da_count(&o->components);
+	return avdl_dynamic_array_count(&o->components);
 }

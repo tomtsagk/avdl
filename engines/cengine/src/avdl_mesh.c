@@ -4,9 +4,9 @@
 #include <string.h>
 #include "avdl_assetManager.h"
 #include "shared/avdl_log.h"
+#include "shared/avdl_math.h"
 #include <stdlib.h>
 #include "avdl_graphics.h"
-#include "dd_math.h"
 #include <errno.h>
 
 #define CGLTF_IMPLEMENTATION
@@ -33,18 +33,18 @@ static struct avdl_dynamic_array meshCache;
 
 // global data
 void avdl_mesh_InitGlobalData() {
-	avdl_da_init(&meshCache, sizeof(struct avdl_mesh_data *));
+	avdl_dynamic_array_init(&meshCache, sizeof(struct avdl_mesh_data *));
 }
 
 void avdl_mesh_DeinitGlobalData() {
-	if (avdl_da_count(&meshCache) > 0) {
-		avdl_log("%d mesh object(s) were not cleaned", avdl_da_count(&meshCache));
-		for (int i = 0; i < avdl_da_count(&meshCache); i++) {
-			struct avdl_mesh_data *t = avdl_da_getDeref(&meshCache, i);
+	if (avdl_dynamic_array_count(&meshCache) > 0) {
+		avdl_log("%d mesh object(s) were not cleaned", avdl_dynamic_array_count(&meshCache));
+		for (int i = 0; i < avdl_dynamic_array_count(&meshCache); i++) {
+			struct avdl_mesh_data *t = avdl_dynamic_array_getDeref(&meshCache, i);
 			avdl_log("    mesh: %s", avdl_string_toCharPtr(&t->filename));
 		}
 	}
-	avdl_da_free(&meshCache);
+	avdl_dynamic_array_free(&meshCache);
 }
 
 static float shape_triangle[] = {
@@ -610,10 +610,10 @@ static void CleanData(struct avdl_mesh *m) {
 	data->bufferIndices = 0;
 
 	// remove from cache if active
-	for (int i = 0; i < avdl_da_count(&meshCache); i++) {
-		struct avdl_mesh_data *temp = avdl_da_getDeref(&meshCache, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&meshCache); i++) {
+		struct avdl_mesh_data *temp = avdl_dynamic_array_getDeref(&meshCache, i);
 		if (temp == m->data) {
-			avdl_da_remove(&meshCache, 1, i);
+			avdl_dynamic_array_remove(&meshCache, 1, i);
 			break;
 		}
 	}
@@ -1074,8 +1074,8 @@ static struct avdl_mesh_data *CreateMeshData() {
 static struct avdl_mesh_data *GetDataFromFile(const char *filename) {
 
 	// check cache here
-	for (int i = 0; i < avdl_da_count(&meshCache); i++) {
-		struct avdl_mesh_data *t = avdl_da_getDeref(&meshCache, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&meshCache); i++) {
+		struct avdl_mesh_data *t = avdl_dynamic_array_getDeref(&meshCache, i);
 		if (strcmp(avdl_string_toCharPtr(&t->filename), filename) == 0) {
 			if (t->boneCount != 0) break; // for now don't cache animation files
 			return t;
@@ -1084,7 +1084,7 @@ static struct avdl_mesh_data *GetDataFromFile(const char *filename) {
 
 	struct avdl_mesh_data *data = CreateMeshData();
 	filetomesh(data, filename);
-	avdl_da_push(&meshCache, &data);
+	avdl_dynamic_array_push(&meshCache, &data);
 	return data;
 }
 
@@ -1859,7 +1859,7 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 		array_vertex_nor = malloc(sizeof(float) *vertex_count *3);
 	}
 	struct avdl_dynamic_array array_vertex_indices;
-	avdl_da_init(&array_vertex_indices, sizeof(unsigned int));
+	avdl_dynamic_array_init(&array_vertex_indices, sizeof(unsigned int));
 
 	// bounds
 	struct avdl_vec3 boundsMin;
@@ -2003,7 +2003,7 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 						else
 						// for the time being no alpha on vertex colours
 						if ( is_vertex && strncmp( property->name, "alpha", strlen("alpha") ) == 0 && has_colours) {
-							//avdl_da_push(&array_vertex_alpha, &integer);
+							//avdl_dynamic_array_push(&array_vertex_alpha, &integer);
 						}
 						//avdl_log("\tuchar: %d", integer);
 					}
@@ -2024,12 +2024,12 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 						if ( is_face_indices && strncmp( property->name, "vertex_indices", strlen("vertex_indices") ) == 0) {
 							if (list_i >= 3) {
 								// do not insert parts of the array in itself, extract numbers first
-								unsigned int i1 = ((int*)avdl_da_get(&array_vertex_indices, -3 +((list_i -3) *3)))[0];
-								unsigned int i2 = ((int*)avdl_da_get(&array_vertex_indices, -1))[0];
-								avdl_da_push(&array_vertex_indices, &i1);
-								avdl_da_push(&array_vertex_indices, &i2);
+								unsigned int i1 = ((int*)avdl_dynamic_array_get(&array_vertex_indices, -3 +((list_i -3) *3)))[0];
+								unsigned int i2 = ((int*)avdl_dynamic_array_get(&array_vertex_indices, -1))[0];
+								avdl_dynamic_array_push(&array_vertex_indices, &i1);
+								avdl_dynamic_array_push(&array_vertex_indices, &i2);
 							}
-							avdl_da_push(&array_vertex_indices, &integer);
+							avdl_dynamic_array_push(&array_vertex_indices, &integer);
 						}
 
 						//avdl_log("\tuint: %d", integer);
@@ -2053,7 +2053,7 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 	if (useIndices) {
 		// indices way
 		m->vcount = vertex_count;
-		m->indicesCount = array_vertex_indices.elements;
+		m->indicesCount = avdl_dynamic_array_count(&array_vertex_indices);
 		if (m->indicesType == AVDL_GRAPHICS_INDICETYPE_UBYTE) {
 			m->indices = malloc(sizeof(GLubyte) *m->indicesCount);
 		}
@@ -2068,7 +2068,7 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 		m->n = array_vertex_nor;
 
 		for (unsigned int i = 0; i < m->indicesCount; i++) {
-			int *index = avdl_da_get(&array_vertex_indices, i);
+			int *index = avdl_dynamic_array_get(&array_vertex_indices, i);
 			if (m->indicesType == AVDL_GRAPHICS_INDICETYPE_UBYTE) {
 				GLubyte *a = m->indices;
 				a[i] = index[0];
@@ -2082,7 +2082,7 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 	}
 	// old way of drawing arrays (fallback)
 	else {
-		m->vcount = array_vertex_indices.elements;
+		m->vcount = avdl_dynamic_array_count(&array_vertex_indices);
 
 		m->v = malloc(sizeof(float) *m->vcount *3);
 		m->dirtyVertices = 1;
@@ -2098,7 +2098,7 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 			m->n = malloc(sizeof(float) *m->vcount *3);
 		}
 		for (unsigned int i = 0; i < m->vcount; i++) {
-			int *index = avdl_da_get(&array_vertex_indices, i);
+			int *index = avdl_dynamic_array_get(&array_vertex_indices, i);
 			m->v[i*3 +0] = array_vertex_pos[index[0]*3 +0];
 			m->v[i*3 +1] = array_vertex_pos[index[0]*3 +1];
 			m->v[i*3 +2] = array_vertex_pos[index[0]*3 +2];
@@ -2231,7 +2231,7 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 		(avdl_vec3_Z(&boundsMax) -avdl_vec3_Z(&boundsMin))/2
 	);
 	
-	avdl_da_free(&array_vertex_indices);
+	avdl_dynamic_array_free(&array_vertex_indices);
 
 	return 0;
 
@@ -2836,9 +2836,9 @@ static int load_gltf_internal(struct avdl_mesh_data *m, cgltf_options *options, 
 		anim->animatedBonesCount = m->boneCount;
 		for (int j = 0; j < m->boneCount; j++) {
 			struct dd_animated_bone *animBone = &anim->animatedBones[j];
-			avdl_da_init(&animBone->keyframes_position, sizeof(struct dd_keyframe_vec3));
-			avdl_da_init(&animBone->keyframes_rotation, sizeof(struct dd_keyframe_vec4));
-			avdl_da_init(&animBone->keyframes_scale, sizeof(struct dd_keyframe_vec3));
+			avdl_dynamic_array_init(&animBone->keyframes_position, sizeof(struct dd_keyframe_vec3));
+			avdl_dynamic_array_init(&animBone->keyframes_rotation, sizeof(struct dd_keyframe_vec4));
+			avdl_dynamic_array_init(&animBone->keyframes_scale, sizeof(struct dd_keyframe_vec3));
 		}
 
 		if (animation->channels_count <= 0) {
@@ -2898,7 +2898,7 @@ static int load_gltf_internal(struct avdl_mesh_data *m, cgltf_options *options, 
 					struct dd_keyframe_vec3 keyframe;
 					cgltf_accessor_read_float(input, z, &keyframe.time, 1);
 					cgltf_accessor_read_float(output, z, &keyframe.value, 3);
-					avdl_da_push(&animBone->keyframes_position, &keyframe);
+					avdl_dynamic_array_push(&animBone->keyframes_position, &keyframe);
 				}
 			}
 			else
@@ -2935,7 +2935,7 @@ static int load_gltf_internal(struct avdl_mesh_data *m, cgltf_options *options, 
 					struct dd_keyframe_vec4 keyframe;
 					cgltf_accessor_read_float(input, z, &keyframe.time, 1);
 					cgltf_accessor_read_float(output, z, &keyframe.value, 4);
-					avdl_da_push(&animBone->keyframes_rotation, &keyframe);
+					avdl_dynamic_array_push(&animBone->keyframes_rotation, &keyframe);
 				}
 
 			}

@@ -1,8 +1,8 @@
 #include "dd_game.h"
-#include "dd_math.h"
 #include "dd_fov.h"
 #include <stdio.h>
 #include "shared/avdl_log.h"
+#include "shared/avdl_math.h"
 #include "avdl_engine.h"
 #include "avdl_whereami.h"
 #include "avdl_ray3.h"

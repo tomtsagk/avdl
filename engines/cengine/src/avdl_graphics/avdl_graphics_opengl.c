@@ -9,7 +9,7 @@
 #include "avdl_assetManager.h"
 #include "avdl_texture.h"
 #include "avdl_engine.h"
-#include "dd_math.h"
+#include "shared/avdl_math.h"
 
 int test_glError(char *file, int line) {
 	GLenum err = glGetError();

@@ -4,11 +4,9 @@ name: Unit Tests
 on:
   push:
     branches:
-      - develop
       - master
   pull_request:
     branches:
-      - develop
       - master
 
 # run dependencies, build project, test project

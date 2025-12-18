@@ -1,7 +1,7 @@
 #include "avdl_screen.h"
 #include "dd_game.h"
 #include "dd_fov.h"
-#include "dd_math.h"
+#include "shared/avdl_math.h"
 #include "avdl_vec3.h"
 #include "avdl_ray3.h"
 #include "avdl_engine.h"

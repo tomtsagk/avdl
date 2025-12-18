@@ -94,7 +94,7 @@ int dd_main(int argc, char *argv[]) {
 	// save any arguments that were not addressed by default behaviour and pass it to the game
 	struct avdl_dynamic_array args;
 	avdl_dynamic_array_create(&args);
-	avdl_da_init(&args, sizeof(struct avdl_string));
+	avdl_dynamic_array_init(&args, sizeof(struct avdl_string));
 
 	#ifdef AVDL_DIRECT3D11
 	#else
@@ -139,8 +139,8 @@ int dd_main(int argc, char *argv[]) {
 			if (i == 0) {
 				continue;
 			}
-			avdl_da_pushEmpty(&args);
-			struct avdl_string *s = avdl_da_get(&args, -1);
+			avdl_dynamic_array_pushEmpty(&args);
+			struct avdl_string *s = avdl_dynamic_array_get(&args, -1);
 			avdl_string_create(s);
 			avdl_string_SetMaxCharacters(s, 1024);
 			avdl_string_cat(s, argv[i]);
@@ -174,8 +174,8 @@ int dd_main(int argc, char *argv[]) {
 		avdl_log("avdl: error initialising engine");
 		return -1;
 	}
-	for (int i = 0; i < avdl_da_count(&args); i++) {
-		struct avdl_string *s = avdl_da_get(&args, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&args); i++) {
+		struct avdl_string *s = avdl_dynamic_array_get(&args, i);
 		avdl_string_clean(s);
 	}
 	avdl_dynamic_array_clean(&args);

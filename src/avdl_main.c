@@ -370,8 +370,8 @@ int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirNa
 	struct avdl_string avdlHeaders;
 	avdl_string_create(&avdlHeaders);
 	avdl_string_SetMaxCharacters(&avdlHeaders, 4000);
-	for (int i = 0; i < avdl_da_count(&cengineHeaders); i++) {
-		struct avdl_string *str = avdl_da_get(&cengineHeaders, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&cengineHeaders); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&cengineHeaders, i);
 		if (!avdl_string_EndsIn(str, ".c") && !avdl_string_EndsIn(str, ".cpp")) {
 			continue;
 		}
@@ -402,8 +402,8 @@ int create_d3d11_directory(struct AvdlSettings *avdl_settings, const char *dirNa
 	struct avdl_string avdlSrc;
 	avdl_string_create(&avdlSrc);
 	avdl_string_SetMaxCharacters(&avdlSrc, 10000);
-	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&cengineFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&cengineFiles, i);
 
 		if (!avdl_string_EndsIn(str, ".c") && !avdl_string_EndsIn(str, ".cpp")) {
 			continue;
@@ -974,8 +974,8 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 	Avdl_FileOp_GetFilesInDirectory(avdl_settings->src_dir, &srcFiles);
 
 	// for each file
-	for (int i = 0; i < avdl_da_count(&srcFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&srcFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&srcFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&srcFiles, i);
 
 		// only avdl `.dd` files
 		if (!avdl_string_EndsIn(str, ".dd") && !avdl_string_EndsIn(str, ".avdl_node")) {
@@ -1144,7 +1144,7 @@ int avdl_transpile(struct AvdlSettings *avdl_settings) {
 			avdl_string_clean(&dstFilePath);
 			return -1;
 		}
-		printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&srcFiles)+1) *100));
+		printf("avdl: transpiling - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_dynamic_array_count(&srcFiles)+1) *100));
 		fflush(stdout);
 
 		avdl_string_clean(&srcFilePath);
@@ -1196,8 +1196,8 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 	Avdl_FileOp_GetFilesInDirectory(cache_dir, &srcFiles);
 
 	// filter out some files
-	for (int i = 0; i < avdl_da_count(&srcFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&srcFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&srcFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&srcFiles, i);
 
 		// skip non `.c` files
 		if (!avdl_string_EndsIn(str, ".c")) {
@@ -1362,7 +1362,7 @@ int avdl_compile(struct AvdlSettings *avdl_settings) {
 			return -1;
 		}
 
-		printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&srcFiles) +1) *100));
+		printf("avdl: compiling - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_dynamic_array_count(&srcFiles) +1) *100));
 		fflush(stdout);
 
 		avdl_string_clean(&srcFilePath);
@@ -1425,8 +1425,8 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 		return -1;
 	}
 
-	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&cengineFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&cengineFiles, i);
 
 		// update message
 		if (i == 0) {
@@ -1434,7 +1434,7 @@ int avdl_compile_cengine(struct AvdlSettings *avdl_settings) {
 			fflush(stdout);
 		}
 		else {
-			printf("avdl: compiling avdl engine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&cengineFiles)+1) *100));
+			printf("avdl: compiling avdl engine - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_dynamic_array_count(&cengineFiles)+1) *100));
 			fflush(stdout);
 		}
 
@@ -1647,8 +1647,8 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	avdl_string_SetMaxCharacters(&objFilesStr, 100000);
 
 	// filter out some files
-	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&objFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&objFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&objFiles, i);
 
 		if (strcmp("." , avdl_string_toCharPtr(str)) == 0
 		||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
@@ -1677,8 +1677,8 @@ int avdl_link(struct AvdlSettings *avdl_settings) {
 	avdl_string_clean(&cengineSrc);
 
 	// add cengine files to link
-	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&cengineFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&cengineFiles, i);
 
 		if (!avdl_string_EndsIn(str, ".c") && !avdl_string_EndsIn(str, ".cpp")) {
 			continue;
@@ -2047,8 +2047,8 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 	Avdl_FileOp_GetFilesInDirectory(avdl_settings->asset_dir, &assetFiles);
 
 	// filter out some files
-	for (int i = 0; i < avdl_da_count(&assetFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&assetFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&assetFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&assetFiles, i);
 
 		// ignore `.` and `..`
 		if (strcmp(avdl_string_toCharPtr(str), ".") == 0
@@ -2260,7 +2260,7 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		 */
 		file_copy(avdl_string_toCharPtr(&srcFilePath), avdl_string_toCharPtr(&dstFilePath), 0);
 
-		printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_da_count(&assetFiles)+1) *100));
+		printf("avdl: assets - " YEL "%d%%" RESET "\r", (int)((float) (i+1)/(avdl_dynamic_array_count(&assetFiles)+1) *100));
 		fflush(stdout);
 		avdl_string_clean(&srcFilePath);
 		avdl_string_clean(&dstFilePath);
@@ -2274,11 +2274,11 @@ int avdl_assets(struct AvdlSettings *avdl_settings) {
 		avdl_string_SetMaxCharacters(&assetFilesStr, 100000);
 
 		// filter out some files
-		for (int i = 0; i < avdl_da_count(&assetFiles); i++) {
-			struct avdl_string *str = avdl_da_get(&assetFiles, i);
+		for (int i = 0; i < avdl_dynamic_array_count(&assetFiles); i++) {
+			struct avdl_string *str = avdl_dynamic_array_get(&assetFiles, i);
 			if (strcmp("." , avdl_string_toCharPtr(str)) == 0
 			||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
-				avdl_da_remove(&assetFiles, 1, i);
+				avdl_dynamic_array_remove(&assetFiles, 1, i);
 				i--;
 				continue;
 			}
@@ -2617,8 +2617,8 @@ int avdl_android_object(struct AvdlSettings *avdl_settings) {
 	avdl_string_SetMaxCharacters(&objFilesStr, 100000);
 	struct avdl_dynamic_array objFiles;
 	Avdl_FileOp_GetFilesInDirectory(android_cache_dir "/app/src/main/cpp/game/", &objFiles);
-	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&objFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&objFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&objFiles, i);
 
 		if (!avdl_string_EndsIn(str, ".c")) {
 			continue;
@@ -3185,8 +3185,8 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 	avdl_string_SetMaxCharacters(&objFilesStr, 10000);
 	struct avdl_dynamic_array objFiles;
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
-	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&objFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&objFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&objFiles, i);
 
 		if (strcmp(avdl_string_toCharPtr(str), "..") == 0
 		||  strcmp(avdl_string_toCharPtr(str), "." ) == 0) {
@@ -3194,7 +3194,7 @@ int avdl_quest2_object(struct AvdlSettings *avdl_settings) {
 		}
 
 		if (!avdl_string_EndsIn(str, ".c")) {
-			avdl_da_remove(&objFiles, 1, i);
+			avdl_dynamic_array_remove(&objFiles, 1, i);
 			i--;
 		}
 		else {
@@ -3375,8 +3375,8 @@ int avdl_d3d11_object(struct AvdlSettings *avdl_settings) {
 	avdl_string_SetMaxCharacters(&objFilesStr, 10000);
 	struct avdl_dynamic_array objFiles;
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &objFiles);
-	for (int i = 0; i < avdl_da_count(&objFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&objFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&objFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&objFiles, i);
 		if (!avdl_string_EndsIn(str, ".c")) {
 			continue;
 		}
@@ -3575,8 +3575,8 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 	struct avdl_string avdl_src;
 	avdl_string_create(&avdl_src);
 	avdl_string_SetMaxCharacters(&avdl_src, 5024);
-	for (int i = 0; i < avdl_da_count(&cengineFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&cengineFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&cengineFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&cengineFiles, i);
 		if (!avdl_string_EndsIn(str, ".c") && !avdl_string_EndsIn(str, ".cpp")) {
 			continue;
 		}
@@ -3594,10 +3594,10 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 	// collect avdl project source
 	struct avdl_dynamic_array srcFiles;
 	Avdl_FileOp_GetFilesInDirectory(".avdl_cache", &srcFiles);
-	for (int i = 0; i < avdl_da_count(&srcFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&srcFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&srcFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&srcFiles, i);
 		if (!avdl_string_EndsIn(str, ".dd.c")) {
-			avdl_da_remove(&srcFiles, 1, i);
+			avdl_dynamic_array_remove(&srcFiles, 1, i);
 			i--;
 		}
 	}
@@ -3619,8 +3619,8 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 	avdl_string_cat(&cmake_data, avdl_string_toCharPtr(&avdl_src));
 
 	// avdl project src
-	for (int i = 0; i < avdl_da_count(&srcFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&srcFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&srcFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&srcFiles, i);
 		avdl_string_cat(&cmake_data, ".avdl_cache/");
 		avdl_string_cat(&cmake_data, avdl_string_toCharPtr(str));
 		avdl_string_cat(&cmake_data, " ");
@@ -3637,8 +3637,8 @@ int avdl_cmake(struct AvdlSettings *avdl_settings) {
 	Avdl_FileOp_GetFilesInDirectory("assets", &assetFiles);
 
 	// put assets into cmake
-	for (int i = 0; i < avdl_da_count(&assetFiles); i++) {
-		struct avdl_string *str = avdl_da_get(&assetFiles, i);
+	for (int i = 0; i < avdl_dynamic_array_count(&assetFiles); i++) {
+		struct avdl_string *str = avdl_dynamic_array_get(&assetFiles, i);
 		if (strcmp("." , avdl_string_toCharPtr(str)) == 0
 		||  strcmp("..", avdl_string_toCharPtr(str)) == 0) {
 			continue;
