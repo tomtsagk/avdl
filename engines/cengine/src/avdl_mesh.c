@@ -1362,7 +1362,6 @@ static int load_ply(struct avdl_mesh_data *data, const char *path) {
 	struct avdl_time t;
 	avdl_time_start(&t);
 	*/
-	//avdl_log("file: %s", path);
 
 	#if defined( AVDL_ANDROID ) || defined( AVDL_QUEST2 )
 	//Open file and check error
@@ -1690,6 +1689,10 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 				property->format = PLY_FORMAT_UCHAR;
 			}
 			else
+			if ( strncmp(p, "int", strlen("int")) == 0 ) {
+				property->format = PLY_FORMAT_INT;
+			}
+			else
 			if ( strncmp(p, "uint", strlen("uint")) == 0 ) {
 				property->format = PLY_FORMAT_UINT;
 			}
@@ -2009,7 +2012,8 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 					}
 				}
 				else
-				if (property->format == PLY_FORMAT_UINT) {
+				if (property->format == PLY_FORMAT_UINT
+				||  property->format == PLY_FORMAT_INT) {
 					for (int list_i = 0; list_i < values; list_i++) {
 						p = skip_whitespace(p);
 						int integer = atoi(p);
@@ -2021,7 +2025,8 @@ static int load_ply_string(struct avdl_mesh_data *m, const char *string) {
 							return -1;
 						}
 
-						if ( is_face_indices && strncmp( property->name, "vertex_indices", strlen("vertex_indices") ) == 0) {
+						if ( is_face_indices && ( strncmp( property->name, "vertex_indices", strlen("vertex_indices") ) == 0
+						||   strncmp( property->name, "vertex_index", strlen("vertex_index") ) == 0)) {
 							if (list_i >= 3) {
 								// do not insert parts of the array in itself, extract numbers first
 								unsigned int i1 = ((int*)avdl_dynamic_array_get(&array_vertex_indices, -3 +((list_i -3) *3)))[0];
