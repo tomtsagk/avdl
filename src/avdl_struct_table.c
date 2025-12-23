@@ -328,6 +328,7 @@ void struct_table_init() {
 	struct_table_push_member("GetScaleX", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("GetScaleY", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("GetScaleZ", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
+	struct_table_push_member("Copy", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push("avdl_node", 0);
 	struct_table_push_member("create", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
 	struct_table_push_member("GetGlobalMatrix", AVDL_VARIABLE_TYPE_FUNCTION_INLINE, 0, 0);
