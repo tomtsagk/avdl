@@ -120,6 +120,13 @@ struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {
 	return child;
 }
 
+struct avdl_node *avdl_node_AddChildNode(struct avdl_node *o, struct avdl_node *child) {
+	avdl_dynamic_array_push(&o->children, &child);
+	child->parent = o;
+	avdl_node_MultiplyMatrix(child, avdl_node_GetGlobalInverseMatrix(o));
+	return child;
+}
+
 int avdl_node_RemoveChild(struct avdl_node *o, struct avdl_node *targetChild) {
 
 	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->children); i++) {
@@ -129,9 +136,28 @@ int avdl_node_RemoveChild(struct avdl_node *o, struct avdl_node *targetChild) {
 			continue;
 		}
 
-		avdl_node_clean(child);
 		avdl_dynamic_array_remove(&o->children, 1, i);
+		avdl_node_clean(child);
 		free(child);
+		break;
+	}
+
+	return 0;
+}
+
+int avdl_node_DetachChild(struct avdl_node *o, struct avdl_node *targetChild) {
+
+	for (unsigned int i = 0; i < avdl_dynamic_array_count(&o->children); i++) {
+		struct avdl_node *child = avdl_dynamic_array_getDeref(&o->children, i);
+
+		if (child != targetChild) {
+			continue;
+		}
+
+		avdl_transform_MultiplyMatrix(&child->localTransform, avdl_node_GetGlobalMatrix(o));
+
+		child->parent = 0;
+		avdl_dynamic_array_remove(&o->children, 1, i);
 		break;
 	}
 
@@ -140,6 +166,18 @@ int avdl_node_RemoveChild(struct avdl_node *o, struct avdl_node *targetChild) {
 
 struct avdl_node *avdl_node_GetParent(struct avdl_node *o) {
 	return o->parent;
+}
+
+int avdl_node_SetParent(struct avdl_node *o, struct avdl_node *newParent) {
+
+	// remove node from previous parent
+	if (o->parent) {
+		avdl_node_DetachChild(o->parent, o);
+	}
+
+	// add node to new parent
+	avdl_node_AddChildNode(newParent, o);
+	return 0;
 }
 
 struct avdl_component *avdl_node_AddComponentInternal(struct avdl_node *o, int size, void (*constructor)(void *)) {
@@ -1261,4 +1299,9 @@ struct avdl_node *avdl_node_Duplicate(struct avdl_node *o, struct avdl_node *new
 
 int avdl_node_GetComponentCount(struct avdl_node *o) {
 	return avdl_dynamic_array_count(&o->components);
+}
+
+int avdl_node_MultiplyMatrix(struct avdl_node *o, struct dd_matrix *matrix) {
+	avdl_transform_MultiplyMatrix(&o->localTransform, matrix);
+	return 0;
 }

@@ -49,4 +49,6 @@ int avdl_transform_Copy(struct avdl_transform *o, struct avdl_transform *target)
 
 void avdl_transform_create(struct avdl_transform *o);
 
+int avdl_transform_MultiplyMatrix(struct avdl_transform *o, struct dd_matrix *matrix);
+
 #endif

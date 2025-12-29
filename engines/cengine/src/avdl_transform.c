@@ -184,3 +184,17 @@ int avdl_transform_Copy(struct avdl_transform *o, struct avdl_transform *target)
 	avdl_transform_SetScale(o, &target->scale);
 	return 0;
 }
+
+int avdl_transform_MultiplyMatrix(struct avdl_transform *o, struct dd_matrix *matrix) {
+	avdl_vec3_MultiplyMatrix(&o->position, matrix, 1);
+
+	// TODO: rotation and scale
+	//avdl_vec3_MultiplyMatrix(&o->rotation, matrix, 1);
+	//avdl_vec3_MultiplyMatrix(&o->scale, matrix, 0);
+
+	o->matrix_dirty = 1;
+	o->matrix_inverse_dirty = 1;
+	o->matrix_normal_dirty = 1;
+	o->matrix_normal_inverse_dirty = 1;
+	return 0;
+}
