@@ -1,6 +1,8 @@
 #include "avdl_vec3.h"
 #include "shared/avdl_math.h"
 #include "shared/avdl_log.h"
+#include "dd_matrix.h"
+#include "avdl_vec4.h"
 
 void avdl_vec3_create(struct avdl_vec3 *o) {
 	o->x = 0;
@@ -22,6 +24,18 @@ void avdl_vec3_Setf(struct avdl_vec3 *o, float x, float y, float z) {
 	o->x = x;
 	o->y = y;
 	o->z = z;
+}
+
+void avdl_vec3_Set1f(struct avdl_vec3 *o, float val) {
+	o->x = val;
+	o->y = val;
+	o->z = val;
+}
+
+void avdl_vec3_SetVec4(struct avdl_vec3 *o, struct avdl_vec4 *v) {
+	o->x = avdl_vec4_X(v);
+	o->y = avdl_vec4_Y(v);
+	o->z = avdl_vec4_Z(v);
 }
 
 void avdl_vec3_SetX(struct avdl_vec3 *o, float value) {
@@ -64,11 +78,25 @@ void avdl_vec3_Add(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {
 	o1->z += o2->z;
 }
 
+void avdl_vec3_AddVec4(struct avdl_vec3 *o1, struct avdl_vec4 *v) {
+	o1->x += avdl_vec4_X(v);
+	o1->y += avdl_vec4_Y(v);
+	o1->z += avdl_vec4_Z(v);
+}
+
 void avdl_vec3_Cross(struct avdl_vec3 *a, struct avdl_vec3 *b) {
 	avdl_vec3_Setf(a,
 		avdl_vec3_Y(a) *avdl_vec3_Z(b) -avdl_vec3_Z(a) *avdl_vec3_Y(b),
 		avdl_vec3_Z(a) *avdl_vec3_X(b) -avdl_vec3_X(a) *avdl_vec3_Z(b),
 		avdl_vec3_X(a) *avdl_vec3_Y(b) -avdl_vec3_Y(a) *avdl_vec3_X(b)
+	);
+}
+
+void avdl_vec3_CrossVec4(struct avdl_vec3 *a, struct avdl_vec4 *b) {
+	avdl_vec3_Setf(a,
+		avdl_vec3_Y(a) *avdl_vec4_Z(b) -avdl_vec3_Z(a) *avdl_vec4_Y(b),
+		avdl_vec3_Z(a) *avdl_vec4_X(b) -avdl_vec3_X(a) *avdl_vec4_Z(b),
+		avdl_vec3_X(a) *avdl_vec4_Y(b) -avdl_vec3_Y(a) *avdl_vec4_X(b)
 	);
 }
 
@@ -93,7 +121,11 @@ float avdl_vec3_Magnitude(struct avdl_vec3 *o) {
 }
 
 float avdl_vec3_Dot(struct avdl_vec3 *a, struct avdl_vec3 *b) {
-	return a->x *b->x + a->y *b->y + a->z *b->z;
+	return avdl_vec3_X(a) *avdl_vec3_X(b) + avdl_vec3_X(a) *avdl_vec3_Y(b) + avdl_vec3_Z(a) *avdl_vec3_Z(b);
+}
+
+float avdl_vec3_DotVec4(struct avdl_vec3 *a, struct avdl_vec4 *b) {
+	return avdl_vec3_X(a) *avdl_vec4_X(b) + avdl_vec3_X(a) *avdl_vec4_Y(b) + avdl_vec3_Z(a) *avdl_vec4_Z(b);
 }
 
 void avdl_vec3_Subtract(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {
@@ -106,6 +138,18 @@ void avdl_vec3_Subtractf(struct avdl_vec3 *o, float x, float y, float z) {
 	o->x -= x;
 	o->y -= y;
 	o->z -= z;
+}
+
+void avdl_vec3_Subtract1f(struct avdl_vec3 *o, float value) {
+	o->x -= value;
+	o->y -= value;
+	o->z -= value;
+}
+
+void avdl_vec3_SubtractVec4(struct avdl_vec3 *o, struct avdl_vec4 *v) {
+	o->x -= avdl_vec4_X(v);
+	o->y -= avdl_vec4_Y(v);
+	o->z -= avdl_vec4_Z(v);
 }
 
 void avdl_vec3_Multiply(struct avdl_vec3 *o1, struct avdl_vec3 *o2) {
@@ -124,6 +168,12 @@ void avdl_vec3_Multiply1f(struct avdl_vec3 *o, float x) {
 	o->x *= x;
 	o->y *= x;
 	o->z *= x;
+}
+
+void avdl_vec3_MultiplyVec4(struct avdl_vec3 *o, struct avdl_vec4 *v) {
+	o->x *= avdl_vec4_X(v);
+	o->y *= avdl_vec4_Y(v);
+	o->z *= avdl_vec4_Z(v);
 }
 
 void avdl_vec3_MultiplyMatrix(struct avdl_vec3 *o, struct dd_matrix *m, float w) {
@@ -166,6 +216,12 @@ void avdl_vec3_Divide1f(struct avdl_vec3 *o, float value) {
 	o->x /= value;
 	o->y /= value;
 	o->z /= value;
+}
+
+void avdl_vec3_DivideVec4(struct avdl_vec3 *o, struct avdl_vec4 *v) {
+	o->x /= avdl_vec4_X(v);
+	o->y /= avdl_vec4_Y(v);
+	o->z /= avdl_vec4_Z(v);
 }
 
 void avdl_vec3_Print(struct avdl_vec3 *o) {

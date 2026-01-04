@@ -5,8 +5,8 @@
 extern "C" {
 #endif
 
-#include "dd_matrix.h"
-#include "avdl_vec3.h"
+struct dd_matrix;
+struct avdl_vec3;
 
 struct avdl_vec4 {
 	union {
