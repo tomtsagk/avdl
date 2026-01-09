@@ -722,3 +722,7 @@ float dd_string3d_getWidthInt(struct dd_string3d *o, int num) {
 
 	return lineWidth;
 }
+
+int dd_string3d_getWordCount(struct dd_string3d *o) {
+	return avdl_dynamic_array_count(&o->textMeshes);
+}

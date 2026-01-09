@@ -19,6 +19,7 @@
 #include "avdl_screen.h"
 #include "avdl_vec3.h"
 #include "avdl_vec4.h"
+#include "avdl_quaternion.h"
 #include "avdl_ray3.h"
 #include "avdl_plane.h"
 #include "dd_mouse.h"

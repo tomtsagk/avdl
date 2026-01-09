@@ -77,6 +77,8 @@ void dd_string3d_setFont(struct dd_string3d *, struct avdl_font *);
 float dd_string3d_getWidth(struct dd_string3d *);
 float dd_string3d_getWidthInt(struct dd_string3d *, int);
 
+int dd_string3d_getWordCount(struct dd_string3d *);
+
 #ifdef __cplusplus
 }
 #endif

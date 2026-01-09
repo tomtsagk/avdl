@@ -1,8 +1,10 @@
 #include "avdl_node.h"
 #include "shared/avdl_log.h"
+#include "shared/avdl_math.h"
 #include "avdl_component.h"
 #include "avdl_json.h"
 #include "avdl_vec3.h"
+#include "avdl_quaternion.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -123,6 +125,76 @@ struct avdl_node *avdl_node_AddChild(struct avdl_node *o) {
 struct avdl_node *avdl_node_AddChildNode(struct avdl_node *o, struct avdl_node *child) {
 	avdl_dynamic_array_push(&o->children, &child);
 	child->parent = o;
+
+	//avdl_log("add child node");
+	// start from root
+	struct avdl_node *root = child;
+	while (root->parent) {
+		//avdl_log("start with parent");
+		root = root->parent;
+	}
+
+	// rot
+	struct avdl_vec3 rot;
+	avdl_vec3_create(&rot);
+	avdl_vec3_Set(&rot, avdl_transform_GetRotation(&child->localTransform));
+	//avdl_log("rot:");
+	//avdl_vec3_Print(&rot);
+	//avdl_log("detach:");
+	struct avdl_quaternion quat;
+	avdl_quaternion_create(&quat);
+	avdl_quaternion_Identity(&quat);
+	avdl_quaternion_RotationFromEuler(&quat,
+		avdl_vec3_X(&rot),
+		avdl_vec3_Y(&rot),
+		avdl_vec3_Z(&rot)
+	);
+	/*
+	*/
+
+	while (root != child) {
+		struct avdl_node *n = child;
+		while (n->parent != root) {
+			n = n->parent;
+		}
+
+		if (n == child) {
+			break;
+		}
+
+		struct avdl_vec3 rot2;
+		avdl_vec3_create(&rot2);
+		avdl_vec3_Set(&rot2, avdl_transform_GetRotation(&n->localTransform));
+		//avdl_log("parent rot:");
+		//avdl_vec3_Print(&rot2);
+		struct avdl_quaternion q2;
+		avdl_quaternion_create(&q2);
+		avdl_quaternion_Identity(&q2);
+		avdl_quaternion_RotationFromEuler(&q2,
+			avdl_vec3_X(&rot2),
+			avdl_vec3_Y(&rot2),
+			avdl_vec3_Z(&rot2)
+		);
+		avdl_quaternion_Conjugate(&q2);
+		//avdl_quaternion_Multiply(&quat, &q2);
+		avdl_quaternion_Multiply(&q2, &quat);
+		avdl_quaternion_Copy(&quat, &q2);
+		//avdl_log("parent quat:");
+		//avdl_quaternion_Print(&q2);
+
+		root = n;
+	}
+
+	//avdl_log("final quat:");
+	//avdl_quaternion_Print(&quat);
+
+	struct avdl_vec3 final_rot;
+	avdl_vec3_create(&final_rot);
+	avdl_quaternion_ToEuler(&quat, &final_rot);
+	//avdl_log("final rot:");
+	//avdl_vec3_Print(&final_rot);
+	avdl_transform_SetRotation(&child->localTransform, &final_rot);
+
 	avdl_node_MultiplyMatrix(child, avdl_node_GetGlobalInverseMatrix(o));
 	return child;
 }
@@ -154,6 +226,69 @@ int avdl_node_DetachChild(struct avdl_node *o, struct avdl_node *targetChild) {
 			continue;
 		}
 
+		// start from root
+		struct avdl_node *root = child;
+		while (root->parent) {
+			root = root->parent;
+		}
+
+		// rot
+		struct avdl_vec3 rot;
+		avdl_vec3_create(&rot);
+		avdl_vec3_Set(&rot, avdl_transform_GetRotation(&root->localTransform));
+		//avdl_log("rot:");
+		//avdl_vec3_Print(&rot);
+		//avdl_log("detach:");
+		struct avdl_quaternion quat;
+		avdl_quaternion_create(&quat);
+		avdl_quaternion_Identity(&quat);
+		avdl_quaternion_RotationFromEuler(&quat,
+			avdl_vec3_X(&rot),
+			avdl_vec3_Y(&rot),
+			avdl_vec3_Z(&rot)
+		);
+
+		while (root != child) {
+			struct avdl_node *n = child;
+			while (n->parent != root) {
+				n = n->parent;
+			}
+
+			struct avdl_vec3 rot2;
+			avdl_vec3_create(&rot2);
+			avdl_vec3_Set(&rot2, avdl_transform_GetRotation(&n->localTransform));
+			//avdl_log("parent rot:");
+			//avdl_vec3_Print(&rot2);
+			struct avdl_quaternion q2;
+			avdl_quaternion_create(&q2);
+			avdl_quaternion_Identity(&q2);
+			avdl_quaternion_RotationFromEuler(&q2,
+				avdl_vec3_X(&rot2),
+				avdl_vec3_Y(&rot2),
+				avdl_vec3_Z(&rot2)
+			);
+			avdl_quaternion_Multiply(&quat, &q2);
+			//avdl_quaternion_Multiply(&q2, &quat);
+			//avdl_quaternion_Copy(&quat, &q2);
+			//avdl_log("parent quat:");
+			//avdl_quaternion_Print(&q2);
+
+			root = n;
+		}
+
+		//avdl_log("final quat:");
+		//avdl_quaternion_Print(&quat);
+
+		struct avdl_vec3 final_rot;
+		avdl_vec3_create(&final_rot);
+		avdl_quaternion_ToEuler(&quat, &final_rot);
+		//avdl_log("final rot:");
+		//avdl_vec3_Print(&final_rot);
+		avdl_transform_SetRotation(&child->localTransform, &final_rot);
+
+		//avdl_transform_SetRotation(&child->localTransform, &rot);
+
+		// position
 		avdl_transform_MultiplyMatrix(&child->localTransform, avdl_node_GetGlobalMatrix(o));
 
 		child->parent = 0;
